@@ -1,0 +1,18 @@
+User:
+  type: object
+  properties:
+    id: { type: integer }
+    username: { type: string }
+    email: { type: string }
+
+ValidationError:
+  type: object
+  properties:
+    errors:
+      type: object
+      additionalProperties: { type: string }
+
+AuthError:
+  type: object
+  properties:
+    error: { type: string }

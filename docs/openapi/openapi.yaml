@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: ft_transcendence API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /api/auth/register:
+    $ref: ./paths/auth.yaml#/register
+  /api/auth/login:
+    $ref: ./paths/auth.yaml#/login
+
+components:
+  schemas:
+    User:
+      $ref: ./components/schemas.yaml#/User
+    ValidationError:
+      $ref: ./components/schemas.yaml#/ValidationError
+    AuthError:
+      $ref: ./components/schemas.yaml#/AuthError

@@ -1,0 +1,55 @@
+register:
+  post:
+    summary: Register a new user
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [username, email, password]
+            properties:
+              username: { type: string }
+              email: { type: string }
+              password: { type: string, format: password }
+              password_confirm: { type: string, format: password }
+    responses:
+      "201":
+        description: User created
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas.yaml#/User
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas.yaml#/ValidationError
+
+login:
+  post:
+    summary: Login
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [username, password]
+            properties:
+              username: { type: string }
+              password: { type: string, format: password }
+    responses:
+      "200":
+        description: Login successful
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas.yaml#/User
+      "401":
+        description: Invalid credentials
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas.yaml#/AuthError
