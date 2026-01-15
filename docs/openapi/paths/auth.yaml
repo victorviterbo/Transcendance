@@ -1,7 +1,11 @@
 register:
   post:
     summary: Register a new user
+    description: Create a user account with a username, email, and password.
+    operationId: registerUser
+    tags: [auth]
     requestBody:
+      description: Registration payload.
       required: true
       content:
         application/json:
@@ -12,33 +16,42 @@ register:
               username: { type: string }
               email: { type: string }
               password: { type: string, format: password }
-              password_confirm: { type: string, format: password }
     responses:
       "201":
         description: User created
         content:
           application/json:
             schema:
-              $ref: ../components/schemas.yaml#/User
+              $ref: ../openapi.yaml#/components/schemas/User
       "400":
         description: Validation error
         content:
           application/json:
             schema:
-              $ref: ../components/schemas.yaml#/ValidationError
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+      "409":
+        description: Username or email already taken
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ConflictError
 
 login:
   post:
     summary: Login
+    description: Authenticate a user with email and password credentials.
+    operationId: loginUser
+    tags: [auth]
     requestBody:
+      description: Login credentials.
       required: true
       content:
         application/json:
           schema:
             type: object
-            required: [username, password]
+            required: [email, password]
             properties:
-              username: { type: string }
+              email: { type: string }
               password: { type: string, format: password }
     responses:
       "200":
@@ -46,10 +59,10 @@ login:
         content:
           application/json:
             schema:
-              $ref: ../components/schemas.yaml#/User
+              $ref: ../openapi.yaml#/components/schemas/User
       "401":
         description: Invalid credentials
         content:
           application/json:
             schema:
-              $ref: ../components/schemas.yaml#/AuthError
+              $ref: ../openapi.yaml#/components/schemas/AuthError

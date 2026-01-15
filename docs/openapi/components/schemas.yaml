@@ -1,5 +1,6 @@
 User:
   type: object
+  description: Basic user profile data.
   properties:
     id: { type: integer }
     username: { type: string }
@@ -7,6 +8,7 @@ User:
 
 ValidationError:
   type: object
+  description: Structured validation error details.
   properties:
     errors:
       type: object
@@ -14,5 +16,14 @@ ValidationError:
 
 AuthError:
   type: object
+  description: Authentication or authorization error details.
   properties:
     error: { type: string }
+
+ConflictError:
+  type: object
+  description: Conflict due to a unique field already being used.
+  properties:
+    error: { type: string }
+    field: { type: string }
+  required: [error]
