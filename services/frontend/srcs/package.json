@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --mode mock",
+    "mock:api": "npx @stoplight/prism-cli@latest mock ../../../docs/openapi/openapi.yaml --cors --port 4010",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -15,6 +17,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
