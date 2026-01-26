@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Box, Button, TextField, Typography } from "@mui/material";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
-
 const getErrorMessage = async (response: Response, fallback: string) => {
     try {
         const data = (await response.json()) as {
@@ -48,11 +46,10 @@ const LoginForm = ({ onSuccess }: Props) => {
         setIsSubmitting(true);
         setError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            const response = await fetch(`/api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Prefer: "code=401",
                 },
                 body: JSON.stringify({ email, password }),
             });
