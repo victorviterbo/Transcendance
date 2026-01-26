@@ -23,18 +23,45 @@ register:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/User
+            examples:
+              alice:
+                value:
+                  id: 1
+                  username: "alice"
+                  email: "alice@example.com"
+              bob:
+                value:
+                  id: 2
+                  username: "bob"
+                  email: "bob@example.com"
       "400":
         description: Validation error
         content:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-fields:
+                value:
+                  errors:
+                    username: "Username is required."
+                    email: "Email is required."
+                    password: "Password is required."
       "409":
         description: Username or email already taken
         content:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ConflictError
+            examples:
+              username-taken:
+                value:
+                  error: "Username already taken"
+                  field: "username"
+              email-taken:
+                value:
+                  error: "Email already taken"
+                  field: "email"
 
 login:
   post:
@@ -60,9 +87,19 @@ login:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/User
+            examples:
+              login-ok:
+                value:
+                  id: 1
+                  username: "alice"
+                  email: "alice@example.com"
       "401":
         description: Invalid credentials
         content:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/AuthError
+            examples:
+              invalid-credentials:
+                value:
+                  error: "Wrong email or password"
