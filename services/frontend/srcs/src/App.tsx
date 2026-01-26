@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AppTitle from "./components/AppTitle";
 import AppButton from "./components/AppButton";
+import AuthPage from "./pages/AuthPage";
 
 function App() {
     const [count, setCount] = useState<number>(0);
@@ -15,6 +16,7 @@ function App() {
             >
                 Add
             </AppButton>
+            <AuthPage />
         </>
     );
 }
