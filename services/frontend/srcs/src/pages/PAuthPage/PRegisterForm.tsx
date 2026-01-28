@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextField } from "@mui/material";
+import { Box, TextField } from "@mui/material";
 import type { GPageProps } from "../common/GPageProps";
 import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
@@ -25,7 +25,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	//====================== DATA ======================
-	const passwordError: string | null = checkPasswordValid(password);
+	const passwordError: string[] | null = checkPasswordValid(password);
 	const passwordMissmatch: string | null =
 		password == confirmPassword || confirmPassword.length == 0
 			? null
@@ -87,7 +87,19 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				fullWidth
 				margin="normal"
 				error={passwordError ? true : false}
-				helperText={passwordError ? passwordError : ""}
+				slotProps={{ formHelperText: { component: "div" } }}
+				helperText={
+					passwordError ? (
+						// TODO custom Box? sx parameters?
+						<Box component="ul">
+							{passwordError.map((message) => (
+								<li key={message}>{message}</li>
+							))}
+						</Box>
+					) : (
+						""
+					)
+				}
 				value={password}
 				onChange={(e) => setPassword(e.target.value)}
 				required
