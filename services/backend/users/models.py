@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-
+from PIL import Image
 
 class SiteUserManager(BaseUserManager):
     """Define a model manager for User model.
@@ -10,29 +10,6 @@ class SiteUserManager(BaseUserManager):
     User is identified with a unique email and password.
     
     """
-
-    def gmail_specific_normalize(self, email: str) -> str:
-        """Normalizes a Gmail address.
-        
-        It removed dots (which are ingored by Gmail) and
-        plus-suffixes (which are used to create dummy aliases on gmail).
-
-        Args:
-            email: the Django-Normalized Gmail address
-        Returns:
-            The normalized Gmail address ensuring uniqueness from Gmail viewpoint
-        Raises:
-            ValueError: If the email does not contain exactly one '@' symbol
-            ValueError: If the email startswith '+' (forbidden by Gmail)
-        """
-        if email.count("@") != 1:
-            raise ValueError("Invalid Email Address")
-        if (email.startswith("+")):
-            raise ValueError("Invalid Gmail Address")
-        name, domain = email.split("@")
-        name = name.replace(".", "")
-        name = name.split("+")[0]
-        return ("@").join([name, domain])
 
     def _create_user(self, email: str,
                      password: str,
@@ -54,12 +31,6 @@ class SiteUserManager(BaseUserManager):
             raise ValueError('Invaid Email Address')
         if not password:
             raise ValueError('No password was provided')
-        email = self.normalize_email(email)
-        if (email.endswith("@gmail.com")):
-            try:
-                email = self.gmail_specific_normalize(email)
-            except ValueError as e:
-                raise ValueError(f"Gmail normalization failed: {e}") from e
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -90,7 +61,7 @@ class SiteUserManager(BaseUserManager):
             raise ValueError(f"Could not create regular user: {e}") from e
 
     def create_superuser(self, email: str,
-                         password: str | None,
+                         password: str,
                          **extra_fields: dict) -> SiteUser:
         """Create a super user from the passed arguments.
 
@@ -117,7 +88,7 @@ class SiteUser(AbstractUser):
     """Define the structure of wsUser, derived from AbstractUser."""
 
     email = models.EmailField('email', unique=True, null=False, blank=False)
-    username = models.CharField(max_length=150, unique=False, default="Anonymous")
+    #username = models.CharField(max_length=150, unique=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -127,3 +98,20 @@ class SiteUser(AbstractUser):
     def __str__(self) -> str:
         """Return the user as it's email address string."""
         return self.email
+    
+
+class Profile(models.Model):
+    user = models.OneToOneField(SiteUser, on_delete=models.CASCADE)
+    #username = models.CharField(max_length=150, unique=True, default="Anonymous")
+    image = models.ImageField(default='default.jpg', upload_to='profile_pics')
+    
+    def __str__(self):
+        return f'{self.user.username} Profile'
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        img = Image.open(self.image.path)
+        if img.height > 300 or img.width > 300:
+            output_size = (300, 300)
+            img.thumbnail(output_size)
+            img.save(self.image.path)
