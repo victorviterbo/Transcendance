@@ -25,7 +25,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	//====================== DATA ======================
-	const passwordError: string[] | null = checkPasswordValid(password);
+	const passwordErrors: string[] | null = checkPasswordValid(password);
 	const passwordMissmatch: string | null =
 		password == confirmPassword || confirmPassword.length == 0
 			? null
@@ -86,13 +86,13 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				type="password"
 				fullWidth
 				margin="normal"
-				error={passwordError ? true : false}
+				error={passwordErrors ? true : false}
 				slotProps={{ formHelperText: { component: "div" } }}
 				helperText={
-					passwordError ? (
+					passwordErrors ? (
 						// TODO custom Box? sx parameters?
 						<Box component="ul">
-							{passwordError.map((message) => (
+							{passwordErrors.map((message) => (
 								<li key={message}>{message}</li>
 							))}
 						</Box>
