@@ -1,3 +1,3 @@
-import LoginHandler from "./handlers/login";
+import { LoginHandler, RegisterHandler } from "./handlers/login";
 
-export const handlers = [LoginHandler];
+export const handlers = [LoginHandler, RegisterHandler];
