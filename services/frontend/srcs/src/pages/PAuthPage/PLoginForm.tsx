@@ -37,7 +37,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 						msg: await getErrorMessage(response, "Login failed."),
 					};
 				}
-				var user: IAuthUser = (await response.json()) as IAuthUser;
+				const user: IAuthUser = (await response.json()) as IAuthUser;
 				onSuccess?.(user);
 				return { valid: true };
 			})

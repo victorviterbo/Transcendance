@@ -33,7 +33,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 
 	//====================== EVENTS ======================
 	async function onSubmit(): Promise<IEventStatus> {
-		return fetch(`/api/auth/login`, {
+		return fetch(`/api/auth/register`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -47,7 +47,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 						msg: await getErrorMessage(response, "Login failed."),
 					};
 				}
-				var user: IAuthUser = (await response.json()) as IAuthUser;
+				const user: IAuthUser = (await response.json()) as IAuthUser;
 				onSuccess?.(user);
 				return { valid: true };
 			})
