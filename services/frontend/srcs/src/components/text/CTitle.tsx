@@ -11,7 +11,7 @@ interface CButtonProps extends GCompProps {
 
 function CTitle({ align, size, children }: CButtonProps) {
 	//====================== FUNCTIONS ======================
-	let getVariant: () => TypographyVariant = () => {
+	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
 			case "sm":
 				return "h6";
