@@ -67,4 +67,4 @@ class ProfileFullSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'image']
+        fields = ['image']

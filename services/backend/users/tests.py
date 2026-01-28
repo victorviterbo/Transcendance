@@ -9,7 +9,7 @@ class UserAccountTests(APITestCase):
 
     def test_login_user_success(self):
         """Ensure we can log in a user."""
-        url = '/users/login/'
+        url = '/api/users/login/'
         data = {'email': 'test@mail.com', 'password': 'password123'}
         response = self.client.post(url, data, format='json')
         
@@ -17,14 +17,14 @@ class UserAccountTests(APITestCase):
         #self.assertIn('access', response.data) # Check if JWT token is returned
 
     def test_login_user_fail(self):
-        url = '/users/login/'
+        url = '/api/users/login/'
         data = {'email': 'test@mail.com', 'password': 'password'}
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
     def test_register_success(self):
-        url = '/users/register/'
+        url = '/api/users/register/'
         data = {'email': 'newuser@mail.com', 'password': 'password', 'username': 'newuser'}
         response = self.client.post(url, data, format='json')
         
@@ -32,7 +32,7 @@ class UserAccountTests(APITestCase):
         #self.assertIn('access', response.data) # Check if JWT token is returned
 
     def test_register_user_fail(self):
-        url = '/users/register/'
+        url = '/api/users/register/'
         data = {'email' : 'test@mail.com', 'username': 'testuser', 'password': "password123"}
         response = self.client.post(url, data, format='json')
         
@@ -40,13 +40,13 @@ class UserAccountTests(APITestCase):
     
     def test_profile_success(self):
         self.client.force_authenticate(user=self.user)
-        url = '/users/profile/'
+        url = '/api/users/profile/'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_profile_fail(self):
-        url = '/users/profile/'
+        url = '/api/users/profile/'
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
