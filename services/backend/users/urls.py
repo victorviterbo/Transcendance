@@ -1,5 +1,4 @@
 from .views import LoginView, RegisterView, ProfileView
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from django.urls import path
 
 urlpatterns = [

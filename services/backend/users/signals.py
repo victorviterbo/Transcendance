@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from .models import SiteUser, Profile
 
@@ -10,3 +10,7 @@ def create_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=SiteUser)
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+@receiver(pre_delete, sender=SiteUser)
+def delete_profile(sender, instance, **kwargs):
+    instance.profile.delete()

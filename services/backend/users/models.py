@@ -88,7 +88,7 @@ class SiteUser(AbstractUser):
     """Define the structure of wsUser, derived from AbstractUser."""
 
     email = models.EmailField('email', unique=True, null=False, blank=False)
-    #username = models.CharField(max_length=150, unique=True)
+    #username = models.CharField(max_length=20, unique=True, default="Anonymous")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -102,7 +102,6 @@ class SiteUser(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(SiteUser, on_delete=models.CASCADE)
-    #username = models.CharField(max_length=150, unique=True, default="Anonymous")
     image = models.ImageField(default='default.jpg', upload_to='profile_pics')
     
     def __str__(self):

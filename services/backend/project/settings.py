@@ -47,21 +47,24 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
 
-    'users'
+    'users.apps.UsersConfig'
 ]
 
 # Definition of Django Rest Framework (drf) parameters, enable Django to communicate
 # more efficiently with the React Frontend
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ]
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
 }
 
+"""
+,
+DEFAULT_AUTHENTICATION_CLASSES': (
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
+),
+'DEFAULT_PERMISSION_CLASSES': [
+    'rest_framework.permissions.IsAuthenticated',
+]
+"""
 # Definitiopn of drf-spectacular params (OpenAPI, used for documentation only)
 """SPECTACULAR_SETTINGS = {
     'TITLE': 'Transcendance',
@@ -142,6 +145,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/6.0/topics/http/urls/#:~:text=root%20URLconf%20module%20to%20use.%20Ordinarily%2C%20this%20is%20the
 ROOT_URLCONF = 'project.urls'
 
+LOGIN_URL = '/api/users/login/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 # define how entries are indexed, CAN LEAD TO LOSS OF BACK COMPATIBILITY

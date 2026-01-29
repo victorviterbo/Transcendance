@@ -6,7 +6,6 @@ It converts different python objects to JSON and vice-versa, namely:
 """
 
 from rest_framework import serializers
-
 from .models import SiteUser, Profile
 
 class SiteUserSerializer(serializers.ModelSerializer):
@@ -19,7 +18,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'password', 'username', 'is_staff', 'is_superuser']
+        fields = ['email', 'username', 'is_staff', 'is_superuser']
         extra_kwargs = {'password': {'write_only': True}}
     
     def gmail_specific_normalize(self, email: str) -> str:
@@ -57,7 +56,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This email is already taken.")
         return value
     
-class ProfileFullSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's profile (user profile obj <-> JSON)."""
 
     class Meta:
