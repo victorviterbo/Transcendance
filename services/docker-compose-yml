@@ -1,13 +1,23 @@
 services:
-  # backend:
-  #   container_name: backend
-  #   image: transcendence-backend
-  #   build: ./services/backend
+  backend:
+    container_name: backend
+    image: transcendence-backend
+    build: ./backend
+    volumes:
+      - backend-db:/app/db.sqlite3
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=change-me
   nginx:
     container_name: nginx
     image: transcendence-nginx
-    build: ./services/nginx
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     ports:
       - "80:80"
-    # depends_on:
-    #   - backend
+    depends_on:
+      - backend
+
+volumes:
+  backend-db:
