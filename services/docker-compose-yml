@@ -1,0 +1,13 @@
+services:
+  # backend:
+  #   container_name: backend
+  #   image: transcendence-backend
+  #   build: ./services/backend
+  nginx:
+    container_name: nginx
+    image: transcendence-nginx
+    build: ./services/nginx
+    ports:
+      - "80:80"
+    # depends_on:
+    #   - backend
