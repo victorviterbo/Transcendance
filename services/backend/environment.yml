@@ -20,7 +20,7 @@ dependencies:
   - icu=73.1
   - jpeg=9f
   - lcms2=2.17
-  - ld_impl_linux-aarch64=2.44
+  # - ld_impl_linux-aarch64=2.44
   - lerc=4.0.0
   - libavif=1.3.0
   - libdeflate=1.22
