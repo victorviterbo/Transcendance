@@ -12,7 +12,7 @@ ENV				=	COMPOSE_PROJECT_NAME=$(NAME)
 # Commands
 RM				=	rm -rf
 COMPOSE_COMMAND	=	docker compose -f
-COMPOSE_FILE	=	./services/docker-compose-yml
+COMPOSE_FILE	=	./services/docker-compose.yml
 
 # Targets
 all:		header up
