@@ -5,6 +5,7 @@ import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
 import type { IEventStatus } from "../../types/events";
 import { getErrorMessage } from "../../utils/error";
+import { API_AUTH_REGISTER } from "../../constants";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -23,7 +24,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 
 	//====================== EVENTS ======================
 	async function onSubmit(): Promise<IEventStatus> {
-		return fetch(`/api/auth/login`, {
+		return fetch(API_AUTH_REGISTER, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

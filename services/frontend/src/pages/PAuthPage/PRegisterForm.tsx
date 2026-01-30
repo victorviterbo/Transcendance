@@ -6,6 +6,7 @@ import CForm from "../../components/layout/CForm";
 import type { IEventStatus } from "../../types/events";
 import { getErrorMessage } from "../../utils/error";
 import { checkPasswordValid } from "../../utils/enforcement";
+import { API_AUTH_REGISTER } from "../../constants";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -33,7 +34,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 
 	//====================== EVENTS ======================
 	async function onSubmit(): Promise<IEventStatus> {
-		return fetch(`/api/auth/register`, {
+		return fetch(API_AUTH_REGISTER, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
