@@ -20,6 +20,10 @@ export default [
 	{
 		files: ["**/*.{js,ts,jsx,tsx}"],
 		rules: {
+			"@typescript-eslint/no-unused-vars": [
+				"error",
+				{ argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+			],
 			camelcase: [
 				"error",
 				{
