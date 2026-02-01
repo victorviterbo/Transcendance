@@ -1,15 +1,12 @@
-import { Button } from "@mui/material";
-import type { ReactNode } from "react";
-import type { GProps } from "../../components/common/GProps.tsx";
+import { Button, type ButtonProps } from "@mui/material";
+import type { GProps } from "../common/GProps.tsx";
 
-interface CButtonProps extends GProps {
-	children?: ReactNode;
-	onClick?: () => void;
+export interface CButtonProps extends GProps, ButtonProps {
 }
 
-function CButton({ children, onClick }: CButtonProps) {
+function CButton({ children, ...other }: CButtonProps) {
 	return (
-		<Button onClick={onClick} variant="contained">
+		<Button variant="contained" {...other}>
 			{children}
 		</Button>
 	);
