@@ -32,11 +32,12 @@ class LoginView(APIView):
         if user is not None:
             try:
                 login(request, user)
-                return Response({"detail": "User successfully logged in"}, status=status.HTTP_200_OK)
+                user_serializer = SiteUserSerializer(user, many=False)
+                return Response(user_serializer.data, status=status.HTTP_200_OK)
             except ValueError as e:
-                return Response({"detail": f"Invalid Credentials: {e}"},
-                         status=status.HTTP_400_BAD_REQUEST)
-        return Response({"detail": "Invalid Credentials"},
+                return Response({'error': f"Wrong email or password: {e}"},
+                         status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Wrong email or password'},
                         status=status.HTTP_401_UNAUTHORIZED)
 
 class RegisterView(APIView):
@@ -51,16 +52,30 @@ class RegisterView(APIView):
         Returns:
             Response to be sent to the front
         """
-        email = request.data.get('email')
-        password = request.data.get('password')
         try:
-            user = SiteUser.manager.create_user(email=email, password=password)
-            user.save()
-            return Response({"detail": "New user successfully created"}, status=status.HTTP_201_CREATED)
+            serializer = SiteUserSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response({'description': 'User created'}, status=status.HTTP_201_CREATED)
         except serializers.ValidationError as e:
-            return Response({"detail": f"Could not create user: {e}"},
-                        status=status.HTTP_400_BAD_REQUEST)
-
+            error = e.get_full_details()
+            error_response = {}
+            code_response = None
+            if error.get('email') and any(['unique' in e['code'] for e in error['email']]):
+                error_response = {'error':{'email':'Email already taken'}}
+                code_response = status.HTTP_409_CONFLICT
+            if error.get('username') and any(['unique' in e['code'] for e in error['username']]):
+                if code_response:
+                    error_response['error']['username'] = 'Username already taken'
+                else:
+                    error_response = {'error':{'username':'Username already taken'}}
+            if code_response:
+                return Response(error_response, status=status.HTTP_409_CONFLICT)
+            if not code_response and error.get('email'):
+                return Response({'error':{'email':'Invalid Email'}}, status=status.HTTP_400_BAD_REQUEST)
+            elif not code_response:
+                return Response({'error':{'username':'Invalid Username'}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error':e}, status=status.HTTP_400_BAD_REQUEST)
 class ProfileView(LoginRequiredMixin, APIView):
     """Define view of the user's own profile"""
     #permission_classes = [IsAuthenticated]
@@ -76,7 +91,7 @@ class ProfileView(LoginRequiredMixin, APIView):
     def post(self, request: Request):
         profile = request.user.profile
         try:
-            profile_serializer = ProfileSerializer(data=request.data, many=False)
+            profile_serializer = ProfileSerializer(profile, data=request.data, many=False)
             profile_serializer.save()
             return Response({"detail": "Updated Profile successfully"}, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:

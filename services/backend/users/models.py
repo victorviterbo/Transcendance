@@ -13,6 +13,7 @@ class SiteUserManager(BaseUserManager):
 
     def _create_user(self, email: str,
                      password: str,
+                     username: str,
                      **extra_fields: dict) -> SiteUser:
         """Create a user from the passed arguments.
 
@@ -27,12 +28,9 @@ class SiteUserManager(BaseUserManager):
             ValueError: If no password is passed
             ValueError: If gmail address canonization failed
         """
-        if not email:
-            raise ValueError('Invaid Email Address')
-        if not password:
-            raise ValueError('No password was provided')
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        user.username = username
         user.save(using=self._db)
         return user
 
@@ -54,11 +52,8 @@ class SiteUserManager(BaseUserManager):
         extra_fields.setdefault('username', "Anonymous")
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        try:
-            newuser = self._create_user(email, password, **extra_fields)
-            return newuser
-        except ValueError as e:
-            raise ValueError(f"Could not create regular user: {e}") from e
+        newuser = self._create_user(email, password, **extra_fields)
+        return newuser
 
     def create_superuser(self, email: str,
                          password: str,
