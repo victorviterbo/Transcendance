@@ -35,27 +35,34 @@ class SiteUserSerializer(serializers.ModelSerializer):
             ValueError: If the email does not contain exactly one '@' symbol
             ValueError: If the email startswith '+' (forbidden by Gmail)
         """
-        if email.count("@") != 1:
-            raise ValueError("Invalid Email Address")
-        if (email.startswith("+")):
-            raise ValueError("Invalid Gmail Address")
         name, domain = email.split("@")
         name = name.replace(".", "")
         name = name.split("+")[0]
         return ("@").join([name, domain])
 
-
-    def validate_email(self, value):
+    def _1validate_email(self, value):
+        
+        if not value:
+            raise serializers.ValidationError('Username is required.', code='invalid-data')
         value = SiteUser.objects.normalize_email(value)
         if (value.endswith("@gmail.com")):
-            try:
-                value = self.gmail_specific_normalize(value)
-            except ValueError as e:
-                raise serializers.ValidationError(f"Gmail normalization failed: {e}") from e
-        if SiteUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email is already taken.")
+            value = self.gmail_specific_normalize(value)
+        if self.instance is None:
+            if SiteUser.objects.filter(email=value).exists():
+                raise serializers.ValidationError('Email already taken', code='already-used')
+        return value
+
+    def _2validate_username(self, value):
+        if not value:
+            raise serializers.ValidationError('Username is required.', code='invalid-data')
+        if self.instance is None:
+            if SiteUser.objects.filter(username=value).exists():
+                raise serializers.ValidationError('Username already taken', code='already-used')
         return value
     
+    def create(self, validated_data):
+            return SiteUser.objects.create_user(**validated_data)
+
 class ProfileSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's profile (user profile obj <-> JSON)."""
 
