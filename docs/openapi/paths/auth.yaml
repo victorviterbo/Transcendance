@@ -22,18 +22,14 @@ register:
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/User
+              $ref: ../openapi.yaml#/components/schemas/TokenResponse
             examples:
               alice:
                 value:
-                  id: 1
-                  username: "alice"
-                  email: "alice@example.com"
+                  access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
               bob:
                 value:
-                  id: 2
-                  username: "bob"
-                  email: "bob@example.com"
+                  access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "400":
         description: Validation error
         content:
@@ -43,10 +39,7 @@ register:
             examples:
               missing-fields:
                 value:
-                  errors:
-                    username: "Username is required."
-                    email: "Email is required."
-                    password: "Password is required."
+                  error: "Missing required fields."
       "409":
         description: Username or email already taken
         content:
@@ -57,11 +50,9 @@ register:
               username-taken:
                 value:
                   error: "Username already taken"
-                  field: "username"
               email-taken:
                 value:
                   error: "Email already taken"
-                  field: "email"
 
 login:
   post:
@@ -86,13 +77,11 @@ login:
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/User
+              $ref: ../openapi.yaml#/components/schemas/TokenResponse
             examples:
               login-ok:
                 value:
-                  id: 1
-                  username: "alice"
-                  email: "alice@example.com"
+                  access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "401":
         description: Invalid credentials
         content:
@@ -103,3 +92,50 @@ login:
               invalid-credentials:
                 value:
                   error: "Wrong email or password"
+
+refresh:
+  post:
+    summary: Refresh access token
+    description: Issue a new access token using the refresh token cookie.
+    operationId: refreshToken
+    tags: [auth]
+    responses:
+      "200":
+        description: New access token issued
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/TokenResponse
+            examples:
+              refresh-ok:
+                value:
+                  access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      "401":
+        description: Refresh token invalid or expired
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+            examples:
+              refresh-invalid:
+                value:
+                  error: "Refresh token expired"
+              no-refresh:
+                value:
+                  error: "No refresh token"
+
+logout:
+  post:
+    summary: Logout
+    description: Clear refresh token cookie and end the session.
+    operationId: logoutUser
+    tags: [auth]
+    responses:
+      "204":
+        description: Logged out successfully
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError

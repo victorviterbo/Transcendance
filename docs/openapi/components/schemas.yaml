@@ -10,9 +10,8 @@ ValidationError:
   type: object
   description: Structured validation error details.
   properties:
-    errors:
-      type: object
-      additionalProperties: { type: string }
+    error: { type: string }
+  required: [error]
 
 AuthError:
   type: object
@@ -25,5 +24,11 @@ ConflictError:
   description: Conflict due to a unique field already being used.
   properties:
     error: { type: string }
-    field: { type: string }
   required: [error]
+
+TokenResponse:
+  type: object
+  description: Short-lived access token response.
+  properties:
+    access: { type: string }
+  required: [access]
