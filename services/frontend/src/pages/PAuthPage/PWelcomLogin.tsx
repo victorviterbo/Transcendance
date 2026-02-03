@@ -1,4 +1,5 @@
 import { Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import type { IAuthUser } from "../../types/user";
 import type { GPageProps } from "../common/GPageProps";
 
@@ -19,6 +20,7 @@ interface PWelcomLoginProps extends GPageProps {
 //--------------------------------------------------
 //TODO: Replace with cutom button and text
 function PWelcomLogin({ user, isBack, onReset }: PWelcomLoginProps) {
+	const navigate = useNavigate();
 	//====================== FUNCTIONS ======================
 	function getMSG(): string {
 		if (isBack) return `Welcome back, ${user.username}!`;
@@ -31,8 +33,15 @@ function PWelcomLogin({ user, isBack, onReset }: PWelcomLoginProps) {
 			<Typography align="center" sx={{ mb: 3 }}>
 				{getMSG()}
 			</Typography>
-			<Button variant="contained" fullWidth onClick={onReset}>
-				Back to Auth
+			<Button
+				variant="contained"
+				fullWidth
+				onClick={() => {
+					onReset?.();
+					navigate("/");
+				}}
+			>
+				Back to Home
 			</Button>
 		</>
 	);
