@@ -4,15 +4,9 @@ services:
     image: transcendence-backend
     build: ./backend
     volumes:
-      - backend-db:/app/db.sqlite3
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=change-me
-    # Remove for production
+      - ./backend/DB:/backend/DB/
     ports:
       - "8000:8000"
-    stdin_open: true
-    tty: true
   nginx:
     container_name: nginx
     image: transcendence-nginx
@@ -23,6 +17,7 @@ services:
       - "80:80"
     depends_on:
       - backend
+  
 
 volumes:
   backend-db:
