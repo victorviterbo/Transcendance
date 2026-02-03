@@ -2,11 +2,12 @@ services:
   backend:
     container_name: backend
     image: transcendence-backend
-    build: ./backend
+    build: ./backend/
     volumes:
       - ./backend/DB:/backend/DB/
     ports:
       - "8000:8000"
+
   nginx:
     container_name: nginx
     image: transcendence-nginx
@@ -17,7 +18,6 @@ services:
       - "80:80"
     depends_on:
       - backend
-  
 
 volumes:
   backend-db:
