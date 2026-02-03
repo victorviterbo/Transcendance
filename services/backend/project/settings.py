@@ -53,18 +53,15 @@ INSTALLED_APPS = [
 # Definition of Django Rest Framework (drf) parameters, enable Django to communicate
 # more efficiently with the React Frontend
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'users.authentication.CookieJWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
 }
 
-"""
-,
-DEFAULT_AUTHENTICATION_CLASSES': (
-    'rest_framework_simplejwt.authentication.JWTAuthentication',
-),
-'DEFAULT_PERMISSION_CLASSES': [
-    'rest_framework.permissions.IsAuthenticated',
-]
-"""
 # Definitiopn of drf-spectacular params (OpenAPI, used for documentation only)
 """SPECTACULAR_SETTINGS = {
     'TITLE': 'Transcendance',

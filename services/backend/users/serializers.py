@@ -18,7 +18,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'username', 'is_staff', 'is_superuser']
+        fields = ['email', 'username', 'password', 'is_staff', 'is_superuser']
         extra_kwargs = {'password': {'write_only': True}}
     
     def gmail_specific_normalize(self, email: str) -> str:
@@ -40,7 +40,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         name = name.split("+")[0]
         return ("@").join([name, domain])
 
-    def _1validate_email(self, value):
+    def validate_email(self, value):
         
         if not value:
             raise serializers.ValidationError('Username is required.', code='invalid-data')
@@ -52,7 +52,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Email already taken', code='already-used')
         return value
 
-    def _2validate_username(self, value):
+    def validate_username(self, value):
         if not value:
             raise serializers.ValidationError('Username is required.', code='invalid-data')
         if self.instance is None:
@@ -61,6 +61,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         return value
     
     def create(self, validated_data):
+            print(validated_data)
             return SiteUser.objects.create_user(**validated_data)
 
 class ProfileSerializer(serializers.ModelSerializer):

@@ -13,7 +13,6 @@ class SiteUserManager(BaseUserManager):
 
     def _create_user(self, email: str,
                      password: str,
-                     username: str,
                      **extra_fields: dict) -> SiteUser:
         """Create a user from the passed arguments.
 
@@ -30,7 +29,6 @@ class SiteUserManager(BaseUserManager):
         """
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
-        user.username = username
         user.save(using=self._db)
         return user
 
@@ -49,7 +47,6 @@ class SiteUserManager(BaseUserManager):
         Raises:
             ValueError: If email or password are invalids
         """
-        extra_fields.setdefault('username', "Anonymous")
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         newuser = self._create_user(email, password, **extra_fields)
@@ -70,7 +67,6 @@ class SiteUserManager(BaseUserManager):
         Raises:
             ValueError: If email or password are invalids
         """
-        extra_fields.setdefault('username', "Anonymous")
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         try:
@@ -83,7 +79,7 @@ class SiteUser(AbstractUser):
     """Define the structure of wsUser, derived from AbstractUser."""
 
     email = models.EmailField('email', unique=True, null=False, blank=False)
-    #username = models.CharField(max_length=20, unique=True, default="Anonymous")
+    username = models.CharField(max_length=20, unique=True, default="Anonymous")
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
