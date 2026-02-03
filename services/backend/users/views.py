@@ -4,17 +4,19 @@ from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-#from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .serializers import SiteUserSerializer, ProfileSerializer
+
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+
+from django.contrib.auth import authenticate
 from rest_framework import serializers
-from .models import SiteUser
-from django.contrib.auth.decorators import login_required
+from .serializers import SiteUserSerializer, ProfileSerializer
 
 class LoginView(APIView):
     """Define the login page."""
-    #permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
 
     def post(self, request: Request) -> "Response":
         """Handles login request.
@@ -26,14 +28,25 @@ class LoginView(APIView):
         """
         email = request.data.get('email')
         password = request.data.get('password')
-
         user = authenticate(request, email=email, password=password)
         
         if user is not None:
             try:
-                login(request, user)
                 user_serializer = SiteUserSerializer(user, many=False)
-                return Response(user_serializer.data, status=status.HTTP_200_OK)
+                response = Response(user_serializer.data, status=status.HTTP_200_OK)
+                token = RefreshToken.for_user(user)
+                response.set_cookie(
+                    key='access-token',
+                    value=str(token.access_token),
+                    httponly=True, secure=True, samesite='Lax',
+                )
+                response.set_cookie(
+                    key='refresh-token',
+                    value=str(token),
+                    httponly=True, secure=True, samesite='Lax',
+                    path='/api/token/refresh/'
+                )
+                return response
             except ValueError as e:
                 return Response({'error': f"Wrong email or password: {e}"},
                          status=status.HTTP_401_UNAUTHORIZED)
@@ -42,7 +55,7 @@ class LoginView(APIView):
 
 class RegisterView(APIView):
     """Define the register page."""
-    #permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
 
     def post(self, request: Request) -> "Response":
         """Handles user registration request.
@@ -76,9 +89,10 @@ class RegisterView(APIView):
             elif not code_response:
                 return Response({'error':{'username':'Invalid Username'}}, status=status.HTTP_400_BAD_REQUEST)
             return Response({'error':e}, status=status.HTTP_400_BAD_REQUEST)
-class ProfileView(LoginRequiredMixin, APIView):
+
+class ProfileView(APIView):
     """Define view of the user's own profile"""
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         profile = request.user.profile
@@ -96,3 +110,32 @@ class ProfileView(LoginRequiredMixin, APIView):
             return Response({"detail": "Updated Profile successfully"}, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:
             return Response({"detail": f"Could not update Profile : {e}"}, status=status.HTTP_400_BAD_REQUEST)
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        response = Response({"detail": "Successfully logged out."})
+        response.delete_cookie('access-token')
+        return response
+    
+class RefreshTokenView(TokenRefreshView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+        
+        if refresh_token:
+            request.data['refresh'] = refresh_token
+        
+        response = super().post(request, *args, **kwargs)
+        
+        if response.status_code == 200:
+            response.set_cookie(
+                key='access-token',
+                value=response.data['access'],
+                httponly=True, secure=True, samesite='Lax'
+            )
+            del response.data['access']
+
+        return response
