@@ -1,5 +1,11 @@
 import { http, HttpResponse } from "msw";
 import type { IAuthUser } from "../../types/user";
+import {
+	API_AUTH_LOGIN,
+	API_AUTH_LOGOUT,
+	API_AUTH_REFRESH,
+	API_AUTH_REGISTER,
+} from "../../constants";
 
 type AuthPayload = Partial<IAuthUser> & { password?: string };
 
@@ -45,7 +51,7 @@ const parseCookies = (cookieHeader: string | null) => {
 const issueRefreshCookie = () =>
 	`${REFRESH_COOKIE_NAME}=mock-refresh; Path=/; HttpOnly; SameSite=Lax`;
 
-export const LoginHandler = http.post("/api/auth/login", async ({ request }) => {
+export const LoginHandler = http.post(API_AUTH_LOGIN, async ({ request }) => {
 	const payload = (await request.json()) as AuthPayload;
 	const email = payload.email ?? "";
 	const password = payload.password ?? "";
@@ -67,7 +73,7 @@ export const LoginHandler = http.post("/api/auth/login", async ({ request }) => 
 	return HttpResponse.json({ error: "Wrong email or password" }, { status: 401 });
 });
 
-export const RegisterHandler = http.post("/api/auth/register", async ({ request }) => {
+export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) => {
 	const payload = (await request.json()) as AuthPayload;
 	const username = payload.username ?? "";
 	const email = payload.email ?? "";
@@ -107,7 +113,7 @@ export const RegisterHandler = http.post("/api/auth/register", async ({ request 
 	);
 });
 
-export const RefreshHandler = http.post("/api/auth/refresh", ({ request }) => {
+export const RefreshHandler = http.post(API_AUTH_REFRESH, ({ request }) => {
 	const cookies = parseCookies(request.headers.get("cookie"));
 	if (!cookies[REFRESH_COOKIE_NAME] && !hasRefreshSession) {
 		return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
@@ -115,7 +121,7 @@ export const RefreshHandler = http.post("/api/auth/refresh", ({ request }) => {
 	return HttpResponse.json({ access: makeFakeJwt(KNOWN_USER) }, { status: 200 });
 });
 
-export const LogoutHandler = http.post("/api/auth/logout", () => {
+export const LogoutHandler = http.post(API_AUTH_LOGOUT, () => {
 	hasRefreshSession = false;
 	return new HttpResponse(null, {
 		status: 204,
