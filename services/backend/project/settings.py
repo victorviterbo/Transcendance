@@ -54,6 +54,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ]
 }
+#    'rest_framework_simplejwt.authentication.JWTAuthentication',
 
 # Definitiopn of drf-spectacular params (OpenAPI, used for documentation only)
 """SPECTACULAR_SETTINGS = {
@@ -80,10 +81,11 @@ MIDDLEWARE = [
 
 # Cross Origin Ressource Sharing (CORS) - One of the middlewares
 # In this context, enables the Back to accept requests from the front
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://0.0.0.0:5173",
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://0.0.0.0",
 ]
 
 

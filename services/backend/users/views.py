@@ -32,14 +32,9 @@ class LoginView(APIView):
         
         if user is not None:
             try:
-                user_serializer = SiteUserSerializer(user, many=False)
-                response = Response(user_serializer.data, status=status.HTTP_200_OK)
                 token = RefreshToken.for_user(user)
-                response.set_cookie(
-                    key='access-token',
-                    value=str(token.access_token),
-                    httponly=True, secure=True, samesite='Lax',
-                )
+                response = Response({'username': request.data.get('username'), 'access': str(token.access_token)},
+                                     status=status.HTTP_200_OK)
                 response.set_cookie(
                     key='refresh-token',
                     value=str(token),
@@ -116,7 +111,7 @@ class LogoutView(APIView):
 
     def post(self, request):
         response = Response({"detail": "Successfully logged out."})
-        response.delete_cookie('access-token')
+        response.delete_cookie('refresh_token')
         return response
     
 class RefreshTokenView(TokenRefreshView):
@@ -127,15 +122,5 @@ class RefreshTokenView(TokenRefreshView):
         
         if refresh_token:
             request.data['refresh'] = refresh_token
-        
-        response = super().post(request, *args, **kwargs)
-        
-        if response.status_code == 200:
-            response.set_cookie(
-                key='access-token',
-                value=response.data['access'],
-                httponly=True, secure=True, samesite='Lax'
-            )
-            del response.data['access']
 
-        return response
+        return super().post(request, *args, **kwargs)
