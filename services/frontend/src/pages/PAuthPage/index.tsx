@@ -8,6 +8,7 @@ import CTabs from "../../components/navigation/CTabs";
 import type { IAuthUser } from "../../types/user";
 import PWelcomLogin from "./PWelcomLogin";
 import CDialogLanguage from "../../components/feedback/dialogs/CDialogLanguage";
+import { ttr } from "../../localization/localization";
 
 const PAuthPage = () => {
 	const [user, setUser] = useState<IAuthUser | null>(null);
@@ -24,7 +25,7 @@ const PAuthPage = () => {
 			<Container maxWidth="sm">
 				<CBasePaper>
 					<CTitle size="md" align="center">
-						Welcome
+						{ttr("WELCOME")}
 					</CTitle>
 
 					{!user ? (

@@ -12,12 +12,12 @@ function CDialogLanguage({open, ...other}: CDialogLanguageProps) {
 	
 	//====================== STATE ======================
 	var [isOpen, setIsOpen] = useState<boolean>(open);
-
+ 
 
 	//====================== DOM ======================
 	return <>
 		<CButtonLanguage onClick={() => setIsOpen(true)}/>
-		<CDialog open={isOpen} {...other}>
+		<CDialog open={isOpen} onClose={() => {window.location.reload()}} {...other}>
 			<DialogContent>
 				<Box>
 					<DialogTitle>Language selection</DialogTitle>
