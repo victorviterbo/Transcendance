@@ -153,7 +153,4 @@ class RefreshTokenView(TokenRefreshView):
                     return Response({"detail": f"Refresh token invalid: {serializer.error}"}, status=status.HTTP_401_UNAUTHORIZED)
             except Exception as e:
                 return Response({"detail": f"Refresh token invalid: {e}"}, status=status.HTTP_401_UNAUTHORIZED)
-                
-            #return Response(serializer.validated_data, status=status.HTTTP_200_OK)
-
         return Response({"detail": "Refresh token not found in cookies"}, status=status.HTTP_401_UNAUTHORIZED)
