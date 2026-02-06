@@ -7,6 +7,9 @@ services:
       - ./backend/DB:/backend/DB/
     ports:
       - "8000:8000"
+    environment:
+      - SECRET_KEY=asdasd
+      - debug=True
 
   nginx:
     container_name: nginx

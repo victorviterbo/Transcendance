@@ -54,18 +54,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ]
 }
-#    'rest_framework_simplejwt.authentication.JWTAuthentication',
-
-# Definitiopn of drf-spectacular params (OpenAPI, used for documentation only)
-"""SPECTACULAR_SETTINGS = {
-    'TITLE': 'Transcendance',
-    'DESCRIPTION': 'Detailed description of your API',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'SWAGGER_UI_DIST': 'SIDECAR',
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'REDOC_DIST': 'SIDECAR',
-}"""
 
 # Definition of the middlewares (Layers between the backend and the WebServer)
 MIDDLEWARE = [
@@ -118,7 +106,7 @@ UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
+    },# TODO check compatibility with front for password check
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
@@ -160,3 +148,14 @@ TEMPLATES = [
         },
     },
 ]
+
+# Definitiopn of drf-spectacular params (OpenAPI, used for documentation only)
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Transcendance',
+    'DESCRIPTION': 'Detailed description of your API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
+}

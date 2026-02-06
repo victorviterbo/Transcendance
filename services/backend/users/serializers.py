@@ -61,7 +61,6 @@ class SiteUserSerializer(serializers.ModelSerializer):
         return value
     
     def create(self, validated_data):
-            print(validated_data)
             return SiteUser.objects.create_user(**validated_data)
 
 class ProfileSerializer(serializers.ModelSerializer):
