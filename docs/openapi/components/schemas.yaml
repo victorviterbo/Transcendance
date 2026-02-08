@@ -31,4 +31,5 @@ TokenResponse:
   description: Short-lived access token response.
   properties:
     access: { type: string }
-  required: [access]
+    username: { type: string }
+  required: [access, username]
