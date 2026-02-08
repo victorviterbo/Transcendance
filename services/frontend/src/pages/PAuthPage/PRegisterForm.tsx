@@ -7,8 +7,8 @@ import type { IEventStatus } from "../../types/events";
 import { checkPasswordValid } from "../../utils/enforcement";
 import { API_AUTH_REGISTER } from "../../constants";
 import api from "../../api";
-import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../components/auth/CAuthProvider";
+import { getErrorMessage } from "../../utils/error";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -38,25 +38,21 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 	//====================== EVENTS ======================
 	async function handleRegister(): Promise<IEventStatus> {
 		try {
-			const res = await api.post(API_AUTH_REGISTER, { username, email, password });
-			const decoded = jwtDecode<{ sub?: string; username?: string; email?: string }>(
-				res.data.access,
-			);
-			const user: IAuthUser = {
-				id: decoded.sub ? Number(decoded.sub) : 0,
-				username: decoded.username ?? "",
-				email: decoded.email ?? "",
-			};
+			const res = await api.post<{ access?: string; username?: string }>(API_AUTH_REGISTER, {
+				username,
+				email,
+				password,
+			});
+			if (!res.data?.access || !res.data?.username) {
+				return { valid: false, msg: "Registration failed." };
+			}
+			const responseUsername = res.data.username;
+			const user: IAuthUser = { username: responseUsername, email };
 			setAuth(res.data.access, user);
 			onSuccess?.(user);
 			return { valid: true };
 		} catch (error) {
-			const message =
-				typeof error === "object" && error !== null
-					? ((error as { response?: { data?: { error?: string } } }).response?.data
-							?.error ?? "Login failed.")
-					: "Login failed.";
-			return { valid: false, msg: message };
+			return { valid: false, msg: getErrorMessage(error, "Registration failed.") };
 		}
 		// async function onSubmit(): Promise<IEventStatus> {
 		// 	return fetch(API_AUTH_REGISTER, {
