@@ -9,7 +9,7 @@ import {
 
 type AuthPayload = Partial<IAuthUser> & { password?: string };
 
-const KNOWN_USER: IAuthUser & { password: string } = {
+const KNOWN_USER: IAuthUser & { email: string; password: string } = {
 	id: 1,
 	username: "john",
 	email: "john@42.fr",
@@ -61,6 +61,7 @@ export const LoginHandler = http.post(API_AUTH_LOGIN, async ({ request }) => {
 		return HttpResponse.json(
 			{
 				access: makeFakeJwt(KNOWN_USER),
+				username: KNOWN_USER.username,
 			},
 			{
 				status: 200,
@@ -104,6 +105,7 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 				username: username,
 				email: normalize(email),
 			}),
+			username,
 		},
 		{
 			headers: {
@@ -118,7 +120,10 @@ export const RefreshHandler = http.post(API_AUTH_REFRESH, ({ request }) => {
 	if (!cookies[REFRESH_COOKIE_NAME] && !hasRefreshSession) {
 		return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
 	}
-	return HttpResponse.json({ access: makeFakeJwt(KNOWN_USER) }, { status: 200 });
+	return HttpResponse.json(
+		{ access: makeFakeJwt(KNOWN_USER), username: KNOWN_USER.username },
+		{ status: 200 },
+	);
 });
 
 export const LogoutHandler = http.post(API_AUTH_LOGOUT, () => {
