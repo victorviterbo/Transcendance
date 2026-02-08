@@ -6,7 +6,6 @@ import CForm from "../../components/layout/CForm";
 import type { IEventStatus } from "../../types/events";
 import { API_AUTH_LOGIN } from "../../constants";
 import api from "../../api";
-import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../components/auth/CAuthProvider";
 
 //--------------------------------------------------

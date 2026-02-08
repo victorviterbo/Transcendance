@@ -24,11 +24,9 @@ register:
             schema:
               $ref: ../openapi.yaml#/components/schemas/TokenResponse
             examples:
-              alice:
+              register-ok:
                 value:
-                  access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-              bob:
-                value:
+                  username: "marc"
                   access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "400":
         description: Validation error
@@ -81,6 +79,7 @@ login:
             examples:
               login-ok:
                 value:
+                  username: "marc"
                   access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "401":
         description: Invalid credentials
@@ -109,6 +108,7 @@ refresh:
             examples:
               refresh-ok:
                 value:
+                  username: "marc"
                   access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "401":
         description: Refresh token invalid or expired
