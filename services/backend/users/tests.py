@@ -39,9 +39,8 @@ class UserAccountTests(APITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Uncomment if we login user as he registers
-        #self.assertIn('access', response.data)
-        #self.assertIn('username', response.data)
+        self.assertIn('access', response.data)
+        self.assertIn('username', response.data)
 
     def test_register_user_fail(self):
         url = '/api/auth/register/'
