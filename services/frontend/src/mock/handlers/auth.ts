@@ -17,39 +17,38 @@ const KNOWN_USER: IAuthUser & { email: string; password: string } = {
 };
 
 const normalize = (value: string) => value.trim().toLowerCase();
-const REFRESH_COOKIE_NAME = "refresh_token";
+const SESSION_CACHE = "mock-auth-session";
+const SESSION_KEY = "/session";
 let hasRefreshSession = false;
 
-const base64UrlEncode = (value: string) => {
-	const base64 = btoa(unescape(encodeURIComponent(value)));
-	return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+const readSession = async (): Promise<boolean> => {
+	try {
+		const cache = await caches.open(SESSION_CACHE);
+		const response = await cache.match(SESSION_KEY);
+		if (!response) return false;
+		const data = (await response.json()) as { hasSession?: boolean };
+		return Boolean(data?.hasSession);
+	} catch {
+		return false;
+	}
 };
 
-const makeFakeJwt = (user: IAuthUser) => {
-	const header = { alg: "none", typ: "JWT" };
-	const payload = {
-		sub: String(user.id),
-		username: user.username,
-		email: user.email,
-		exp: Math.floor(Date.now() / 1000) + 15 * 60,
-	};
-	return `${base64UrlEncode(JSON.stringify(header))}.${base64UrlEncode(
-		JSON.stringify(payload),
-	)}.`;
+const writeSession = async (value: boolean): Promise<void> => {
+	try {
+		const cache = await caches.open(SESSION_CACHE);
+		await cache.put(
+			SESSION_KEY,
+			new Response(JSON.stringify({ hasSession: value }), {
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+	} catch {
+		// ignore cache failures in mock
+	}
 };
 
-const parseCookies = (cookieHeader: string | null) => {
-	if (!cookieHeader) return {};
-	return cookieHeader.split(";").reduce<Record<string, string>>((acc, part) => {
-		const [rawKey, ...rawValue] = part.trim().split("=");
-		if (!rawKey) return acc;
-		acc[rawKey] = decodeURIComponent(rawValue.join("="));
-		return acc;
-	}, {});
-};
-
-const issueRefreshCookie = () =>
-	`${REFRESH_COOKIE_NAME}=mock-refresh; Path=/; HttpOnly; SameSite=Lax`;
+const makeAccessToken = () =>
+	`mock-access-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const LoginHandler = http.post(API_AUTH_LOGIN, async ({ request }) => {
 	const payload = (await request.json()) as AuthPayload;
@@ -58,17 +57,13 @@ export const LoginHandler = http.post(API_AUTH_LOGIN, async ({ request }) => {
 
 	if (normalize(email) === normalize(KNOWN_USER.email) && password === KNOWN_USER.password) {
 		hasRefreshSession = true;
+		await writeSession(true);
 		return HttpResponse.json(
 			{
-				access: makeFakeJwt(KNOWN_USER),
+				access: makeAccessToken(),
 				username: KNOWN_USER.username,
 			},
-			{
-				status: 200,
-				headers: {
-					"Set-Cookie": issueRefreshCookie(),
-				},
-			},
+			{ status: 200 },
 		);
 	}
 	return HttpResponse.json({ error: "Wrong email or password" }, { status: 401 });
@@ -98,40 +93,32 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 		);
 
 	hasRefreshSession = true;
+	await writeSession(true);
 	return HttpResponse.json(
 		{
-			access: makeFakeJwt({
-				id: 2,
-				username: username,
-				email: normalize(email),
-			}),
+			access: makeAccessToken(),
 			username,
 		},
-		{
-			headers: {
-				"Set-Cookie": issueRefreshCookie(),
-			},
-		},
+		{},
 	);
 });
 
-export const RefreshHandler = http.post(API_AUTH_REFRESH, ({ request }) => {
-	const cookies = parseCookies(request.headers.get("cookie"));
-	if (!cookies[REFRESH_COOKIE_NAME] && !hasRefreshSession) {
+export const RefreshHandler = http.post(API_AUTH_REFRESH, async () => {
+	const persistedSession = await readSession();
+	if (!hasRefreshSession && !persistedSession) {
 		return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
 	}
+	hasRefreshSession = true;
 	return HttpResponse.json(
-		{ access: makeFakeJwt(KNOWN_USER), username: KNOWN_USER.username },
+		{ access: makeAccessToken(), username: KNOWN_USER.username },
 		{ status: 200 },
 	);
 });
 
-export const LogoutHandler = http.post(API_AUTH_LOGOUT, () => {
+export const LogoutHandler = http.post(API_AUTH_LOGOUT, async () => {
 	hasRefreshSession = false;
+	await writeSession(false);
 	return new HttpResponse(null, {
 		status: 204,
-		headers: {
-			"Set-Cookie": `${REFRESH_COOKIE_NAME}=; Path=/; HttpOnly; Max-Age=0`,
-		},
 	});
 });
