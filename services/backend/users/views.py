@@ -117,7 +117,10 @@ class ProfileView(APIView):
         profile = request.user.profile
         try:
             profile_serializer = ProfileSerializer(profile, many=False)
-            return Response(profile_serializer.data, status=status.HTTP_200_OK)
+            ret_data = profile_serializer.data.copy()
+            ret_data['email'] = profile.user.email
+            print(ret_data)
+            return Response(ret_data, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:
             return Response({"detail": f"Could not return Profile : {e}"}, status=status.HTTP_500_INTERNAL_ERROR)
     
