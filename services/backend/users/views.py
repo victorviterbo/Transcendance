@@ -71,7 +71,16 @@ class RegisterView(APIView):
             serializer = SiteUserSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                return Response({'description': 'User created'}, status=status.HTTP_201_CREATED)
+                token = RefreshToken.for_user(serializer.instance)
+                response = Response({'username':  serializer.instance.username, 'access': str(token.access_token)},
+                                     status=status.HTTP_201_CREATED)
+                response.set_cookie(
+                    key='refresh-token',
+                    value=str(token),
+                    httponly=True, secure=True, samesite='Lax',
+                    path='/api/auth/'
+                )
+                return response
         except serializers.ValidationError as e:
             error = e.get_full_details()
             error_response = {'error':{}}
@@ -163,7 +172,7 @@ class RefreshTokenView(TokenRefreshView):
                     response.data['username'] = user.username
                     return response
                 else:
-                    return Response({"detail": f"Refresh token invalid: {serializer.error}"}, status=status.HTTP_401_UNAUTHORIZED)
+                    return Response({'detail': f'Refresh token invalid: {serializer.error}'}, status=status.HTTP_401_UNAUTHORIZED)
             except Exception as e:
-                return Response({"detail": f"Refresh token invalid: {e}"}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response({"detail": "Refresh token not found in cookies"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'detail': f'Refresh token invalid: {e}'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'detail': 'Refresh token not found in cookies'}, status=status.HTTP_401_UNAUTHORIZED)
