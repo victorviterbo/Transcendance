@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -129,9 +128,23 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        response = Response({"detail": "Successfully logged out."})
-        response.delete_cookie('refresh-token')
+        refresh_token = request.COOKIES.get('refresh-token')
+        
+        if not refresh_token:
+            return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception:
+            return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+        response = Response({'detail': 'Logged out successfully'}, status=status.HTTP_204_NO_CONTENT)
+        response.delete_cookie(
+            'refresh-token',
+            samesite='Lax',
+            path='/api/auth/'
+        )
         return response
+    
     
 class RefreshTokenView(TokenRefreshView):
     permission_classes = [AllowAny]

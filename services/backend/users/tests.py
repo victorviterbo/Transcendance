@@ -1,5 +1,4 @@
 from rest_framework.test import APITestCase
-from rest_framework.authtoken.models import Token
 from rest_framework import status
 from .models import SiteUser
 
@@ -56,23 +55,50 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
                 if email != 'newuser@mail.com':
                     self.assertIn('error', response.data)
-                    if response.status_code is not status.HTTP_409_CONFLICT:
-                        self.assertIn('email', response.data['error'])
+                    self.assertIn('email', response.data['error'])
                     if email == 'test@mail.com':
                         self.assertEqual(response.data['error']['email'], 'Email already taken')
-                    else :
+                    else:
                         self.assertEqual(response.data['error']['email'], 'Invalid Email')
-
                 elif username != 'newuser':
                     self.assertIn('error', response.data)
                     self.assertIn('username', response.data['error'])
                     if username == 'testuser':
                         self.assertEqual(response.data['error']['username'], 'Username already taken')
-                    else :
+                    else:
                         self.assertEqual(response.data['error']['username'], 'Invalid Username')
 
+    def test_logout_success(self):
+        logout_url = '/api/auth/logout/'
+        profile_url = '/api/auth/profile/'
+
+        response = self.client.get(profile_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        login_res = self.client.post('/api/auth/login/', {'email': 'test@mail.com', 'password': 'password123'})
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION=access_token)
+
+        refresh_token_copy = self.client.cookies.get('refresh-token').value
+
+        response = self.client.get(profile_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(logout_url)
+        self.assertEqual(response.data['detail'], 'Successfully logged out.')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.cookies.get('refresh-token').value, "")
+        self.client.credentials()
+        response = self.client.get(profile_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.client.cookies['refresh-token'] = refresh_token_copy
+        refresh_response = self.client.post('/api/auth/refresh/')
+        self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
     def test_profile_success(self):
-        self.client.force_authenticate(user=self.user)
+        login_res = self.client.post('/api/auth/login/', {'email': 'test@mail.com', 'password': 'password123'})
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION=access_token)
         url = '/api/auth/profile/'
 
         response = self.client.get(url)
