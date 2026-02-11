@@ -1,13 +1,24 @@
 import type { ILangContent, ILangData, ILocalizationData } from "../types/localizationTypes";
 
-export var g_langData: ILocalizationData = {
+export var tr_langData: ILocalizationData = {
 	headers: [],
 	langs: [],
 	idPos: -1,
 	descPos: -1,
 	totalCol: -1,
 }
-export var g_currentLang: string = "en";
+export var tr_currentLang: string = "en";
+
+var tr_onLangChangedBind: (() => void) | null = null
+export function tr_onLangChanged(lang: string)
+{
+	tr_currentLang = lang;
+	if(tr_onLangChangedBind)
+		tr_onLangChangedBind();
+}
+export function tr_setOnLangChanged(func: () => void): void {
+	tr_onLangChangedBind = func;
+}
 
 function splitLines(line: string): string[] {
 	var data: string[] = [];
@@ -45,47 +56,47 @@ function splitLines(line: string): string[] {
 
 function prepData(): void {
 	
-	if(g_langData.headers.length < 3)
+	if(tr_langData.headers.length < 3)
 		throw Error("Invalid headers: at least 3 col are required");
-	else if(!g_langData.headers.find((item: string) => { return item == "id"}))
+	else if(!tr_langData.headers.find((item: string) => { return item == "id"}))
 		throw Error("Invalid headers: missing id");
-	else if(!g_langData.headers.find((item: string) => { return item == "desc"}))
+	else if(!tr_langData.headers.find((item: string) => { return item == "desc"}))
 		throw Error("Invalid headers: missing desc");
 		 
 	//Clean
-	g_langData.headers.forEach((item: string, index: number) => {
-		g_langData.headers[index] = item.replaceAll(" ", "")
+	tr_langData.headers.forEach((item: string, index: number) => {
+		tr_langData.headers[index] = item.replaceAll(" ", "")
 	})
 	
-	g_langData.headers.forEach((item: string, index: number) => {
+	tr_langData.headers.forEach((item: string, index: number) => {
 		if(item == "id")
 		{
-			g_langData.idPos = index;
+			tr_langData.idPos = index;
 			return;
 		}
 		if(item == "desc")
 		{
-			g_langData.descPos = index;
+			tr_langData.descPos = index;
 			return;
 		}
-		g_langData.langs.push({
+		tr_langData.langs.push({
 			code: item,
 			pos: index,
 			content: [],
 		});
 	})
 
-	g_langData.totalCol = g_langData.headers.length;
+	tr_langData.totalCol = tr_langData.headers.length;
 }
 
 function applyContent(content: string[], lineID: number): void {
 
-	if(g_langData.idPos == -1)
+	if(tr_langData.idPos == -1)
 		throw Error("Invalid 'id' position.");
-	if(content.length < g_langData.totalCol)
+	if(content.length < tr_langData.totalCol)
 		throw Error("Invalid number of column at position: " + (lineID + 1));
-	var currentId = content[g_langData.idPos];
-	g_langData.langs.forEach((item: ILangData) => {
+	var currentId = content[tr_langData.idPos];
+	tr_langData.langs.forEach((item: ILangData) => {
 		item.content.push({
 			id: currentId,
 			data: content[item.pos]
@@ -108,7 +119,7 @@ export async function startLocalization(): Promise<void>  {
 		if (linesRaw.length < 2)
 			throw Error("No available localization data");
 
-		g_langData.headers = splitLines(linesRaw[0]);
+		tr_langData.headers = splitLines(linesRaw[0]);
 		linesRaw.splice(0, 1);
 
 		prepData();
@@ -124,8 +135,8 @@ export async function startLocalization(): Promise<void>  {
 export function ttr(id: string): string {
 
 	let finalData = id;
-	g_langData.langs.forEach((lang: ILangData) => {
-		if(lang.code != g_currentLang)
+	tr_langData.langs.forEach((lang: ILangData) => {
+		if(lang.code != tr_currentLang)
 			return ;
 		lang.content.forEach((data: ILangContent) => {
 			if(data.id == id)

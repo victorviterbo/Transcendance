@@ -3,6 +3,7 @@ import CButtonLanguage from "../../buttons/CButtonLanguage";
 import CDialog, { type CDialogProps } from "./CDialog";
 import CRadioGroup from "../../inputs/radio/CRadioGroup";
 import { Box, DialogContent, DialogTitle } from "@mui/material";
+import { tr_onLangChanged } from "../../../localization/localization";
 
 export interface CDialogLanguageProps extends CDialogProps {
 	
@@ -17,7 +18,10 @@ function CDialogLanguage({open, ...other}: CDialogLanguageProps) {
 	//====================== DOM ======================
 	return <>
 		<CButtonLanguage onClick={() => setIsOpen(true)}/>
-		<CDialog open={isOpen} onClose={() => {window.location.reload()}} {...other}>
+		<CDialog open={isOpen} onClose={() => {
+			tr_onLangChanged("jp");
+			setIsOpen(false);
+		}} {...other}>
 			<DialogContent>
 				<Box>
 					<DialogTitle>Language selection</DialogTitle>

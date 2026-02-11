@@ -24,7 +24,7 @@ function CRadioGroup({label, options, defaultValue}: CRadioGroupProps) {
 		>
 			{
 				options.map((item: TOption) => {
-					return <FormControlLabel value={item.value} control={<Radio />} label={item.label} />
+					return <FormControlLabel value={item.value} control={<Radio />} label={item.label} key={item.value} />
 				})
 			}
 		</RadioGroup>
