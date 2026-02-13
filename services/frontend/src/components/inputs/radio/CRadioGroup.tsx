@@ -7,9 +7,11 @@ export interface CRadioGroupProps extends GCompProps {
 	label?: string;
 	options: TOption[];
 	defaultValue?: string;
+
+	onChange?: (event: React.ChangeEvent<HTMLInputElement>, value: string) => void
 }
 
-function CRadioGroup({label, options, defaultValue}: CRadioGroupProps) {
+function CRadioGroup({label, options, defaultValue, onChange}: CRadioGroupProps) {
 
 	//====================== VALUES ======================
 	let localID: string = useId();
@@ -20,7 +22,12 @@ function CRadioGroup({label, options, defaultValue}: CRadioGroupProps) {
 		{label && <FormLabel id={localID}>{label}</FormLabel>}
 		<RadioGroup
 			aria-labelledby={localID}
-			defaultValue={defaultValue ? defaultValue : null}
+			value={defaultValue ? defaultValue : null}
+
+			onChange={(event: React.ChangeEvent<HTMLInputElement>, value: string) => {
+				if(onChange)
+					onChange(event, value);
+			}}
 		>
 			{
 				options.map((item: TOption) => {

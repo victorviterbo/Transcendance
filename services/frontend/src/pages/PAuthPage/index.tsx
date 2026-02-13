@@ -25,7 +25,7 @@ const PAuthPage = () => {
 			<Container maxWidth="sm">
 				<CBasePaper>
 					<CTitle size="md" align="center">
-						{ttr("WELCOME")}
+						WELCOME
 					</CTitle>
 
 					{!user ? (
