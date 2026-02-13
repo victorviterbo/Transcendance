@@ -5,6 +5,7 @@ import PProfilePage from "./pages/PProfilePage";
 import CProtectedRoute from "./components/auth/CProtectedRoute";
 
 function App() {
+
 	return (
 		<Routes>
 			<Route path="/" element={<PHomePage />} />

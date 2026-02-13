@@ -4,6 +4,7 @@ import { CAuthProvider } from "./components/auth/CAuthProvider.tsx";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
+import { startLocalization } from "./localization/localization.ts";
 
 const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
@@ -17,10 +18,21 @@ const startApp = () => {
 	);
 };
 
+const startLoc = () => {
+	startLocalization()
+	.catch((error) => {
+		console.error("Localization failed to start:", error);
+	})
+	.finally(() => {
+		startApp();
+	});
+}
+
 void mockStart()
 	.catch((error) => {
 		console.error("MSW failed to start:", error);
 	})
 	.finally(() => {
-		startApp();
+		startLoc();
 	});
+

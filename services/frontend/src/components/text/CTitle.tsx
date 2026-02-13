@@ -1,15 +1,12 @@
-import { Typography, type TypographyVariant } from "@mui/material";
-import type { ReactNode } from "react";
-import type { GCompProps } from "../../components/common/GProps.tsx";
-import type { TAlign, TSize } from "../../types/string.ts";
+import { type TypographyVariant } from "@mui/material";
+import type { CTextBaseProps } from "./CTextBase.tsx";
+import CTextBase from "./CTextBase.tsx";
 
-interface CButtonProps extends GCompProps {
-	align?: TAlign;
-	size?: TSize;
-	children?: ReactNode;
+interface CButtonProps extends CTextBaseProps {
 }
 
-function CTitle({ align, size, children }: CButtonProps) {
+function CTitle({size, children, ...other}: CButtonProps) {
+
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
@@ -23,12 +20,7 @@ function CTitle({ align, size, children }: CButtonProps) {
 		return "h6";
 	};
 
-	//====================== DOM ======================
-	return (
-		<Typography variant={getVariant()} align={align} gutterBottom>
-			{children}
-		</Typography>
-	);
+	return <CTextBase getVariant={getVariant} {...other}>{children}</CTextBase>
 }
 
 export default CTitle;
