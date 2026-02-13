@@ -1,6 +1,6 @@
 import { Box, Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import CButton from "../../components/buttons/CButton";
+import CButton from "../../components/inputs/buttons/CButton";
 import CTitle from "../../components/text/CTitle";
 import { useAuth } from "../../components/auth/CAuthProvider";
 

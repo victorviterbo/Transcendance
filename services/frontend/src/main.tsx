@@ -5,14 +5,17 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
 import { startLocalization } from "./localization/localization.ts";
+import CLanguageLayout from "./components/layout/CLanguageLayout.tsx";
 
 const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
 		<StrictMode>
 			<CAuthProvider>
-				<BrowserRouter>
-					<App />
-				</BrowserRouter>
+				<CLanguageLayout>
+					<BrowserRouter>
+						<App />
+					</BrowserRouter>
+				</CLanguageLayout>
 			</CAuthProvider>
 		</StrictMode>,
 	);
