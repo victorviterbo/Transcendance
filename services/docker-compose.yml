@@ -1,0 +1,26 @@
+services:
+  backend:
+    container_name: backend
+    image: transcendence-backend
+    build: ./backend/
+    volumes:
+      - ./backend/DB:/backend/DB/
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=asdasd
+      - debug=True
+
+  nginx:
+    container_name: nginx
+    image: transcendence-nginx
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  backend-db:
