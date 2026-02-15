@@ -1,16 +1,16 @@
-import { Paper } from "@mui/material";
-import type { ReactNode } from "react";
+import { Paper, type PaperOwnProps} from "@mui/material";
 import type { GCompProps } from "../../components/common/GProps.tsx";
+import CBasePaperStyle from "../../styles/components/surfaces/CBasePaper.ts";
 
-interface CBasePaperProps extends GCompProps {
-	children?: ReactNode;
+interface CBasePaperProps extends GCompProps, PaperOwnProps {
 }
 
 //TODO: Change sx here
 function CBasePaper({ children }: CBasePaperProps) {
+
 	//====================== DOM ======================
 	return (
-		<Paper elevation={3} sx={{ mt: 8, p: 4 }}>
+		<Paper elevation={3} sx={CBasePaperStyle}>
 			{children}
 		</Paper>
 	);

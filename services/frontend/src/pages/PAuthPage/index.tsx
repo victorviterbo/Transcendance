@@ -8,7 +8,6 @@ import CTabs from "../../components/navigation/CTabs";
 import type { IAuthUser } from "../../types/user";
 import PWelcomLogin from "./PWelcomLogin";
 import CDialogLanguage from "../../components/feedback/dialogs/CDialogLanguage";
-import { ttr } from "../../localization/localization";
 
 const PAuthPage = () => {
 	const [user, setUser] = useState<IAuthUser | null>(null);
@@ -27,6 +26,10 @@ const PAuthPage = () => {
 					<CTitle size="md" align="center">
 						WELCOME
 					</CTitle>
+
+					<Box sx={{verticalAlign: "centered"}}>
+						<img src="imgs/shared/T_Vinyle.gif"></img>
+					</Box>
 
 					{!user ? (
 						<CTabs tabs={["login", "register"]}>
