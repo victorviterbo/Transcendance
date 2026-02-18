@@ -87,7 +87,7 @@ class RegisterView(APIView):
                 )
                 return response
         except serializers.ValidationError as e:
-            error = e.get_full_descriptions()
+            error = e.get_full_details()
             error_response = {'error':{}}
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
@@ -125,7 +125,6 @@ class ProfileView(APIView):
             profile_serializer = ProfileSerializer(profile, many=False)
             ret_data = profile_serializer.data.copy()
             ret_data['email'] = profile.user.email
-            print(ret_data)
             return Response(ret_data, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:
             return Response({"description": f"Could not return Profile: {e}"},
