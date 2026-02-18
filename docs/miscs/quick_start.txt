@@ -1,13 +1,23 @@
-1. Install python 3.11
-2. Install miniconda (virtual environment/package manager -> https://www.anaconda.com/docs/getting-started/miniconda/install)
-3. conda env create -f infra/environment.yml #()
- W3 py and dj
-https://docs.djangoproject.com/en/6.0/intro/tutorial1/
+After a git clone, run the following:
+
+mkdir backend/DB/website
+echo "SECRET_KEY=')3q4$!*n-ulu#40ng)v7aa+0ql567mxldz3+vz&l+6z66vgu4#'
+DEBUG=True" > backend/.env
+docker compose up --build
+docker exec -ti backend bash
+conda activate backend
+python manage.py makemigrations
+python manage.py migrate
 
 
+To access the backend directly, without going through the front, go to:
+localhost:8000
 
-python3 manage.py flush -> flush the DB, delete users etc.
+To access the backend admin panel, go to:
+localhost:8000/api/admin
+
+python manage.py flush -> flush the DB, delete users etc.
 python manage.py makemigrations BackendAPI -> prepare the translators between the models and the DB
 python manage.py migrate -> prepare the DB so that it can accomodate the models (enable to have changing models and backcompatibility)
 python manage.py runserver -> launches the Backend
-
+python manage.py createsuperuser -> creates a super user
