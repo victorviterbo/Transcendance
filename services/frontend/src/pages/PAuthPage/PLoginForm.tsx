@@ -44,32 +44,6 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 			return { valid: false, msg: getErrorMessage(error, "Login failed.") };
 		}
 	}
-	// async function onSubmit(): Promise<IEventStatus> {
-	// 	return fetch(API_AUTH_LOGIN, {
-	// 		method: "POST",
-	// 		headers: {
-	// 			"Content-Type": "application/json",
-	// 		},
-	// 		body: JSON.stringify({ email, password }),
-	// 	})
-	// 		.then(async (response: Response): Promise<IEventStatus> => {
-	// 			if (!response.ok) {
-	// 				return {
-	// 					valid: false,
-	// 					msg: await getErrorMessage(response, "Login failed."),
-	// 				};
-	// 			}
-	// 			const user: IAuthUser = (await response.json()) as IAuthUser;
-	// 			onSuccess?.(user);
-	// 			return { valid: true };
-	// 		})
-	// 		.catch((error: unknown) => {
-	// 			return {
-	// 				valid: false,
-	// 				msg: error instanceof Error ? error.message : String(error),
-	// 			};
-	// 		});
-	// }
 
 	//====================== DOM ======================
 	//TODO: TEXT_FIELD

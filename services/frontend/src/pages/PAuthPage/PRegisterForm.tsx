@@ -54,31 +54,6 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 		} catch (error) {
 			return { valid: false, msg: getErrorMessage(error, "Registration failed.") };
 		}
-		// async function onSubmit(): Promise<IEventStatus> {
-		// 	return fetch(API_AUTH_REGISTER, {
-		// 		method: "POST",
-		// 		headers: {
-		// 			"Content-Type": "application/json",
-		// 		},
-		// 		body: JSON.stringify({ username, email, password }),
-		// 	})
-		// 		.then(async (response: Response): Promise<IEventStatus> => {
-		// 			if (!response.ok) {
-		// 				return {
-		// 					valid: false,
-		// 					msg: await getErrorMessage(response, "Login failed."),
-		// 				};
-		// 			}
-		// 			const user: IAuthUser = (await response.json()) as IAuthUser;
-		// 			onSuccess?.(user);
-		// 			return { valid: true };
-		// 		})
-		// 		.catch((error: unknown) => {
-		// 			return {
-		// 				valid: false,
-		// 				msg: error instanceof Error ? error.message : String(error),
-		// 			};
-		// 		});
 	}
 
 	//====================== DOM ======================
