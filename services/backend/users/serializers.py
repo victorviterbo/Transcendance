@@ -45,7 +45,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         name = name.split("+")[0]
         return ("@").join([name, domain])
 
-    def validate_email(self, value : str) -> str:
+    def validate_email(self, value: str) -> str:
         """Validate and normalize the incomming email address.
 
         In case of user creation (register), it performs a uniqueness check
@@ -69,7 +69,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
                                                   code='already-used')
         return value
 
-    def validate_username(self, value : str) -> str:
+    def validate_username(self, value: str) -> str:
         """Validate and normalize the incomming username.
 
         Args:
