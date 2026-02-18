@@ -28,7 +28,7 @@ function CDialogLanguage({ open, ...other }: CDialogLanguageProps) {
 					<Box>
 						<DialogTitle>{ttr("LANG_SELECT")}</DialogTitle>
 						<CRadioGroup
-							defaultValue={currentLang}
+							defaultValue={currentLangState}
 							options={[
 								{ value: "en", label: "English" },
 								{ value: "fr", label: "Français" },
