@@ -1,12 +1,8 @@
-from .views import (
-    LoginView, 
-    RegisterView, 
-    ProfileView,
-    LogoutView,
-    RefreshTokenView
-)
+"""Define url rerouting to views for the user module."""
 
 from django.urls import path
+
+from .views import LoginView, LogoutView, ProfileView, RefreshTokenView, RegisterView
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='user-login'),
