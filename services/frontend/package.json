@@ -8,6 +8,8 @@
 		"dev:mock": "vite --mode mock",
 		"build": "tsc -b && vite build",
 		"preview": "vite preview",
+		"test": "vitest",
+		"test:watch": "vitest --watch",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier . --write",
@@ -25,6 +27,9 @@
 		"react-router-dom": "^7.13.0"
 	},
 	"devDependencies": {
+		"@testing-library/jest-dom": "^6.6.0",
+		"@testing-library/react": "^16.0.1",
+		"@testing-library/user-event": "^14.6.1",
 		"@eslint/js": "^9.39.1",
 		"@types/node": "^24.10.1",
 		"@types/react": "^19.2.5",
@@ -38,11 +43,13 @@
 		"eslint-plugin-react-hooks": "^7.0.1",
 		"eslint-plugin-react-refresh": "^0.4.26",
 		"globals": "^16.5.0",
+		"jsdom": "^24.1.0",
 		"msw": "^2.12.7",
 		"prettier": "^3.7.4",
 		"typescript": "~5.9.3",
 		"typescript-eslint": "^8.46.4",
-		"vite": "^7.2.4"
+		"vite": "^7.2.4",
+		"vitest": "^2.1.8"
 	},
 	"msw": {
 		"workerDirectory": [
