@@ -1,8 +1,7 @@
 import { Button, type ButtonProps } from "@mui/material";
 import type { GProps } from "../../common/GProps.ts";
 
-export interface CButtonProps extends GProps, ButtonProps {
-}
+export interface CButtonProps extends GProps, ButtonProps {}
 
 function CButton({ children, ...other }: CButtonProps) {
 	return (

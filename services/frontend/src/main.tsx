@@ -23,13 +23,13 @@ const startApp = () => {
 
 const startLoc = () => {
 	startLocalization()
-	.catch((error) => {
-		console.error("Localization failed to start:", error);
-	})
-	.finally(() => {
-		startApp();
-	});
-}
+		.catch((error) => {
+			console.error("Localization failed to start:", error);
+		})
+		.finally(() => {
+			startApp();
+		});
+};
 
 void mockStart()
 	.catch((error) => {
@@ -38,4 +38,3 @@ void mockStart()
 	.finally(() => {
 		startLoc();
 	});
-

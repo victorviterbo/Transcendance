@@ -14,11 +14,10 @@ const PAuthPage = () => {
 	const [isBack, setIsBack] = useState<boolean>(true);
 
 	return (
-
 		<>
 			<Stack direction={"row"}>
-				<Box sx={{ flexGrow: 1}} />
-				<CDialogLanguage open={false}/>
+				<Box sx={{ flexGrow: 1 }} />
+				<CDialogLanguage open={false} />
 			</Stack>
 
 			<Container maxWidth="sm">
