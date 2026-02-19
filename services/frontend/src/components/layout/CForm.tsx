@@ -7,6 +7,7 @@ interface CFormProps extends GCompProps {
 	//DATA
 	submitText: string;
 	submittingText?: string;
+	noValidate?: boolean;
 
 	//DOM
 	children?: ReactNode;
@@ -15,7 +16,7 @@ interface CFormProps extends GCompProps {
 	onSubmit?: () => Promise<IEventStatus>;
 }
 
-function CForm({ submitText, submittingText, children, onSubmit }: CFormProps) {
+function CForm({ submitText, submittingText, noValidate = true, children, onSubmit }: CFormProps) {
 	//====================== STATE ======================
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 	const [error, setError] = useState<IEventStatus | null>(null);
@@ -38,7 +39,7 @@ function CForm({ submitText, submittingText, children, onSubmit }: CFormProps) {
 	//====================== DOM ======================
 	//TODO: change Typography and button
 	return (
-		<Box component="form" onSubmit={handleSubmit}>
+		<Box component="form" onSubmit={handleSubmit} noValidate={noValidate}>
 			{children}
 
 			{error && !error.valid && error.msg && (

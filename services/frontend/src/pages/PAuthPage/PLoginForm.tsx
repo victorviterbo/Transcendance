@@ -65,7 +65,9 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 				type="password"
 				fullWidth
 				margin="normal"
-				onChange={(e) => setPassword(e.target.value)}
+				onChange={(e) => {
+					setPassword(e.target.value);
+				}}
 				required
 			/>
 		</CForm>
