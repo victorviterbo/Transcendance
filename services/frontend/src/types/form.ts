@@ -3,7 +3,12 @@ export type TField = {
 	errors: string[];
 };
 
-export type TFormState = {
+export type TLoginFormState = {
+	email: TField;
+	password: TField;
+};
+
+export type TRegisterFormState = {
 	username: TField;
 	email: TField;
 	password: TField;

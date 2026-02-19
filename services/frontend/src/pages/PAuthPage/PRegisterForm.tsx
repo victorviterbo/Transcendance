@@ -14,7 +14,7 @@ import { API_AUTH_REGISTER } from "../../constants";
 import api from "../../api";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import { getErrorMessage } from "../../utils/error";
-import { type TFormState } from "../../types/form";
+import { type TRegisterFormState } from "../../types/form";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -27,8 +27,8 @@ interface PRegisterFormProps extends GPageProps {
 //                    COMPONENTS
 //--------------------------------------------------
 const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
-	//====================== stats ======================
-	const setField = (name: keyof TFormState, value: string, errors: string[]) => {
+	//====================== HELPERS ======================
+	const setField = (name: keyof TRegisterFormState, value: string, errors: string[]) => {
 		setForm((prev) => ({
 			...prev,
 			[name]: {
@@ -38,7 +38,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 		}));
 	};
 
-	const setBackendErrors = (errors: Partial<Record<keyof TFormState, string>>) => {
+	const setBackendErrors = (errors: Partial<Record<keyof TRegisterFormState, string>>) => {
 		setForm((prev) => ({
 			...prev,
 			username: { ...prev.username, errors: errors.username ? [errors.username] : [] },
@@ -52,15 +52,15 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				key,
 				field.value.trim() ? [] : ["Please fill this"],
 			]),
-		) as Record<keyof TFormState, string[]>;
+		) as Record<keyof TRegisterFormState, string[]>;
 
 		const nextErrors = Object.fromEntries(
 			Object.entries(form).map(([key, field]) => {
-				const required = requiredErrors[key as keyof TFormState];
+				const required = requiredErrors[key as keyof TRegisterFormState];
 				const merged = field.errors.length > 0 ? field.errors : required;
 				return [key, merged];
 			}),
-		) as Record<keyof TFormState, string[]>;
+		) as Record<keyof TRegisterFormState, string[]>;
 
 		const hasErrors = Object.values(nextErrors).some((errors) => errors.length > 0);
 		if (hasErrors) {
@@ -88,15 +88,14 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 		);
 	};
 
-	const [form, setForm] = useState<TFormState>({
+	//====================== DATA ======================
+	const [form, setForm] = useState<TRegisterFormState>({
 		username: { value: "", errors: [] },
 		email: { value: "", errors: [] },
 		password: { value: "", errors: [] },
 		confirmPassword: { value: "", errors: [] },
 	});
 	const { setAuth } = useAuth();
-
-	//====================== DATA ======================
 
 	//====================== EVENTS ======================
 	async function handleRegister(): Promise<IEventStatus> {
