@@ -36,7 +36,7 @@ describe("auth register unit tests", () => {
 	it("username already taken is refused", async () => {
 		const user = userEvent.setup();
 		postMock.mockRejectedValue({
-			response: { data: { error: "Username already taken" } },
+			response: { data: { error: { username: "Username already taken" } } },
 		});
 
 		render(<PRegisterForm />);
@@ -63,7 +63,7 @@ describe("auth register unit tests", () => {
 	it("email already taken is refused", async () => {
 		const user = userEvent.setup();
 		postMock.mockRejectedValue({
-			response: { data: { error: "Email already taken" } },
+			response: { data: { error: { email: "Email already taken" } } },
 		});
 
 		render(<PRegisterForm />);
@@ -89,7 +89,7 @@ describe("auth register unit tests", () => {
 		postMock.mockRejectedValue({
 			response: {
 				data: {
-					error: { username: "Email already taken", email: "Username already taken" },
+					error: { username: "Username already taken", email: "Email already taken" },
 				},
 			},
 		});
@@ -135,6 +135,35 @@ describe("auth register unit tests", () => {
 		expect(screen.queryByText(/include at least 1 lowercase letter/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/include at least 1 uppercase letter/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/include at least 1 special character/i)).not.toBeInTheDocument();
+	});
+
+	it("shows required errors when submitting empty form", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(screen.getAllByText(/please fill this/i)).toHaveLength(4);
+		expect(postMock).not.toHaveBeenCalled();
+	});
+
+	it("shows mismatch when password changes after confirm matches", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		const confirmInput = screen.getByLabelText(/confirm password/i);
+
+		await user.type(passwordInput, "Secret1!");
+		await user.type(confirmInput, "Secret1!");
+		expect(screen.queryByText(/passwords do not match/i)).not.toBeInTheDocument();
+
+		await user.clear(passwordInput);
+		await user.type(passwordInput, "Secret2!");
+
+		expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
 	});
 
 	it("valid password does not show warnings", async () => {
