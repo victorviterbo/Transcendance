@@ -103,8 +103,9 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 	if (db.findUserByUsername(normalizeUsername(username)))
 		return HttpResponse.json(
 			{
-				error: "Username already taken",
-				field: username,
+				error: {
+					username: "Username already taken",
+				},
 			},
 			{ status: 409 },
 		);
@@ -112,8 +113,9 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 	if (db.findUserByEmail(normalizeEmail(email)))
 		return HttpResponse.json(
 			{
-				error: "Email already taken",
-				field: email,
+				error: {
+					email: "Email already taken",
+				},
 			},
 			{ status: 409 },
 		);
