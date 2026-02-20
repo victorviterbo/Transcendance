@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, TextField } from "@mui/material";
+import { Box } from "@mui/material";
 import type { GPageProps } from "../common/GPageProps";
 import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
@@ -10,6 +10,7 @@ import api from "../../api";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import { getErrorMessage } from "../../utils/error";
 import type { TLoginFormState } from "../../types/form";
+import CTextField from "../../components/inputs/textFields/CTextField";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -107,7 +108,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 	//TODO: ABSTRACT FORM TO BE REUSABLE
 	return (
 		<CForm submitText="Log in" submittingText="Logging in ..." onSubmit={handleLogin}>
-			<TextField
+			<CTextField
 				label="Email"
 				name="email"
 				type="email"
@@ -120,7 +121,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 				required
 			/>
 
-			<TextField
+			<CTextField
 				label="Password"
 				name="password"
 				type="password"

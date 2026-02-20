@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, TextField } from "@mui/material";
+import { Box } from "@mui/material";
 import type { GPageProps } from "../common/GPageProps";
 import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
@@ -15,6 +15,7 @@ import api from "../../api";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import { getErrorMessage } from "../../utils/error";
 import { type TRegisterFormState } from "../../types/form";
+import CTextField from "../../components/inputs/textFields/CTextField";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -131,7 +132,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 	//====================== DOM ======================
 	return (
 		<CForm submitText="Sign in" submittingText="Signing in ..." onSubmit={handleRegister}>
-			<TextField
+			<CTextField
 				label="Username"
 				margin="normal"
 				fullWidth
@@ -145,7 +146,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				required
 			/>
 
-			<TextField
+			<CTextField
 				label="Email"
 				type="email"
 				fullWidth
@@ -158,7 +159,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				required
 			/>
 
-			<TextField
+			<CTextField
 				label="Password"
 				type="password"
 				fullWidth
@@ -178,7 +179,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				required
 			/>
 
-			<TextField
+			<CTextField
 				label="Confirm Password"
 				type="password"
 				fullWidth

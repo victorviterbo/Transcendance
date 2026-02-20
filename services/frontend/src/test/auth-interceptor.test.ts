@@ -52,10 +52,7 @@ describe("auth interceptor", () => {
 			}),
 			http.post(REFRESH_MATCHER, () => {
 				refreshCalls += 1;
-				return HttpResponse.json(
-					{ error: "Refresh token expired" },
-					{ status: 401 },
-				);
+				return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
 			}),
 		);
 
@@ -98,10 +95,7 @@ describe("auth interceptor", () => {
 				return new HttpResponse(null, { status: 401 });
 			}),
 			http.post(REFRESH_MATCHER, () => {
-				return HttpResponse.json(
-					{ error: "Refresh token expired" },
-					{ status: 401 },
-				);
+				return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
 			}),
 		);
 
@@ -131,10 +125,7 @@ describe("auth interceptor", () => {
 			}),
 		);
 
-		const [res1, res2] = await Promise.all([
-			api.get(PROTECTED_PATH),
-			api.get(PROTECTED_PATH),
-		]);
+		const [res1, res2] = await Promise.all([api.get(PROTECTED_PATH), api.get(PROTECTED_PATH)]);
 
 		expect(res1.status).toBe(200);
 		expect(res2.status).toBe(200);
@@ -149,10 +140,7 @@ describe("auth interceptor", () => {
 		server.use(
 			http.post(REFRESH_MATCHER, () => {
 				refreshCalls += 1;
-				return HttpResponse.json(
-					{ error: "Refresh token expired" },
-					{ status: 401 },
-				);
+				return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
 			}),
 		);
 
