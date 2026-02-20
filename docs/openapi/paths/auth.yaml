@@ -33,24 +33,56 @@ register:
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/ValidationError
+              type: object
+              properties:
+                error:
+                  type: object
+                  additionalProperties: { type: string }
+              required: [error]
             examples:
               missing-fields:
                 value:
-                  error: "Missing required fields."
+                  error:
+                    username: "MISSING_FIELD"
+                    email: "MISSING_FIELD"
+              invalid-username:
+                value:
+                  error:
+                    username: "INVALID_USERNAME"
+              invalid-email:
+                value:
+                  error:
+                    email: "INVALID_EMAIL"
+              both-invalid:
+                value:
+                  error:
+                    username: "INVALID_USERNAME"
+                    email: "INVALID_EMAIL"
       "409":
         description: Username or email already taken
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/ConflictError
+              type: object
+              properties:
+                error:
+                  type: object
+                  additionalProperties: { type: string }
+              required: [error]
             examples:
               username-taken:
                 value:
-                  error: "Username already taken"
+                  error:
+                    username: "USERNAME_TAKEN"
               email-taken:
                 value:
-                  error: "Email already taken"
+                  error:
+                    email: "EMAIL_TAKEN"
+              both-taken:
+                value:
+                  error:
+                    username: "USERNAME_TAKEN"
+                    email: "EMAIL_TAKEN"
 
 login:
   post:
@@ -90,7 +122,7 @@ login:
             examples:
               invalid-credentials:
                 value:
-                  error: "Wrong email or password"
+                  error: "INVALID_CREDENTIALS"
 
 refresh:
   post:
@@ -119,10 +151,10 @@ refresh:
             examples:
               refresh-invalid:
                 value:
-                  error: "Refresh token expired"
+                  error: "REFRESH_TOKEN_EXPIRED"
               no-refresh:
                 value:
-                  error: "No refresh token"
+                  error: "REFRESH_TOKEN_MISSING"
 
 logout:
   post:
