@@ -87,7 +87,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         value = validate_email(value)
         if value is not None and SiteUser.objects.filter(email=value).exists():
             raise serializers.ValidationError('Email already taken',
-                                              code='already-used')
+                                              code='unique')
         return value
     
     def validate_username(self, value: str) -> str:
@@ -95,7 +95,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         username = validate_username(value)
         if username is not None and SiteUser.objects.filter(username=value).exists():
             raise serializers.ValidationError('Username already taken',
-                                              code='already-used')
+                                              code='unique')
         return value
     
     def create(self, validated_data: Any) -> SiteUser:
