@@ -8,22 +8,26 @@ User:
 
 ValidationError:
   type: object
-  description: Structured validation error details.
+  description: Structured validation error details (values are localization keys).
   properties:
-    error: { type: string }
+    error:
+      type: object
+      additionalProperties: { type: string }
   required: [error]
 
 AuthError:
   type: object
-  description: Authentication or authorization error details.
+  description: Authentication or authorization error details (values are localization keys).
   properties:
     error: { type: string }
 
 ConflictError:
   type: object
-  description: Conflict due to a unique field already being used.
+  description: Conflict due to a unique field already being used (values are localization keys).
   properties:
-    error: { type: string }
+    error:
+      type: object
+      additionalProperties: { type: string }
   required: [error]
 
 TokenResponse:
