@@ -26,10 +26,6 @@ const PAuthPage = () => {
 						WELCOME
 					</CTitle>
 
-					<Box sx={{ verticalAlign: "centered" }}>
-						<img src="imgs/shared/T_Vinyle.gif"></img>
-					</Box>
-
 					{!user ? (
 						<CTabs tabs={["login", "register"]}>
 							<PLoginForm

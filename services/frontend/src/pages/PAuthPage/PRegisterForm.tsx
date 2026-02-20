@@ -134,8 +134,8 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 		<CForm submitText="Sign in" submittingText="Signing in ..." onSubmit={handleRegister}>
 			<CTextField
 				label="Username"
-				fullWidth
 				margin="normal"
+				fullWidth
 				value={form.username.value}
 				error={Boolean(form.username.errors.length)}
 				slotProps={{ formHelperText: { component: "div" } }}

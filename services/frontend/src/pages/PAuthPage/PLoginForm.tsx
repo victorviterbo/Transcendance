@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Box } from "@mui/material";
 import type { GPageProps } from "../common/GPageProps";
 import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
@@ -91,6 +92,18 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 		}
 	}
 
+	const renderErrors = (errors: string[]) => {
+		if (errors.length === 0) return "";
+		if (errors.length === 1) return errors[0];
+		return (
+			<Box component="ul" sx={{ m: 0, pl: 2 }}>
+				{errors.map((msg) => (
+					<li key={msg}>{msg}</li>
+				))}
+			</Box>
+		);
+	};
+
 	//====================== DOM ======================
 	//TODO: ABSTRACT FORM TO BE REUSABLE
 	return (
@@ -102,8 +115,8 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 				fullWidth
 				margin="normal"
 				value={form.email.value}
-				error={form.email.errors.length > 0}
-				helperText={form.email.errors.join(" ")}
+				error={Boolean(form.email.errors.length)}
+				helperText={renderErrors(form.email.errors)}
 				onChange={(e) => setField("email", e.target.value, checkEmailValid(e.target.value))}
 				required
 			/>
@@ -115,8 +128,8 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 				fullWidth
 				margin="normal"
 				value={form.password.value}
-				error={form.password.errors.length > 0}
-				helperText={form.password.errors.join(" ")}
+				error={Boolean(form.password.errors.length)}
+				helperText={renderErrors(form.password.errors)}
 				onChange={(e) => setField("password", e.target.value, [])}
 				required
 			/>
