@@ -185,16 +185,14 @@ class LogoutView(APIView):
         refresh_token = request.COOKIES.get('refresh-token')
         
         if not refresh_token:
-            return Response({'error': 'Not authenticated'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            response = Response(status=status.HTTP_204_NO_CONTENT)
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
         except Exception:
             return Response({'error': 'Not authenticated'},
                             status=status.HTTP_401_UNAUTHORIZED)
-        response = Response({'description': 'Logged out successfully'},
-                            status=status.HTTP_204_NO_CONTENT)
+        response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
             'refresh-token',
             samesite='Lax',
