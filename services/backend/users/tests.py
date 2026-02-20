@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import SiteUser
+from .serializers import SiteUserSerializer
 
 
 class UserAccountTests(APITestCase):
@@ -20,8 +21,7 @@ class UserAccountTests(APITestCase):
         url = '/api/auth/login/'
         for email in ['test@mail.com', '', 'test']:
             for password in ['password123', '', 'wrongpassword']:
-                data = {'email': email, 'password': password}
-                response = self.client.post(url, data, format='json')
+                response = self.client.post(url, {'email': email, 'password': password})
                 if email == 'test@mail.com' and password == 'password123':
                     self.assertEqual(response.status_code, status.HTTP_200_OK)
                     self.assertNotIn('error', response.data)
@@ -45,6 +45,9 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
                 elif email == 'newuser@mail.com' and username == 'newuser':
                     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                    self.assertIn('access', response.data)
+                    self.assertIn('username', response.data)
+                    self.assertEqual(response.data['username'], username)
                 if email != 'newuser@mail.com':
                     self.assertIn('error', response.data)
                     self.assertIn('email', response.data['error'])
@@ -72,8 +75,9 @@ class UserAccountTests(APITestCase):
         response = self.client.get(profile_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        login_res = self.client.post('/api/auth/login/', {'email': 'test@mail.com',
-                                                          'password': 'password123'})
+        login_res = self.client.post('/api/auth/login/', data={'email': 'test@mail.com',
+                                                          'password': 'password123'},
+                                                          format='json')
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION=access_token)
 
@@ -83,8 +87,8 @@ class UserAccountTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.post(logout_url)
-        self.assertEqual(response.data['detail'], 'Successfully logged out.')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['description'], 'Logged out successfully')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.cookies.get('refresh-token').value, "")
         self.client.credentials()
         response = self.client.get(profile_url)
@@ -95,22 +99,15 @@ class UserAccountTests(APITestCase):
     
     def test_profile_success(self) -> None:
         """Test success and failure of profile access operation."""
-        login_res = self.client.post('/api/auth/login/', {'email': 'test@mail.com',
-                                                          'password': 'password123'})
+        login_url = '/api/auth/login/'
+        login_res = self.client.post(login_url, {'email': 'test@mail.com', 'password': 'password123'})
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION=access_token)
-        url = '/api/auth/profile/'
+        profile_url = '/api/auth/profile/'
 
-        response = self.client.get(url)
+        response = self.client.get(profile_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['image'], '/DB/media/default.jpg')
-        
-        url = '/api/auth/profile/'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.client.force_authenticate(user=None)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_refresh_success(self) -> None:
         """Test success and failure of access token regeneration operation."""
@@ -128,3 +125,42 @@ class UserAccountTests(APITestCase):
         response = self.client.post(refresh_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
+
+    def test_user_validation(self) -> None:
+        """Test success and failure of user validation."""
+        raw_data = {
+            "email": "new_user@gmail.com",
+            "username": "auniqueuser",
+            "password": "securepassword123"
+        }
+        serializer = SiteUserSerializer(data=raw_data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.validated_data['email'], "new_user@gmail.com")
+        user_instance = serializer.save()
+        self.assertIsInstance(user_instance, SiteUser)
+        self.assertEqual(user_instance.email, "new_user@gmail.com")
+
+        raw_data = {
+            "username": "auniqueuser2",
+            "email": "new.1@gmail.com",
+            "password": "securepassword123"
+        }
+        serializer = SiteUserSerializer(data=raw_data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.validated_data['email'], "new1@gmail.com")
+        user_instance = serializer.save()
+        self.assertIsInstance(user_instance, SiteUser)
+        self.assertEqual(user_instance.email, "new1@gmail.com")
+
+        i = 0
+        for email in ["newuser+1@gmail.com",
+                      "+newuser@gmail.com",
+                      "....newuser@gmail.com",
+                      "new..user@gmail.com"]:
+            i += 1
+        raw_data = {
+            "username": "new_user" + str(i),
+            "email": email,
+            "password": "securepassword123"
+        }
+        serializer = SiteUserSerializer(data=raw_data)
