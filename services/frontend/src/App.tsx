@@ -7,7 +7,6 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import appTheme from "./styles/theme";
 
 function App() {
-
 	return (
 		<ThemeProvider theme={appTheme}>
 			<CssBaseline />

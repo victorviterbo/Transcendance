@@ -1,6 +1,6 @@
 import type { GCompProps } from "../common/GProps";
 import type { TAlign, TSize } from "../../types/string.ts";
-import { Typography, type TypographyOwnProps, type TypographyVariant} from "@mui/material";
+import { Typography, type TypographyOwnProps, type TypographyVariant } from "@mui/material";
 import { ttr } from "../../localization/localization.ts";
 
 export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
@@ -10,9 +10,7 @@ export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	getVariant?: () => TypographyVariant;
 }
 
-function CTextBase({ align, children, getVariant}: CTextBaseProps) {
-	
-
+function CTextBase({ align, children, getVariant }: CTextBaseProps) {
 	//====================== DOM ======================
 	return (
 		<Typography variant={getVariant ? getVariant() : "body1"} align={align} gutterBottom>

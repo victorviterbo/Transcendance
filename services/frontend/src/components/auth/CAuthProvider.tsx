@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { type IAuthUser, type TAuthStatus } from "../../types/user";
 import type { GCompProps } from "../common/GProps";
-import api, { clearAccessToken, getAccessToken, setAccessToken } from "../../api";
+import api, { clearAccessToken, setAccessToken } from "../../api";
 import { API_AUTH_LOGOUT, API_AUTH_REFRESH } from "../../constants";
 
 const AuthContext = createContext({
@@ -36,8 +36,6 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 	}, []);
 
 	useEffect(() => {
-		console.log(status);
-		console.log(getAccessToken());
 		api.post(API_AUTH_REFRESH)
 			.then((res) => {
 				const access = res.data?.access;

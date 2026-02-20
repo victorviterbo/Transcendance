@@ -1,9 +1,9 @@
 export interface ILangContent {
 	id: string;
-	data: string
+	data: string;
 }
 
-export interface ILangData{
+export interface ILangData {
 	code: string;
 	pos: number;
 	content: ILangContent[];
