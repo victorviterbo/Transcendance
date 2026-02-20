@@ -105,8 +105,8 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 			if (Object.values(form).some((field) => field.errors.length > 0))
 				return { valid: false };
 			const res = await api.post<{ access?: string; username?: string }>(API_AUTH_REGISTER, {
-				username: form.username.value,
-				email: form.email.value,
+				username: form.username.value.trim(),
+				email: form.email.value.trim(),
 				password: form.password.value,
 			});
 			if (!res.data?.access || !res.data?.username) {

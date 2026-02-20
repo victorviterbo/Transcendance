@@ -127,6 +127,26 @@ describe("auth register unit tests", () => {
 		expect(screen.getByText(/include at least 1 special character/i)).toBeInTheDocument();
 	});
 
+	it("shows username length warning when username is too long", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "a".repeat(21));
+
+		expect(await screen.findByText(/username at most 20 characters/i)).toBeInTheDocument();
+	});
+
+	it("valid username length does not show warning", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "a".repeat(20));
+
+		expect(screen.queryByText(/username at most 20 characters/i)).not.toBeInTheDocument();
+	});
+
 	it("no password does not show warnings", async () => {
 		render(<PRegisterForm />);
 
@@ -135,6 +155,28 @@ describe("auth register unit tests", () => {
 		expect(screen.queryByText(/include at least 1 lowercase letter/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/include at least 1 uppercase letter/i)).not.toBeInTheDocument();
 		expect(screen.queryByText(/include at least 1 special character/i)).not.toBeInTheDocument();
+	});
+
+	it("trims username and email before submit", async () => {
+		const user = userEvent.setup();
+		postMock.mockResolvedValue({
+			data: { username: "new", access: "token" },
+		});
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(screen.getByLabelText(/username/i), "  new  ");
+		await user.type(screen.getByLabelText(/email/i), "  new@42.fr  ");
+		await user.type(passwordInput, "Secret1!");
+		await user.type(screen.getByLabelText(/confirm password/i), "Secret1!");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(postMock).toHaveBeenCalledWith(API_AUTH_REGISTER, {
+			username: "new",
+			email: "new@42.fr",
+			password: "Secret1!",
+		});
 	});
 
 	it("shows required errors when submitting empty form", async () => {
