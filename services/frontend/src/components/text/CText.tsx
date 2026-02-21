@@ -2,18 +2,18 @@ import { type TypographyVariant } from "@mui/material";
 import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
 
-interface CTitleProps extends CTextBaseProps {}
+interface CTextProps extends CTextBaseProps {}
 
-function CTitle({ size, children, ...other }: CTitleProps) {
+function CText({ size, children, ...other }: CTextProps) {
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
 			case "sm":
-				return "h6";
+				return "body2";
 			case "md":
-				return "h4";
+				return "body1";
 			case "lg":
-				return "h2";
+				return "h6";
 		}
 		return "h6";
 	};
@@ -25,4 +25,4 @@ function CTitle({ size, children, ...other }: CTitleProps) {
 	);
 }
 
-export default CTitle;
+export default CText;
