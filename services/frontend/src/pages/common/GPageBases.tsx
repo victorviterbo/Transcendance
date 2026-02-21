@@ -17,17 +17,18 @@ function GPageBase({ children }: GPageProps) {
 				}}
 			>
 				<Box
-					sx={(theme) => ({
-						height: "100px",
-						backgroundColor: theme.palette.primary.main,
-					})}
+					sx={{
+						height: "75px",
+						bgcolor: "primary.main",
+					}}
 				></Box>
-				<Box sx={{ flex: 1}}>{children}</Box>
+				<Box sx={{ flex: 1 }}>{children}</Box>
 				<Box
-					sx={(theme) => ({
+					sx={{
 						height: "50px",
-						backgroundColor: theme.palette.primary.main,
-					})}></Box>
+						bgcolor: "primary.main",
+					}}
+				></Box>
 			</Stack>
 		</Box>
 	);
