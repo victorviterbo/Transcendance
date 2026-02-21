@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
-import type { GPageProps } from "../common/GPageProps";
+import type { GPageProps } from "../common/GPageBases";
 import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
 import type { IEventStatus } from "../../types/events";
