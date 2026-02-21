@@ -10,7 +10,7 @@ function PCreateRoom() {
 		<CHomePaper sx={{ m: 0, height: "100%", width: "100%" }}>
 			<Stack sx={{ alignItems: "stretch" }}>
 				<CText size="lg">CREATE_ROOM</CText>
-				<CTextField></CTextField>	
+				<CTextField></CTextField>
 				<Stack
 					direction={"row"}
 					sx={{
