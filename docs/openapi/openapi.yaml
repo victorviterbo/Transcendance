@@ -14,6 +14,10 @@ paths:
     $ref: ./paths/auth.yaml#/register
   /api/auth/login:
     $ref: ./paths/auth.yaml#/login
+  /api/auth/refresh:
+    $ref: ./paths/auth.yaml#/refresh
+  /api/auth/logout:
+    $ref: ./paths/auth.yaml#/logout
 
 components:
   schemas:
@@ -25,6 +29,8 @@ components:
       $ref: ./components/schemas.yaml#/AuthError
     ConflictError:
       $ref: ./components/schemas.yaml#/ConflictError
+    TokenResponse:
+      $ref: ./components/schemas.yaml#/TokenResponse
 
 tags:
   - name: auth
