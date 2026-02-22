@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PRegisterForm from "../pages/PAuthPage/PRegisterForm";
 import { API_AUTH_REGISTER } from "../constants";
@@ -113,6 +113,47 @@ describe("auth register unit tests", () => {
 		expect(setAuthMock).not.toHaveBeenCalled();
 	});
 
+	it("ignores backend errors for unknown fields", async () => {
+		const user = userEvent.setup();
+		postMock.mockRejectedValue({
+			response: { data: { error: { foo: "Some error" } } },
+		});
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(screen.getByLabelText(/username/i), "new");
+		await user.type(screen.getByLabelText(/email/i), "new@42.fr");
+		await user.type(passwordInput, "Secret1!");
+		await user.type(screen.getByLabelText(/confirm password/i), "Secret1!");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(screen.queryByText(/some error/i)).not.toBeInTheDocument();
+		expect(setAuthMock).not.toHaveBeenCalled();
+	});
+
+	it("clears backend field error when user edits that field", async () => {
+		const user = userEvent.setup();
+		postMock.mockRejectedValue({
+			response: { data: { error: { username: "Username already taken" } } },
+		});
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(screen.getByLabelText(/username/i), "john");
+		await user.type(screen.getByLabelText(/email/i), "john+new@42.fr");
+		await user.type(passwordInput, "Secret1!");
+		await user.type(screen.getByLabelText(/confirm password/i), "Secret1!");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(await screen.findByText(/username already taken/i)).toBeInTheDocument();
+
+		await user.type(screen.getByLabelText(/username/i), "2");
+
+		expect(screen.queryByText(/username already taken/i)).not.toBeInTheDocument();
+	});
+
 	it("shows password warnings when password is weak", async () => {
 		const user = userEvent.setup();
 
@@ -127,6 +168,35 @@ describe("auth register unit tests", () => {
 		expect(screen.getByText(/include at least 1 special character/i)).toBeInTheDocument();
 	});
 
+	it("renders multiple password warnings as a list", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(passwordInput, "abc");
+
+		const list = await screen.findByRole("list");
+		const items = within(list).getAllByRole("listitem");
+		expect(items).toHaveLength(4);
+	});
+
+	it("clears password warnings when password becomes strong", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(passwordInput, "abc");
+
+		expect(await screen.findByText(/use at least 8 characters/i)).toBeInTheDocument();
+
+		await user.clear(passwordInput);
+		await user.type(passwordInput, "Secret1!");
+
+		expect(screen.queryByText(/use at least 8 characters/i)).not.toBeInTheDocument();
+	});
+
 	it("shows username length warning when username is too long", async () => {
 		const user = userEvent.setup();
 
@@ -135,6 +205,16 @@ describe("auth register unit tests", () => {
 		await user.type(screen.getByLabelText(/username/i), "a".repeat(21));
 
 		expect(await screen.findByText(/username at most 20 characters/i)).toBeInTheDocument();
+	});
+
+	it("ignores leading/trailing spaces when checking username length", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), ` ${"a".repeat(20)} `);
+
+		expect(screen.queryByText(/username at most 20 characters/i)).not.toBeInTheDocument();
 	});
 
 	it("valid username length does not show warning", async () => {
@@ -188,6 +268,67 @@ describe("auth register unit tests", () => {
 
 		expect(screen.getAllByText(/please fill this/i)).toHaveLength(4);
 		expect(postMock).not.toHaveBeenCalled();
+	});
+
+	it("treats whitespace-only input as empty on submit", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(screen.getByLabelText(/username/i), "   ");
+		await user.type(screen.getByLabelText(/email/i), "   ");
+		await user.type(passwordInput, "   ");
+		await user.type(screen.getByLabelText(/confirm password/i), "   ");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(screen.getAllByText(/please fill this/i)).toHaveLength(4);
+		expect(postMock).not.toHaveBeenCalled();
+	});
+
+	it("confirm password required when password is set", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(screen.getByLabelText(/username/i), "new");
+		await user.type(screen.getByLabelText(/email/i), "new@42.fr");
+		await user.type(passwordInput, "Secret1!");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(screen.getAllByText(/please fill this/i)).toHaveLength(1);
+		expect(screen.queryByText(/passwords do not match/i)).not.toBeInTheDocument();
+	});
+
+	it("shows mismatch when confirm is filled but password is empty", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "new");
+		await user.type(screen.getByLabelText(/email/i), "new@42.fr");
+		await user.type(screen.getByLabelText(/confirm password/i), "Secret1!");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(screen.getAllByText(/please fill this/i)).toHaveLength(1);
+		expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
+	});
+
+	it("blocks submit when email is invalid", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		const [passwordInput] = screen.getAllByLabelText(/password/i);
+		await user.type(screen.getByLabelText(/username/i), "new");
+		await user.type(screen.getByLabelText(/email/i), "new@");
+		await user.type(passwordInput, "Secret1!");
+		await user.type(screen.getByLabelText(/confirm password/i), "Secret1!");
+		await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+		expect(postMock).not.toHaveBeenCalled();
+		expect(await screen.findByText(/enter a valid email address/i)).toBeInTheDocument();
 	});
 
 	it("shows mismatch when password changes after confirm matches", async () => {
