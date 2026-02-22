@@ -1,3 +1,11 @@
 ﻿id,en,fr,jp,desc
 LANG_SELECT,Language selection,"Sélection, \ de la langue""",言語の選択,Selection language menu
-WELCOME,Welcome,Bienvenue,ようこそ,
+WELCOME,Welcome,Bienvenue,ようこそ,/
+CREATE_ROOM,Create room,Créer une salle,ルームを作成,The word 'room' is for a virtual room
+PRIVATE,Private,Privée,非公開,Refer to private virtual room
+PUBLIC,Public,Publique,公開,Refer to public virtual room
+PLAY_GAME,Play,,,/
+JOIN_ROOM,Join room,,,The word 'room' is for a virtual room
+JOIN,Join,,,Used to join a room
+FRIEND_ROOM,Friends rooms,,,The word 'room' is for a virtual room
+PUBLIC_ROOM,Public rooms,,,The word 'room' is for a virtual room

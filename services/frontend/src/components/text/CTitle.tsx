@@ -2,9 +2,9 @@ import { type TypographyVariant } from "@mui/material";
 import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
 
-interface CButtonProps extends CTextBaseProps {}
+interface CTitleProps extends CTextBaseProps {}
 
-function CTitle({ size, children, ...other }: CButtonProps) {
+function CTitle({ size, children, ...other }: CTitleProps) {
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {

@@ -5,7 +5,6 @@ const CBasePaperStyle: SxProps<Theme> = (theme) => ({
 
 	mt: 8,
 	p: 4,
-	borderRadius: (theme.shape.borderRadius as number) * 2,
 });
 
 export default CBasePaperStyle;
