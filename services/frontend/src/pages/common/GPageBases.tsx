@@ -9,12 +9,12 @@ export interface GPageProps extends GProps {
 
 function GPageBase({ children }: GPageProps) {
 	return (
-		<Box sx={{position:"fixed", width: "100%", height: "100%" }}>
+		<Box sx={{ position: "fixed", width: "100%", height: "100%" }}>
 			<GBackground />
 			<Stack
 				sx={{
 					position: "absolute",
-					top:0,
+					top: 0,
 					left: 0,
 
 					height: "100%",
@@ -22,16 +22,14 @@ function GPageBase({ children }: GPageProps) {
 					alignItems: "stretch",
 				}}
 			>
-				<Box
+				{/* <Box
 					sx={{
 						height: "75px",
 						bgcolor: "primary.main",
 					}}
-				></Box>
-				<Stack sx={{flex: 1, overflow: "auto"	}}>
-					<Box sx={{flex: 1}}>
-						{children}
-					</Box>
+				></Box> */}
+				<Stack sx={{ flex: 1, overflow: "auto" }}>
+					<Box sx={{ flex: 1 }}>{children}</Box>
 					<Box
 						sx={{
 							flexShrink: 0,
