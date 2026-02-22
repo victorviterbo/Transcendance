@@ -18,7 +18,6 @@ const PHomePage = () => {
 		<GPageBase>
 			<Stack
 				sx={{
-					height: "100%",
 					width: "100%",
 					pt: spacing,
 					pb: spacing,
@@ -26,18 +25,18 @@ const PHomePage = () => {
 					pl: spacing,
 				}}
 			>
-				<Grid container spacing={spacing} sx={{ height: "25%", width: "100%" }}>
-					<Grid size={3}>
+				<Grid container spacing={spacing} sx={{width: "100%"}}>
+					<Grid size={{xs: 12, sm: 12, md: 6, lg: 3}}>
 						<PCreateRoom></PCreateRoom>
 					</Grid>
-					<Grid size={3}>
+					<Grid size={{xs: 12, sm: 12, md: 6, lg: 3}}>
 						<PJoinRoom></PJoinRoom>
 					</Grid>
-					<Grid size={6}>
+					<Grid size={{xs: 12, sm: 12, md: 12, lg: 6}}>
 						<PFriendsRooms></PFriendsRooms>
 					</Grid>
 				</Grid>
-				<Box sx={{ flex: 1, mt: spacing}}>
+				<Box sx={{flex: 1, mt: spacing}}>
 					<PPublicRooms></PPublicRooms>
 				</Box>
 			</Stack>
