@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Box } from "@mui/material";
+import { useMemo } from "react";
 import type { GPageProps } from "../common/GPageProps";
 import type { IAuthUser } from "../../types/user";
 import CForm from "../../components/layout/CForm";
@@ -9,8 +8,7 @@ import { API_AUTH_LOGIN } from "../../constants";
 import api from "../../api";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import { getErrorMessage } from "../../utils/error";
-import type { TLoginFormState } from "../../types/form";
-import CTextField from "../../components/inputs/textFields/CTextField";
+import type { TFormFieldConfig } from "../../types/form";
 
 //--------------------------------------------------
 //                 TYPES / INTERAFCES
@@ -23,67 +21,38 @@ interface LoginFormProps extends GPageProps {
 //                    COMPONENTS
 //--------------------------------------------------
 const PLoginForm = ({ onSuccess }: LoginFormProps) => {
-	//====================== HELPERS ======================
-	const setField = (name: keyof TLoginFormState, value: string, errors: string[]) => {
-		setForm((prev) => ({
-			...prev,
-			[name]: {
-				value,
-				errors,
+	const fields = useMemo<TFormFieldConfig[]>(
+		() => [
+			{
+				name: "email",
+				label: "Email",
+				type: "email",
+				required: true,
+				validate: checkEmailValid,
 			},
-		}));
-	};
-
-	const validateRequired = () => {
-		const requiredErrors = Object.fromEntries(
-			Object.entries(form).map(([key, field]) => [
-				key,
-				field.value.trim() ? [] : ["Please fill this"],
-			]),
-		) as Record<keyof TLoginFormState, string[]>;
-
-		const nextErrors = Object.fromEntries(
-			Object.entries(form).map(([key, field]) => {
-				const required = requiredErrors[key as keyof TLoginFormState];
-				const merged = field.errors.length > 0 ? field.errors : required;
-				return [key, merged];
-			}),
-		) as Record<keyof TLoginFormState, string[]>;
-
-		const hasErrors = Object.values(nextErrors).some((errors) => errors.length > 0);
-		if (hasErrors) {
-			setForm((prev) => ({
-				...prev,
-				email: { ...prev.email, errors: nextErrors.email },
-				password: { ...prev.password, errors: nextErrors.password },
-			}));
-			return false;
-		}
-		return true;
-	};
-
-	//====================== DATA ======================
-	const [form, setForm] = useState<TLoginFormState>({
-		email: { value: "", errors: [] },
-		password: { value: "", errors: [] },
-	});
+			{
+				name: "password",
+				label: "Password",
+				type: "password",
+				required: true,
+			},
+		],
+		[],
+	);
 	const { setAuth } = useAuth();
 
 	//====================== EVENTS ======================
-	async function handleLogin(): Promise<IEventStatus> {
+	async function handleLogin(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			if (!validateRequired()) return { valid: false };
-			if (Object.values(form).some((field) => field.errors.length > 0))
-				return { valid: false };
 			const res = await api.post<{ access?: string; username?: string }>(API_AUTH_LOGIN, {
-				email: form.email.value,
-				password: form.password.value,
+				email: values.email.trim(),
+				password: values.password.trim(),
 			});
 			if (!res.data?.access || !res.data?.username) {
 				return { valid: false, msg: "Login failed." };
 			}
 			const username = res.data.username;
-			const user: IAuthUser = { username, email: form.email.value };
+			const user: IAuthUser = { username, email: values.email };
 			setAuth(res.data.access, user);
 			onSuccess?.(user);
 			return { valid: true };
@@ -92,48 +61,15 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 		}
 	}
 
-	const renderErrors = (errors: string[]) => {
-		if (errors.length === 0) return "";
-		if (errors.length === 1) return errors[0];
-		return (
-			<Box component="ul" sx={{ m: 0, pl: 2 }}>
-				{errors.map((msg) => (
-					<li key={msg}>{msg}</li>
-				))}
-			</Box>
-		);
-	};
-
 	//====================== DOM ======================
-	//TODO: ABSTRACT FORM TO BE REUSABLE
+	//TODO: TEXT_FIELD
 	return (
-		<CForm submitText="Log in" submittingText="Logging in ..." onSubmit={handleLogin}>
-			<CTextField
-				label="Email"
-				name="email"
-				type="email"
-				fullWidth
-				margin="normal"
-				value={form.email.value}
-				error={Boolean(form.email.errors.length)}
-				helperText={renderErrors(form.email.errors)}
-				onChange={(e) => setField("email", e.target.value, checkEmailValid(e.target.value))}
-				required
-			/>
-
-			<CTextField
-				label="Password"
-				name="password"
-				type="password"
-				fullWidth
-				margin="normal"
-				value={form.password.value}
-				error={Boolean(form.password.errors.length)}
-				helperText={renderErrors(form.password.errors)}
-				onChange={(e) => setField("password", e.target.value, [])}
-				required
-			/>
-		</CForm>
+		<CForm
+			submitText="Log in"
+			submittingText="Logging in ..."
+			fields={fields}
+			onSubmit={handleLogin}
+		/>
 	);
 };
 
