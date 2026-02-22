@@ -62,7 +62,6 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 	}
 
 	//====================== DOM ======================
-	//TODO: TEXT_FIELD
 	return (
 		<CForm
 			submitText="Log in"
