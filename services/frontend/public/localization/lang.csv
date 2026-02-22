@@ -8,3 +8,4 @@ PLAY_GAME,Play,,,/
 JOIN_ROOM,Join room,,,The word 'room' is for a virtual room
 JOIN,Join,,,Used to join a room
 FRIEND_ROOM,Friends rooms,,,The word 'room' is for a virtual room
+PUBLIC_ROOM,Public rooms,,,The word 'room' is for a virtual room

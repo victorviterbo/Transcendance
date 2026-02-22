@@ -31,8 +31,12 @@ export const appThemeDef: ITheme = {
 	},
 
 	positions: {
-		mainSpacing: 1,
+		mainSpacing: 2,
 	},
+
+	bg: {
+		brightness: 0.75,
+	}
 };
 
 const appThemeBase: ThemeOptions = {
@@ -68,6 +72,15 @@ const appThemeBase: ThemeOptions = {
 	shape: {
 		borderRadius: 10,
 	},
+
+
+	components: 
+	{
+		MuiCssBaseline: {
+			styleOverrides: {
+			}
+		}
+	}
 };
 const appTheme = createTheme(appThemeBase);
 

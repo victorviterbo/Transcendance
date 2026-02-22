@@ -1,4 +1,4 @@
-import { Grid, Stack } from "@mui/material";
+import {  Grid, Stack } from "@mui/material";
 import CHomePaper from "../../components/surfaces/CHomePaper";
 import CText from "../../components/text/CText";
 import type { IRoomInfo } from "../../types/room";
@@ -11,7 +11,7 @@ function PPublicRooms() {
 		
 		const tempRooms: IRoomInfo[] = []
 		
-		for(let i = 0; i < 25; i++)
+		for(let i = 0; i < 155; i++)
 		{
 			tempRooms.push({
 				name: "Test Name",
@@ -25,9 +25,9 @@ function PPublicRooms() {
 	const rooms: IRoomInfo[] = getRoomsTemps();
 	const localID: string = useId();
 
-	return <CHomePaper sx={{ m: 0, height: "100%", width: "100%" }}>
-		<Stack sx={{ alignItems: "stretch" }}>
-			<CText size="lg">FRIEND_ROOM</CText>
+	return <CHomePaper sx={{ m: 0,height: "100%", width: "100%"}}>
+		<Stack sx={{ alignItems: "stretch"}}>
+			<CText size="lg">PUBLIC_ROOM</CText>
 			<Grid container spacing={3}>
 				{
 					rooms.map((item: IRoomInfo, index: number) => {
