@@ -1,10 +1,12 @@
-import { Box, capitalize, Typography } from "@mui/material";
+import { Box, capitalize } from "@mui/material";
 import CButton from "../inputs/buttons/CButton.tsx";
 import { useMemo, useState, type FormEvent } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import type { IEventStatus } from "../../types/events.tsx";
 import type { TConfirmConfig, TFormFieldConfig } from "../../types/form.ts";
 import CTextField from "../inputs/textFields/CTextField.tsx";
+import CText from "../text/CText.tsx";
+import { ttr } from "../../localization/localization.ts";
 
 interface CFormProps extends GCompProps {
 	submitText: string;
@@ -44,7 +46,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 			const confirm = normalizeConfirm(field.confirm);
 			if (confirm) {
 				const confirmName = confirm.name ?? `confirm${capitalize(field.name)}`;
-				const confirmLabel = confirm.label ?? `Confirm ${field.label}`;
+				const confirmLabel = confirm.label ?? `CONFIRM_${field.label}`;
 				const confirmSpec: IFieldSpec = {
 					name: confirmName,
 					label: confirmLabel,
@@ -118,7 +120,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 		specs.forEach((spec) => {
 			const value = formState.values[spec.name] ?? "";
 			if (spec.required && value.trim().length === 0) {
-				nextErrors[spec.name] = ["Please fill this"];
+				nextErrors[spec.name] = ["REQUIRED_FIELD"];
 				return;
 			}
 			nextErrors[spec.name] = runValidate(spec, value, formState.values);
@@ -144,11 +146,11 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 
 	const renderErrors = (errors: string[]) => {
 		if (errors.length === 0) return "";
-		if (errors.length === 1) return errors[0];
+		if (errors.length === 1) return ttr(errors[0]);
 		return (
 			<Box component="ul" sx={{ m: 0, pl: 2 }}>
 				{errors.map((msg) => (
-					<li key={msg}>{msg}</li>
+					<li key={msg}>{ttr(msg)}</li>
 				))}
 			</Box>
 		);
@@ -190,7 +192,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				return (
 					<CTextField
 						key={spec.name}
-						label={spec.label}
+						label={ttr(spec.label)}
 						name={spec.name}
 						type={spec.type}
 						fullWidth
@@ -205,9 +207,9 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 			})}
 
 			{formError && (
-				<Typography color="error" variant="body2" sx={{ mt: 1 }}>
+				<CText color="error" size="sm" sx={{ mt: 1 }}>
 					{formError}
-				</Typography>
+				</CText>
 			)}
 
 			<CButton
@@ -217,7 +219,11 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				sx={{ mt: 2 }}
 				disabled={isSubmitting}
 			>
-				{isSubmitting ? (submittingText ? submittingText : submitText) : submitText}
+				{isSubmitting
+					? submittingText
+						? ttr(submittingText)
+						: ttr(submitText)
+					: ttr(submitText)}
 			</CButton>
 		</Box>
 	);
