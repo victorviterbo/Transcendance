@@ -7,6 +7,7 @@ import { getAccessToken } from "../api";
 
 const postMock = vi.fn();
 let accessToken: string | null = null;
+let authFailureHandler: (() => void) | null = null;
 
 vi.mock("../api", () => ({
 	default: {
@@ -19,6 +20,9 @@ vi.mock("../api", () => ({
 		accessToken = null;
 	},
 	getAccessToken: () => accessToken,
+	setAuthFailureHandler: (handler: (() => void) | null) => {
+		authFailureHandler = handler;
+	},
 }));
 
 const AuthStatusProbe = () => {
@@ -40,6 +44,7 @@ describe("auth flows", () => {
 	beforeEach(() => {
 		postMock.mockReset();
 		accessToken = null;
+		authFailureHandler = null;
 	});
 
 	it("hydrates auth state from refresh", async () => {
@@ -104,5 +109,27 @@ describe("auth flows", () => {
 		await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("guest"));
 		expect(screen.getByTestId("username")).toHaveTextContent("");
 		expect(getAccessToken()).toBe(null);
+	});
+
+	it("auth failure handler clears auth state", async () => {
+		postMock
+			.mockResolvedValueOnce({
+				data: { access: "test-access", username: "john" },
+			})
+			.mockRejectedValueOnce(new Error("refresh expired"));
+
+		render(
+			<CAuthProvider>
+				<AuthStatusProbe />
+			</CAuthProvider>,
+		);
+
+		await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("authed"));
+		expect(authFailureHandler).not.toBeNull();
+
+		authFailureHandler?.();
+
+		await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("guest"));
+		expect(screen.getByTestId("username")).toHaveTextContent("");
 	});
 });
