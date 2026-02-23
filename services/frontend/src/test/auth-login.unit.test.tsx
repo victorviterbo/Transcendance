@@ -33,6 +33,69 @@ describe("auth login unit tests", () => {
 		setAuthMock.mockReset();
 	});
 
+	it.each([
+		["john@", false],
+		["john@42", false],
+		["john@42.fr", true],
+	])("email validation for %s", async (value, valid) => {
+		const user = userEvent.setup();
+
+		render(<PLoginForm />);
+
+		const emailInput = screen.getByLabelText(/email/i);
+		await user.type(emailInput, value);
+
+		if (valid) {
+			expect(screen.queryByText(/enter a valid email address/i)).not.toBeInTheDocument();
+		} else {
+			expect(await screen.findByText(/enter a valid email address/i)).toBeInTheDocument();
+		}
+	});
+
+	it("blocks submit when email is invalid", async () => {
+		const user = userEvent.setup();
+
+		render(<PLoginForm />);
+
+		await user.type(screen.getByLabelText(/email/i), "john@");
+		await user.type(screen.getByLabelText(/password/i), "secret");
+		await user.click(screen.getByRole("button", { name: /log in/i }));
+
+		expect(postMock).not.toHaveBeenCalled();
+		expect(await screen.findByText(/enter a valid email address/i)).toBeInTheDocument();
+	});
+
+	it("treats whitespace-only input as empty", async () => {
+		const user = userEvent.setup();
+
+		render(<PLoginForm />);
+
+		await user.type(screen.getByLabelText(/email/i), "   ");
+		await user.type(screen.getByLabelText(/password/i), "   ");
+		await user.click(screen.getByRole("button", { name: /log in/i }));
+
+		expect(screen.getAllByText(/please fill this/i)).toHaveLength(2);
+		expect(postMock).not.toHaveBeenCalled();
+	});
+
+	it("trims email and password before submit", async () => {
+		const user = userEvent.setup();
+		postMock.mockResolvedValue({
+			data: { username: "john", access: "token" },
+		});
+
+		render(<PLoginForm />);
+
+		await user.type(screen.getByLabelText(/email/i), "  john@42.fr  ");
+		await user.type(screen.getByLabelText(/password/i), "  secret  ");
+		await user.click(screen.getByRole("button", { name: /log in/i }));
+
+		expect(postMock).toHaveBeenCalledWith(API_AUTH_LOGIN, {
+			email: "john@42.fr",
+			password: "secret",
+		});
+	});
+
 	it("unknown user is refused", async () => {
 		const user = userEvent.setup();
 		postMock.mockRejectedValue({
@@ -119,6 +182,44 @@ describe("auth login unit tests", () => {
 
 		expect(submitButton).toBeDisabled();
 		expect(submitButton).toHaveTextContent(/logging in/i);
+
+		deferred.resolve({ data: { username: "john", access: "token" } });
+
+		await waitFor(() => expect(submitButton).not.toBeDisabled());
+	});
+
+	it("re-enables submit after failure", async () => {
+		const user = userEvent.setup();
+		const deferred = createDeferred<{ data: { username: string; access: string } }>();
+		postMock.mockReturnValueOnce(deferred.promise);
+
+		render(<PLoginForm />);
+
+		const submitButton = screen.getByRole("button", { name: /log in/i });
+		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
+		await user.type(screen.getByLabelText(/password/i), "secret");
+		await user.click(submitButton);
+
+		expect(submitButton).toBeDisabled();
+
+		deferred.reject(new Error("Network error"));
+
+		await waitFor(() => expect(submitButton).not.toBeDisabled());
+	});
+
+	it("prevents double submit while pending", async () => {
+		const user = userEvent.setup();
+		const deferred = createDeferred<{ data: { username: string; access: string } }>();
+		postMock.mockReturnValueOnce(deferred.promise);
+
+		render(<PLoginForm />);
+
+		const submitButton = screen.getByRole("button", { name: /log in/i });
+		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
+		await user.type(screen.getByLabelText(/password/i), "secret");
+		await user.dblClick(submitButton);
+
+		expect(postMock).toHaveBeenCalledTimes(1);
 
 		deferred.resolve({ data: { username: "john", access: "token" } });
 

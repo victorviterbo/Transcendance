@@ -22,12 +22,12 @@ function GPageBase({ children }: GPageProps) {
 					alignItems: "stretch",
 				}}
 			>
-				<Box
+				{/* <Box
 					sx={{
 						height: "75px",
 						bgcolor: "primary.main",
 					}}
-				></Box>
+				></Box> */}
 				<Stack sx={{ flex: 1, overflow: "auto" }}>
 					<Box sx={{ flex: 1 }}>{children}</Box>
 					<Box

@@ -1,16 +1,20 @@
-export type TField = {
-	value: string;
-	errors: string[];
+import type { TextFieldProps } from "@mui/material";
+
+export type TValidator = (value: string, values: Record<string, string>) => string[];
+
+export type TConfirmConfig = {
+	name?: string;
+	label?: string;
+	error?: string;
+	required?: boolean;
 };
 
-export type TLoginFormState = {
-	email: TField;
-	password: TField;
-};
-
-export type TRegisterFormState = {
-	username: TField;
-	email: TField;
-	password: TField;
-	confirmPassword: TField;
+export type TFormFieldConfig = {
+	name: string;
+	label: string;
+	type?: TextFieldProps["type"];
+	required?: boolean;
+	validate?: TValidator;
+	confirm?: boolean | TConfirmConfig;
+	initialValue?: string;
 };
