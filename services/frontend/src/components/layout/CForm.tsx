@@ -1,4 +1,5 @@
-import { Box, Button, capitalize, Typography } from "@mui/material";
+import { Box, capitalize, Typography } from "@mui/material";
+import CButton from "../inputs/buttons/CButton.tsx";
 import { useMemo, useState, type FormEvent } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import type { IEventStatus } from "../../types/events.tsx";
@@ -209,7 +210,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				</Typography>
 			)}
 
-			<Button
+			<CButton
 				type="submit"
 				variant="contained"
 				fullWidth
@@ -217,7 +218,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				disabled={isSubmitting}
 			>
 				{isSubmitting ? (submittingText ? submittingText : submitText) : submitText}
-			</Button>
+			</CButton>
 		</Box>
 	);
 }

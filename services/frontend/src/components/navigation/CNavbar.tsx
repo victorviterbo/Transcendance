@@ -1,5 +1,4 @@
-import { CatchingPokemon } from "@mui/icons-material";
-import { AppBar, IconButton, Stack, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, IconButton, Stack, Toolbar } from "@mui/material";
 import { useLocation, Link } from "react-router-dom";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -8,10 +7,15 @@ import PeopleIcon from "@mui/icons-material/People";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useAuth } from "../auth/CAuthProvider";
 import { type TNavItem } from "../../types/navbar";
+import logo from "../../assets/logo.svg";
+import CTitle from "../text/CTitle.tsx";
+import CNavbarLink from "./CNavbarLink.tsx";
+import CNavbarIcon from "./CNavbarIcon.tsx";
 
 function CNavbar() {
 	const { status } = useAuth();
 	const { pathname } = useLocation();
+
 	const guestItems: TNavItem[] = [
 		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
 		{ kind: "link", label: "Log in", to: "/auth" },
@@ -39,49 +43,43 @@ function CNavbar() {
 	return (
 		<AppBar position="static">
 			<Toolbar>
-				<IconButton size="large" edge="start" color="inherit">
-					<CatchingPokemon />
+				<IconButton
+					size="medium"
+					edge="start"
+					color="inherit"
+					component={Link}
+					to="/"
+					aria-label="Home"
+				>
+					<Box component="img" src={logo} alt="Guess Tunes logo" sx={{ height: 40 }} />
 				</IconButton>
-				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+				<CTitle size="sm" sx={{ flexGrow: 1 }}>
 					Guess Tunes
-				</Typography>
+				</CTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
 					{items.map((item, idx) => {
 						if (item.kind === "link") {
 							const isActive =
 								item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
 							return (
-								// TODO CTypography? Also background color is atrocious
-								<Typography
+								<CNavbarLink
 									key={`${item.label}-${idx}`}
-									component={Link}
 									to={item.to}
-									sx={{
-										textDecoration: "none",
-										color: "inherit",
-										display: "inline-flex",
-										gap: 1,
-										backgroundColor: isActive
-											? "rgba(255,255,255,0.15)"
-											: "transparent",
-									}}
-								>
-									{item.icon}
-									{item.label}
-								</Typography>
+									label={item.label}
+									icon={item.icon}
+									active={isActive}
+								/>
 							);
 						}
 
 						return (
-							<IconButton
+							<CNavbarIcon
 								key={`${item.aria}-${idx}`}
-								color="inherit"
-								aria-label={item.aria}
+								aria={item.aria}
+								icon={item.icon}
 								onClick={item.onClick}
 								disabled={item.disabled}
-							>
-								{item.icon}
-							</IconButton>
+							/>
 						);
 					})}
 				</Stack>

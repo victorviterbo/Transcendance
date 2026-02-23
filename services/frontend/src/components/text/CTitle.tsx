@@ -2,7 +2,7 @@ import { type TypographyVariant } from "@mui/material";
 import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
 
-interface CTitleProps extends CTextBaseProps {}
+export interface CTitleProps extends CTextBaseProps {}
 
 function CTitle({ size, children, ...other }: CTitleProps) {
 	//====================== FUNCTIONS ======================

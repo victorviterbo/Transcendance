@@ -10,10 +10,15 @@ export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	getVariant?: () => TypographyVariant;
 }
 
-function CTextBase({ align, children, getVariant }: CTextBaseProps) {
+function CTextBase({ align, children, getVariant, ...other }: CTextBaseProps) {
 	//====================== DOM ======================
 	return (
-		<Typography variant={getVariant ? getVariant() : "body1"} align={align} gutterBottom>
+		<Typography
+			variant={getVariant ? getVariant() : "body1"}
+			align={align}
+			gutterBottom
+			{...other}
+		>
 			{typeof children == "string" ? ttr(children) : children}
 		</Typography>
 	);
