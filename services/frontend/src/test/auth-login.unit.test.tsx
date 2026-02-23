@@ -46,9 +46,9 @@ describe("auth login unit tests", () => {
 		await user.type(emailInput, value);
 
 		if (valid) {
-			expect(screen.queryByText(/enter a valid email address/i)).not.toBeInTheDocument();
+			expect(screen.queryByText(/email_valid/i)).not.toBeInTheDocument();
 		} else {
-			expect(await screen.findByText(/enter a valid email address/i)).toBeInTheDocument();
+			expect(await screen.findByText(/email_valid/i)).toBeInTheDocument();
 		}
 	});
 
@@ -59,10 +59,10 @@ describe("auth login unit tests", () => {
 
 		await user.type(screen.getByLabelText(/email/i), "john@");
 		await user.type(screen.getByLabelText(/password/i), "secret");
-		await user.click(screen.getByRole("button", { name: /log in/i }));
+		await user.click(screen.getByRole("button", { name: /login/i }));
 
 		expect(postMock).not.toHaveBeenCalled();
-		expect(await screen.findByText(/enter a valid email address/i)).toBeInTheDocument();
+		expect(await screen.findByText(/email_valid/i)).toBeInTheDocument();
 	});
 
 	it("treats whitespace-only input as empty", async () => {
@@ -72,9 +72,9 @@ describe("auth login unit tests", () => {
 
 		await user.type(screen.getByLabelText(/email/i), "   ");
 		await user.type(screen.getByLabelText(/password/i), "   ");
-		await user.click(screen.getByRole("button", { name: /log in/i }));
+		await user.click(screen.getByRole("button", { name: /login/i }));
 
-		expect(screen.getAllByText(/please fill this/i)).toHaveLength(2);
+		expect(screen.getAllByText(/required_field/i)).toHaveLength(2);
 		expect(postMock).not.toHaveBeenCalled();
 	});
 
@@ -88,7 +88,7 @@ describe("auth login unit tests", () => {
 
 		await user.type(screen.getByLabelText(/email/i), "  john@42.fr  ");
 		await user.type(screen.getByLabelText(/password/i), "  secret  ");
-		await user.click(screen.getByRole("button", { name: /log in/i }));
+		await user.click(screen.getByRole("button", { name: /login/i }));
 
 		expect(postMock).toHaveBeenCalledWith(API_AUTH_LOGIN, {
 			email: "john@42.fr",
@@ -104,7 +104,7 @@ describe("auth login unit tests", () => {
 
 		render(<PLoginForm />);
 
-		const submitButton = screen.getByRole("button", { name: /log in/i });
+		const submitButton = screen.getByRole("button", { name: /login/i });
 		await user.type(screen.getByLabelText(/email/i), "unknown@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "whocares");
 		await user.click(submitButton);
@@ -115,7 +115,7 @@ describe("auth login unit tests", () => {
 		});
 		expect(await screen.findByText(/wrong email or password/i)).toBeInTheDocument();
 		expect(submitButton).not.toBeDisabled();
-		expect(submitButton).toHaveTextContent(/log in/i);
+		expect(submitButton).toHaveTextContent(/login/i);
 		expect(setAuthMock).not.toHaveBeenCalled();
 	});
 
@@ -129,7 +129,7 @@ describe("auth login unit tests", () => {
 
 		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "wrong");
-		await user.click(screen.getByRole("button", { name: /log in/i }));
+		await user.click(screen.getByRole("button", { name: /login/i }));
 
 		expect(postMock).toHaveBeenCalledWith(API_AUTH_LOGIN, {
 			email: "john@42.fr",
@@ -150,7 +150,7 @@ describe("auth login unit tests", () => {
 
 		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "secret");
-		await user.click(screen.getByRole("button", { name: /log in/i }));
+		await user.click(screen.getByRole("button", { name: /login/i }));
 
 		expect(postMock).toHaveBeenCalledWith(API_AUTH_LOGIN, {
 			email: "john@42.fr",
@@ -175,13 +175,13 @@ describe("auth login unit tests", () => {
 
 		render(<PLoginForm />);
 
-		const submitButton = screen.getByRole("button", { name: /log in/i });
+		const submitButton = screen.getByRole("button", { name: /login/i });
 		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "secret");
 		await user.click(submitButton);
 
 		expect(submitButton).toBeDisabled();
-		expect(submitButton).toHaveTextContent(/logging in/i);
+		expect(submitButton).toHaveTextContent(/logging_in/i);
 
 		deferred.resolve({ data: { username: "john", access: "token" } });
 
@@ -195,7 +195,7 @@ describe("auth login unit tests", () => {
 
 		render(<PLoginForm />);
 
-		const submitButton = screen.getByRole("button", { name: /log in/i });
+		const submitButton = screen.getByRole("button", { name: /login/i });
 		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "secret");
 		await user.click(submitButton);
@@ -214,7 +214,7 @@ describe("auth login unit tests", () => {
 
 		render(<PLoginForm />);
 
-		const submitButton = screen.getByRole("button", { name: /log in/i });
+		const submitButton = screen.getByRole("button", { name: /login/i });
 		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "secret");
 		await user.dblClick(submitButton);

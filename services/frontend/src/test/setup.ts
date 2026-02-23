@@ -4,6 +4,23 @@ import { cleanup } from "@testing-library/react";
 import { server } from "../mock/server";
 import { resetMockDb } from "../mock/db";
 
+vi.mock("../localization/localization", () => {
+	return {
+		langData: {
+			headers: [],
+			langs: [],
+			idPos: -1,
+			descPos: -1,
+			totalCol: -1,
+		},
+		currentLang: "en",
+		onLangChanged: vi.fn(),
+		setOnLangChanged: vi.fn(),
+		startLocalization: vi.fn(),
+		ttr: (id: string) => id,
+	};
+});
+
 // Starts MSW server before all tests
 beforeAll(() => {
 	server.listen({ onUnhandledRequest: "error" });
