@@ -1,11 +1,32 @@
 ﻿id,en,fr,jp,desc
-LANG_SELECT,Language selection,"Sélection, \ de la langue""",言語の選択,Selection language menu
-WELCOME,Welcome,Bienvenue,ようこそ,/
-CREATE_ROOM,Create room,Créer une salle,ルームを作成,The word 'room' is for a virtual room
-PRIVATE,Private,Privée,非公開,Refer to private virtual room
-PUBLIC,Public,Publique,公開,Refer to public virtual room
-PLAY_GAME,Play,,,/
-JOIN_ROOM,Join room,,,The word 'room' is for a virtual room
-JOIN,Join,,,Used to join a room
-FRIEND_ROOM,Friends rooms,,,The word 'room' is for a virtual room
-PUBLIC_ROOM,Public rooms,,,The word 'room' is for a virtual room
+LANG_SELECT,Language selection,Sélection de la langue,言語の選択,Language selection menu
+WELCOME,Welcome,Bienvenue,ようこそ,Generic welcome text
+USERNAME,Username,Nom d'utilisateur,ユーザー名,As it appears in form fields
+EMAIL,Email,Adresse e-mail,メールアドレス,As it appears in form fields
+PASSWORD,Password,Mot de passe,パスワード,As it appears in form fields
+CONFIRM_USERNAME,Confirm Username,Confirmez le nom d'utilisateur,ユーザー名の確認,As it appears in form fields
+CONFIRM_EMAIL,Confirm Email,Confirmez l'adresse e-mail,メールアドレスの確認,As it appears in form fields
+CONFIRM_PASSWORD,Confirm Password,Confirmez le mot de passe,パスワードの確認,As it appears in form fields
+LOGIN,Log in,Se connecter,ログイン,To log in
+LOGOUT,Log out,Se déconnecter,ログアウト,To log out
+SIGNUP,Sign up,Créer un compte,アカウント作成,To create an account
+LOGGING_IN,Logging in,Connexion en cours,ログイン中,Shows when a user presses Log in
+SIGNING_UP,Signing up,Création en cours,登録中,Shows when a user presses Sign up
+REQUIRED_FIELD,Please fill this,Veuillez remplir ce champ,必須項目です,Shown when a required field is empty
+USERNAME_MAX,Username at most 20 characters,Nom d'utilisateur : 20 caractères maximum,ユーザー名は20文字以内,Shown when username exceeds max length
+EMAIL_VALID,Enter a valid email address,Entrez une adresse e-mail valide,有効なメールアドレスを入力してください,Shown when email is invalid
+PASSWORD_MIN,Use at least 8 characters,Utilisez au moins 8 caractères,8文字以上にしてください,Shown when password is too short
+PASSWORD_NUMBER,Include at least 1 number,Incluez au moins 1 chiffre,数字を1つ以上含めてください,Shown when password has no number
+PASSWORD_LOWERCASE,Include at least 1 lowercase letter,Incluez au moins 1 lettre minuscule,小文字を1つ以上含めてください,Shown when password has no lowercase
+PASSWORD_UPPERCASE,Include at least 1 uppercase letter,Incluez au moins 1 lettre majuscule,大文字を1つ以上含めてください,Shown when password has no uppercase
+PASSWORD_SPECIAL,Include at least 1 special character,Incluez au moins 1 caractère spécial,特殊文字を1つ以上含めてください,Shown when password has no special character
+PASSWORD_MISMATCH,Passwords do not match,Les mots de passe ne correspondent pas,パスワードが一致しません,Shown when password confirmation does not match
+CREATE_ROOM,Create room,Créer une salle,ルームを作成,The word room is for a virtual room
+PRIVATE,Private,Privée,非公開,Refers to a private room
+PUBLIC,Public,Publique,公開,Refers to a public room
+PLAY_GAME,Play,Jouer,プレイ,Primary action to start
+LEADERBOARD,Leaderboard,Classement,ランキング,Page showing global rankings
+JOIN_ROOM,Join room,Rejoindre une salle,ルームに参加,The word room is for a virtual room
+JOIN,Join,Rejoindre,参加,Used to join a room
+FRIEND_ROOM,Friends' rooms,Salles d'amis,フレンドのルーム,The word room is for a virtual room
+PUBLIC_ROOM,Public rooms,Salles publiques,公開ルーム,The word room is for a virtual room
