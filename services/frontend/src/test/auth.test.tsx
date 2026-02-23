@@ -116,6 +116,7 @@ describe("auth flows", () => {
 			.mockResolvedValueOnce({
 				data: { access: "test-access", username: "john" },
 			})
+			.mockRejectedValueOnce(new Error("refresh expired"))
 			.mockRejectedValueOnce(new Error("refresh expired"));
 
 		render(
