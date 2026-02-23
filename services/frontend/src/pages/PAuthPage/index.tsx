@@ -21,7 +21,7 @@ const PAuthPage = () => {
 					</CTitle>
 
 					{!user ? (
-						<CTabs tabs={["login", "register"]}>
+						<CTabs tabs={["LOGIN", "SIGNUP"]}>
 							<PLoginForm
 								onSuccess={(user: IAuthUser) => {
 									setUser(user);

@@ -25,14 +25,14 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 		() => [
 			{
 				name: "email",
-				label: "Email",
+				label: "EMAIL",
 				type: "email",
 				required: true,
 				validate: checkEmailValid,
 			},
 			{
 				name: "password",
-				label: "Password",
+				label: "PASSWORD",
 				type: "password",
 				required: true,
 			},
@@ -64,8 +64,8 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 	//====================== DOM ======================
 	return (
 		<CForm
-			submitText="Log in"
-			submittingText="Logging in ..."
+			submitText="LOGIN"
+			submittingText="LOGGING_IN"
 			fields={fields}
 			onSubmit={handleLogin}
 		/>
