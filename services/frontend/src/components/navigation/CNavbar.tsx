@@ -11,6 +11,7 @@ import logo from "../../assets/logo.svg";
 import CTitle from "../text/CTitle.tsx";
 import CNavbarLink from "./CNavbarLink.tsx";
 import CNavbarIcon from "./CNavbarIcon.tsx";
+import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
 
 function CNavbar() {
 	const { status } = useAuth();
@@ -22,8 +23,8 @@ function CNavbar() {
 	];
 
 	const authedItems: TNavItem[] = [
-		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
-		{ kind: "link", label: "Leaderboard", to: "/leaderboard", icon: <LeaderboardIcon /> },
+		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
+		{ kind: "link", label: "LEADERBOARD", to: "/leaderboard", icon: <LeaderboardIcon /> },
 		{
 			kind: "action",
 			icon: <NotificationsIcon />,
@@ -57,6 +58,7 @@ function CNavbar() {
 					Guess Tunes
 				</CTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
+					<CDialogLanguage open={false} />
 					{items.map((item, idx) => {
 						if (item.kind === "link") {
 							const isActive =
