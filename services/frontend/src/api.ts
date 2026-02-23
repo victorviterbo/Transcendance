@@ -4,6 +4,7 @@ import { API_AUTH_LOGIN, API_AUTH_LOGOUT, API_AUTH_REFRESH, API_AUTH_REGISTER } 
 let accessToken: string | null = null;
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
+let authFailureHandler: (() => void) | null = null;
 
 export const setAccessToken = (token: string | null) => {
 	accessToken = token;
@@ -14,6 +15,16 @@ export const clearAccessToken = () => {
 };
 
 export const getAccessToken = () => accessToken;
+
+export const setAuthFailureHandler = (handler: (() => void) | null) => {
+	authFailureHandler = handler;
+};
+
+const notifyAuthFailure = () => {
+	if (authFailureHandler) {
+		authFailureHandler();
+	}
+};
 
 const api = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
@@ -80,6 +91,7 @@ api.interceptors.response.use(
 		const newToken = await refreshPromise;
 		if (!newToken) {
 			clearAccessToken();
+			notifyAuthFailure();
 			return Promise.reject(error);
 		}
 		setAccessToken(newToken);

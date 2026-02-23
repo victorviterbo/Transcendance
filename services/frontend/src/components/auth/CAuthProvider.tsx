@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { type IAuthUser, type TAuthStatus } from "../../types/user";
 import type { GCompProps } from "../common/GProps";
-import api, { clearAccessToken, setAccessToken } from "../../api";
+import api, { clearAccessToken, setAccessToken, setAuthFailureHandler } from "../../api";
 import { API_AUTH_LOGOUT, API_AUTH_REFRESH } from "../../constants";
 
 const AuthContext = createContext({
@@ -34,6 +34,11 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 			setStatus("guest");
 		}
 	}, []);
+
+	useEffect(() => {
+		setAuthFailureHandler(() => setAuth(null));
+		return () => setAuthFailureHandler(null);
+	}, [setAuth]);
 
 	useEffect(() => {
 		api.post(API_AUTH_REFRESH)

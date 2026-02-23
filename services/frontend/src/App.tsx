@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import PHomePage from "./pages/PHomePage";
+import PLeaderboardPage from "./pages/PLeaderboardPage";
 import PAuthPage from "./pages/PAuthPage";
 import PProfilePage from "./pages/PProfilePage";
 import CProtectedRoute from "./components/auth/CProtectedRoute";
@@ -20,6 +21,14 @@ function App() {
 					element={
 						<CProtectedRoute>
 							<PProfilePage />
+						</CProtectedRoute>
+					}
+				/>
+				<Route
+					path="/leaderboard"
+					element={
+						<CProtectedRoute>
+							<PLeaderboardPage />
 						</CProtectedRoute>
 					}
 				/>
