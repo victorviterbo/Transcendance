@@ -3,7 +3,7 @@ me:
     summary: Get current user
     description: Retrieve the authenticated user's profile.
     operationId: getCurrentUser
-    tags: [user]
+    tags: [users]
     responses:
       "200":
         description: Current user profile
@@ -36,9 +36,9 @@ me:
               $ref: ../openapi.yaml#/components/schemas/AuthError
   patch:
     summary: Update current user profile
-    description: Update profile fields (title, etc.).
+    description: Update profile fields (title, username, email).
     operationId: updateCurrentUser
-    tags: [user]
+    tags: [users]
     requestBody:
       description: Partial user profile update.
       required: true
@@ -47,6 +47,8 @@ me:
           schema:
             type: object
             properties:
+              username: { type: string }
+              email: { type: string }
               title: { type: string }
     responses:
       "200":
@@ -67,6 +69,15 @@ me:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              invalid-username:
+                value:
+                  error:
+                    username: "INVALID_USERNAME"
+              invalid-email:
+                value:
+                  error:
+                    email: "INVALID_EMAIL"
       "401":
         description: Not authenticated
         content:
@@ -79,11 +90,20 @@ me:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ConflictError
+            examples:
+              username-taken:
+                value:
+                  error:
+                    username: "USERNAME_TAKEN"
+              email-taken:
+                value:
+                  error:
+                    email: "EMAIL_TAKEN"
   delete:
     summary: Delete account
     description: Permanently delete the authenticated user's account.
     operationId: deleteCurrentUser
-    tags: [user]
+    tags: [users]
     requestBody:
       required: true
       content:
@@ -108,7 +128,7 @@ byUsername:
     summary: Get public profile
     description: Retrieve a public user profile by username.
     operationId: getUserByUsername
-    tags: [user]
+    tags: [users]
     parameters:
       - in: path
         name: username
@@ -129,146 +149,12 @@ byUsername:
       "404":
         description: User not found
 
-username:
-  post:
-    summary: Change username
-    description: Update the authenticated user's username.
-    operationId: changeUsername
-    tags: [user]
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [username, password]
-            properties:
-              username: { type: string }
-              password: { type: string, format: password }
-    responses:
-      "200":
-        description: Username updated
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username: { type: string }
-                email: { type: string }
-                title: { type: string }
-                xp: { type: integer }
-              required: [username, email, title, xp]
-      "400":
-        description: Validation error
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/ValidationError
-            examples:
-              missing-fields:
-                value:
-                  error:
-                    username: "MISSING_FIELD"
-                    password: "MISSING_FIELD"
-              invalid-username:
-                value:
-                  error:
-                    username: "INVALID_USERNAME"
-              invalid-password:
-                value:
-                  error:
-                    password: "INVALID_PASSWORD"
-      "401":
-        description: Not authenticated
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
-      "409":
-        description: Username already taken
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/ConflictError
-            examples:
-              username-taken:
-                value:
-                  error:
-                    username: "USERNAME_TAKEN"
-
-email:
-  post:
-    summary: Change email
-    description: Update the authenticated user's email address.
-    operationId: changeEmail
-    tags: [user]
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [email, password]
-            properties:
-              email: { type: string }
-              password: { type: string, format: password }
-    responses:
-      "200":
-        description: Email updated
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username: { type: string }
-                email: { type: string }
-                title: { type: string }
-                xp: { type: integer }
-              required: [username, email, title, xp]
-      "400":
-        description: Validation error
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/ValidationError
-            examples:
-              missing-fields:
-                value:
-                  error:
-                    email: "MISSING_FIELD"
-                    password: "MISSING_FIELD"
-              invalid-email:
-                value:
-                  error:
-                    email: "INVALID_EMAIL"
-              invalid-password:
-                value:
-                  error:
-                    password: "INVALID_PASSWORD"
-      "401":
-        description: Not authenticated
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
-      "409":
-        description: Email already taken
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/ConflictError
-            examples:
-              email-taken:
-                value:
-                  error:
-                    email: "EMAIL_TAKEN"
-
 password:
   post:
     summary: Change password
     description: Update the authenticated user's password.
     operationId: changePassword
-    tags: [user]
+    tags: [users]
     requestBody:
       required: true
       content:
@@ -321,7 +207,7 @@ avatar:
     summary: Upload avatar
     description: Upload a new avatar image for the authenticated user.
     operationId: uploadAvatar
-    tags: [user]
+    tags: [users]
     requestBody:
       required: true
       content:
@@ -353,7 +239,7 @@ avatar:
     summary: Remove avatar
     description: Remove the authenticated user's avatar.
     operationId: deleteAvatar
-    tags: [user]
+    tags: [users]
     responses:
       "204":
         description: Avatar removed
