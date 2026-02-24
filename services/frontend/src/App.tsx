@@ -16,22 +16,11 @@ function App() {
 			<Routes>
 				<Route path="/" element={<PHomePage />} />
 				<Route path="/auth" element={<PAuthPage />} />
-				<Route
-					path="/profile"
-					element={
-						<CProtectedRoute>
-							<PProfilePage />
-						</CProtectedRoute>
-					}
-				/>
-				<Route
-					path="/leaderboard"
-					element={
-						<CProtectedRoute>
-							<PLeaderboardPage />
-						</CProtectedRoute>
-					}
-				/>
+				<Route element={<CProtectedRoute />}>
+					<Route path="/users" element={<PProfilePage />} />
+					<Route path="/users/:username" element={<PProfilePage />} />
+					<Route path="/leaderboard" element={<PLeaderboardPage />} />
+				</Route>
 			</Routes>
 		</ThemeProvider>
 	);
