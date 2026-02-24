@@ -97,7 +97,7 @@ function applyContent(content: string[], lineID: number): void {
 }
 
 export async function startLocalization(): Promise<void> {
-	await fetch("localization/lang.csv", {
+	await fetch("/localization/lang.csv", {
 		method: "GET",
 	})
 		.then((reponse: Response) => {
