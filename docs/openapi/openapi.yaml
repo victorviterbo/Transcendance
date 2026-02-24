@@ -19,17 +19,13 @@ paths:
   /api/auth/logout:
     $ref: ./paths/auth.yaml#/logout
   /api/users/me:
-    $ref: ./paths/user.yaml#/me
+    $ref: ./paths/users.yaml#/me
   /api/users/{username}:
-    $ref: ./paths/user.yaml#/byUsername
-  /api/users/me/username:
-    $ref: ./paths/user.yaml#/username
-  /api/users/me/email:
-    $ref: ./paths/user.yaml#/email
+    $ref: ./paths/users.yaml#/byUsername
   /api/users/me/password:
-    $ref: ./paths/user.yaml#/password
+    $ref: ./paths/users.yaml#/password
   /api/users/me/avatar:
-    $ref: ./paths/user.yaml#/avatar
+    $ref: ./paths/users.yaml#/avatar
 
 components:
   schemas:
@@ -47,5 +43,5 @@ components:
 tags:
   - name: auth
     description: Authentication and registration endpoints.
-  - name: user
+  - name: users
     description: User profile and account management.
