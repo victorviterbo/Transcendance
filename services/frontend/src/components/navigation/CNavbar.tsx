@@ -33,7 +33,7 @@ function CNavbar() {
 
 	const handleProfileNavigate = () => {
 		handleProfileClose();
-		navigate("/profile");
+		navigate("/users/me");
 	};
 
 	const handleLogout = async () => {
