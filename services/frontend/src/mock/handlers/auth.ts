@@ -73,7 +73,7 @@ export const LoginHandler = http.post(API_AUTH_LOGIN, async ({ request }) => {
 			{ status: 200 },
 		);
 	}
-	return HttpResponse.json({ error: "Wrong email or password" }, { status: 401 });
+	return HttpResponse.json({ error: "INVALID_CREDENTIALS" }, { status: 401 });
 });
 
 /**
@@ -93,8 +93,8 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 		return HttpResponse.json(
 			{
 				error: {
-					username: "Username already taken",
-					email: "Email already taken",
+					username: "USERNAME_TAKEN",
+					email: "EMAIL_TAKEN",
 				},
 			},
 			{ status: 409 },
@@ -104,7 +104,7 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 		return HttpResponse.json(
 			{
 				error: {
-					username: "Username already taken",
+					username: "USERNAME_TAKEN",
 				},
 			},
 			{ status: 409 },
@@ -114,7 +114,7 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 		return HttpResponse.json(
 			{
 				error: {
-					email: "Email already taken",
+					email: "EMAIL_TAKEN",
 				},
 			},
 			{ status: 409 },
@@ -140,7 +140,7 @@ export const RefreshHandler = http.post(API_AUTH_REFRESH, async () => {
 	if (!sessionUser) {
 		const persistedUsername = readSession();
 		if (!persistedUsername) {
-			return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
+			return HttpResponse.json({ error: "REFRESH_TOKEN_EXPIRED" }, { status: 401 });
 		}
 		sessionUser = { username: persistedUsername };
 	}
