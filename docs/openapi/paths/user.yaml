@@ -1,0 +1,365 @@
+me:
+  get:
+    summary: Get current user
+    description: Retrieve the authenticated user's profile.
+    operationId: getCurrentUser
+    tags: [user]
+    responses:
+      "200":
+        description: Current user profile
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string }
+                title: { type: string }
+                xp: { type: integer }
+                availableTitles:
+                  type: array
+                  items: { type: string }
+              required: [username, email, title, xp, availableTitles]
+            examples:
+              user-ok:
+                value:
+                  username: "marc"
+                  email: "marc@42.fr"
+                  title: "Rookie"
+                  xp: 120
+                  availableTitles: ["Rookie", "Speedrunner"]
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+  patch:
+    summary: Update current user profile
+    description: Update profile fields (title, etc.).
+    operationId: updateCurrentUser
+    tags: [user]
+    requestBody:
+      description: Partial user profile update.
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title: { type: string }
+    responses:
+      "200":
+        description: Updated profile
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string }
+                title: { type: string }
+                xp: { type: integer }
+              required: [username, email, title, xp]
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+      "409":
+        description: Unique constraint violation
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ConflictError
+  delete:
+    summary: Delete account
+    description: Permanently delete the authenticated user's account.
+    operationId: deleteCurrentUser
+    tags: [user]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [password]
+            properties:
+              password: { type: string, format: password }
+    responses:
+      "204":
+        description: Account deleted
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+
+byUsername:
+  get:
+    summary: Get public profile
+    description: Retrieve a public user profile by username.
+    operationId: getUserByUsername
+    tags: [user]
+    parameters:
+      - in: path
+        name: username
+        required: true
+        schema: { type: string }
+    responses:
+      "200":
+        description: Public profile
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                title: { type: string }
+                xp: { type: integer }
+              required: [username, title, xp]
+      "404":
+        description: User not found
+
+username:
+  post:
+    summary: Change username
+    description: Update the authenticated user's username.
+    operationId: changeUsername
+    tags: [user]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [username, password]
+            properties:
+              username: { type: string }
+              password: { type: string, format: password }
+    responses:
+      "200":
+        description: Username updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string }
+                title: { type: string }
+                xp: { type: integer }
+              required: [username, email, title, xp]
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-fields:
+                value:
+                  error:
+                    username: "MISSING_FIELD"
+                    password: "MISSING_FIELD"
+              invalid-username:
+                value:
+                  error:
+                    username: "INVALID_USERNAME"
+              invalid-password:
+                value:
+                  error:
+                    password: "INVALID_PASSWORD"
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+      "409":
+        description: Username already taken
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ConflictError
+            examples:
+              username-taken:
+                value:
+                  error:
+                    username: "USERNAME_TAKEN"
+
+email:
+  post:
+    summary: Change email
+    description: Update the authenticated user's email address.
+    operationId: changeEmail
+    tags: [user]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password]
+            properties:
+              email: { type: string }
+              password: { type: string, format: password }
+    responses:
+      "200":
+        description: Email updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string }
+                title: { type: string }
+                xp: { type: integer }
+              required: [username, email, title, xp]
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-fields:
+                value:
+                  error:
+                    email: "MISSING_FIELD"
+                    password: "MISSING_FIELD"
+              invalid-email:
+                value:
+                  error:
+                    email: "INVALID_EMAIL"
+              invalid-password:
+                value:
+                  error:
+                    password: "INVALID_PASSWORD"
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+      "409":
+        description: Email already taken
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ConflictError
+            examples:
+              email-taken:
+                value:
+                  error:
+                    email: "EMAIL_TAKEN"
+
+password:
+  post:
+    summary: Change password
+    description: Update the authenticated user's password.
+    operationId: changePassword
+    tags: [user]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [currentPassword, newPassword]
+            properties:
+              currentPassword: { type: string, format: password }
+              newPassword: { type: string, format: password }
+    responses:
+      "200":
+        description: Password updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string }
+              required: [description]
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-fields:
+                value:
+                  error:
+                    currentPassword: "MISSING_FIELD"
+                    newPassword: "MISSING_FIELD"
+              invalid-new-password:
+                value:
+                  error:
+                    newPassword: "INVALID_PASSWORD"
+              invalid-current-password:
+                value:
+                  error:
+                    currentPassword: "INVALID_PASSWORD"
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+
+avatar:
+  post:
+    summary: Upload avatar
+    description: Upload a new avatar image for the authenticated user.
+    operationId: uploadAvatar
+    tags: [user]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [image]
+            properties:
+              image:
+                type: string
+                format: binary
+    responses:
+      "200":
+        description: Avatar updated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                image: { type: string }
+              required: [image]
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+  delete:
+    summary: Remove avatar
+    description: Remove the authenticated user's avatar.
+    operationId: deleteAvatar
+    tags: [user]
+    responses:
+      "204":
+        description: Avatar removed
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
