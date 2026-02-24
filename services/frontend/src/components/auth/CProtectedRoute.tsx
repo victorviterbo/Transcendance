@@ -1,20 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./CAuthProvider";
-import type { ReactNode } from "react";
 
-interface CProtectedRouteProps {
-	children: ReactNode;
-}
-
-function CProtectedRoute({ children }: CProtectedRouteProps) {
+function CProtectedRoute() {
 	const { status } = useAuth();
-
-	// TODO make a nice loading page, with the vinyl?
-	if (status === "loading") {
-		return <div>Loading...</div>;
-	}
-
-	return status === "authed" ? children : <Navigate to="/auth" replace />;
+	//TODO Loading page?
+	if (status === "loading") return <div>Loading...</div>;
+	return status === "authed" ? <Outlet /> : <Navigate to="/auth" replace />;
 }
 
 export default CProtectedRoute;
