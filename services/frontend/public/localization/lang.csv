@@ -30,3 +30,12 @@ JOIN_ROOM,Join room,Rejoindre une salle,ルームに参加,The word room is for 
 JOIN,Join,Rejoindre,参加,Used to join a room
 FRIEND_ROOM,Friends' rooms,Salles d'amis,フレンドのルーム,The word room is for a virtual room
 PUBLIC_ROOM,Public rooms,Salles publiques,公開ルーム,The word room is for a virtual room
+MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Shown when a required field is missing
+INVALID_USERNAME,Invalid username,Nom d'utilisateur invalide,ユーザー名が無効です,Shown when username fails validation
+INVALID_EMAIL,Invalid email,Adresse e-mail invalide,メールアドレスが無効です,Shown when email fails validation
+INVALID_PASSWORD,Invalid password,Mot de passe invalide,パスワードが無効です,Shown when password fails validation
+USERNAME_TAKEN,Username already taken,Nom d'utilisateur déjà pris,ユーザー名は既に使用されています,Shown when username is already taken
+EMAIL_TAKEN,Email already taken,Adresse e-mail déjà utilisée,メールアドレスは既に使用されています,Shown when email is already taken
+INVALID_CREDENTIALS,Wrong email or password,E-mail ou mot de passe incorrect,メールアドレスまたはパスワードが違います,Shown when login credentials are invalid
+REFRESH_TOKEN_EXPIRED,Refresh token expired,Le jeton de rafraîchissement a expiré,リフレッシュトークンの期限が切れています,Shown when refresh token is expired
+REFRESH_TOKEN_MISSING,Refresh token missing,Jeton de rafraîchissement manquant,リフレッシュトークンがありません,Shown when refresh token is missing
