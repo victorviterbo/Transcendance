@@ -1,36 +1,15 @@
-import { Box, Container, Typography } from "@mui/material";
-import CTitle from "../../components/text/CTitle";
 import { useAuth } from "../../components/auth/CAuthProvider";
+import { Navigate, useParams } from "react-router-dom";
+import PProfilePublic from "./PProfilePublic";
+import PProfileMe from "./PProfileMe";
 
 const PProfilePage = () => {
 	const { user } = useAuth();
+	const { username } = useParams();
 
-	if (!user) {
-		return (
-			<Container maxWidth="sm" sx={{ mt: 8 }}>
-				<CTitle align="center" size="md">
-					Profile
-				</CTitle>
-				<Typography align="center">You are not logged in.</Typography>
-			</Container>
-		);
-	}
-
-	return (
-		<Container maxWidth="sm" sx={{ mt: 8 }}>
-			<CTitle align="center" size="md">
-				Profile
-			</CTitle>
-			<Box display="flex" flexDirection="column" gap={1} sx={{ mt: 2 }}>
-				<Typography>
-					<strong>Username:</strong> {user.username ?? "-"}
-				</Typography>
-				<Typography>
-					<strong>Email:</strong> {user.email ?? "-"}
-				</Typography>
-			</Box>
-		</Container>
-	);
+	if (!username || username === user?.username) return <Navigate to="/users/me" />;
+	if (username === "me") return <PProfileMe />;
+	return <PProfilePublic username={username} />;
 };
 
 export default PProfilePage;
