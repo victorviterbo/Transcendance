@@ -12,6 +12,7 @@ LOGOUT,Log out,Se déconnecter,ログアウト,To log out
 SIGNUP,Sign up,Créer un compte,アカウント作成,To create an account
 LOGGING_IN,Logging in,Connexion en cours,ログイン中,Shows when a user presses Log in
 SIGNING_UP,Signing up,Création en cours,登録中,Shows when a user presses Sign up
+MY_PROFILE,My profile,Mon profil,マイプロフィール,Menu item to open profile page
 REQUIRED_FIELD,Please fill this,Veuillez remplir ce champ,必須項目です,Shown when a required field is empty
 USERNAME_MAX,Username at most 20 characters,Nom d'utilisateur : 20 caractères maximum,ユーザー名は20文字以内,Shown when username exceeds max length
 EMAIL_VALID,Enter a valid email address,Entrez une adresse e-mail valide,有効なメールアドレスを入力してください,Shown when email is invalid

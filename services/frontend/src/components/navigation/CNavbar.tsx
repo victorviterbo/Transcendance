@@ -1,10 +1,11 @@
-import { AppBar, Box, IconButton, Stack, Toolbar } from "@mui/material";
-import { useLocation, Link } from "react-router-dom";
+import { AppBar, Box, IconButton, Menu, MenuItem, Stack, Toolbar } from "@mui/material";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PeopleIcon from "@mui/icons-material/People";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { useState } from "react";
 import { useAuth } from "../auth/CAuthProvider";
 import { type TNavItem } from "../../types/navbar";
 import logo from "../../assets/logo.svg";
@@ -12,10 +13,33 @@ import CTitle from "../text/CTitle.tsx";
 import CNavbarLink from "./CNavbarLink.tsx";
 import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
+import CText from "../text/CText.tsx";
 
 function CNavbar() {
-	const { status } = useAuth();
+	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
+	const navigate = useNavigate();
+	const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+	const isProfileMenuOpen = Boolean(profileAnchor);
+
+	const handleProfileOpen = (event?: React.MouseEvent<HTMLElement>) => {
+		if (!event) return;
+		setProfileAnchor(event.currentTarget);
+	};
+
+	const handleProfileClose = () => {
+		setProfileAnchor(null);
+	};
+
+	const handleProfileNavigate = () => {
+		handleProfileClose();
+		navigate("/profile");
+	};
+
+	const handleLogout = async () => {
+		handleProfileClose();
+		logout();
+	};
 
 	const guestItems: TNavItem[] = [
 		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
@@ -37,7 +61,12 @@ function CNavbar() {
 			aria: "Friends",
 			onClick: () => alert("Coming soon"),
 		},
-		{ kind: "action", icon: <AccountCircleIcon />, aria: "Profile", onClick: () => {} },
+		{
+			kind: "action",
+			icon: <AccountCircleIcon />,
+			aria: "Profile",
+			onClick: handleProfileOpen,
+		},
 	];
 	const items = status === "authed" ? authedItems : guestItems;
 
@@ -86,6 +115,14 @@ function CNavbar() {
 					})}
 				</Stack>
 			</Toolbar>
+			<Menu anchorEl={profileAnchor} open={isProfileMenuOpen} onClose={handleProfileClose}>
+				<MenuItem onClick={handleProfileNavigate}>
+					<CText size="sm">MY_PROFILE</CText>
+				</MenuItem>
+				<MenuItem onClick={handleLogout}>
+					<CText size="sm">LOGOUT</CText>
+				</MenuItem>
+			</Menu>
 		</AppBar>
 	);
 }
