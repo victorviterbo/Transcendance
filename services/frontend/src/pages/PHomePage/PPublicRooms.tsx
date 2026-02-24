@@ -9,7 +9,7 @@ function PPublicRooms() {
 	function getRoomsTemps(): IRoomInfo[] {
 		const tempRooms: IRoomInfo[] = [];
 
-		for (let i = 0; i < 155; i++) {
+		for (let i = 0; i < 0; i++) {
 			tempRooms.push({
 				name: "Test Name",
 				theme: "Test theme",

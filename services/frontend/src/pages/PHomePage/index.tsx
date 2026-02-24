@@ -32,7 +32,11 @@ const PHomePage = () => {
 					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
 						<PJoinRoom></PJoinRoom>
 					</Grid>
-					<Grid size={{ xs: 12, sm: 12, md: 12, lg: 6 }}>
+					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
+					</Grid>
+					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
+					</Grid>
+					<Grid size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
 						<PFriendsRooms></PFriendsRooms>
 					</Grid>
 				</Grid>

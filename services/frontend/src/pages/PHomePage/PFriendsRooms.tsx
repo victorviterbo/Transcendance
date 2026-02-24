@@ -9,7 +9,7 @@ function PFriendsRooms() {
 	function getRoomsTemps(): IRoomInfo[] {
 		const tempRooms: IRoomInfo[] = [];
 
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 10; i++) {
 			tempRooms.push({
 				name: "Test Name",
 				theme: "Test theme",

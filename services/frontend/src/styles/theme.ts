@@ -31,7 +31,7 @@ export const appThemeDef: ITheme = {
 	},
 
 	positions: {
-		mainSpacing: 2,
+		mainSpacing: 3,
 	},
 
 	bg: {

@@ -7,13 +7,14 @@ import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTabs from "../../components/navigation/CTabs";
 import type { IAuthUser } from "../../types/user";
 import PWelcomLogin from "./PWelcomLogin";
+import GPageBase from "../common/GPageBases";
 
 const PAuthPage = () => {
 	const [user, setUser] = useState<IAuthUser | null>(null);
 	const [isBack, setIsBack] = useState<boolean>(true);
 
 	return (
-		<>
+		<GPageBase>
 			<Container maxWidth="sm">
 				<CBasePaper>
 					<CTitle size="md" align="center">
@@ -46,7 +47,7 @@ const PAuthPage = () => {
 					)}
 				</CBasePaper>
 			</Container>
-		</>
+		</GPageBase>
 	);
 };
 
