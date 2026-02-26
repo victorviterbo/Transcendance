@@ -5,8 +5,7 @@ import GPageBase from "../common/GPageBases";
 import { appThemeDef } from "../../styles/theme";
 import PCreateRoom from "./PCreateRoom";
 import PJoinRoom from "./PJoinRoom";
-import PFriendsRooms from "./PFriendsRooms";
-import PPublicRooms from "./PPublicRooms";
+import PRooms from "./PRooms";
 
 const PHomePage = () => {
 	//const navigate = useNavigate();
@@ -32,16 +31,12 @@ const PHomePage = () => {
 					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
 						<PJoinRoom></PJoinRoom>
 					</Grid>
-					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
-					</Grid>
-					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
-					</Grid>
-					<Grid size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-						<PFriendsRooms></PFriendsRooms>
-					</Grid>
 				</Grid>
 				<Box sx={{ flex: 1, mt: spacing }}>
-					<PPublicRooms></PPublicRooms>
+					<PRooms isPublic={false}></PRooms>
+				</Box>
+				<Box sx={{ flex: 1, mt: spacing }}>
+					<PRooms isPublic={true}></PRooms>
 				</Box>
 			</Stack>
 		</GPageBase>
