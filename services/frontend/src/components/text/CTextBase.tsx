@@ -6,14 +6,20 @@ import { ttr } from "../../localization/localization.ts";
 export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	align?: TAlign;
 	size?: TSize;
-
+	color?: string;
 	getVariant?: () => TypographyVariant;
 }
 
-function CTextBase({ align, children, getVariant }: CTextBaseProps) {
+function CTextBase({ align, children, color, getVariant, sx, ...other }: CTextBaseProps) {
 	//====================== DOM ======================
 	return (
-		<Typography variant={getVariant ? getVariant() : "body1"} align={align} gutterBottom>
+		<Typography
+			variant={getVariant ? getVariant() : "body1"}
+			align={align}
+			gutterBottom
+			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
+			{...other}
+		>
 			{typeof children == "string" ? ttr(children) : children}
 		</Typography>
 	);

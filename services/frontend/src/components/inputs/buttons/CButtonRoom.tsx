@@ -10,11 +10,25 @@ interface CButtonRoomProps extends CButtonProps {
 
 function CButtonRoom({ infos, ...other }: CButtonRoomProps) {
 	return (
-		<CButton sx={{ width: "7vw", height: "7vw" }} {...other}>
+		<CButton
+			sx={{
+				width: "7vw",
+				height: "7vw",
+				backgroundImage: "url(" + infos.img + ")",
+				backgroundSize: "cover",
+			}}
+			{...other}
+		>
 			<Stack>
-				<CText size="md">{infos.name}</CText>
-				<CText size="md">{infos.theme}</CText>
-				<CText size="md">{infos.playerCount + " / " + infos.playerMax}</CText>
+				<CText size="md" color="black" sx={{fontWeight: "900", WebkitTextStroke: "1px #ffffff"}}>
+					{infos.name}
+				</CText>
+				<CText size="md" color="black" sx={{fontWeight: "900", WebkitTextStroke: "1px #ffffff"}}>
+					{infos.theme}
+				</CText>
+				<CText size="md" color="black" sx={{fontWeight: "900", WebkitTextStroke: "1px #ffffff"}}>
+					{infos.playerCount + " / " + infos.playerMax}
+				</CText>
 			</Stack>
 		</CButton>
 	);
