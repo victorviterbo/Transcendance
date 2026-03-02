@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
-    'users.apps.UsersConfig'
+    'userauth',
+    'userprofile',
+    'stats'
 ]
 
 # Definition of the middlewares (Layers between the backend and the WebServer)
@@ -61,7 +63,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'users.authentication.CookieJWTAuthentication',
+        'userauth.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -94,13 +96,13 @@ DATABASES = {
 
 # Define which data model is used for authentication
 # https://docs.djangoproject.com/en/6.0/topics/auth/customizing/#:~:text=AUTH_USER_MODEL%20setting%20that%20references%20a%20custom%20model%3A
-AUTH_USER_MODEL = 'users.SiteUser'
+AUTH_USER_MODEL = 'userauth.SiteUser'
 
 # Set Password module option
 # https://docs.djangoproject.com/en/6.0/topics/auth/passwords/#module-django.contrib.auth.password_validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'users.serializer.PasswordComplexityValidator',
+        'NAME': 'userauth.serializers.ComplexPasswordValidator',
     },
 ]
 
@@ -118,7 +120,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/6.0/topics/http/urls/#:~:text=root%20URLconf%20module%20to%20use.%20Ordinarily%2C%20this%20is%20the
 ROOT_URLCONF = 'project.urls'
 
-LOGIN_URL = '/api/users/login/'
+LOGIN_URL = '/api/auth/login/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 # define how entries are indexed, CAN LEAD TO LOSS OF BACK COMPATIBILITY

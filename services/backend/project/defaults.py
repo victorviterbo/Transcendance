@@ -1,6 +1,10 @@
+"""Define defaults values for the game."""
+
 import bisect
 
-def get_badge(number):
+
+def get_badge(number: int) -> str:
+    """Define badges given depending on xp."""
     breakpoints = [100, 200, 500, 1000, 2000, 5000, 100000]
     values = ["Deaf Octopus", # <100
               "Dazed Jellyfish", # < 200 

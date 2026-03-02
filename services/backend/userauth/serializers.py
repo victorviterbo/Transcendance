@@ -10,10 +10,9 @@ import re
 from typing import Any
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext as _
 from rest_framework import serializers
 
-from .models import Friendship, Profile, SiteUser
+from .models import Friendship, SiteUser
 
 
 def gmail_specific_normalize(email: str) -> str:
@@ -147,34 +146,9 @@ class ComplexPasswordValidator:
                     r"/(?=.*[^A-Za-z0-9])/": "Include at least 1 special character."
         }
         for rule in rules:
-            if not re.match(rule, password):
+            if re.match(rule, password):
                 raise ValidationError(rules[rule])
 
-
-class ProfileSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's profile."""
-
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Profile
-        fields = ['username', 'image', 'exp_point', 'badge', 'created_at']
-
-
-class LightProfileSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's profile."""
-
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Profile
-        fields = ['username', 'image']
 
 class FriendshipSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""

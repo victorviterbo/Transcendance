@@ -4,8 +4,9 @@ from typing import Any
 
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from userprofile.models import Profile
 
-from .models import Profile, SiteUser
+from .models import SiteUser
 
 
 @receiver(post_save, sender=SiteUser)
@@ -14,7 +15,7 @@ def create_profile(sender: type[SiteUser],
                    created: bool,
                    **kwargs: Any) -> None:
     """Trigger creation of profile after creating a user."""
-    if created:
+    if created and not instance.is_superuser:
         Profile.objects.create(user=instance, username=instance.username)
     
 @receiver(post_save, sender=SiteUser)
@@ -22,9 +23,8 @@ def save_profile(sender: type[SiteUser],
                  instance: SiteUser,
                  **kwargs: Any) -> None:
     """Trigger updating of profile after updating a user."""
-    instance.profile.username = instance.username
-    instance.profile.save()
-
+    if not instance.is_superuser:
+        instance.profile.save()
 
 @receiver(pre_delete, sender=SiteUser)
 def delete_profile(sender: type[SiteUser], instance=SiteUser, **kwargs: Any) -> None:

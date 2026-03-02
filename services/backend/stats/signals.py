@@ -9,7 +9,6 @@ from project.defaults import get_badge
 
 from .models import GameStat, UserRoundStat
 
-
 @receiver(post_save, sender=GameStat)
 def save_profile(sender: type[GameStat],
                  instance: GameStat,
@@ -25,5 +24,5 @@ def save_profile(sender: type[GameStat],
             user_profile = player.profile
             if total_game_xp > 0:
                 user_profile.exp_points += total_game_xp
-                user_profile.badge = get_badge(player.profile.exp_points)
-                user_profile.save(update_fields=['exp_points', 'badge'])
+                user_profile.badges = get_badge(player.profile.exp_points)
+                user_profile.save(update_fields=['exp_points', 'badges'])

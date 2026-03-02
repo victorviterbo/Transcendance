@@ -10,14 +10,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .models import Friendship, Profile, SiteUser
-from .serializers import (
-    FriendshipSerializer,
-    LightProfileSerializer,
-    LoginSerializer,
-    ProfileSerializer,
-    SiteUserSerializer,
-)
+from .models import Friendship, SiteUser
+from .serializers import FriendshipSerializer, LoginSerializer, SiteUserSerializer
 
 
 class LoginView(APIView):
@@ -114,70 +108,6 @@ class RegisterView(APIView):
                     error_response['error']['username'] = 'Invalid Username'
             return Response(error_response, status=response_code)
 
-class ProfileView(APIView):
-    """Define view of the user's own profile."""
-
-    def get_permissions(self) -> list:
-        """Specify necessary permissions for different operations."""
-        if self.request.method == 'GET':
-            return [AllowAny()]
-        elif self.request.method == 'POST':
-            return [IsAuthenticated()]
-        return super().get_permissions()
-    
-    def get(self, request: Request) -> Response:
-        """Handles display of user profile.
-        
-        Args:
-            request:
-                Header: [Authorization]
-
-        Returns:
-            Response:
-                200: {image}
-                400: {error{email, username}}
-        """
-        profile = request.user.profile
-        try:
-            profile_serializer = ProfileSerializer(profile, many=False)
-            ret_data = profile_serializer.data.copy()
-            ret_data['email'] = profile.user.email
-            return Response(ret_data, status=status.HTTP_200_OK)
-        except serializers.ValidationError as e:
-            return Response({"description": f"Could not return Profile: {e}"},
-                            status=status.HTTP_500_INTERNAL_ERROR)
-    
-    def post(self, request: Request) -> Response:
-        """Handles update of user profile.
-        
-        Args:
-            request:
-                Header: [Authorization]
-                payload: json with updated values of profile informations
-
-        Returns:
-            Response:
-                200: {"description": "Updated Profile successfully"
-                400: {"error": "Could not update Profile"}
-                401: {"error": "Unauthorized: <error>"}
-        """
-        profile = request.user.profile
-        try:
-            profile_serializer = ProfileSerializer(profile,
-                                                   data=request.data,
-                                                   many=False)
-            if profile_serializer.is_valid(raise_exception=True):
-                profile_serializer.save()
-                profile.user.username = profile.username
-                return Response({"description": "Updated Profile successfully"},
-                                status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "Could not update Profile"},
-                                status=status.HTTP_400_BAD_REQUEST)
-        except serializers.ValidationError as e:
-            return Response({"errror": f"Unauthorized: {e}"},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
 class LogoutView(APIView):
     """Define lougout operation view."""
     permission_classes = [AllowAny]
@@ -251,23 +181,13 @@ class RefreshTokenView(TokenRefreshView):
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'description': 'Refresh token not found in cookies'},
                         status=status.HTTP_401_UNAUTHORIZED)
-    
-class   UserSearchView(APIView):
-    """Search for a specific user (necessarily registered) and return their profiles."""
-    permission_classes = [IsAuthenticated]
-    def get(self, request: Request) -> Response:
-        """Returns all users matching the query."""
-        query = self.request.query_params.get('q')
-        if query is None:
-            return (Response({'error': 'no search query sent'},
-                             status=status.HTTP_500_BAD_REQUEST))
-        profiles = Profile.objects.filter(user__username__icontains=query).exclude(user=self.request.user).exclude(user=None)
-        serializer = LightProfileSerializer(profiles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-  
+
+
+
 class FriendRequests(APIView):
     """Define all functions related to sending seeing and accepting friend requests."""
     permission_classes = [IsAuthenticated]
+
     def post(self, request: Request) -> Response:
         """Create new friend requests."""
         target = request.data.get("target-username")
@@ -287,7 +207,7 @@ class FriendRequests(APIView):
             recipient = target_user.first()
             sender = request.user
             if sender == recipient:
-                return Response({'error': 'You cannot send a friend request to yourself'}, 
+                return Response({'error': 'I feel bad for you'}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             curr_relationship = Friendship.objects.filter(
                 from_user=sender, 
@@ -297,7 +217,7 @@ class FriendRequests(APIView):
                 from_user=recipient, 
                 to_user=sender
             )
-            if curr_rev_relationship.exists and request.data.get('set-status') == 'accept':
+            if (curr_rev_relationship.exists() and curr_rev_relationship.status == 'pending'):
                 curr_rev_relationship.first().status = 'accepted'
                 return Response({'description': 'Friendship created'}, 
                                 status=status.HTTP_202_ACCEPTED)
@@ -308,10 +228,6 @@ class FriendRequests(APIView):
                                     status=status.HTTP_400_BAD_REQUEST)
                 elif curr_relationship.status == 'accepted':
                     return Response({'error': 'Friendship already exists',
-                                    'request_status': curr_relationship.status},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            if curr_rev_relationship.exists() and curr_relationship.status == 'pending':
-                    return Response({'error': 'Friendship request already send by target',
                                     'request_status': curr_relationship.status},
                                     status=status.HTTP_400_BAD_REQUEST)
             
@@ -334,19 +250,3 @@ class FriendRequests(APIView):
         response_data['outgoing'] = FriendshipSerializer(outgoing_req, many=True)
         return Response(response_data, status=status.HTTP_200_OK)
 
-class   ProfileSearchView(APIView):
-    """Search for a specific profile (not necessarily registered)
-    and return their profiles.
-    """
-
-    def get(self, request: Request) -> Response:
-        """Returns all profiles matching the query."""
-        query = self.request.query_params.get('q')
-        if query is None:
-            return (Response({'error': 'no search query sent'},
-                             status=status.HTTP_500_BAD_REQUEST))
-        profiles = Profile.objects.filter(user__username__icontains=query)\
-.exclude(user=self.request.user)
-        serializer = LightProfileSerializer(profiles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-  

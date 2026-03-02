@@ -10,9 +10,6 @@ from typing import Any
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from PIL import Image
-from project.defaults import get_badge
-
 
 class SiteUserManager(BaseUserManager):
     """Define a model manager for User model.
@@ -117,43 +114,3 @@ class Friendship(models.Model):
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'),
                                                       ('accepted', 'Accepted')])
     created_at = models.DateTimeField(auto_now_add=True)
-
-class Profile(models.Model):
-    """Define the structure of the Profile, based on a generic model."""
-    user = models.ForeignKey(SiteUser,
-                                on_delete=models.CASCADE,
-                                null=True, # if anonymous user (not logged in)
-                                blank=True, # if anonymous user (not logged in)
-                                unique=False # in case of NULL
-                            )
-    username = models.CharField(max_length=20, default="Anonymous", unique=True)
-    image = models.ImageField(default='default.jpg', upload_to='profile_pics')
-    exp_points = models.IntegerField(default=0)
-    badges = models.CharField(max_length=30)
-    created_at = models.DateTimeField(auto_created=True)
-
-    def __str__(self) -> str:
-        """Define how to output the object as string.
-
-        Args:
-            self: the Profile to be returned
-
-        Returns:
-            a string describing the profile
-        """
-        return f'{self.username} Profile'
-    
-    def save(self, *args: Any, **kwargs: Any) -> None:
-        """Define how to save the object.
-
-        Args:
-            self: the Profile to be returned
-            args: additional arguments that might be needed by the parent class
-            kwargs: additional arguments that might be needed by the parent class
-        """
-        super().save(*args, **kwargs)
-        img = Image.open(self.image.path)
-        if img.height > 300 or img.width > 300:
-            output_size = (300, 300)
-            img.thumbnail(output_size)
-            img.save(self.image.path)

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from django.db import models
-from game import Track
-from users.models import Profile
+from userprofile.models import Profile
+
+#from game import Track
 
 
 class GameStat(models.Model):
@@ -11,6 +12,7 @@ class GameStat(models.Model):
     played_at = models.DateTimeField(auto_now_add=True)
     players = models.ManyToManyField(Profile, related_name='games_played')
     is_over = models.BooleanField(default=False)
+    test = models.CharField(max_length=10)
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-played_at']
@@ -20,7 +22,7 @@ class GameRoundStat(models.Model):
 
     game = models.ForeignKey(GameStat, on_delete=models.CASCADE, related_name='rounds')
     round_number = models.PositiveIntegerField()
-    winner = models.ForeignKey(Profile)
+    winner = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True)
     class Meta:
         ordering = ['round_number']
 
@@ -34,6 +36,6 @@ class UserRoundStat(models.Model):
     
     is_won = models.BooleanField(default=False)
     time = models.DurationField()
-    track = models.ForeignKey(Track, on_delete=models.SET_NULL)
+    #track = models.ForeignKey(Track, on_delete=models.SET_NULL)
     xp_earned = models.IntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
