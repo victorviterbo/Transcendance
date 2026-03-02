@@ -19,6 +19,7 @@ function CTextBase({ align, children, color, getVariant, sx, ...other }: CTextBa
 			gutterBottom
 			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
 			{...other}
+			data-testid={"CTextBase"}
 		>
 			{typeof children == "string" ? ttr(children) : children}
 		</Typography>

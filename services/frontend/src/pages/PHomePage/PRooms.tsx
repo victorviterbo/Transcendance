@@ -20,7 +20,9 @@ function PRooms({ isPublic }: PRoomsProps) {
 	useEffect(() => {
 		async function getRoomsTemps(): Promise<void> {
 			try {
-				const res: AxiosResponse<IRoomList> = await api.get<IRoomList>(isPublic ? API_PUBLIC_ROOMS : API_PRIVATE_ROOMS);
+				const res: AxiosResponse<IRoomList> = await api.get<IRoomList>(
+					isPublic ? API_PUBLIC_ROOMS : API_PRIVATE_ROOMS,
+				);
 				console.log(res.status);
 				console.log(res.data);
 				setRooms(res.data.rooms);
@@ -30,10 +32,13 @@ function PRooms({ isPublic }: PRoomsProps) {
 			}
 		}
 		getRoomsTemps();
-	}, [setRooms, isPublic])
+	}, [setRooms, isPublic]);
 
 	return (
-		<CHomePaper sx={{ m: 0, height: "100%", width: "100%" }}>
+		<CHomePaper
+			sx={{ m: 0, height: "100%", width: "100%" }}
+			data-testid={isPublic ? "public_room_testid" : "private_room_testid"}
+		>
 			<Stack sx={{ alignItems: "stretch" }}>
 				<CText size="lg">{isPublic ? "PUBLIC_ROOM" : "FRIEND_ROOM"}</CText>
 				<Grid container spacing={3}>

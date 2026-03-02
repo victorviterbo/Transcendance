@@ -5,10 +5,14 @@ import CBasePaperStyle from "../../styles/components/surfaces/CBasePaper.ts";
 export interface CBasePaperProps extends GCompProps, PaperOwnProps {}
 
 //TODO: Change sx here
-function CBasePaper({ sx, children }: CBasePaperProps) {
+function CBasePaper({ sx, children, ...other }: CBasePaperProps) {
 	//====================== DOM ======================
 	return (
-		<Paper elevation={3} sx={[CBasePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
+		<Paper
+			elevation={3}
+			sx={[CBasePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			{...other}
+		>
 			{children}
 		</Paper>
 	);

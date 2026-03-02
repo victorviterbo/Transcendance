@@ -7,5 +7,5 @@ export interface IRoomInfo {
 	theme: string;
 	playerCount: number;
 	playerMax: number;
-	img?: string
+	img?: string;
 }

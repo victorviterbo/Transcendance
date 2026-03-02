@@ -18,15 +18,28 @@ function CButtonRoom({ infos, ...other }: CButtonRoomProps) {
 				backgroundSize: "cover",
 			}}
 			{...other}
+			data-testid={"CButtonRoom"}
 		>
 			<Stack>
-				<CText size="md" color="black" sx={{fontWeight: "900", WebkitTextStroke: "1px #ffffff"}}>
+				<CText
+					size="md"
+					color="black"
+					sx={{ fontWeight: "900", WebkitTextStroke: "1px #ffffff" }}
+				>
 					{infos.name}
 				</CText>
-				<CText size="md" color="black" sx={{fontWeight: "900", WebkitTextStroke: "1px #ffffff"}}>
+				<CText
+					size="md"
+					color="black"
+					sx={{ fontWeight: "900", WebkitTextStroke: "1px #ffffff" }}
+				>
 					{infos.theme}
 				</CText>
-				<CText size="md" color="black" sx={{fontWeight: "900", WebkitTextStroke: "1px #ffffff"}}>
+				<CText
+					size="md"
+					color="black"
+					sx={{ fontWeight: "900", WebkitTextStroke: "1px #ffffff" }}
+				>
 					{infos.playerCount + " / " + infos.playerMax}
 				</CText>
 			</Stack>
