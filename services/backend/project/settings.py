@@ -100,16 +100,7 @@ AUTH_USER_MODEL = 'users.SiteUser'
 # https://docs.djangoproject.com/en/6.0/topics/auth/passwords/#module-django.contrib.auth.password_validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {
-            "min_length": 8,
-        },
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },# TODO check compatibility with front for password check
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        'NAME': 'users.serializer.PasswordComplexityValidator',
     },
 ]
 

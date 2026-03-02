@@ -6,11 +6,14 @@ to JSON and vice-versa, namely:
     - ProfileSerializer
 """
 
+import re
 from typing import Any
 
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
-from .models import Profile, SiteUser
+from .models import Friendship, Profile, SiteUser
 
 
 def gmail_specific_normalize(email: str) -> str:
@@ -130,9 +133,26 @@ class LoginSerializer(serializers.ModelSerializer):
         value = validate_email(value)
         return value
 
+class ComplexPasswordValidator:
+    """Define minimal password complexity rules."""
+
+    def validate(self, password: str, user=None) -> None:
+        """Define specific validation process for password validation."""
+        if (len(password) < 8):
+            raise ValueError("Use at least 8 characters.")
+
+        rules = {   r"/(?=.*\d)/": "Include at least 1 number.",
+                    r"/(?=.*[a-z])/": "Include at least 1 lowercase letter.",
+                    r"/(?=.*[A-Z])/": "Include at least 1 uppercase letter.",
+                    r"/(?=.*[^A-Za-z0-9])/": "Include at least 1 special character."
+        }
+        for rule in rules:
+            if not re.match(rule, password):
+                raise ValidationError(rules[rule])
+
 
 class ProfileSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's profile (user profile obj <-> JSON)."""
+    """Set how to serialize a user's profile."""
 
     class Meta:
         """Defines the metaclass for the Profile serializer.
@@ -141,4 +161,29 @@ class ProfileSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['image']
+        fields = ['username', 'image', 'exp_point', 'badge', 'created_at']
+
+
+class LightProfileSerializer(serializers.ModelSerializer):
+    """Set how to serialize a user's profile."""
+
+    class Meta:
+        """Defines the metaclass for the Profile serializer.
+        
+        This part tells the rest_framework serializer how to contruct the
+        ProfileSerializer class itself
+        """
+        model = Profile
+        fields = ['username', 'image']
+
+class FriendshipSerializer(serializers.ModelSerializer):
+    """Set how to serialize a user's friendship requests."""
+
+    class Meta:
+        """Defines the metaclass for the Profile serializer.
+        
+        This part tells the rest_framework serializer how to contruct the
+        ProfileSerializer class itself
+        """
+        model = Friendship
+        fields = ['from_user', 'to_user', 'status']

@@ -11,6 +11,7 @@ from typing import Any
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from PIL import Image
+from project.defaults import get_badge
 
 
 class SiteUserManager(BaseUserManager):
@@ -89,6 +90,11 @@ class SiteUser(AbstractUser):
 
     email = models.EmailField('email', unique=True, null=False, blank=False)
     username = models.CharField(max_length=20, unique=True, default="Anonymous")
+    friends = models.ManyToManyField("self",
+                                     through='Friendship',
+                                     blank=True,
+                                     symmetrical=False #symmetrical=True : if you are friend with someone, they are friend with you
+                                    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -98,12 +104,34 @@ class SiteUser(AbstractUser):
     def __str__(self) -> str:
         """Return the user as it's email address string."""
         return self.email
-    
+
+
+class Friendship(models.Model):
+    """Define a Friend request status and infos."""
+    from_user = models.ForeignKey(SiteUser,
+                                  related_name='sent_requests',
+                                  on_delete=models.CASCADE)
+    to_user = models.ForeignKey(SiteUser,
+                                related_name='received_requests',
+                                on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'),
+                                                      ('accepted', 'Accepted')])
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Profile(models.Model):
-    """Define the structure of SiteUser, derived from AbstractUser."""
-    user = models.OneToOneField(SiteUser, on_delete=models.CASCADE)
+    """Define the structure of the Profile, based on a generic model."""
+    user = models.ForeignKey(SiteUser,
+                                on_delete=models.CASCADE,
+                                null=True, # if anonymous user (not logged in)
+                                blank=True, # if anonymous user (not logged in)
+                                unique=False # in case of NULL
+                            )
+    username = models.CharField(max_length=20, default="Anonymous", unique=True)
     image = models.ImageField(default='default.jpg', upload_to='profile_pics')
+    exp_points = models.IntegerField(default=0)
+    badges = models.CharField(max_length=30)
+    created_at = models.DateTimeField(auto_created=True)
+
     def __str__(self) -> str:
         """Define how to output the object as string.
 
@@ -113,7 +141,7 @@ class Profile(models.Model):
         Returns:
             a string describing the profile
         """
-        return f'{self.user.username} Profile'
+        return f'{self.username} Profile'
     
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Define how to save the object.

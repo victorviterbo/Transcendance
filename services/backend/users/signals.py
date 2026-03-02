@@ -15,16 +15,18 @@ def create_profile(sender: type[SiteUser],
                    **kwargs: Any) -> None:
     """Trigger creation of profile after creating a user."""
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.create(user=instance, username=instance.username)
     
 @receiver(post_save, sender=SiteUser)
 def save_profile(sender: type[SiteUser],
                  instance: SiteUser,
                  **kwargs: Any) -> None:
     """Trigger updating of profile after updating a user."""
+    instance.profile.username = instance.username
     instance.profile.save()
 
+
 @receiver(pre_delete, sender=SiteUser)
-def delete_profile(sender, instance, **kwargs) -> None:
+def delete_profile(sender: type[SiteUser], instance=SiteUser, **kwargs: Any) -> None:
     """Trigger destruction of profile before destroying a user."""
     instance.profile.delete()
