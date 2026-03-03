@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .models import SiteUser
-from .serializers import ProfileSerializer, SiteUserSerializer
+from .serializers import LoginSerializer, ProfileSerializer, SiteUserSerializer
 
 
 class LoginView(APIView):
@@ -32,10 +32,16 @@ class LoginView(APIView):
                                 current expires
                 401: {error}
         """
-        email = request.data.get('email')
-        password = request.data.get('password')
-        user = authenticate(request, email=email, password=password)
-        
+        """email = request.data.get('email')
+        password = request.data.get('password')"""
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'error': 'Wrong email or password'},
+                        status=status.HTTP_401_UNAUTHORIZED)
+        email = serializer.validated_data.get('email')
+        password = serializer.validated_data.get('password')
+        user = authenticate(email=email, password=password)
+
         if user is not None:
             try:
                 token = RefreshToken.for_user(user)
@@ -49,8 +55,8 @@ class LoginView(APIView):
                     path='/api/auth/'
                 )
                 return response
-            except ValueError as e:
-                return Response({'error': f"Wrong email or password: {e}"},
+            except ValueError:
+                return Response({'error': 'Wrong email or password'},
                          status=status.HTTP_401_UNAUTHORIZED)
         return Response({'error': 'Wrong email or password'},
                         status=status.HTTP_401_UNAUTHORIZED)
@@ -179,16 +185,14 @@ class LogoutView(APIView):
         refresh_token = request.COOKIES.get('refresh-token')
         
         if not refresh_token:
-            return Response({'error': 'Not authenticated'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            response = Response(status=status.HTTP_204_NO_CONTENT)
         try:
             token = RefreshToken(refresh_token)
             token.blacklist()
         except Exception:
             return Response({'error': 'Not authenticated'},
                             status=status.HTTP_401_UNAUTHORIZED)
-        response = Response({'description': 'Logged out successfully'},
-                            status=status.HTTP_204_NO_CONTENT)
+        response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
             'refresh-token',
             samesite='Lax',

@@ -1,7 +1,6 @@
 export function checkUsernameValid(username: string): string[] {
 	const errmsg: string[] = [];
-	if (username.length === 0) return errmsg;
-	if (username.length > 10) errmsg.push("Username at most 10 characters");
+	if (username.trim().length > 20) errmsg.push("Username at most 20 characters");
 	return errmsg;
 }
 
