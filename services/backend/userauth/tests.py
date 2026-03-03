@@ -13,7 +13,6 @@ class UserAccountTests(APITestCase):
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
         self.user = SiteUser.objects.create_user(email = "test@mail.com",
-                                                 username="testuser",
                                                  password="password123")
 
     def test_login_user(self) -> None:

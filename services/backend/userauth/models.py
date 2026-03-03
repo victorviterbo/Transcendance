@@ -6,8 +6,6 @@ The following models are defines:
 """
 from __future__ import annotations
 
-from typing import Any
-
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
@@ -47,7 +45,6 @@ class SiteUserManager(BaseUserManager):
         Args:
             email: unique email-adress defining a user
             password: the password to be associated with this user
-            username: the username displayed to other users
             extra_fields: dictionary of additional flags
         Returns:
             a SiteUser regular user class instance
@@ -67,7 +64,6 @@ class SiteUserManager(BaseUserManager):
         Args:
             email: unique email-adress defining a user
             password: the password to be associated with this user
-            username: the username displayed to other users
             extra_fields: dictionary of additional flags
         Returns:
             a SiteUser super user class instance
@@ -86,17 +82,16 @@ class SiteUser(AbstractUser):
     """Define the structure of SiteUser, derived from AbstractUser."""
 
     email = models.EmailField('email', unique=True, null=False, blank=False)
-    username = models.CharField(max_length=20, unique=True, default="Anonymous")
     friends = models.ManyToManyField("self",
                                      through='Friendship',
                                      blank=True,
-                                     symmetrical=False #symmetrical=True : if you are friend with someone, they are friend with you
+                                     symmetrical=False
                                     )
-
+    username = None
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    manager = SiteUserManager() 
+    objects = SiteUserManager() 
 
     def __str__(self) -> str:
         """Return the user as it's email address string."""

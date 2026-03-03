@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-
+from userprofile.models import Profile
+from userprofile.serializers import validate_username
 from .models import Friendship, SiteUser
 from .serializers import FriendshipSerializer, LoginSerializer, SiteUserSerializer
 
@@ -76,11 +77,13 @@ class RegisterView(APIView):
                 400: {error{email, username}}
         """
         try:
-            serializer = SiteUserSerializer(data=request.data)
+            renamed_data = request.data.copy()
+            renamed_data['profile_username'] = renamed_data.pop('username')
+            serializer = SiteUserSerializer(data=renamed_data, context={'is_creation': True})
             if serializer.is_valid(raise_exception=True):
-                serializer.save()
+                serializer.save(profile_username=request.data.get('username'))
                 token = RefreshToken.for_user(serializer.instance)
-                response = Response({'username':  serializer.instance.username,
+                response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},
                                      status=status.HTTP_201_CREATED)
                 response.set_cookie(
@@ -92,6 +95,7 @@ class RegisterView(APIView):
                 return response
         except serializers.ValidationError as e:
             error = e.get_full_details()
+            print(error)
             error_response = {'error':{}}
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
@@ -100,8 +104,8 @@ class RegisterView(APIView):
                     response_code = status.HTTP_409_CONFLICT
                 else:
                     error_response['error']['email'] = 'Invalid Email'
-            if error.get('username'):
-                if any(['unique' in e['code'] for e in error['username']]):
+            if error.get('profile_username'):
+                if any(['unique' in e['code'] for e in error['profile_username']]):
                     error_response['error']['username'] = 'Username already taken'
                     response_code = status.HTTP_409_CONFLICT
                 else:

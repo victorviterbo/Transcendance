@@ -12,11 +12,11 @@ from userauth.models import SiteUser
 
 class Profile(models.Model):
     """Define the structure of the Profile, based on a generic model."""
-    user = models.ForeignKey(SiteUser,
+    user = models.OneToOneField(SiteUser,
                                 on_delete=models.CASCADE,
                                 null=True, # if anonymous user (not logged in)
-                                unique=False # in case of NULL
-                            )
+                                blank=True
+                                )
     username = models.CharField(max_length=20, default="Anonymous", unique=True)
     image = models.ImageField(default='default.jpg', upload_to='profile_pics')
     exp_points = models.IntegerField(default=0)

@@ -8,6 +8,6 @@ class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'userauth'
 
-    def ready(self) -> None:
-        """Activate the signals of the user module."""
-        import userauth.signals
+    #def ready(self) -> None:
+    #    """Activate the signals of the user module."""
+    #import userauth.signals

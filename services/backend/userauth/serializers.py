@@ -11,6 +11,8 @@ from typing import Any
 
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+from userprofile.models import Profile
+from userprofile.serializers import ProfileSerializer, validate_username
 
 from .models import Friendship, SiteUser
 
@@ -34,7 +36,7 @@ def gmail_specific_normalize(email: str) -> str:
     name = name.split("+")[0]
     return ("@").join([name, domain])
 
-def validate_email(value: str) -> str:
+def validate_email(value: str, is_creation=False) -> str:
     """Validate and normalize the incomming email address.
 
     In case of user creation (register), it performs a uniqueness check
@@ -53,26 +55,16 @@ def validate_email(value: str) -> str:
     value = SiteUser.objects.normalize_email(value)
     if (value.endswith("@gmail.com")):
         value = gmail_specific_normalize(value)
-    return value
+    if is_creation and SiteUser.objects.filter(email=value).exists():
+        raise serializers.ValidationError('Email already taken',
+                                        code='unique')
 
-def validate_username(value: str) -> str:
-    """Validate and normalize the incomming username.
-
-    Args:
-        value: the incomming email username
-    Returns:
-        The validated and normalized username
-    Raises:
-        ValidationError: If the username is empty
-        ValidationError: If the username is already taken
-    """
-    if not value: 
-        raise serializers.ValidationError('Username is required.',
-                                            code='invalid-data')
     return value
 
 class SiteUserSerializer(serializers.ModelSerializer):
     """Set how to serialize a user (user obj <-> JSON)."""
+
+    profile_username = serializers.CharField()
 
     class Meta:
         """Defines the metaclass for the SiteUser serializer.
@@ -81,23 +73,23 @@ class SiteUserSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'username', 'password', 'is_staff', 'is_superuser']
-        extra_kwargs = {'password': {'write_only': True}}
-    
+        fields = ['email', 'password', 'profile_username', 'is_staff', 'is_superuser']
+        extra_kwargs = {'password': {
+                                'write_only': True
+                            },
+                        'profile_username': {
+                                'validator': [validate_username]
+                            }
+                        }
+
     def validate_email(self, value: str) -> str:
-        """Specific email validation for user creation / update."""
-        value = validate_email(value)
-        if value is not None and SiteUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Email already taken',
-                                              code='unique')
+        """Specific email validation for user login."""
+        value = validate_email(value, is_creation=self.context['is_creation'])
         return value
     
-    def validate_username(self, value: str) -> str:
-        """Specific username validation for user creation / update."""
-        username = validate_username(value)
-        if username is not None and SiteUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError('Username already taken',
-                                              code='unique')
+    def validate_profile_username(self, value: str) -> str:
+        """Specific email validation for user login."""
+        value = validate_username(value, is_creation=self.context['is_creation'])
         return value
     
     def create(self, validated_data: Any) -> SiteUser:
@@ -108,7 +100,16 @@ class SiteUserSerializer(serializers.ModelSerializer):
         Returns:
             The newly created SiteUser
         """
-        return SiteUser.objects.create_user(**validated_data)
+        profile_username = validated_data.pop('profile_username')
+        user = SiteUser.objects.create_user(**validated_data)
+        """serializer = ProfileSerializer(data={
+                                        'user': user, 
+                                        'username': profile_username}
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()"""
+        Profile.objects.create(user=user, username=profile_username)
+        return user
 
 class LoginSerializer(serializers.ModelSerializer):
     """Specific serializer for logging in."""
