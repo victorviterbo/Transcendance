@@ -1,32 +1,25 @@
 import { Box } from "@mui/material";
-import { appThemeDef } from "../../styles/theme";
-const bgWood = "imgs/shared/bg_wood_2.png";
+import { SBGBox, SBGBaseColor } from "../../styles/bg/GBackgroundStyle";
 const bgPolar = "imgs/shared/BGPolarMask.png";
 const bgIcons = "imgs/shared/BG_Icons.png";
 
 function GBackground() {
+
+	const windmill: boolean = true;
+	const windmillBg: boolean = true;
+	const bg: boolean = true;
+
+
+	//STRUCTURE
 	return (
 		<Box
-			sx={{
-				position: "fix",
-
-				height: "100%",
-				width: "100%",
-				zIndex: -1,
-			}}
+			sx={SBGBox}
 		>
 			<Box
-				sx={{
-					position: "absolute",
-
-					height: "100%",
-					width: "100%",
-					zIndex: -3,
-
-					backgroundColor: "#5612f5",
-				}}
+				sx={SBGBaseColor}
 			></Box>
-			<Box
+			{
+				bg && <Box
 				sx={{
 					position: "absolute",
 
@@ -45,8 +38,10 @@ function GBackground() {
 
 					filter: "drop-shadow(20px 20px 20px #000000)",
 				}}
-			></Box>
-			<Box
+				></Box>
+			}
+			{
+			 windmill && <Box
 				sx={{
 					position: "absolute",
 					inset: 0,
@@ -64,28 +59,31 @@ function GBackground() {
 						WebkitMaskPosition: "center",
 					}}
 				>
-					<Box
-						sx={{
-							position: "absolute",
+					{ windmillBg && 
+						<Box
+							sx={{
+								position: "absolute",
 
-							height: "100%",
-							width: "100%",
-							zIndex: 0,
+								height: "100%",
+								width: "100%",
+								zIndex: 0,
 
-							backgroundColor: "#1d19e6",
-							maskImage: `url("${bgIcons}")`,
-							maskSize: "50%",
-							maskPosition: "center",
+								backgroundColor: "#1d19e6",
+								maskImage: `url("${bgIcons}")`,
+								maskSize: "50%",
+								maskPosition: "center",
 
-							WebkitMaskImage: `url("${bgIcons}")`,
-							WebkitMaskSize: "50%",
-							WebkitMaskPosition: "center",
+								WebkitMaskImage: `url("${bgIcons}")`,
+								WebkitMaskSize: "50%",
+								WebkitMaskPosition: "center",
 
-							filter: "drop-shadow(20px 20px 20px #000000)",
-						}}
-					></Box>
+								filter: "drop-shadow(20px 20px 20px #000000)",
+							}}
+						></Box>
+					}
 				</Box>
 			</Box>
+			}
 		</Box>
 	);
 }

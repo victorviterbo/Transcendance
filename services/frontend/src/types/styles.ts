@@ -1,5 +1,5 @@
 export interface IThemeBG {
-	brightness: number;
+	baseIndex: number;
 }
 
 export interface IThemeColor {

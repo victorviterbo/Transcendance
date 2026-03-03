@@ -35,7 +35,7 @@ export const appThemeDef: ITheme = {
 	},
 
 	bg: {
-		brightness: 0.75,
+		baseIndex: 0
 	},
 };
 
