@@ -35,7 +35,28 @@ export const appThemeDef: ITheme = {
 	},
 
 	bg: {
-		baseIndex: 0
+		baseIndex: 0,
+
+		iconBG: true,
+		iconSize: 750,
+		iconSpeed: 75,
+		iconMove: true,
+		iconShadow: {
+			offsetX: 2,
+			offsetY: 2,
+			blur: 4,
+			color: "black"
+		},
+
+		windmill: false,
+		windmillMove: true,
+		windmillSpeed: 100,
+		windmillShadow: {
+			offsetX: 5,
+			offsetY: 5,
+			color: "black"
+		},
+		windmillBG: false
 	},
 };
 

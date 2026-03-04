@@ -1,5 +1,30 @@
+//--------------------------------------------------
+//                    CSS
+//--------------------------------------------------
+export type TDropShadow = {
+	offsetX: number | string;
+	offsetY: number | string;
+	blur?: number | string;
+	color: string;
+};
+
+//--------------------------------------------------
+//                   THEME
+//--------------------------------------------------
 export interface IThemeBG {
 	baseIndex: number;
+
+	iconBG?: boolean;
+	iconMove?: boolean;
+	iconSize?: number;
+	iconSpeed?: number;
+	iconShadow?: TDropShadow | string;
+
+	windmill?: boolean;
+	windmillMove?: boolean;
+	windmillSpeed?: number;
+	windmillShadow?: TDropShadow | string;
+	windmillBG?: boolean;
 }
 
 export interface IThemeColor {
