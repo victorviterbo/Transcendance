@@ -36,16 +36,20 @@ class ProfileView(APIView):
         """
         query = self.request.query_params.get('q')
         if query is None:
-            return (Response({'error': 'invalid username'},
+            return (Response({'error': 'Query string not found'},
+                             status=status.HTTP_400_BAD_REQUEST))
+        elif query == '':
+            return (Response({'error': 'Invalid empty query string'},
                              status=status.HTTP_400_BAD_REQUEST))
         queried_profiles = Profile.objects.filter(username=query)
         if not queried_profiles.exists():
-            return Response({'error': 'no such username'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No profile with this username'}, status=status.HTTP_400_BAD_REQUEST)
         queried_profile = queried_profiles.first()
         try:
             profile_serializer = ProfileSerializer(queried_profile, many=False)
             ret_data = profile_serializer.data.copy()
-            ret_data['email'] = queried_profile.user.email
+            if queried_profile.user:
+                ret_data['email'] = queried_profile.user.email
             return Response(ret_data, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:
             return Response({"description": f"Could not return Profile: {e}"},
@@ -110,7 +114,7 @@ class   ProfileSearchView(APIView):
         if query is None:
             return (Response({'error': 'no search query sent'},
                              status=status.HTTP_400_BAD_REQUEST))
-        profiles = Profile.objects.filter(user__username__icontains=query)\
+        profiles = Profile.objects.filter(username=query)\
             .exclude(user=self.request.user)
         serializer = LightProfileSerializer(profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

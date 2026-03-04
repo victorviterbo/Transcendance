@@ -12,7 +12,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from userprofile.models import Profile
-from userprofile.serializers import ProfileSerializer, validate_username
+from userprofile.serializers import validate_username
 
 from .models import Friendship, SiteUser
 
@@ -118,7 +118,7 @@ class LoginSerializer(serializers.ModelSerializer):
         """Defines the metaclass for the SiteUser serializer.
         
         This part tells the rest_framework serializer how to contruct the
-        SiteUserSerializer class itself
+        LoginSerializer class itself
         """
         model = SiteUser
         fields = ['email', 'password']

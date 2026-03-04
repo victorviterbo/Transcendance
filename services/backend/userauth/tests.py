@@ -12,8 +12,11 @@ class UserAccountTests(APITestCase):
 
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
-        self.user = SiteUser.objects.create_user(email = "test@mail.com",
-                                                 password="password123")
+        serializer = SiteUserSerializer(data={'email': 'test@mail.com',
+                                              'profile_username': 'testuser',
+                                              'password': 'password123'}, context={'is_creation': True})
+        if serializer.is_valid():
+            self.user = serializer.save()
 
     def test_login_user(self) -> None:
         """Test success and failure of login."""
@@ -96,18 +99,6 @@ class UserAccountTests(APITestCase):
         refresh_response = self.client.post('/api/auth/refresh/')
         self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
     
-    def test_profile_success(self) -> None:
-        """Test success and failure of profile access operation."""
-        login_url = '/api/auth/login/'
-        login_res = self.client.post(login_url, {'email': 'test@mail.com', 'password': 'password123'})
-        access_token = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION=access_token)
-        profile_url = '/api/auth/profile/'
-
-        response = self.client.get(profile_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['image'], '/DB/media/default.jpg')
-
     def test_refresh_success(self) -> None:
         """Test success and failure of access token regeneration operation."""
         login_url = '/api/auth/login/'

@@ -6,7 +6,7 @@ from typing import Any
 
 from django.db import models
 from PIL import Image
-from project.defaults import get_badge
+from project.defaults import badges_strings, get_badge
 from userauth.models import SiteUser
 
 
@@ -18,9 +18,11 @@ class Profile(models.Model):
                                 blank=True
                                 )
     username = models.CharField(max_length=20, default="Anonymous", unique=True)
-    image = models.ImageField(default='default.jpg', upload_to='profile_pics')
+    image = models.ImageField(default='default_pp.jpg', upload_to='profile_pics')
     exp_points = models.IntegerField(default=0)
-    badges = models.CharField(max_length=30, default=get_badge(0))
+    badges = models.CharField(max_length=30,
+                              default=badges_strings[0],
+                              choices=[(b, b) for b in badges_strings])
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

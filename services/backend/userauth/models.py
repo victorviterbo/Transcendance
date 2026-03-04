@@ -97,7 +97,6 @@ class SiteUser(AbstractUser):
         """Return the user as it's email address string."""
         return self.email
 
-
 class Friendship(models.Model):
     """Define a Friend request status and infos."""
     from_user = models.ForeignKey(SiteUser,

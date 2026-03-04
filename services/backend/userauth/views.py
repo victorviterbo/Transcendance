@@ -95,7 +95,6 @@ class RegisterView(APIView):
                 return response
         except serializers.ValidationError as e:
             error = e.get_full_details()
-            print(error)
             error_response = {'error':{}}
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
