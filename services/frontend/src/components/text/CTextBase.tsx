@@ -2,6 +2,7 @@ import type { GCompProps } from "../common/GProps";
 import type { TAlign, TSize } from "../../types/string.ts";
 import { Typography, type TypographyOwnProps, type TypographyVariant } from "@mui/material";
 import { ttr } from "../../localization/localization.ts";
+import { Children } from "react";
 
 export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	align?: TAlign;
@@ -17,11 +18,14 @@ function CTextBase({ align, children, color, getVariant, sx, ...other }: CTextBa
 			variant={getVariant ? getVariant() : "body1"}
 			align={align}
 			gutterBottom
-			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
 			{...other}
-			data-testid={"CTextBase"}
 		>
-			{typeof children == "string" ? ttr(children) : children}
+			{typeof children === "string"
+				? ttr(children)
+				: Children.map(children, (child) =>
+						typeof child === "string" ? ttr(child) : child,
+					)}
+			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
 		</Typography>
 	);
 }

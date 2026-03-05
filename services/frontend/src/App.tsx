@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import PHomePage from "./pages/PHomePage";
+import PLeaderboardPage from "./pages/PLeaderboardPage";
 import PAuthPage from "./pages/PAuthPage";
 import PProfilePage from "./pages/PProfilePage";
 import CProtectedRoute from "./components/auth/CProtectedRoute";
@@ -13,14 +14,11 @@ function App() {
 			<Routes>
 				<Route path="/" element={<PHomePage />} />
 				<Route path="/auth" element={<PAuthPage />} />
-				<Route
-					path="/profile"
-					element={
-						<CProtectedRoute>
-							<PProfilePage />
-						</CProtectedRoute>
-					}
-				/>
+				<Route element={<CProtectedRoute />}>
+					<Route path="/users" element={<PProfilePage />} />
+					<Route path="/users/:username" element={<PProfilePage />} />
+					<Route path="/leaderboard" element={<PLeaderboardPage />} />
+				</Route>
 			</Routes>
 		</ThemeProvider>
 	);

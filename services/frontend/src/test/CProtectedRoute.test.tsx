@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import CProtectedRoute from "./CProtectedRoute";
+import CProtectedRoute from "../components/auth/CProtectedRoute";
 
 const mockUseAuth = vi.fn();
 
@@ -20,14 +20,9 @@ describe("CProtectedRoute", () => {
 		render(
 			<MemoryRouter initialEntries={["/private"]}>
 				<Routes>
-					<Route
-						path="/private"
-						element={
-							<CProtectedRoute>
-								<div>Secret</div>
-							</CProtectedRoute>
-						}
-					/>
+					<Route element={<CProtectedRoute />}>
+						<Route path="/private" element={<div>Secret</div>} />
+					</Route>
 					<Route path="/auth" element={<div>Auth Page</div>} />
 				</Routes>
 			</MemoryRouter>,
@@ -42,14 +37,9 @@ describe("CProtectedRoute", () => {
 		render(
 			<MemoryRouter initialEntries={["/private"]}>
 				<Routes>
-					<Route
-						path="/private"
-						element={
-							<CProtectedRoute>
-								<div>Secret</div>
-							</CProtectedRoute>
-						}
-					/>
+					<Route element={<CProtectedRoute />}>
+						<Route path="/private" element={<div>Secret</div>} />
+					</Route>
 					<Route path="/auth" element={<div>Auth Page</div>} />
 				</Routes>
 			</MemoryRouter>,
@@ -64,14 +54,9 @@ describe("CProtectedRoute", () => {
 		render(
 			<MemoryRouter initialEntries={["/private"]}>
 				<Routes>
-					<Route
-						path="/private"
-						element={
-							<CProtectedRoute>
-								<div>Secret</div>
-							</CProtectedRoute>
-						}
-					/>
+					<Route element={<CProtectedRoute />}>
+						<Route path="/private" element={<div>Secret</div>} />
+					</Route>
 				</Routes>
 			</MemoryRouter>,
 		);

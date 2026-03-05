@@ -25,27 +25,26 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 		() => [
 			{
 				name: "username",
-				label: "Username",
+				label: "USERNAME",
 				required: true,
 				validate: checkUsernameValid,
 			},
 			{
 				name: "email",
-				label: "Email",
+				label: "EMAIL",
 				type: "email",
 				required: true,
 				validate: checkEmailValid,
 			},
 			{
 				name: "password",
-				label: "Password",
+				label: "PASSWORD",
 				type: "password",
 				required: true,
 				validate: checkPasswordValid,
 				confirm: {
 					name: "confirmPassword",
-					label: "Confirm Password",
-					error: "Passwords do not match",
+					error: "PASSWORD_MISMATCH",
 					required: true,
 				},
 			},
@@ -83,8 +82,8 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 
 	return (
 		<CForm
-			submitText="Sign in"
-			submittingText="Signing in ..."
+			submitText="SIGNUP"
+			submittingText="SIGNING_UP"
 			fields={fields}
 			onSubmit={handleRegister}
 		/>

@@ -1,25 +1,54 @@
-import { CatchingPokemon } from "@mui/icons-material";
-import { AppBar, IconButton, Stack, Toolbar, Typography } from "@mui/material";
-import { useLocation, Link } from "react-router-dom";
+import { AppBar, Box, IconButton, Menu, MenuItem, Stack, Toolbar } from "@mui/material";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PeopleIcon from "@mui/icons-material/People";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { useState } from "react";
 import { useAuth } from "../auth/CAuthProvider";
 import { type TNavItem } from "../../types/navbar";
+import logo from "../../assets/logo.svg";
+import CTitle from "../text/CTitle.tsx";
+import CNavbarLink from "./CNavbarLink.tsx";
+import CNavbarIcon from "./CNavbarIcon.tsx";
+import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
+import CText from "../text/CText.tsx";
 
 function CNavbar() {
-	const { status } = useAuth();
+	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
+	const navigate = useNavigate();
+	const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+	const isProfileMenuOpen = Boolean(profileAnchor);
+
+	const handleProfileOpen = (event?: React.MouseEvent<HTMLElement>) => {
+		if (!event) return;
+		setProfileAnchor(event.currentTarget);
+	};
+
+	const handleProfileClose = () => {
+		setProfileAnchor(null);
+	};
+
+	const handleProfileNavigate = () => {
+		handleProfileClose();
+		navigate("/users/me");
+	};
+
+	const handleLogout = async () => {
+		handleProfileClose();
+		logout();
+	};
+
 	const guestItems: TNavItem[] = [
 		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
 		{ kind: "link", label: "Log in", to: "/auth" },
 	];
 
 	const authedItems: TNavItem[] = [
-		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
-		{ kind: "link", label: "Leaderboard", to: "/leaderboard", icon: <LeaderboardIcon /> },
+		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
+		{ kind: "link", label: "LEADERBOARD", to: "/leaderboard", icon: <LeaderboardIcon /> },
 		{
 			kind: "action",
 			icon: <NotificationsIcon />,
@@ -32,60 +61,68 @@ function CNavbar() {
 			aria: "Friends",
 			onClick: () => alert("Coming soon"),
 		},
-		{ kind: "action", icon: <AccountCircleIcon />, aria: "Profile", onClick: () => {} },
+		{
+			kind: "action",
+			icon: <AccountCircleIcon />,
+			aria: "Profile",
+			onClick: handleProfileOpen,
+		},
 	];
 	const items = status === "authed" ? authedItems : guestItems;
 
 	return (
 		<AppBar position="static">
 			<Toolbar>
-				<IconButton size="large" edge="start" color="inherit">
-					<CatchingPokemon />
+				<IconButton
+					size="medium"
+					edge="start"
+					color="inherit"
+					component={Link}
+					to="/"
+					aria-label="Home"
+				>
+					<Box component="img" src={logo} alt="Guess Tunes logo" sx={{ height: 40 }} />
 				</IconButton>
-				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+				<CTitle size="sm" sx={{ flexGrow: 1 }}>
 					Guess Tunes
-				</Typography>
+				</CTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
+					<CDialogLanguage open={false} />
 					{items.map((item, idx) => {
 						if (item.kind === "link") {
 							const isActive =
 								item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
 							return (
-								// TODO CTypography? Also background color is atrocious
-								<Typography
+								<CNavbarLink
 									key={`${item.label}-${idx}`}
-									component={Link}
 									to={item.to}
-									sx={{
-										textDecoration: "none",
-										color: "inherit",
-										display: "inline-flex",
-										gap: 1,
-										backgroundColor: isActive
-											? "rgba(255,255,255,0.15)"
-											: "transparent",
-									}}
-								>
-									{item.icon}
-									{item.label}
-								</Typography>
+									label={item.label}
+									icon={item.icon}
+									active={isActive}
+								/>
 							);
 						}
 
 						return (
-							<IconButton
+							<CNavbarIcon
 								key={`${item.aria}-${idx}`}
-								color="inherit"
-								aria-label={item.aria}
+								aria={item.aria}
+								icon={item.icon}
 								onClick={item.onClick}
 								disabled={item.disabled}
-							>
-								{item.icon}
-							</IconButton>
+							/>
 						);
 					})}
 				</Stack>
 			</Toolbar>
+			<Menu anchorEl={profileAnchor} open={isProfileMenuOpen} onClose={handleProfileClose}>
+				<MenuItem onClick={handleProfileNavigate}>
+					<CText size="sm">MY_PROFILE</CText>
+				</MenuItem>
+				<MenuItem onClick={handleLogout}>
+					<CText size="sm">LOGOUT</CText>
+				</MenuItem>
+			</Menu>
 		</AppBar>
 	);
 }
