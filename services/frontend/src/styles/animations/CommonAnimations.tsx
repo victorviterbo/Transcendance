@@ -12,8 +12,14 @@ export function makeMaskTranslationAnim(size: string | number): Record<string, C
 			maskPosition: "0 0",
 		},
 		to: {
-			WebkitMaskPosition: (typeof size == "string" ? size : size + "px") + " " + (typeof size == "string" ? size : size + "px"),
-			maskPosition: (typeof size == "string" ? size : size + "px") + " " + (typeof size == "string" ? size : size + "px"),
+			WebkitMaskPosition:
+				(typeof size == "string" ? size : size + "px") +
+				" " +
+				(typeof size == "string" ? size : size + "px"),
+			maskPosition:
+				(typeof size == "string" ? size : size + "px") +
+				" " +
+				(typeof size == "string" ? size : size + "px"),
 		},
 	};
 }

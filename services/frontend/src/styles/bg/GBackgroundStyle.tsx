@@ -1,10 +1,9 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appThemeDef } from "../theme";
 import { TDropShadowToString } from "../../utils/styles";
-import { ARotation, makeMaskTranslationAnim, makeTranslationAnim } from "../animations/CommonAnimations";
+import { ARotation, makeMaskTranslationAnim } from "../animations/CommonAnimations";
 const bgIcons = "imgs/shared/BG_Icons.png";
 const bgPolar = "imgs/shared/BGPolarMask.png";
-//import { appThemeDef } from "../theme";
 
 export const SBGBox: SxProps<Theme> = {
 	position: "fix",
@@ -30,25 +29,28 @@ export const SBGIconTextureBox: SxProps<Theme> = {
 		: "",
 };
 
-export function SBGIconMask(isWindmill?: boolean, rever): SxProps<Theme> {
+export function SBGIconMask(isWindmill?: boolean): SxProps<Theme> {
 	return (Theme) => ({
-
 		position: "absolute",
 		inset: 0,
 
-		backgroundColor: isWindmill ? Theme.palette.primary.dark : Theme.palette.primary.light,
+		backgroundColor: isWindmill ? Theme.palette.primary.dark : appThemeDef.colors.primary[3],
 		maskImage: `url("${bgIcons}")`,
-		maskSize: "1000px 1000px",
+		maskSize: appThemeDef.bg.iconSize + "px " + appThemeDef.bg.iconSize + "px",
 
 		WebkitMaskImage: `url("${bgIcons}")`,
 		WebkitMaskSize: appThemeDef.bg.iconSize + "px " + appThemeDef.bg.iconSize + "px",
 
-		"@keyframes tran": makeMaskTranslationAnim(appThemeDef.bg.iconSize ? appThemeDef.bg.iconSize : 1000),
-		animation: appThemeDef.bg.iconMove ? ("tran " + appThemeDef.bg.iconSpeed + "s linear infinite") : ""
+		"@keyframes tran": makeMaskTranslationAnim(
+			appThemeDef.bg.iconSize ? appThemeDef.bg.iconSize : 1000,
+		),
+		animation: appThemeDef.bg.iconMove
+			? "tran " + appThemeDef.bg.iconSpeed + "s linear infinite"
+			: "",
 	});
 }
 
-export const SBGWindmillBox: SxProps<Theme> = {	
+export const SBGWindmillBox: SxProps<Theme> = {
 	position: "absolute",
 	width: "125%",
 	top: 0,
@@ -58,7 +60,7 @@ export const SBGWindmillBox: SxProps<Theme> = {
 		? "drop-shadow(" + TDropShadowToString(appThemeDef.bg.windmillShadow) + ")"
 		: "",
 
-	transform: "translate(-10%, -30%)"
+	transform: "translate(-10%, -30%)",
 };
 
 export const SBGWindmillMask: SxProps<Theme> = (Theme) => ({
@@ -75,6 +77,7 @@ export const SBGWindmillMask: SxProps<Theme> = (Theme) => ({
 	WebkitMaskPosition: "center",
 
 	"@keyframes rot": ARotation,
-	animation: appThemeDef.bg.windmillMove ? ("rot " + appThemeDef.bg.windmillSpeed + "s linear infinite") : ""
-
+	animation: appThemeDef.bg.windmillMove
+		? "rot " + appThemeDef.bg.windmillSpeed + "s linear infinite"
+		: "",
 });

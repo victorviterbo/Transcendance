@@ -4,9 +4,7 @@ import type { TDropShadow } from "../types/styles";
 //                    CSS
 //--------------------------------------------------
 export function TDropShadowToString(Input: TDropShadow | string): string {
-
-	if(typeof Input == "string")
-		return Input;
+	if (typeof Input == "string") return Input;
 	let finalSTR = "";
 	finalSTR += (typeof Input.offsetX == "number" ? Input.offsetX + "px" : Input.offsetX) + " ";
 	finalSTR += (typeof Input.offsetY == "number" ? Input.offsetY + "px" : Input.offsetY) + " ";

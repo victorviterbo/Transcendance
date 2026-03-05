@@ -45,7 +45,7 @@ export const appThemeDef: ITheme = {
 			offsetX: 2,
 			offsetY: 2,
 			blur: 4,
-			color: "black"
+			color: "black",
 		},
 
 		windmill: false,
@@ -54,9 +54,9 @@ export const appThemeDef: ITheme = {
 		windmillShadow: {
 			offsetX: 5,
 			offsetY: 5,
-			color: "black"
+			color: "black",
 		},
-		windmillBG: false
+		windmillBG: false,
 	},
 };
 

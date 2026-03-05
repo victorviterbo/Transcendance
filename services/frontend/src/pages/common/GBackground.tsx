@@ -14,7 +14,7 @@ interface GBackgroundIconsProps extends GCompProps {
 	isWindmill?: boolean;
 }
 
-function GBackgroundIcons({isWindmill}: GBackgroundIconsProps) {
+function GBackgroundIcons({ isWindmill }: GBackgroundIconsProps) {
 	return (
 		<Box sx={SBGIconTextureBox}>
 			<Box sx={SBGIconMask(isWindmill)}></Box>
@@ -25,7 +25,9 @@ function GBackgroundIcons({isWindmill}: GBackgroundIconsProps) {
 function GBackgroundWindmill() {
 	return (
 		<Box sx={SBGWindmillBox}>
-			<Box sx={SBGWindmillMask}>{appThemeDef.bg.windmillBG && <GBackgroundIcons isWindmill={true}/>}</Box>
+			<Box sx={SBGWindmillMask}>
+				{appThemeDef.bg.windmillBG && <GBackgroundIcons isWindmill={true} />}
+			</Box>
 		</Box>
 	);
 }

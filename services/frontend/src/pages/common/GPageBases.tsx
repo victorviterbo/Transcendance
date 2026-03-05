@@ -26,7 +26,7 @@ function GPageBase({ children }: GPageProps) {
 				>
 					<CNavbar />
 					<Stack sx={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
-						<Box sx={{ flex: 1 }}>{}</Box>
+						<Box sx={{ flex: 1 }}>{children}</Box>
 						<Box
 							sx={{
 								flexShrink: 0,
