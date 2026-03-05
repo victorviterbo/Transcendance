@@ -29,19 +29,22 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend']
 
 # Definition of all installed modules
 INSTALLED_APPS = [
+	'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'corsheaders',
     'django_extensions',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'chat.apps.ChatConfig',
 ]
 
 # Definition of the middlewares (Layers between the backend and the WebServer)
@@ -81,6 +84,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://0.0.0.0",
 ]
 
+# Added for Channels: point ASGI application to channels routing(for chatroom)
+ASGI_APPLICATION = 'project.asgi.application'
+
+# Channels layer config (uses in-memory channel layer for development)(for chatroom)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # Database definition
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -130,6 +142,7 @@ STATIC_URL = 'static/'
 # File where are defined which url leads to which view
 # https://docs.djangoproject.com/en/6.0/topics/http/urls/#:~:text=root%20URLconf%20module%20to%20use.%20Ordinarily%2C%20this%20is%20the
 ROOT_URLCONF = 'project.urls'
+WSGI_APPLICATION = 'project.wsgi.application'
 
 LOGIN_URL = '/api/users/login/'
 # Default primary key field type
