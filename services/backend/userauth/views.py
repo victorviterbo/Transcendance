@@ -168,23 +168,28 @@ class RefreshTokenView(TokenRefreshView):
         
         if refresh_token:
             request.data['refresh'] = refresh_token
-            serializer = self.get_serializer(data=request.data)
             try:
-                if serializer.is_valid():
-                    token = RefreshToken(refresh_token)
+                response = super().post(request, *args, **kwargs)
+                if response.status_code == status.HTTP_200_OK:
+                    new_refresh = response.data.get('refresh')
+                    token = RefreshToken(new_refresh)
                     user = SiteUser.objects.get(id=token['user_id'])
-                    response =  super().post(request, *args, **kwargs)
+                    
                     response.data['username'] = user.username
+                    response.set_cookie(
+                        key='refresh-token',
+                        value=new_refresh,
+                        httponly=True, secure=True, samesite='Lax',
+                        path='/api/auth/'
+                    )
                     return response
                 else:
-                    return Response({'description': f'Refresh token invalid: {serializer.error}'},
-                                    status=status.HTTP_401_UNAUTHORIZED)
+                    return response
             except Exception as e:
                 return Response({'description': f'Refresh token invalid: {e}'},
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'description': 'Refresh token not found in cookies'},
                         status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 class FriendRequests(APIView):

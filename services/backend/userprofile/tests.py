@@ -18,12 +18,14 @@ class ProfileTests(APITestCase):
         """Set up the common variables for the tests."""
         serializer = SiteUserSerializer(data={'email': 'user1@mail.com',
                                               'profile_username': 'user1',
-                                              'password': 'password123'}, context={'is_creation': True})
+                                              'password': 'Password123+'},
+                                              context={'is_creation': True})
         if serializer.is_valid():
             self.user = serializer.save()
         serializer = SiteUserSerializer(data={'email': 'user2@mail.com',
                                               'profile_username': 'user2',
-                                              'password': 'password123'}, context={'is_creation': True})
+                                              'password': 'Password123+'},
+                                              context={'is_creation': True})
         if serializer.is_valid():
             self.user = serializer.save()
         
@@ -78,7 +80,7 @@ class ProfileTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
-                                                 'password': 'password123'})
+                                                 'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
@@ -136,19 +138,16 @@ class ProfileTests(APITestCase):
             content_type='image/png'
         )
         for username in ['a_new_user', 'user1', 'an_anonymous_user', 'asuperlongusernamethatshouldfailbutnotcrash']:
-            serializer = ProfileSerializer(data=raw_data)
-            serializer_light = LightProfileSerializer(data=raw_data)
             raw_data['username'] = username
+            serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
+            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
             if username != 'a_new_user':
                 self.assertFalse(serializer.is_valid(), serializer.errors)
                 self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
                 self.assertIn('username', serializer.errors)
-                if username == 'user1':
+                if username in ['user1', 'an_anonymous_user']:
                     self.assertEqual('unique', serializer.errors['username'][0].code)
                     self.assertEqual('unique', serializer_light.errors['username'][0].code)
-                elif username == 'a_new_user':
-                    self.assertEqual('invalid', serializer.errors['username'][0].code)
-                    self.assertEqual('invalid', serializer_light.errors['username'][0].code)
                 elif username == 'asuperlongusernamethatshouldfailbutnotcrash':
                     self.assertEqual('max_length', serializer.errors['username'][0].code)
                     self.assertEqual('max_length', serializer_light.errors['username'][0].code)
@@ -157,9 +156,9 @@ class ProfileTests(APITestCase):
                 self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
         raw_data['username'] = 'a_new_user'
         for image in [valid_image, invalid_image, empty_file, corrupt_image]:
-            serializer = ProfileSerializer(data=raw_data)
-            serializer_light = LightProfileSerializer(data=raw_data)
             raw_data['image'] = image
+            serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
+            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
             if image is not valid_image:
                 self.assertFalse(serializer.is_valid(), serializer.errors)
                 self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
@@ -177,9 +176,9 @@ class ProfileTests(APITestCase):
         
         raw_data['image'] = valid_image
         for exp_points in [0, 1234, -120, 'a', '']:
-            serializer = ProfileSerializer(data=raw_data)
-            serializer_light = LightProfileSerializer(data=raw_data)
             raw_data['exp_points'] = exp_points
+            serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
+            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
             self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
             if exp_points in ['a', '']:
                 self.assertFalse(serializer.is_valid(), serializer.errors)
@@ -190,9 +189,9 @@ class ProfileTests(APITestCase):
         
         raw_data['exp_points'] = 0
         for badges in ['Deaf Octopus', 'not a badge', '']:
-            serializer = ProfileSerializer(data=raw_data)
-            serializer_light = LightProfileSerializer(data=raw_data)
             raw_data['badges'] = badges
+            serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
+            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
             self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
             if badges != 'Deaf Octopus':
                 self.assertFalse(serializer.is_valid(), serializer.errors)

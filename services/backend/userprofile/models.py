@@ -26,7 +26,7 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        """Enforce uniqueness only the name is not Anonymous."""
+        """Enforce uniqueness only if the username is not Anonymous."""
         constraints = [
             models.UniqueConstraint(
                 fields=['username'], 

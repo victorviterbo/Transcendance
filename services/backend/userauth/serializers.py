@@ -9,10 +9,11 @@ to JSON and vice-versa, namely:
 import re
 from typing import Any
 
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from userprofile.models import Profile
-from userprofile.serializers import validate_username
+from userprofile.serializers import validate_username, ProfileSerializer
 
 from .models import Friendship, SiteUser
 
@@ -84,14 +85,19 @@ class SiteUserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value: str) -> str:
         """Specific email validation for user login."""
-        value = validate_email(value, is_creation=self.context['is_creation'])
+        value = validate_email(value, is_creation=self.context.get('is_creation'))
         return value
     
     def validate_profile_username(self, value: str) -> str:
         """Specific email validation for user login."""
-        value = validate_username(value, is_creation=self.context['is_creation'])
+        value = validate_username(value, is_creation=self.context.get('is_creation'))
         return value
     
+    def validate_password(self, value: str) -> str:
+        """Explicitly trigger the custrom password validator."""
+        validate_password(value, user=self.instance)
+        return value
+        
     def create(self, validated_data: Any) -> SiteUser:
         """Overrride the user creation method to ensure it uses our SiteUserManager.
 
@@ -102,12 +108,14 @@ class SiteUserSerializer(serializers.ModelSerializer):
         """
         profile_username = validated_data.pop('profile_username')
         user = SiteUser.objects.create_user(**validated_data)
-        """serializer = ProfileSerializer(data={
+        """
+        serializer = ProfileSerializer(data={
                                         'user': user, 
                                         'username': profile_username}
         )
         if serializer.is_valid(raise_exception=True):
-            serializer.save()"""
+            serializer.save()
+        """
         Profile.objects.create(user=user, username=profile_username)
         return user
 
@@ -139,17 +147,17 @@ class ComplexPasswordValidator:
     def validate(self, password: str, user=None) -> None:
         """Define specific validation process for password validation."""
         if (len(password) < 8):
-            raise ValueError("Use at least 8 characters.")
+            raise ValidationError("Use at least 8 characters.")
 
-        rules = {   r"/(?=.*\d)/": "Include at least 1 number.",
-                    r"/(?=.*[a-z])/": "Include at least 1 lowercase letter.",
-                    r"/(?=.*[A-Z])/": "Include at least 1 uppercase letter.",
-                    r"/(?=.*[^A-Za-z0-9])/": "Include at least 1 special character."
-        }
-        for rule in rules:
-            if re.match(rule, password):
-                raise ValidationError(rules[rule])
-
+        rules = [
+            (r'[0-9]', "Include at least 1 number."),
+            (r'[a-z]', "Include at least 1 lowercase letter."),
+            (r'[A-Z]', "Include at least 1 uppercase letter."),
+            (r'[^A-Za-z0-9]', "Include at least 1 special character."),
+        ]
+        for pattern, message in rules:
+            if not re.search(pattern, password):
+                raise ValidationError(message)
 
 class FriendshipSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""

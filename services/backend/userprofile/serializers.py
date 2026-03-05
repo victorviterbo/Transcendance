@@ -40,6 +40,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value: str, is_creation=False) -> str:
         """Specific username validation for user creation / update."""
+        if self.context.get('is_creation'):
+            is_creation = True
         if is_creation and Profile.objects.filter(username=value).exists():
             raise serializers.ValidationError('Username already taken',
                                               code='unique')
@@ -56,3 +58,12 @@ class LightProfileSerializer(serializers.ModelSerializer):
         """
         model = Profile
         fields = ['username', 'image']
+
+    def validate_username(self, value: str, is_creation=False) -> str:
+        """Specific username validation for user creation / update."""
+        if self.context.get('is_creation'):
+            is_creation = True
+        if is_creation and Profile.objects.filter(username=value).exists():
+            raise serializers.ValidationError('Username already taken',
+                                              code='unique')
+        return validate_username(value)
