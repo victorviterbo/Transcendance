@@ -90,13 +90,16 @@ const appThemeBase: ThemeOptions = {
 		},
 	},
 
+	typography: {
+		fontFamily: "MochiyPop, roboto, arial",
+	},
+
 	shape: {
 		borderRadius: 10,
 	},
 
 	components: {
 		MuiCssBaseline: {
-			styleOverrides: {},
 		},
 	},
 };

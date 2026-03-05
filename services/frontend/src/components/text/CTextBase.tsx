@@ -18,14 +18,15 @@ function CTextBase({ align, children, color, getVariant, sx, ...other }: CTextBa
 			variant={getVariant ? getVariant() : "body1"}
 			align={align}
 			gutterBottom
+			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color}]}
 			{...other}
+			data-testid={"CTextBase"}
 		>
 			{typeof children === "string"
 				? ttr(children)
 				: Children.map(children, (child) =>
 						typeof child === "string" ? ttr(child) : child,
 					)}
-			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
 		</Typography>
 	);
 }

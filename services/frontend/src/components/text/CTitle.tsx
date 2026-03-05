@@ -4,7 +4,7 @@ import CTextBase from "./CTextBase.tsx";
 
 export interface CTitleProps extends CTextBaseProps {}
 
-function CTitle({ size, children, ...other }: CTitleProps) {
+function CTitle({ size, children, sx, ...other }: CTitleProps) {
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
@@ -19,7 +19,7 @@ function CTitle({ size, children, ...other }: CTitleProps) {
 	};
 
 	return (
-		<CTextBase getVariant={getVariant} {...other}>
+		<CTextBase getVariant={getVariant} sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), (Theme) => ({ fontFamily: "Knewave, " + Theme.typography.fontFamily})]} {...other}>
 			{children}
 		</CTextBase>
 	);

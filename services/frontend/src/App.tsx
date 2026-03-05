@@ -4,13 +4,15 @@ import PLeaderboardPage from "./pages/PLeaderboardPage";
 import PAuthPage from "./pages/PAuthPage";
 import PProfilePage from "./pages/PProfilePage";
 import CProtectedRoute from "./components/auth/CProtectedRoute";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
 import appTheme from "./styles/theme";
+import { getFontRegistry } from "./styles/fonts/fonts";
 
 function App() {
 	return (
 		<ThemeProvider theme={appTheme}>
-			<CssBaseline />
+			<GlobalStyles styles={getFontRegistry()}/>
+			<CssBaseline />	
 			<Routes>
 				<Route path="/" element={<PHomePage />} />
 				<Route path="/auth" element={<PAuthPage />} />
