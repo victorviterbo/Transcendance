@@ -70,3 +70,41 @@ def batch_lookup(track_ids: list[int]) -> dict[int, str]:
 	except (requests.RequestException, ValueError) as e:
 		print(f"[itunes_client] Batch lookup error: {e}")
 		return {}
+
+def full_lookup(track_ids: list[int]) -> dict[int, dict]:
+	"""
+	Perform a batch lookup and return full metadata for each track ID.
+	Returns a dict mapping track_id to {title, artist, kind, artwork_url, preview_url}.
+	"""
+	if not track_ids:
+		return {}
+
+	try:
+		ids_str = ",".join(str(tid) for tid in track_ids)
+		url = f"https://itunes.apple.com/lookup?id={ids_str}"
+		response = requests.get(url, timeout=10)
+		response.raise_for_status()
+		data = response.json()
+
+		results = data.get("results", [])
+		tracks = {}
+		for item in results:
+			try:
+				t_id = item["trackId"]
+				raw_artwork = item.get("artworkUrl100", "")
+				artwork_url = raw_artwork.replace("100x100bb", "500x500bb") if raw_artwork else ""
+				tracks[t_id] = {
+					"title": item.get("trackName", ""),
+					"artist": item.get("artistName", ""),
+					"kind": item.get("kind", ""),
+					"artwork_url": artwork_url,
+					"preview_url": item.get("previewUrl", ""),
+				}
+			except KeyError:
+				continue
+
+		return tracks
+
+	except (requests.RequestException, ValueError) as e:
+		print(f"[itunes_client] Full lookup error: {e}")
+		return {}
