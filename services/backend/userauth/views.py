@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
 from userprofile.serializers import validate_username
+
 from .models import Friendship, SiteUser
 from .serializers import FriendshipSerializer, LoginSerializer, SiteUserSerializer
 

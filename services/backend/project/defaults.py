@@ -15,7 +15,5 @@ badges_strings = ["Deaf Octopus", # <100
 def get_badge(number: int) -> str:
     """Define badges given depending on xp."""
     breakpoints = [100, 200, 500, 1000, 2000, 5000, 100000]
-    
-    
     index = bisect.bisect_right(breakpoints, number)
     return badges_strings[index]

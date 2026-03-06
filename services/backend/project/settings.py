@@ -43,7 +43,9 @@ INSTALLED_APPS = [
 
     'userauth',
     'userprofile',
-    'stats'
+    'stats',
+
+    'django_cleanup.apps.CleanupConfig'
 ]
 
 # Definition of the middlewares (Layers between the backend and the WebServer)
@@ -69,6 +71,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ]
 }
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),

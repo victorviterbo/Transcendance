@@ -13,7 +13,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from userprofile.models import Profile
-from userprofile.serializers import validate_username, ProfileSerializer
+from userprofile.serializers import validate_username
 
 from .models import Friendship, SiteUser
 
@@ -37,13 +37,15 @@ def gmail_specific_normalize(email: str) -> str:
     name = name.split("+")[0]
     return ("@").join([name, domain])
 
-def validate_email(value: str, is_creation=False) -> str:
+def validate_email(value: str, is_creation: bool = False) -> str:
     """Validate and normalize the incomming email address.
 
     In case of user creation (register), it performs a uniqueness check
 
     Args:
-        value: the incomming email address
+        value:          the incomming email address
+        is_creation:    boolean telling the serializer how to validate
+                        depending on context (if creation, enforce unique)
     Returns:
         The validated and normalized email address
     Raises:
@@ -108,15 +110,9 @@ class SiteUserSerializer(serializers.ModelSerializer):
         """
         profile_username = validated_data.pop('profile_username')
         user = SiteUser.objects.create_user(**validated_data)
-        """
-        serializer = ProfileSerializer(data={
-                                        'user': user, 
-                                        'username': profile_username}
-        )
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        """
-        Profile.objects.create(user=user, username=profile_username)
+        Profile.objects.create(user=user,
+                               username=profile_username,
+                               is_guest=False)
         return user
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -138,7 +134,7 @@ class LoginSerializer(serializers.ModelSerializer):
     
     def validate_email(self, value: str) -> str:
         """Specific email validation for user login."""
-        value = validate_email(value)
+        value = validate_email(value, is_creation=False)
         return value
 
 class ComplexPasswordValidator:

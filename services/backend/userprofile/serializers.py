@@ -1,17 +1,23 @@
 
 """Define export of Profile (full and light version) and Freiendship handling."""
-
+from io import BytesIO
+from pathlib import Path
+from typing import Any
+from django.db import transaction
+import os
+from django.core.files.base import ContentFile
+from PIL import Image, UnidentifiedImageError
 from rest_framework import serializers
 
 from .models import Profile
 
-from typing import Any
 
-def validate_username(value: str, is_creation=False) -> str:
+def validate_username(value: str, is_creation: bool = False) -> str:
     """Validate and normalize the incomming username.
 
     Args:
-        value: the incomming username
+        value:          the incomming username
+        is_creation:    flag about the context of serialization
     Returns:
         The validated and normalized username
     Raises:
@@ -21,31 +27,13 @@ def validate_username(value: str, is_creation=False) -> str:
     if not value: 
         raise serializers.ValidationError('Username is required.',
                                           code='invalid-data')
+    if any(pattern in value for pattern in ['/', '\\', '..', '~']):
+        raise serializers.ValidationError('Use of forbiden character', code='forbidden')
+    if value == 'admin':
+        raise serializers.ValidationError('Who do you think you are ?', code='super-forbidden')
     if is_creation and Profile.objects.filter(username=value).exists():
-        raise serializers.ValidationError('Username already taken',
-                                          code='unique')
+        raise serializers.ValidationError('Username already taken', code='unique')
     return value
-
-class ProfileSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's profile."""
-
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Profile
-        fields = ['username', 'image', 'exp_points', 'badges', 'created_at']
-
-    def validate_username(self, value: str, is_creation=False) -> str:
-        """Specific username validation for user creation / update."""
-        if self.context.get('is_creation'):
-            is_creation = True
-        if is_creation and Profile.objects.filter(username=value).exists():
-            raise serializers.ValidationError('Username already taken',
-                                              code='unique')
-        return validate_username(value)
 
 class LightProfileSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's profile."""
@@ -57,9 +45,10 @@ class LightProfileSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'image']
+        fields = ['username', 'image', 'is_guest', 'session_key']
+        read_only_fields = ['is_guest', 'session_key']
 
-    def validate_username(self, value: str, is_creation=False) -> str:
+    def validate_username(self, value: str, is_creation: bool = False) -> str:
         """Specific username validation for user creation / update."""
         if self.context.get('is_creation'):
             is_creation = True
@@ -67,3 +56,89 @@ class LightProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Username already taken',
                                               code='unique')
         return validate_username(value)
+
+    def validate_image(self, data: Any) -> Any:
+        """Convert to PNG and resize image."""
+        if not data:
+            return data
+        try:
+            img = Image.open(data)
+        except UnidentifiedImageError as e:
+            raise serializers.ValidationError('Invalid image file.') from e
+        except (ValueError, TypeError) as e:
+            raise serializers.ValidationError('The image file is corrupted or empty.',
+                                              code='corrupt_image') from e
+        img = img.convert('RGBA')
+        img.thumbnail((300, 300))
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
+        username = self.initial_data.get('username', 'profile')
+        return ContentFile(buffer.getvalue(), name=f'{username}_profile.png')
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        new_image = validated_data.get('image')
+        if new_image:
+            instance.image = new_image
+            
+        instance.save()
+        return instance
+    """def update(self, instance, validated_data):
+        old_image = instance.image
+        new_username = validated_data.get('username')
+        new_image = validated_data.get('image')
+
+        with transaction.atomic():
+            if new_username:
+                instance.username = new_username
+            
+            if new_image:
+                instance.image = new_image
+                
+            instance.save()
+
+        if (new_image and old_image and old_image.name != 'default_pp.png' and
+            old_image.path != instance.image.path and Path(old_image.path).is_file()):
+                    os.remove(old_image.path)
+
+        return instance
+    def update(self, instance: Profile, validated_data: Any) -> Any:
+        Override update to delete previous profile picture before saving new.
+        new_image = validated_data.get('image')
+        old_image = instance.image
+        print("HELLOOOOOO")
+        print(old_image)
+        print(old_image.path)
+        print(new_image)
+        if (new_image and old_image and old_image.name != 'default_pp.jpg'
+            and old_image != new_image):
+            old_file_path = Path(old_image.path)
+            print("---------")
+            print(old_image)
+            print(old_file_path)
+            print(new_image)
+            if old_file_path.is_file():
+                old_file_path.unlink()
+        return super().update(instance, validated_data)"""
+
+    def to_representation(self, instance: Profile) -> dict:
+        """Define how the Profile is exported to json."""
+        ret = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.image and request:
+            ret['image'] = request.build_absolute_uri(instance.image.url)
+        return ret
+
+class ProfileSerializer(LightProfileSerializer):
+    """Set how to serialize a user's profile."""
+
+    class Meta:
+        """Defines the metaclass for the Profile serializer.
+        
+        This part tells the rest_framework serializer how to contruct the
+        ProfileSerializer class itself
+        """
+        model = Profile
+        fields = ['username', 'image', 'exp_points', 'badges', 'created_at']
+        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key']

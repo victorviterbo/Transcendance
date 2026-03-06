@@ -1,5 +1,6 @@
 
 """Defines the views relatives to user registration, login, password change etc."""
+from typing import Any
 
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -71,8 +72,9 @@ class ProfileView(APIView):
         """
         profile = request.user.profile
         try:
-            profile_serializer = ProfileSerializer(profile,
+            profile_serializer = ProfileSerializer(instance=profile,
                                                    data=request.data,
+                                                   partial=True,
                                                    many=False)
             if profile_serializer.is_valid(raise_exception=True):
                 profile_serializer.save()
@@ -85,20 +87,6 @@ class ProfileView(APIView):
         except serializers.ValidationError as e:
             return Response({"errror": f"Unauthorized: {e}"},
                             status=status.HTTP_401_UNAUTHORIZED)
-
-class   UserSearchView(APIView):
-    """Search for a specific user (necessarily registered) and return their profiles."""
-    permission_classes = [IsAuthenticated]
-    def get(self, request: Request) -> Response:
-        """Returns all users matching the query."""
-        query = self.request.query_params.get('q')
-        if query is None:
-            return (Response({'error': 'no search query sent'},
-                             status=status.HTTP_400_BAD_REQUEST))
-        profiles = Profile.objects.filter(user__username__icontains=query)\
-            .exclude(user=self.request.user).exclude(user=None)
-        serializer = LightProfileSerializer(profiles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class   ProfileSearchView(APIView):
     """Search for a specific profile.
@@ -114,8 +102,73 @@ class   ProfileSearchView(APIView):
         if query is None:
             return (Response({'error': 'no search query sent'},
                              status=status.HTTP_400_BAD_REQUEST))
-        profiles = Profile.objects.filter(username=query)\
-            .exclude(user=self.request.user)
+        profiles = Profile.objects.filter(username=query)
         serializer = LightProfileSerializer(profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-  
+
+"""
+class   UserSearchView(APIView):
+    Search for a specific user (necessarily registered) and return their profiles.
+    permission_classes = [IsAuthenticated]
+    def get(self, request: Request) -> Response:
+        Returns all users matching the query.
+        query = self.request.query_params.get('q')
+        if query is None:
+            return (Response({'error': 'no search query sent'},
+                             status=status.HTTP_400_BAD_REQUEST))
+        profiles = Profile.objects.filter(user__username__icontains=query)\
+            .exclude(user=self.request.user).exclude(user=None)
+        serializer = LightProfileSerializer(profiles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+"""
+
+class GuestProfileCreateView(APIView):
+    """Create a profile without related user (guest)."""
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """Check if user is known, if yes update, if not create."""
+        if not request.session.session_key:
+            request.session.create()
+            profile = None
+        else:
+            profile = Profile.objects.filter(
+                session_key=request.session.session_key, 
+                is_guest=True
+            ).first()
+        
+        if profile:
+            serializer = LightProfileSerializer(
+                instance=profile, 
+                data=request.data, 
+                partial=True,
+                context={'is_creation': False}
+            )
+        else:
+            serializer = LightProfileSerializer(
+                data=request.data, 
+                context={'is_creation': True}
+            )
+
+        if serializer.is_valid():
+            serializer.save(
+                session_key=request.session.session_key,
+                is_guest=True
+            )
+            if profile:
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GuestCleanupView(APIView):
+    """End point for guest cleanup."""
+
+    def post(self, request: Request) -> Any:
+        """Receive front beacon to activate guest leaving."""
+        session_key = request.session.session_key
+        if session_key:
+            profile = Profile.objects.filter(session_key=session_key, is_guest=True).first()
+            if profile:
+                profile.delete() 
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 from .models import SiteUser
 from .serializers import SiteUserSerializer
-
+import os
 
 class UserAccountTests(APITestCase):
     """Test suit for the user module."""
@@ -89,7 +89,6 @@ class UserAccountTests(APITestCase):
 
         response = self.client.post(profile_url, data={'username': 'whatever'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
         response = self.client.post(logout_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.cookies.get('refresh-token').value, "")

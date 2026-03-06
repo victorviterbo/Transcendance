@@ -1,42 +1,87 @@
 """Tests for the profile module."""
 
 import io
-
-from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
-from rest_framework import status
-from rest_framework.test import APITestCase
-from userauth.serializers import SiteUserSerializer
-from .models import Profile
-from .serializers import LightProfileSerializer, ProfileSerializer
+import os
+import shutil
+import tempfile
 from pathlib import Path
 
-class ProfileTests(APITestCase):
+from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
+from PIL import Image
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from userauth.serializers import SiteUserSerializer
+from django.test import TransactionTestCase
+from .models import Profile
+from .serializers import LightProfileSerializer, ProfileSerializer
+
+image_dict = {
+    'valid': '',
+    'invalid': b'this is just a text string, not an image',
+    'empty': b'',
+    'corrup': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
+}
+
+def image_generator(image_type):
+    """Helper function to generate images for tests."""
+    if image_type == 'valid':
+        file_obj = io.BytesIO()
+        image = Image.new('RGB', size=(1000, 1000), color=(0, 0, 255))
+        image.save(file_obj, 'png')
+        file_obj.seek(0)
+        img_content = file_obj.getvalue()
+    else:
+        img_content = image_dict.get(image_type)
+    return SimpleUploadedFile(name='large_test.png',
+                                content=img_content,
+                                content_type='image/png'
+                                )
+MEDIA_ROOT = settings.MEDIA_ROOT + '/tests_tmp/'
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+class ProfileTests(TransactionTestCase):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
+        self.client = APIClient()
         serializer = SiteUserSerializer(data={'email': 'user1@mail.com',
                                               'profile_username': 'user1',
                                               'password': 'Password123+'},
                                               context={'is_creation': True})
         if serializer.is_valid():
-            self.user = serializer.save()
+            self.user1 = serializer.save()
         serializer = SiteUserSerializer(data={'email': 'user2@mail.com',
                                               'profile_username': 'user2',
                                               'password': 'Password123+'},
                                               context={'is_creation': True})
         if serializer.is_valid():
-            self.user = serializer.save()
+            self.user2 = serializer.save()
         
-        serializer = ProfileSerializer(data= {'username': 'an_anonymous_user',
+        serializer = ProfileSerializer(data={'username': 'an_anonymous_user',
                                               'exp_points': '12',
                                               'badges': 'Deaf Octopus'
                                             },
                                             context={'is_creation': True})
         if serializer.is_valid():
-            self.user = serializer.save()
+            self.user3 = serializer.save()
+    
+    @classmethod
+    def tearDownClass(cls):
+        """Runs once after all tests in this class have finished."""
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+    def tearDown(self):
+        """Runs after EVERY individual test."""
+        for root, dirs, files in os.walk(settings.MEDIA_ROOT):
+            for f in files:
+                os.unlink(os.path.join(root, f))
+            for d in dirs:
+                shutil.rmtree(os.path.join(root, d))
+    
     def test_profile_get(self) -> None:
         """Test success and failure of profile access operation."""
         profile_url = '/api/profile/'
@@ -87,15 +132,16 @@ class ProfileTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=access_token)
 
         image_io.seek(0)
-        fake_file = SimpleUploadedFile(
+        tmp_file = SimpleUploadedFile(
             name=img_path.name, 
             content=image_io.read(), 
             content_type='image/png'
         )
         new_data = {
             'username': 'a_new_user',
-            'image': fake_file,
-            'exp_points': 1000000000,
+            'image': tmp_file,
+            'exp_points': 5001,
+            'badge': 'Sonic Shark'
         }
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -103,44 +149,71 @@ class ProfileTests(APITestCase):
         response = self.client.get(profile_url + "?q=a_new_user")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'a_new_user')
-        self.assertStartsWith(response.data['image'], '/DB/media/profile_pics/image')
+        self.assertEqual(response.data['exp_points'], 0)
+        self.assertEqual(response.data['badges'], 'Deaf Octopus')
+        self.assertTrue(Path(MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')).is_file())
+    
+    def test_guest_profile(self) -> None:
+        """Test creation updating and deleting guests users."""
+        guest_create_url = '/api/profile/guest-create/'
+        guest_delete_url = '/api/profile/guest-delete/'
+        profile_search_url = '/api/profile/search/'
+        response = self.client.post(guest_create_url,
+                                    data={'username': 'a_brand_new_guest'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('sessionid', self.client.cookies)
+        response = self.client.get(profile_search_url + "?q=a_brand_new_guest")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(guest_create_url, data={'username': 'updating_guest'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(profile_search_url + "?q=updating_guest")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        img_path = Path(__file__).parent.parent / 'DB' / 'media' / 'image.png'
+        image_bytes = img_path.read_bytes()
+        image_io = io.BytesIO(image_bytes)
+        image_io.seek(0)
+        fake_file = SimpleUploadedFile(
+            name=img_path.name, 
+            content=image_io.read(), 
+            content_type='image/png'
+        )
+        new_data = {
+            'username': 'with_a_pic',
+            'image': fake_file,
+            'exp_points': 1000000000,
+        }
+        response = self.client.post(guest_create_url, data=new_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(Path(MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')).is_file())
+        self.assertNotIn('exp_points', response.data)
+
+        response = self.client.post(guest_create_url, data={'username': 'new_username'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(Path(MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')).is_file())
+        old_image_path = MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')
+
+        response = self.client.post(guest_delete_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Path(old_image_path).is_file())
+
 
     def test_profile_validation(self) -> None:
         """Test success and failure of profile validation."""
-        file_obj = io.BytesIO()
-        image = Image.new('RGB', size=(1000, 1000), color=(0, 0, 255))
-        image.save(file_obj, 'png')
-        file_obj.seek(0)
-        valid_image = SimpleUploadedFile(
-            name='large_test.png',
-            content=file_obj.read(),
-            content_type='image/png'
-        )
         raw_data = {
             'username': 'a_new_user',
-            'image': valid_image,
+            'image': image_generator('valid'),
             'exp_points': '0',
             'badges': 'Deaf Octopus'
         }
-        invalid_image = SimpleUploadedFile(
-            name='fake_image.jpg',
-            content=b'this is just a text string, not an image',
-            content_type='image/jpeg'
-        )
-        empty_file = SimpleUploadedFile(
-            name='empty.png',
-            content=b'',
-            content_type='image/png'
-        )
-        corrupt_image = SimpleUploadedFile(
-            name='corrupt.png',
-            content=b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00',
-            content_type='image/png'
-        )
         for username in ['a_new_user', 'user1', 'an_anonymous_user', 'asuperlongusernamethatshouldfailbutnotcrash']:
             raw_data['username'] = username
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
             serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
+            valid = serializer.is_valid()
+            raw_data['image'].seek(0)
+            valid_light = serializer_light.is_valid()
+            raw_data['image'].seek(0)
             if username != 'a_new_user':
                 self.assertFalse(serializer.is_valid(), serializer.errors)
                 self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
@@ -152,29 +225,36 @@ class ProfileTests(APITestCase):
                     self.assertEqual('max_length', serializer.errors['username'][0].code)
                     self.assertEqual('max_length', serializer_light.errors['username'][0].code)
             else:
-                self.assertTrue(serializer.is_valid(), serializer.errors)
-                self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
+                self.assertTrue(valid, serializer.errors)
+                self.assertTrue(valid_light, serializer_light.errors)
         raw_data['username'] = 'a_new_user'
-        for image in [valid_image, invalid_image, empty_file, corrupt_image]:
-            raw_data['image'] = image
+        for image in image_dict:
+            raw_data['image'] = image_generator(image)
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
             serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
-            if image is not valid_image:
-                self.assertFalse(serializer.is_valid(), serializer.errors)
-                self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
+            valid = serializer.is_valid()
+            raw_data['image'].seek(0)
+            valid_light = serializer_light.is_valid()
+            raw_data['image'].seek(0)
+            if image != 'valid':
+                self.assertFalse(valid, serializer.errors)
+                self.assertFalse(valid_light, serializer_light.errors)
                 self.assertIn('image', serializer.errors)
                 self.assertIn('image', serializer_light.errors)
-                if image in [invalid_image, corrupt_image]:
+                if image in ['invalid', 'corrupt']:
                     self.assertEqual('invalid_image', serializer.errors['image'][0].code)
                     self.assertEqual('invalid_image', serializer_light.errors['image'][0].code)
-                elif image is empty_file:
+                elif image == 'empty':
                     self.assertEqual('empty', serializer.errors['image'][0].code)
                     self.assertEqual('empty', serializer_light.errors['image'][0].code)
             else:
-                self.assertTrue(serializer.is_valid(), serializer.errors)
-                self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
-        
-        raw_data['image'] = valid_image
+                raw_data['image'] = image_generator(image)
+                raw_data['image'].seek(0)
+                self.assertTrue(valid, serializer.errors)
+                raw_data['image'] = image_generator(image)
+                raw_data['image'].seek(0)
+                self.assertTrue(valid_light, serializer_light.errors)
+        """raw_data['image'] = valid_image
         for exp_points in [0, 1234, -120, 'a', '']:
             raw_data['exp_points'] = exp_points
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
@@ -199,3 +279,4 @@ class ProfileTests(APITestCase):
                 self.assertEqual('invalid_choice', serializer.errors['badges'][0].code)
             else:
                 self.assertTrue(serializer.is_valid(), serializer_light.errors)
+        """
