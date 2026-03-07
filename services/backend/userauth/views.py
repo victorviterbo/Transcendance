@@ -9,8 +9,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
-from userprofile.models import Profile
-from userprofile.serializers import validate_username
 
 from .models import Friendship, SiteUser
 from .serializers import FriendshipSerializer, LoginSerializer, SiteUserSerializer
@@ -80,7 +78,8 @@ class RegisterView(APIView):
         try:
             renamed_data = request.data.copy()
             renamed_data['profile_username'] = renamed_data.pop('username')
-            serializer = SiteUserSerializer(data=renamed_data, context={'is_creation': True})
+            serializer = SiteUserSerializer(data=renamed_data,
+                                            context={'is_creation': True})
             if serializer.is_valid(raise_exception=True):
                 serializer.save(profile_username=request.data.get('username'))
                 token = RefreshToken.for_user(serializer.instance)
@@ -226,7 +225,8 @@ class FriendRequests(APIView):
                 from_user=recipient, 
                 to_user=sender
             )
-            if (curr_rev_relationship.exists() and curr_rev_relationship.status == 'pending'):
+            if (curr_rev_relationship.exists() and
+                curr_rev_relationship.status == 'pending'):
                 curr_rev_relationship.first().status = 'accepted'
                 return Response({'description': 'Friendship created'}, 
                                 status=status.HTTP_202_ACCEPTED)

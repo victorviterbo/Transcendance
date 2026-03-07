@@ -75,53 +75,6 @@ class LightProfileSerializer(serializers.ModelSerializer):
         username = self.initial_data.get('username', 'profile')
         return ContentFile(buffer.getvalue(), name=f'{username}_profile.png')
 
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        instance.username = validated_data.get('username', instance.username)
-        new_image = validated_data.get('image')
-        if new_image:
-            instance.image = new_image
-            
-        instance.save()
-        return instance
-    """def update(self, instance, validated_data):
-        old_image = instance.image
-        new_username = validated_data.get('username')
-        new_image = validated_data.get('image')
-
-        with transaction.atomic():
-            if new_username:
-                instance.username = new_username
-            
-            if new_image:
-                instance.image = new_image
-                
-            instance.save()
-
-        if (new_image and old_image and old_image.name != 'default_pp.png' and
-            old_image.path != instance.image.path and Path(old_image.path).is_file()):
-                    os.remove(old_image.path)
-
-        return instance
-    def update(self, instance: Profile, validated_data: Any) -> Any:
-        Override update to delete previous profile picture before saving new.
-        new_image = validated_data.get('image')
-        old_image = instance.image
-        print("HELLOOOOOO")
-        print(old_image)
-        print(old_image.path)
-        print(new_image)
-        if (new_image and old_image and old_image.name != 'default_pp.jpg'
-            and old_image != new_image):
-            old_file_path = Path(old_image.path)
-            print("---------")
-            print(old_image)
-            print(old_file_path)
-            print(new_image)
-            if old_file_path.is_file():
-                old_file_path.unlink()
-        return super().update(instance, validated_data)"""
-
     def to_representation(self, instance: Profile) -> dict:
         """Define how the Profile is exported to json."""
         ret = super().to_representation(instance)

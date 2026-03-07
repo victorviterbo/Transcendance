@@ -3,18 +3,16 @@
 import io
 import os
 import shutil
-import tempfile
 from pathlib import Path
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import override_settings
+from django.test import TransactionTestCase, override_settings
 from PIL import Image
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient
 from userauth.serializers import SiteUserSerializer
-from django.test import TransactionTestCase
-from .models import Profile
+
 from .serializers import LightProfileSerializer, ProfileSerializer
 
 image_dict = {
@@ -24,7 +22,7 @@ image_dict = {
     'corrup': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
 }
 
-def image_generator(image_type):
+def image_generator(image_type: str) -> SimpleUploadedFile:
     """Helper function to generate images for tests."""
     if image_type == 'valid':
         file_obj = io.BytesIO()
@@ -38,7 +36,8 @@ def image_generator(image_type):
                                 content=img_content,
                                 content_type='image/png'
                                 )
-MEDIA_ROOT = settings.MEDIA_ROOT + '/tests_tmp/'
+
+MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp'
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class ProfileTests(TransactionTestCase):
@@ -69,18 +68,18 @@ class ProfileTests(TransactionTestCase):
             self.user3 = serializer.save()
     
     @classmethod
-    def tearDownClass(cls):
+    def tearDownClass(cls) -> None:
         """Runs once after all tests in this class have finished."""
         shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Runs after EVERY individual test."""
         for root, dirs, files in os.walk(settings.MEDIA_ROOT):
             for f in files:
-                os.unlink(os.path.join(root, f))
+                Path(root) / Path(f).unlink()
             for d in dirs:
-                shutil.rmtree(os.path.join(root, d))
+                shutil.rmtree(Path(root) / Path(d))
     
     def test_profile_get(self) -> None:
         """Test success and failure of profile access operation."""
@@ -95,9 +94,11 @@ class ProfileTests(TransactionTestCase):
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn('error', response.data)
                 if username:
-                    self.assertEqual('No profile with this username', response.data['error'])
+                    self.assertEqual('No profile with this username',
+                                     response.data['error'])
                 else:
-                    self.assertEqual('Invalid empty query string', response.data['error'])
+                    self.assertEqual('Invalid empty query string',
+                                     response.data['error'])
         response = self.client.get(profile_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
@@ -151,7 +152,7 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
         self.assertEqual(response.data['badges'], 'Deaf Octopus')
-        self.assertTrue(Path(MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')).is_file())
+        self.assertTrue(Path(MEDIA_ROOT / response.data['image'].lstrip('/DB/media/')).is_file())
     
     def test_guest_profile(self) -> None:
         """Test creation updating and deleting guests users."""
@@ -185,18 +186,17 @@ class ProfileTests(TransactionTestCase):
         }
         response = self.client.post(guest_create_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(Path(MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')).is_file())
+        original_img_path = Path(MEDIA_ROOT / response.data['image'].lstrip('/DB/media/'))
+        self.assertTrue(original_img_path.is_file())
         self.assertNotIn('exp_points', response.data)
 
         response = self.client.post(guest_create_url, data={'username': 'new_username'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(Path(MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')).is_file())
-        old_image_path = MEDIA_ROOT + response.data['image'].lstrip('/DB/media/')
+        self.assertTrue(original_img_path.is_file())
 
         response = self.client.post(guest_delete_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Path(old_image_path).is_file())
-
+        self.assertFalse(original_img_path.is_file())
 
     def test_profile_validation(self) -> None:
         """Test success and failure of profile validation."""
@@ -254,29 +254,3 @@ class ProfileTests(TransactionTestCase):
                 raw_data['image'] = image_generator(image)
                 raw_data['image'].seek(0)
                 self.assertTrue(valid_light, serializer_light.errors)
-        """raw_data['image'] = valid_image
-        for exp_points in [0, 1234, -120, 'a', '']:
-            raw_data['exp_points'] = exp_points
-            serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
-            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
-            self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
-            if exp_points in ['a', '']:
-                self.assertFalse(serializer.is_valid(), serializer.errors)
-                self.assertIn('exp_points', serializer.errors)
-                self.assertEqual('invalid', serializer.errors['exp_points'][0].code)
-            else:
-                self.assertTrue(serializer.is_valid(), serializer.errors)
-        
-        raw_data['exp_points'] = 0
-        for badges in ['Deaf Octopus', 'not a badge', '']:
-            raw_data['badges'] = badges
-            serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
-            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
-            self.assertTrue(serializer_light.is_valid(), serializer_light.errors)
-            if badges != 'Deaf Octopus':
-                self.assertFalse(serializer.is_valid(), serializer.errors)
-                self.assertIn('badges', serializer.errors)
-                self.assertEqual('invalid_choice', serializer.errors['badges'][0].code)
-            else:
-                self.assertTrue(serializer.is_valid(), serializer_light.errors)
-        """

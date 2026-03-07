@@ -106,22 +106,6 @@ class   ProfileSearchView(APIView):
         serializer = LightProfileSerializer(profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-"""
-class   UserSearchView(APIView):
-    Search for a specific user (necessarily registered) and return their profiles.
-    permission_classes = [IsAuthenticated]
-    def get(self, request: Request) -> Response:
-        Returns all users matching the query.
-        query = self.request.query_params.get('q')
-        if query is None:
-            return (Response({'error': 'no search query sent'},
-                             status=status.HTTP_400_BAD_REQUEST))
-        profiles = Profile.objects.filter(user__username__icontains=query)\
-            .exclude(user=self.request.user).exclude(user=None)
-        serializer = LightProfileSerializer(profiles, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-"""
-
 class GuestProfileCreateView(APIView):
     """Create a profile without related user (guest)."""
     permission_classes = [AllowAny]
