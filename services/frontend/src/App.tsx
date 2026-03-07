@@ -11,8 +11,8 @@ import { getFontRegistry } from "./styles/fonts/fonts";
 function App() {
 	return (
 		<ThemeProvider theme={appTheme}>
-			<GlobalStyles styles={getFontRegistry()}/>
-			<CssBaseline />	
+			<GlobalStyles styles={getFontRegistry()} />
+			<CssBaseline />
 			<Routes>
 				<Route path="/" element={<PHomePage />} />
 				<Route path="/auth" element={<PAuthPage />} />

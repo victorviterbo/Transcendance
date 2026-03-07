@@ -14,6 +14,7 @@ import CNavbarLink from "./CNavbarLink.tsx";
 import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
 import CText from "../text/CText.tsx";
+import CNavbarStyle from "../../styles/components/navigation/CNavbarStyle.ts";
 
 function CNavbar() {
 	const { status, logout } = useAuth();
@@ -71,7 +72,7 @@ function CNavbar() {
 	const items = status === "authed" ? authedItems : guestItems;
 
 	return (
-		<AppBar position="static">
+		<AppBar position="static" sx={CNavbarStyle}>
 			<Toolbar>
 				<IconButton
 					size="medium"

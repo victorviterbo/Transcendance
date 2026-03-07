@@ -9,7 +9,7 @@ function CBasePaper({ sx, children, ...other }: CBasePaperProps) {
 	//====================== DOM ======================
 	return (
 		<Paper
-			elevation={3}
+			elevation={6}
 			sx={[CBasePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>

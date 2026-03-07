@@ -67,7 +67,7 @@ export const FetchPublicRoom = http.get(API_PUBLIC_ROOMS, async () => {
 	const tempRooms: IRoomInfo[] = [];
 
 	GenerateRoom();
-	for (let i = 0; i < 80; i++) {
+	for (let i = 0; i < 15; i++) {
 		tempRooms.push(GenerateRoom());
 	}
 

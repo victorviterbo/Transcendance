@@ -10,15 +10,16 @@ export const SBGBox: SxProps<Theme> = {
 
 	height: "100%",
 	width: "100%",
+	filter: "blur(" + appThemeDef.bg.baseBlur + "px)",
 };
 
-export const SBGBaseColor: SxProps<Theme> = (Theme) => ({
+export const SBGBaseColor: SxProps<Theme> = (_) => ({
 	position: "absolute",
 
 	height: "100%",
 	width: "100%",
 
-	backgroundColor: Theme.palette.primary.main,
+	backgroundColor: appThemeDef.bg.baseColor,
 });
 
 export const SBGIconTextureBox: SxProps<Theme> = {
@@ -34,7 +35,7 @@ export function SBGIconMask(isWindmill?: boolean): SxProps<Theme> {
 		position: "absolute",
 		inset: 0,
 
-		backgroundColor: isWindmill ? Theme.palette.primary.dark : appThemeDef.colors.primary[3],
+		backgroundColor: isWindmill ? Theme.palette.primary.dark : appThemeDef.bg.iconColor,
 		maskImage: `url("${bgIcons}")`,
 		maskSize: appThemeDef.bg.iconSize + "px " + appThemeDef.bg.iconSize + "px",
 

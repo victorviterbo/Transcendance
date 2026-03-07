@@ -13,8 +13,11 @@ export type TDropShadow = {
 //--------------------------------------------------
 export interface IThemeBG {
 	baseIndex: number;
+	baseColor: string;
+	baseBlur: number;
 
 	iconBG?: boolean;
+	iconColor: string;
 	iconMove?: boolean;
 	iconSize?: number;
 	iconSpeed?: number;

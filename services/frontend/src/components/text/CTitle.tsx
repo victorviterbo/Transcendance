@@ -19,7 +19,14 @@ function CTitle({ size, children, sx, ...other }: CTitleProps) {
 	};
 
 	return (
-		<CTextBase getVariant={getVariant} sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), (Theme) => ({ fontFamily: "Knewave, " + Theme.typography.fontFamily})]} {...other}>
+		<CTextBase
+			getVariant={getVariant}
+			sx={[
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+				(Theme) => ({ fontFamily: "Knewave, " + Theme.typography.fontFamily }),
+			]}
+			{...other}
+		>
 			{children}
 		</CTextBase>
 	);

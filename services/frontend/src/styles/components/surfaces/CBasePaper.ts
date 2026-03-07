@@ -1,9 +1,10 @@
 import type { SxProps, Theme } from "@mui/material";
 
 const CBasePaperStyle: SxProps<Theme> = (theme) => ({
-	backgroundColor: theme.palette.background.paper,
+	background: theme.palette.background.paper,
+	backgroundColor: null,
+	boxShadow: "0px 7px 0px 0px #000000", // + theme.palette.primary.dark,
 
-	mt: 8,
 	p: 4,
 });
 
