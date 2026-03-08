@@ -1,5 +1,7 @@
 export function checkUsernameValid(username: string): string[] {
 	const errmsg: string[] = [];
+	if (username.trim().length === 0) return errmsg;
+	if (username.trim().length < 3) errmsg.push("USERNAME_MIN");
 	if (username.trim().length > 20) errmsg.push("USERNAME_MAX");
 	return errmsg;
 }
