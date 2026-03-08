@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { IconButton, type IconButtonProps } from "@mui/material";
 
-export interface CNavbarIconProps
-	extends Omit<IconButtonProps, "children" | "aria-label"> {
+export interface CNavbarIconProps extends Omit<IconButtonProps, "children" | "aria-label"> {
 	icon: ReactNode;
 	aria: string;
 }

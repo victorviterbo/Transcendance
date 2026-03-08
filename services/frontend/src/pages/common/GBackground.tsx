@@ -15,7 +15,6 @@ function GBackground() {
 		>
 			<Box
 				sx={{
-
 					position: "absolute",
 
 					height: "100%",
@@ -25,7 +24,7 @@ function GBackground() {
 					backgroundImage: `url(${bgWood})`,
 					backgroundSize: "10%",
 
-					filter: `brightness(${appThemeDef.bg.brightness})`
+					filter: `brightness(${appThemeDef.bg.brightness})`,
 				}}
 			></Box>
 		</Box>

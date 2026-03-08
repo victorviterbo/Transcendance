@@ -9,10 +9,8 @@ interface CButtonRoomProps extends CButtonProps {
 }
 
 function CButtonRoom({ infos, ...other }: CButtonRoomProps) {
-
-
 	return (
-		<CButton sx={{ width: "7vw", height: "7vw"}} {...other}>
+		<CButton sx={{ width: "7vw", height: "7vw" }} {...other}>
 			<Stack>
 				<CText size="md">{infos.name}</CText>
 				<CText size="md">{infos.theme}</CText>
