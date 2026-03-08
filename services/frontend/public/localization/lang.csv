@@ -1,4 +1,4 @@
-﻿id,en,fr,jp,desc
+id,en,fr,jp,desc
 LANG_SELECT,Language selection,Sélection de la langue,言語の選択,Language selection menu
 WELCOME,Welcome,Bienvenue,ようこそ,Generic welcome text
 USERNAME,Username,Nom d'utilisateur,ユーザー名,As it appears in form fields
@@ -14,8 +14,10 @@ LOGGING_IN,Logging in,Connexion en cours,ログイン中,Shows when a user press
 SIGNING_UP,Signing up,Création en cours,登録中,Shows when a user presses Sign up
 MY_PROFILE,My profile,Mon profil,マイプロフィール,Menu item to open profile page
 REQUIRED_FIELD,Please fill this,Veuillez remplir ce champ,必須項目です,Shown when a required field is empty
-USERNAME_MIN,Username at least 3 characters,Nom d'utilisateur : au moins 3 caractères,ユーザー名は3文字以上で入力してください,Shown when username is too short
-USERNAME_MAX,Username at most 20 characters,Nom d'utilisateur : 20 caractères maximum,ユーザー名は20文字以内,Shown when username exceeds max length
+USERNAME_MIN,Username at least 3 characters,Le nom d'utilisateur doit contenir au moins 3 caractères,ユーザー名は3文字以上で入力してください,Shown when username is too short
+USERNAME_MAX,Username at most 20 characters,Le nom d'utilisateur ne doit pas dépasser 20 caractères,ユーザー名は20文字以内,Shown when username exceeds max length
+USERNAME_FORBIDDEN,Username contains forbidden characters,Le nom d'utilisateur contient des caractères interdits,ユーザー名に使用できない文字が含まれています,Shown when username has forbidden characters
+USERNAME_ADMIN,Who do you think you are?,Pour qui est-ce que tu te prends ?,あなたは誰だと思っていますか？,Shown when user tries to use forbidden reserved username
 EMAIL_VALID,Enter a valid email address,Entrez une adresse e-mail valide,有効なメールアドレスを入力してください,Shown when email is invalid
 PASSWORD_MIN,Use at least 8 characters,Utilisez au moins 8 caractères,8文字以上にしてください,Shown when password is too short
 PASSWORD_NUMBER,Include at least 1 number,Incluez au moins 1 chiffre,数字を1つ以上含めてください,Shown when password has no number
