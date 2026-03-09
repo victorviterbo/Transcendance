@@ -6,7 +6,7 @@ export interface CButtonProps extends GProps, ButtonProps {}
 
 function CButton({ children, ...other }: CButtonProps) {
 	return (
-		<Button variant="contained" {...other}>
+		<Button variant="contained" {...other} sx={{ width: "fit-content", minWidth: "auto" }}>
 			{typeof children == "string" ? ttr(children) : children}
 		</Button>
 	);
