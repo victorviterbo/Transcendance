@@ -186,7 +186,12 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 
 	//====================== DOM ======================
 	return (
-		<Box component="form" onSubmit={handleSubmit} noValidate>
+		<Box
+			component="form"
+			onSubmit={handleSubmit}
+			noValidate
+			sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+		>
 			{specs.map((spec) => {
 				const fieldErrors = formState.errors[spec.name] ?? [];
 				return (
@@ -212,13 +217,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				</CText>
 			)}
 
-			<CButton
-				type="submit"
-				variant="contained"
-				fullWidth
-				sx={{ mt: 2 }}
-				disabled={isSubmitting}
-			>
+			<CButton type="submit" variant="contained" sx={{ mt: 2 }} disabled={isSubmitting}>
 				{isSubmitting
 					? submittingText
 						? ttr(submittingText)
