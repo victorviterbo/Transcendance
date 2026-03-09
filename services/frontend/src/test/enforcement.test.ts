@@ -35,4 +35,3 @@ describe("checkUsernameValid", () => {
 		expect(checkUsernameValid("john.doe")).toEqual([]);
 	});
 });
-
