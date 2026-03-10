@@ -130,11 +130,11 @@ class ProfileTests(TransactionTestCase):
         
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION=access_token)
-
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        self.assertIn('refresh-token', self.client.cookies)
         image_io.seek(0)
         tmp_file = SimpleUploadedFile(
-            name=img_path.name, 
+            name=img_path.name,
             content=image_io.read(), 
             content_type='image/png'
         )

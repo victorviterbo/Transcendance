@@ -83,7 +83,7 @@ class UserAccountTests(APITestCase):
                                                           'password': 'Password123+'},
                                                           format='json')
         access_token = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION=access_token)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
 
         refresh_token_copy = self.client.cookies.get('refresh-token').value
 
@@ -114,6 +114,7 @@ class UserAccountTests(APITestCase):
             'password': 'Password123+'
         })
         self.assertIn('refresh-token', login_res.cookies)
+        self.assertNotIn('refresh-token', login_res.data)
         response = self.client.post(refresh_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)

@@ -44,7 +44,8 @@ class ProfileView(APIView):
                              status=status.HTTP_400_BAD_REQUEST))
         queried_profiles = Profile.objects.filter(username=query)
         if not queried_profiles.exists():
-            return Response({'error': 'No profile with this username'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No profile with this username'},
+                            status=status.HTTP_400_BAD_REQUEST)
         queried_profile = queried_profiles.first()
         try:
             profile_serializer = ProfileSerializer(queried_profile, many=False)
@@ -78,7 +79,6 @@ class ProfileView(APIView):
                                                    many=False)
             if profile_serializer.is_valid(raise_exception=True):
                 profile_serializer.save()
-                profile.user.username = profile.username
                 return Response({"description": "Updated Profile successfully"},
                                 status=status.HTTP_200_OK)
             else:

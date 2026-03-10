@@ -43,7 +43,7 @@ class LoginView(APIView):
         if user is not None:
             try:
                 token = RefreshToken.for_user(user)
-                response = Response({'username': user.username,
+                response = Response({'username': user.profile.username,
                                      'access': str(token.access_token)},
                                     status=status.HTTP_200_OK)
                 response.set_cookie(
@@ -131,12 +131,13 @@ class LogoutView(APIView):
         
         if not refresh_token:
             response = Response(status=status.HTTP_204_NO_CONTENT)
-        try:
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except Exception:
-            return Response({'error': 'Not authenticated'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                return Response({'error': 'Not authenticated'},
+                                status=status.HTTP_401_UNAUTHORIZED)
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
             'refresh-token',
@@ -165,17 +166,16 @@ class RefreshTokenView(TokenRefreshView):
                 400: {error{email, username}}
         """
         refresh_token = request.COOKIES.get('refresh-token')
-        
         if refresh_token:
             request.data['refresh'] = refresh_token
             try:
                 response = super().post(request, *args, **kwargs)
                 if response.status_code == status.HTTP_200_OK:
-                    new_refresh = response.data.get('refresh')
+                    new_refresh = response.data.pop('refresh')
                     token = RefreshToken(new_refresh)
                     user = SiteUser.objects.get(id=token['user_id'])
                     
-                    response.data['username'] = user.username
+                    response.data['username'] = user.profile.username
                     response.set_cookie(
                         key='refresh-token',
                         value=new_refresh,
@@ -186,7 +186,7 @@ class RefreshTokenView(TokenRefreshView):
                 else:
                     return response
             except Exception as e:
-                return Response({'description': f'Refresh token invalid: {e}'},
+                return Response({'description': f'Refresh token invalid:1 {e}'},
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'description': 'Refresh token not found in cookies'},
                         status=status.HTTP_401_UNAUTHORIZED)
