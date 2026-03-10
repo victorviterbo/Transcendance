@@ -118,6 +118,8 @@ class UserAccountTests(APITestCase):
         response = self.client.post(refresh_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
+        self.assertIn('username', response.data)
+        self.assertEqual('testuser', response.data['username'])
 
     def test_user_validation(self) -> None:
         """Test success and failure of user validation."""

@@ -170,11 +170,11 @@ class RefreshTokenView(TokenRefreshView):
             request.data['refresh'] = refresh_token
             try:
                 response = super().post(request, *args, **kwargs)
+                print(response)
                 if response.status_code == status.HTTP_200_OK:
                     new_refresh = response.data.pop('refresh')
                     token = RefreshToken(new_refresh)
                     user = SiteUser.objects.get(id=token['user_id'])
-                    
                     response.data['username'] = user.profile.username
                     response.set_cookie(
                         key='refresh-token',

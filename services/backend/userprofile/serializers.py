@@ -1,10 +1,8 @@
 
 """Define export of Profile (full and light version) and Freiendship handling."""
 from io import BytesIO
-from pathlib import Path
 from typing import Any
-from django.db import transaction
-import os
+
 from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
 from rest_framework import serializers
