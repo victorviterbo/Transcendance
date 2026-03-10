@@ -1,11 +1,12 @@
 """Tests for the users module."""
 
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import SiteUser
 from .serializers import SiteUserSerializer
-import os
+
 
 class UserAccountTests(APITestCase):
     """Test suit for the user module."""
@@ -57,19 +58,19 @@ class UserAccountTests(APITestCase):
                     self.assertIn('email', response.data['error'])
                     if email == 'test@mail.com':
                         self.assertEqual(response.data['error']['email'],
-                                         'Email already taken')
+                                         'ALREADY_TAKEN')
                     else:
                         self.assertEqual(response.data['error']['email'],
-                                         'Invalid Email')
+                                         'INVALID')
                 elif username != 'newuser':
                     self.assertIn('error', response.data)
                     self.assertIn('username', response.data['error'])
                     if username == 'testuser':
                         self.assertEqual(response.data['error']['username'],
-                                         'Username already taken')
+                                         'ALREADY_TAKEN')
                     else:
                         self.assertEqual(response.data['error']['username'],
-                                         'Invalid Username')
+                                         'INVALID')
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""

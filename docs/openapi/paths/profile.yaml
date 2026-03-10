@@ -41,7 +41,7 @@ profile:
                   error: "EMPTY_QUERY"
               not-found:
                 value:
-                  error: "PROFILE_NOT_FOUND"
+                  error: "NOT_FOUND"
 
   post:
     summary: Update own profile

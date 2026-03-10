@@ -22,6 +22,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 *.sqlite3
+migrations/*
+!migrations/__init__.py
 
 # =========================
 # Environment variables

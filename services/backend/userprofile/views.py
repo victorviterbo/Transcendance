@@ -12,6 +12,19 @@ from .models import Profile
 from .serializers import LightProfileSerializer, ProfileSerializer
 
 
+def parse_validation_errors(val_error: serializers.ValidationError) -> Response:
+    error = val_error.get_full_details()
+    error_response = {'error': {}}
+    response_code = status.HTTP_400_BAD_REQUEST
+    for field, details in error.items():
+        is_unique = any(item['code'] == 'unique' for item in details)
+        if is_unique:
+            error_response['error'][field] = 'ALREADY_TAKEN'
+            response_code = status.HTTP_409_CONFLICT
+        else:
+            error_response['error'][field] = 'INVALID'
+    return Response(error_response, status=response_code)
+
 class ProfileView(APIView):
     """Define view of the user's own profile."""
 
@@ -37,14 +50,14 @@ class ProfileView(APIView):
         """
         query = self.request.query_params.get('q')
         if query is None:
-            return (Response({'error': 'Query string not found'},
+            return (Response({'error': {'query': 'MISSING_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
         elif query == '':
-            return (Response({'error': 'Invalid empty query string'},
+            return (Response({'error': {'query': 'EMPTY_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
         queried_profiles = Profile.objects.filter(username=query)
         if not queried_profiles.exists():
-            return Response({'error': 'No profile with this username'},
+            return Response({'error': {'query': 'NOT_FOUND'}},
                             status=status.HTTP_400_BAD_REQUEST)
         queried_profile = queried_profiles.first()
         try:
@@ -54,8 +67,8 @@ class ProfileView(APIView):
                 ret_data['email'] = queried_profile.user.email
             return Response(ret_data, status=status.HTTP_200_OK)
         except serializers.ValidationError as e:
-            return Response({"description": f"Could not return Profile: {e}"},
-                            status=status.HTTP_500_INTERNAL_ERROR)
+            return parse_validation_errors(e)
+            
     
     def post(self, request: Request) -> Response:
         """Handles update of user profile.
@@ -79,14 +92,13 @@ class ProfileView(APIView):
                                                    many=False)
             if profile_serializer.is_valid(raise_exception=True):
                 profile_serializer.save()
-                return Response({"description": "Updated Profile successfully"},
+                return Response(profile_serializer.data,
                                 status=status.HTTP_200_OK)
             else:
-                return Response({"error": "Could not update Profile"},
+                return Response({'error': {'profile': 'UPDATE_FAIL'}},
                                 status=status.HTTP_400_BAD_REQUEST)
         except serializers.ValidationError as e:
-            return Response({"errror": f"Unauthorized: {e}"},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            return parse_validation_errors(e)
 
 class   ProfileSearchView(APIView):
     """Search for a specific profile.
@@ -100,7 +112,10 @@ class   ProfileSearchView(APIView):
         """Returns all profiles matching the query."""
         query = self.request.query_params.get('q')
         if query is None:
-            return (Response({'error': 'no search query sent'},
+            return (Response({'error': {'query': 'MISSING_FIELD'}},
+                             status=status.HTTP_400_BAD_REQUEST))
+        elif query == '':
+            return (Response({'error': {'query': 'EMPTY_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
         profiles = Profile.objects.filter(username=query)
         serializer = LightProfileSerializer(profiles, many=True)

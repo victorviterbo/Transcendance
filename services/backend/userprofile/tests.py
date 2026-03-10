@@ -19,7 +19,7 @@ image_dict = {
     'valid': '',
     'invalid': b'this is just a text string, not an image',
     'empty': b'',
-    'corrup': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
+    'corrupt': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
 }
 
 def image_generator(image_type: str) -> SimpleUploadedFile:
@@ -84,44 +84,40 @@ class ProfileTests(TransactionTestCase):
     def test_profile_get(self) -> None:
         """Test success and failure of profile access operation."""
         profile_url = '/api/profile/'
-        for username in ['user2', 'user1', 'an_anonymous_user', 'not_a_user', '']:
-            profile_query = '?q=' + username
+        for query in ['?q=user2', '?q=user1', '?q=an_anonymous_user', '?q=not_a_user', '?q=', '']:
+            profile_query =  query
             response = self.client.get(profile_url + profile_query)
-            if username in ['user2', 'user1', 'an_anonymous_user']:
+            if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertEqual(response.data['image'], '/DB/media/default_pp.jpg')
+                self.assertIn('username', response.data)
+                self.assertIn('exp_points', response.data)
+                self.assertIn('badges', response.data)
+                self.assertIn('created_at', response.data)
             else:
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn('error', response.data)
-                if username:
-                    self.assertEqual('No profile with this username',
-                                     response.data['error'])
-                else:
-                    self.assertEqual('Invalid empty query string',
-                                     response.data['error'])
-        response = self.client.get(profile_url)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-        self.assertEqual('Query string not found', response.data['error'])
+                self.assertIn('query', response.data['error'])
+                if query == '':
+                    self.assertEqual('MISSING_FIELD',
+                                     response.data['error']['query'])
+                elif query == '?q=':
+                    self.assertEqual('EMPTY_FIELD',
+                                     response.data['error']['query'])
+                elif query == '?q=not_a_user':
+                    self.assertEqual('NOT_FOUND',
+                                     response.data['error']['query'])
 
     def test_profile_post(self) -> None:
         """Test success and failure of profile modification operation."""
         login_url = '/api/auth/login/'
         profile_url = '/api/profile/'
-        img_path = Path(__file__).parent.parent / 'DB' / 'media' / 'image.png'
-        image_bytes = img_path.read_bytes()
-        image_io = io.BytesIO(image_bytes)
-        image_io.seek(0)
-        fake_file = SimpleUploadedFile(
-            name=img_path.name, 
-            content=image_io.read(), 
-            content_type='image/png'
-        )
         new_data = {
             'username': 'a_new_user',
-            'image': fake_file,
+            'image': image_generator('valid'),
             'exp_points': 1000000000,
         }
+        new_data['image'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -132,20 +128,41 @@ class ProfileTests(TransactionTestCase):
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
         self.assertIn('refresh-token', self.client.cookies)
-        image_io.seek(0)
-        tmp_file = SimpleUploadedFile(
-            name=img_path.name,
-            content=image_io.read(), 
-            content_type='image/png'
-        )
         new_data = {
             'username': 'a_new_user',
-            'image': tmp_file,
+            'image': image_generator('valid'),
             'exp_points': 5001,
             'badge': 'Sonic Shark'
         }
+        new_data['image'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_data['image'] = image_generator('corrupt')
+        new_data['image'].seek(0)
+        response = self.client.post(profile_url, data=new_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIn('image', response.data['error'])
+        self.assertEqual('INVALID', response.data['error']['image'])
+
+        response = self.client.post(profile_url, data={'username': 'user2'})
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn('error', response.data)
+        self.assertIn('username', response.data['error'])
+        self.assertEqual('ALREADY_TAKEN', response.data['error']['username'])
+
+
+        new_data['image'] = image_generator('corrupt')
+        new_data['image'].seek(0)
+        new_data['username'] = 'user2'
+        response = self.client.post(profile_url, data=new_data)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn('error', response.data)
+        self.assertIn('username', response.data['error'])
+        self.assertIn('image', response.data['error'])
+        self.assertEqual('ALREADY_TAKEN', response.data['error']['username'])
+        self.assertEqual('INVALID', response.data['error']['image'])
 
         response = self.client.get(profile_url + "?q=a_new_user")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -170,20 +187,12 @@ class ProfileTests(TransactionTestCase):
         response = self.client.get(profile_search_url + "?q=updating_guest")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        img_path = Path(__file__).parent.parent / 'DB' / 'media' / 'image.png'
-        image_bytes = img_path.read_bytes()
-        image_io = io.BytesIO(image_bytes)
-        image_io.seek(0)
-        fake_file = SimpleUploadedFile(
-            name=img_path.name, 
-            content=image_io.read(), 
-            content_type='image/png'
-        )
         new_data = {
             'username': 'with_a_pic',
-            'image': fake_file,
+            'image': image_generator('valid'),
             'exp_points': 1000000000,
         }
+        new_data['image'].seek(0)
         response = self.client.post(guest_create_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         original_img_path = Path(MEDIA_ROOT / response.data['image'].lstrip('/DB/media/'))

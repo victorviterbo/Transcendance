@@ -73,16 +73,16 @@ register:
               username-taken:
                 value:
                   error:
-                    username: "USERNAME_TAKEN"
+                    username: "USERNAME_ALREADY_TAKEN"
               email-taken:
                 value:
                   error:
-                    email: "EMAIL_TAKEN"
+                    email: "EMAIL_ALREADY_TAKEN"
               both-taken:
                 value:
                   error:
-                    username: "USERNAME_TAKEN"
-                    email: "EMAIL_TAKEN"
+                    username: "USERNAME_ALREADY_TAKEN"
+                    email: "EMAIL_ALREADY_TAKEN"
 
 login:
   post:

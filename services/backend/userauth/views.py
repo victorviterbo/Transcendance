@@ -14,51 +14,6 @@ from .models import Friendship, SiteUser
 from .serializers import FriendshipSerializer, LoginSerializer, SiteUserSerializer
 
 
-class LoginView(APIView):
-    """Define the login page."""
-    permission_classes = [AllowAny]
-
-    def post(self, request: Request) -> Response:
-        """Handles login request.
-        
-        Args:
-            request:
-                payload: {email, password}
-
-        Returns:
-            Response:
-                200: {access}
-                    Set-Cookie: refresh token to get a new access token when the
-                                current expires
-                401: {error}
-        """
-        serializer = LoginSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({'error': 'Wrong email or password'},
-                        status=status.HTTP_401_UNAUTHORIZED)
-        email = serializer.validated_data.get('email')
-        password = serializer.validated_data.get('password')
-        user = authenticate(email=email, password=password)
-
-        if user is not None:
-            try:
-                token = RefreshToken.for_user(user)
-                response = Response({'username': user.profile.username,
-                                     'access': str(token.access_token)},
-                                    status=status.HTTP_200_OK)
-                response.set_cookie(
-                    key='refresh-token',
-                    value=str(token),
-                    httponly=True, secure=True, samesite='Lax',
-                    path='/api/auth/'
-                )
-                return response
-            except ValueError:
-                return Response({'error': 'Wrong email or password'},
-                         status=status.HTTP_401_UNAUTHORIZED)
-        return Response({'error': 'Wrong email or password'},
-                        status=status.HTTP_401_UNAUTHORIZED)
-
 class RegisterView(APIView):
     """Define the register page."""
     permission_classes = [AllowAny]
@@ -99,17 +54,63 @@ class RegisterView(APIView):
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
                 if any(['unique' in e['code'] for e in error['email']]):
-                    error_response['error']['email'] = 'Email already taken'
+                    error_response['error']['email'] = 'ALREADY_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
-                    error_response['error']['email'] = 'Invalid Email'
+                    error_response['error']['email'] = 'INVALID'
             if error.get('profile_username'):
                 if any(['unique' in e['code'] for e in error['profile_username']]):
-                    error_response['error']['username'] = 'Username already taken'
+                    error_response['error']['username'] = 'ALREADY_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
-                    error_response['error']['username'] = 'Invalid Username'
+                    error_response['error']['username'] = 'INVALID'
             return Response(error_response, status=response_code)
+
+
+class LoginView(APIView):
+    """Define the login page."""
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """Handles login request.
+        
+        Args:
+            request:
+                payload: {email, password}
+
+        Returns:
+            Response:
+                200: {access}
+                    Set-Cookie: refresh token to get a new access token when the
+                                current expires
+                401: {error}
+        """
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'error': 'Wrong email or password'},
+                        status=status.HTTP_401_UNAUTHORIZED)
+        email = serializer.validated_data.get('email')
+        password = serializer.validated_data.get('password')
+        user = authenticate(email=email, password=password)
+
+        if user is not None:
+            try:
+                token = RefreshToken.for_user(user)
+                response = Response({'username': user.profile.username,
+                                     'access': str(token.access_token)},
+                                    status=status.HTTP_200_OK)
+                response.set_cookie(
+                    key='refresh-token',
+                    value=str(token),
+                    httponly=True, secure=True, samesite='Lax',
+                    path='/api/auth/'
+                )
+                return response
+            except ValueError:
+                return Response({'error': {'auth': 'AUTH_FAIL'}},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': {'auth': 'AUTH_FAIL'}},
+                        status=status.HTTP_401_UNAUTHORIZED)
 
 class LogoutView(APIView):
     """Define lougout operation view."""
@@ -136,7 +137,7 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                return Response({'error': 'Not authenticated'},
+                return Response({'error': {'auth': 'AUTH_FAIL'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
@@ -170,7 +171,6 @@ class RefreshTokenView(TokenRefreshView):
             request.data['refresh'] = refresh_token
             try:
                 response = super().post(request, *args, **kwargs)
-                print(response)
                 if response.status_code == status.HTTP_200_OK:
                     new_refresh = response.data.pop('refresh')
                     token = RefreshToken(new_refresh)
@@ -185,12 +185,11 @@ class RefreshTokenView(TokenRefreshView):
                     return response
                 else:
                     return response
-            except Exception as e:
-                return Response({'description': f'Refresh token invalid:1 {e}'},
+            except Exception:
+                return Response({'error': {'cookie': 'INVALID'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
-        return Response({'description': 'Refresh token not found in cookies'},
+        return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
-
 
 class FriendRequests(APIView):
     """Define all functions related to sending seeing and accepting friend requests."""
@@ -200,15 +199,11 @@ class FriendRequests(APIView):
         """Create new friend requests."""
         target = request.data.get("target-username")
         if target is None:
-            return (Response({'error': 'no target specified'},
+            return (Response({'error': {'target-username': 'MISSING_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
         target_user = SiteUser.object.filter(username=target)
         if target_user.count() < 1:
-            return (Response({'error': 'no matching user',
-                              'requested': request.data.get("target-username")},
-                              status=status.HTTP_400_BAD_REQUEST))
-        elif target_user.count() > 1:
-            return (Response({'error': 'more than one user match request',
+            return (Response({'error': {'target-username': 'NOT_FOUND'},
                               'requested': request.data.get("target-username")},
                               status=status.HTTP_400_BAD_REQUEST))
         else:
@@ -228,24 +223,21 @@ class FriendRequests(APIView):
             if (curr_rev_relationship.exists() and
                 curr_rev_relationship.status == 'pending'):
                 curr_rev_relationship.first().status = 'accepted'
-                return Response({'description': 'Friendship created'}, 
-                                status=status.HTTP_202_ACCEPTED)
+                return Response({'description': 'REQUEST_ACCEPTED',
+                                 'target-username': target}, 
+                                status=status.HTTP_200_OK)
             if curr_relationship.exists():
-                if curr_relationship.status == 'pending':
-                    return Response({'error': 'Friendship request already send',
-                                    'request_status': curr_relationship.status},
-                                    status=status.HTTP_400_BAD_REQUEST)
-                elif curr_relationship.status == 'accepted':
-                    return Response({'error': 'Friendship already exists',
-                                    'request_status': curr_relationship.status},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': {'friendship': 'ALREADY_EXISTS'},
+                                'request_status': curr_relationship.status},
+                                status=status.HTTP_400_BAD_REQUEST)
             
             Friendship.objects.create(
                 from_user=sender,
                 to_user=recipient,
                 status='pending'
             )
-            return Response({'description': f'Friend request sent to {target}'}, 
+            return Response({'description': 'FRIENDSHIP_REQUEST_SENT',
+                             'target-username': target}, 
                             status=status.HTTP_201_CREATED)
 
     def get(self, request: Request) -> Response:

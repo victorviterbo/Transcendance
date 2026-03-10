@@ -46,6 +46,7 @@ def validate_email(value: str, is_creation: bool = False) -> str:
         value:          the incomming email address
         is_creation:    boolean telling the serializer how to validate
                         depending on context (if creation, enforce unique)
+
     Returns:
         The validated and normalized email address
     Raises:
