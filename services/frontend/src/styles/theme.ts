@@ -1,179 +1,129 @@
 import { createTheme, type ThemeOptions } from "@mui/material";
-import type { ITheme } from "../types/styles";
+import { colorAlterColor, colorGetBackground } from "../utils/styles";
+import type { IThemeBG, IThemeColor, IThemePosition, IThemeShared } from "../types/styles";
 
-export const appThemeDef: ITheme = {
-	// colors: {
-	// 	primary: [
-	// 		"#FFE3E7",
-	// 		"#FFCFD6",
-	// 		"#FFB5C0",
-	// 		"#EBB9C1",
-	// 		"#FF9CAA",
-	// 		"#D1909A",
-	// 		"#B86C78",
-	// 		"#6B1F2A",
-	// 		"#522027",
-	// 		"#381B20",
-	// 	],
+//--------------------------------------------------
+//                                    NAME
+//--------------------------------------------------
+//export const appThemeDef: ITheme = {
+// colors: {
+// 	primary: ["#0F1FFA", "#414DFA", "#737CFA", "#A5ABFA", "#e5e7fd"],
 
-	// 	secondary: [
-	// 		"#F2C83F",
-	// 		"#BFA758",
-	// 		"#D9B84E",
-	// 		"#A6955D",
-	// 		"#8C815D",
-	// 		"#736C57",
-	// 		"#59564D",
-	// 		"#403D36",
-	// 		"#333026",
-	// 		"#332F21",
-	// 	],
-	// },
+// 	secondary: ["#0FB3FA", "#3A93BA", "#456A7A", "#30373B"],
 
-	// colors: {
-	// 	primary: [
-	// 		"#F52544",
-	// 		"#DE354F",
-	// 		"#C64256",
-	// 		"#AF4A59",
-	// 		"#984E59",
-	// 		"#814E56",
-	// 		"#6A4A4E",
-	// 		"#534144",
-	// 		"#3B3435",
-	// 		"#332A2C",
-	// 	],
+// 	tertiary: ["#990FFA", "#853ABA", "#64457A", "#36303B"],
+// },
+// colors: {
+// 	primary: ["#23FAEF", "#3CD5CE", "#4BB1AC", "#508D8A", "#4A6867", "#3A4443"],
 
-	// 	secondary: [
-	// 		"#25F54E",
-	// 		"#37DB57",
-	// 		"#44C25D",
-	// 		"#4CA85E",
-	// 		"#4F8F5B",
-	// 		"#4C7554",
-	// 		"#455C49",
-	// 		"#38423A",
-	// 		"#2B332D",
-	// 		"#263329",
-	// 	],
-	// },
+// 	secondary: ["#FAD323", "#CFB640", "#A5954E", "#7A734E", "#504D40", "#33312A"],
 
-	// colors: {
-	// 	primary: [
-	// 		"#FFF1F4",
-	// 		"#FFD6DE",
-	// 		"#FFB8C5",
-	// 		"#FF94A8",
-	// 		"#FF6B84",
-	// 		"#F52544",
-	// 		"#B31531",
-	// 		"#7A0D21",
-	// 		"#4A0713",
-	// 		"#240309",
-	// 	],
+// 	tertiary: ["#FA23D4", "#CF40B6", "#A54E95", "#7A4E73", "#50404D", "#332A31"],
+// },
 
-	// 	secondary: [
-	// 		"#F0FEFF",
-	// 		"#CCFBFF",
-	// 		"#99F5FF",
-	// 		"#66EEFF",
-	// 		"#33E6FF",
-	// 		"#00D9FF",
-	// 		"#00A3CC",
-	// 		"#007799",
-	// 		"#004D66",
-	// 		"#002633",
-	// 	],
-	// },
+export const appColors: IThemeColor = {
+	primary: ["#1FE2D8", "#38C2BC", "#49A29E", "#4C827F", "#496160", "#3A4443"],
+	secondary: ["#E2BF1F", "#C2A63D", "#A28A4C", "#82704C", "#615440", "#33312A"],
+	tertiary: ["#E21FBF", "#C23DA6", "#A24C88", "#824C6E", "#614054", "#332A31"],
+	quaternary: ["#414DFA", "#5560D6", "#6168B3", "#62688F", "#585B6B", "#41434A"],
+	quinary: ["#8A41FA", "#7D55D6", "#715FB3", "#665F8F", "#57566B", "#44424A"],
 
-	colors: {
-		primary: [
-			"#F8F1F2",
-			"#EFDADF",
-			"#E3BCC4",
-			"#D39AA5",
-			"#C07685",
-			"#6B1F2A", // MUI main
-			"#571922", // MUI dark
-			"#44131A",
-			"#320D12",
-			"#21080B",
-		],
+	greys: [
+		"#E1E1E1",
+		"#CBCBCB",
+		"#B5B5B5",
+		"#9E9E9E",
+		"#888888",
+		"#727272",
+		"#5C5C5C",
+		"#454545",
+		"#2F2F2F",
+		"#191919",
+	],
 
-		secondary: [
-			"#FFFBEF",
-			"#FFF3D1",
-			"#FCE8A6",
-			"#F8DD7C",
-			"#F4D255",
-			"#F2C83F", // MUI main
-			"#D0A72A", // MUI dark
-			"#A8841F",
-			"#7C6116",
-			"#533F0D",
-		],
-	},
-
-	positions: {
-		mainSpacing: 3,
-	},
-
-	bg: {
-		baseIndex: 0,
-		baseColor: "#44131A",
-		baseBlur: 0,
-
-		iconBG: true,
-		iconSize: 750,
-		iconSpeed: 75,
-		iconColor: "#D39AA5",
-		iconMove: true,
-		iconShadow: {
-			offsetX: 1,
-			offsetY: 5,
-			blur: 0,
-			color: "black",
-		},
-
-		windmill: false,
-		windmillMove: true,
-		windmillSpeed: 100,
-		windmillShadow: {
-			offsetX: 5,
-			offsetY: 5,
-			color: "black",
-		},
-		windmillBG: false,
+	text: {
+		dark: "#000",
+		light: "#fff",
 	},
 };
 
+export const appPositions: IThemePosition = {
+	mainSpacing: 7,
+};
+
+export const appSharedStyle: IThemeShared = {
+	bg: {
+		paper: colorGetBackground([appColors.greys[9], appColors.greys[8]], undefined, "radial", 135 + 180),
+	},
+};
+
+export const appBG: IThemeBG = {
+	baseIndex: 0,
+	baseColor: colorGetBackground(
+		[
+			colorAlterColor(appColors.quinary[0], ["shift-saturation", "shift-brightness"], [-0.0, -0.1]),
+			colorAlterColor(appColors.quaternary[0], ["shift-saturation", "shift-brightness"], [-0.0, -0.0]),
+		],
+		undefined,
+		"linear",
+		135 + 180,
+	),
+	baseBlur: 0,
+
+	iconBG: true,
+	iconSize: 750,
+	iconSpeed: 75,
+	iconColor: colorGetBackground(
+		[
+			colorAlterColor(appColors.quinary[0], ["shift-saturation", "shift-brightness"], [-0.15, -0.15]),
+			colorAlterColor(appColors.quaternary[0], ["shift-saturation", "shift-brightness"], [-0.15, -0.05]),
+		],
+		undefined,
+		"linear",
+		135 + 180,
+	),
+	iconMove: true,
+	iconShadow: {
+		offsetX: 1,
+		offsetY: 5,
+		blur: 0,
+		color: "black",
+	},
+
+	windmill: false,
+	windmillMove: true,
+	windmillSpeed: 100,
+	windmillShadow: {
+		offsetX: 5,
+		offsetY: 5,
+		color: "black",
+	},
+	windmillBG: false,
+};
+
+//--------------------------------------------------
+//               MUI THEME OVERRIDE
+//		   **Above theme should be prefered**
+//--------------------------------------------------
 const appThemeBase: ThemeOptions = {
-	//--------------------------------------------------
-	//                   PALETTE
-	//--------------------------------------------------
 	palette: {
 		/* Color Theme Swatches in Hex */
 
 		primary: {
-			main: appThemeDef.colors.primary[5],
-			light: appThemeDef.colors.primary[4],
-			dark: appThemeDef.colors.primary[6],
+			main: appColors.primary[0],
+			light: appColors.primary[2],
+			dark: appColors.primary[1],
 			contrastText: "#fff",
 		},
 		secondary: {
-			main: appThemeDef.colors.secondary[5],
-			light: appThemeDef.colors.secondary[4],
-			dark: appThemeDef.colors.secondary[6],
+			main: appColors.secondary[0],
+			light: appColors.secondary[2],
+			dark: appColors.secondary[1],
 			contrastText: "#fff",
 		},
 
 		background: {
-			paper:
-				"radial-gradient(" +
-				appThemeDef.colors.primary[8] +
-				" 0%, " +
-				appThemeDef.colors.primary[9] +
-				" 100%)",
+			paper: appSharedStyle.bg.paper,
 		},
 		text: {
 			primary: "#fff",

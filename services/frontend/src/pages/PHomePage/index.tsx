@@ -2,7 +2,7 @@
 // import { useAuth } from "../../components/auth/CAuthProvider";
 import { Box, Grid, Stack } from "@mui/material";
 import GPageBase from "../common/GPageBases";
-import { appThemeDef } from "../../styles/theme";
+import { appPositions } from "../../styles/theme";
 import PCreateRoom from "./PCreateRoom";
 import PJoinRoom from "./PJoinRoom";
 import PRooms from "./PRooms";
@@ -11,7 +11,7 @@ const PHomePage = () => {
 	//const navigate = useNavigate();
 	//const { status, user, logout } = useAuth();
 
-	const spacing: number = appThemeDef.positions.mainSpacing;
+	const spacing: number = appPositions.mainSpacing;
 
 	return (
 		<GPageBase>

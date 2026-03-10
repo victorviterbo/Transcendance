@@ -1,5 +1,5 @@
 import type { SxProps, Theme } from "@mui/material";
-import { appThemeDef } from "../theme";
+import { appBG } from "../theme";
 import { TDropShadowToString } from "../../utils/styles";
 import { ARotation, makeMaskTranslationAnim } from "../animations/CommonAnimations";
 const bgIcons = "imgs/shared/BG_Icons.png";
@@ -10,7 +10,7 @@ export const SBGBox: SxProps<Theme> = {
 
 	height: "100%",
 	width: "100%",
-	filter: "blur(" + appThemeDef.bg.baseBlur + "px)",
+	filter: "blur(" + appBG.baseBlur + "px)",
 };
 
 export const SBGBaseColor: SxProps<Theme> = (_) => ({
@@ -19,15 +19,13 @@ export const SBGBaseColor: SxProps<Theme> = (_) => ({
 	height: "100%",
 	width: "100%",
 
-	backgroundColor: appThemeDef.bg.baseColor,
+	background: appBG.baseColor,
 });
 
 export const SBGIconTextureBox: SxProps<Theme> = {
 	position: "absolute",
 	inset: 0,
-	filter: appThemeDef.bg.iconShadow
-		? "drop-shadow(" + TDropShadowToString(appThemeDef.bg.iconShadow) + ")"
-		: "",
+	filter: appBG.iconShadow ? "drop-shadow(" + TDropShadowToString(appBG.iconShadow) + ")" : "",
 };
 
 export function SBGIconMask(isWindmill?: boolean): SxProps<Theme> {
@@ -35,19 +33,15 @@ export function SBGIconMask(isWindmill?: boolean): SxProps<Theme> {
 		position: "absolute",
 		inset: 0,
 
-		backgroundColor: isWindmill ? Theme.palette.primary.dark : appThemeDef.bg.iconColor,
+		background: isWindmill ? Theme.palette.primary.dark : appBG.iconColor,
 		maskImage: `url("${bgIcons}")`,
-		maskSize: appThemeDef.bg.iconSize + "px " + appThemeDef.bg.iconSize + "px",
+		maskSize: appBG.iconSize + "px " + appBG.iconSize + "px",
 
 		WebkitMaskImage: `url("${bgIcons}")`,
-		WebkitMaskSize: appThemeDef.bg.iconSize + "px " + appThemeDef.bg.iconSize + "px",
+		WebkitMaskSize: appBG.iconSize + "px " + appBG.iconSize + "px",
 
-		"@keyframes tran": makeMaskTranslationAnim(
-			appThemeDef.bg.iconSize ? appThemeDef.bg.iconSize : 1000,
-		),
-		animation: appThemeDef.bg.iconMove
-			? "tran " + appThemeDef.bg.iconSpeed + "s linear infinite"
-			: "",
+		"@keyframes tran": makeMaskTranslationAnim(appBG.iconSize ? appBG.iconSize : 1000),
+		animation: appBG.iconMove ? "tran " + appBG.iconSpeed + "s linear infinite" : "",
 	});
 }
 
@@ -57,8 +51,8 @@ export const SBGWindmillBox: SxProps<Theme> = {
 	top: 0,
 	left: 0,
 	aspectRatio: "1 / 1",
-	filter: appThemeDef.bg.windmillShadow
-		? "drop-shadow(" + TDropShadowToString(appThemeDef.bg.windmillShadow) + ")"
+	filter: appBG.windmillShadow
+		? "drop-shadow(" + TDropShadowToString(appBG.windmillShadow) + ")"
 		: "",
 
 	transform: "translate(-10%, -30%)",
@@ -78,7 +72,5 @@ export const SBGWindmillMask: SxProps<Theme> = (Theme) => ({
 	WebkitMaskPosition: "center",
 
 	"@keyframes rot": ARotation,
-	animation: appThemeDef.bg.windmillMove
-		? "rot " + appThemeDef.bg.windmillSpeed + "s linear infinite"
-		: "",
+	animation: appBG.windmillMove ? "rot " + appBG.windmillSpeed + "s linear infinite" : "",
 });

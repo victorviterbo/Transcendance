@@ -9,7 +9,7 @@ function CButton({ children, sx, ...other }: CButtonProps) {
 	return (
 		<Button
 			variant="contained"
-			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), CButtonStyle]}
+			sx={[CButtonStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
 			{typeof children == "string" ? ttr(children) : children}

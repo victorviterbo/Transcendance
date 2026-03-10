@@ -7,7 +7,7 @@ import {
 	SBGWindmillMask,
 	SBGIconTextureBox,
 } from "../../styles/bg/GBackgroundStyle";
-import { appThemeDef } from "../../styles/theme";
+import { appBG } from "../../styles/theme";
 import type { GCompProps } from "../../components/common/GProps";
 
 interface GBackgroundIconsProps extends GCompProps {
@@ -26,7 +26,7 @@ function GBackgroundWindmill() {
 	return (
 		<Box sx={SBGWindmillBox}>
 			<Box sx={SBGWindmillMask}>
-				{appThemeDef.bg.windmillBG && <GBackgroundIcons isWindmill={true} />}
+				{appBG.windmillBG && <GBackgroundIcons isWindmill={true} />}
 			</Box>
 		</Box>
 	);
@@ -37,8 +37,8 @@ function GBackground() {
 	return (
 		<Box sx={SBGBox}>
 			<Box sx={SBGBaseColor}></Box>
-			{appThemeDef.bg.iconBG && <GBackgroundIcons />}
-			{appThemeDef.bg.windmill && <GBackgroundWindmill />}
+			{appBG.iconBG && <GBackgroundIcons />}
+			{appBG.windmill && <GBackgroundWindmill />}
 		</Box>
 	);
 }

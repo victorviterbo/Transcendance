@@ -1,6 +1,5 @@
-import { Grid, Stack } from "@mui/material";
+import { Grid } from "@mui/material";
 import CHomePaper from "../../components/surfaces/CHomePaper";
-import CText from "../../components/text/CText";
 import { type IRoomList, type IRoomInfo } from "../../types/room";
 import CButtonRoom from "../../components/inputs/buttons/CButtonRoom";
 import { useEffect, useId, useState } from "react";
@@ -36,21 +35,19 @@ function PRooms({ isPublic }: PRoomsProps) {
 
 	return (
 		<CHomePaper
+			title={isPublic ? "PUBLIC_ROOM" : "FRIEND_ROOM"}
 			sx={{ m: 0, height: "100%", width: "100%" }}
 			data-testid={isPublic ? "public_room_testid" : "private_room_testid"}
 		>
-			<Stack sx={{ alignItems: "stretch" }}>
-				<CText size="lg">{isPublic ? "PUBLIC_ROOM" : "FRIEND_ROOM"}</CText>
-				<Grid container spacing={3}>
-					{rooms.map((item: IRoomInfo, index: number) => {
-						return (
-							<Grid size={1} key={localID + "-" + index}>
-								<CButtonRoom infos={item}></CButtonRoom>
-							</Grid>
-						);
-					})}
-				</Grid>
-			</Stack>
+			<Grid container spacing={3}>
+				{rooms.map((item: IRoomInfo, index: number) => {
+					return (
+						<Grid size={1} key={localID + "-" + index}>
+							<CButtonRoom infos={item}></CButtonRoom>
+						</Grid>
+					);
+				})}
+			</Grid>
 		</CHomePaper>
 	);
 }

@@ -9,8 +9,67 @@ export type TDropShadow = {
 };
 
 //--------------------------------------------------
+//                    COLORING
+//--------------------------------------------------
+export type TColor = {
+	r: number;
+	g: number;
+	b: number;
+
+	rFloat: number;
+	gFloat: number;
+	bFloat: number;
+
+	rBase: number;
+	gBase: number;
+	bBase: number;
+
+	major: string;
+	majorValue: number;
+	minor: string;
+	minorValue: number;
+
+	hue: number;
+	saturation: number;
+	brightness: number;
+};
+export type TColorAlteration = "shift-saturation" | "shift-brightness";
+
+//--------------------------------------------------
 //                   THEME
 //--------------------------------------------------
+
+	//====================== COLOR ======================
+export interface IThemeColor {
+	primary: string[];
+	secondary: string[];
+	tertiary: string[];
+	quinary: string[]
+	quaternary: string[]
+	greys: string[];
+	text: IThemeTextColor;
+}
+
+export interface IThemeTextColor {
+	dark: string;
+	light: string;
+}
+
+	//====================== PSOITIONS ======================
+export interface IThemePosition {
+	mainSpacing: number;
+}
+
+	//====================== SHARED ======================
+export interface IThemeBGs {
+	paper: string
+}
+
+export interface IThemeShared {
+	bg: IThemeBGs;
+}
+
+	//====================== BG ======================
 export interface IThemeBG {
 	baseIndex: number;
 	baseColor: string;
@@ -28,19 +87,4 @@ export interface IThemeBG {
 	windmillSpeed?: number;
 	windmillShadow?: TDropShadow | string;
 	windmillBG?: boolean;
-}
-
-export interface IThemeColor {
-	primary: string[];
-	secondary: string[];
-}
-
-export interface IThemePosition {
-	mainSpacing: number;
-}
-
-export interface ITheme {
-	colors: IThemeColor;
-	positions: IThemePosition;
-	bg: IThemeBG;
 }

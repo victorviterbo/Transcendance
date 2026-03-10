@@ -1,15 +1,16 @@
 import type { SxProps, Theme } from "@mui/material";
-import { getBackground } from "../../../utils/styles";
+import { colorAlterColor, colorGetBackground } from "../../../utils/styles";
+import { appColors } from "../../theme";
 
 const CButtonStyle: SxProps<Theme> = (theme) => ({
-	background: getBackground(
-		[theme.palette.primary.dark, theme.palette.primary.main],
+	background: colorGetBackground(
+		[appColors.tertiary[0], colorAlterColor(appColors.tertiary[2], "shift-brightness", -0.10)],
 		undefined,
-		"linear",
+		"radial",
 	),
-	boxShadow: "0px 5px 0px 0px " + theme.palette.primary.main,
-	border: "solid 3px " + theme.palette.secondary.light,
-	color: theme.palette.secondary.light,
+	boxShadow: "0px 5px 0px 0px "+ appColors.greys[0],
+	//border: "solid 3px " + theme.palette.secondary.light,
+	color: theme.palette.grey[100],
 });
 
 export default CButtonStyle;
