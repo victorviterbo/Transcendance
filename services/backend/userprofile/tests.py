@@ -11,6 +11,7 @@ from django.test import TransactionTestCase, override_settings
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from userauth.serializers import SiteUserSerializer
 
 from .serializers import LightProfileSerializer, ProfileSerializer
@@ -240,7 +241,8 @@ class ProfileTests(TransactionTestCase):
         for image in image_dict:
             raw_data['image'] = image_generator(image)
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
-            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
+            serializer_light = LightProfileSerializer(data=raw_data,
+                                                      context={'is_creation': True})
             valid = serializer.is_valid()
             raw_data['image'].seek(0)
             valid_light = serializer_light.is_valid()

@@ -7,11 +7,11 @@ to JSON and vice-versa, namely:
 """
 
 import re
-from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+
 from userprofile.models import Profile
 from userprofile.serializers import validate_username
 
@@ -101,7 +101,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         validate_password(value, user=self.instance)
         return value
         
-    def create(self, validated_data: Any) -> SiteUser:
+    def create(self, validated_data: dict) -> SiteUser:
         """Overrride the user creation method to ensure it uses our SiteUserManager.
 
         Args:
@@ -166,4 +166,4 @@ class FriendshipSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Friendship
-        fields = ['from_user', 'to_user', 'status']
+        fields = ['from_user', 'to_user', 'status', 'created_at']

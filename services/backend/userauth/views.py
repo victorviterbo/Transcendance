@@ -87,7 +87,7 @@ class LoginView(APIView):
         """
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({'error': 'Wrong email or password'},
+            return Response({'error': {'auth': 'AUTH_FAIL'}},
                         status=status.HTTP_401_UNAUTHORIZED)
         email = serializer.validated_data.get('email')
         password = serializer.validated_data.get('password')

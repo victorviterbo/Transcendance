@@ -35,7 +35,8 @@ class UserAccountTests(APITestCase):
                 else:
                     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
                     self.assertIn('error', response.data)
-                    self.assertEqual(response.data['error'], 'Wrong email or password')
+                    self.assertIn('auth', response.data['error'])
+                    self.assertEqual(response.data['error']['auth'], 'AUTH_FAIL')
 
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""

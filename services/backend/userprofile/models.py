@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.db import models
+
 from project.defaults import badges_strings
 from userauth.models import SiteUser
 

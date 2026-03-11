@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db import models
+
 from userprofile.models import Profile
 
 #from game import Track
