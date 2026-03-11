@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
-    'users.apps.UsersConfig',
     'chat.apps.ChatConfig',
     'userauth',
     'userprofile',
