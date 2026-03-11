@@ -5,7 +5,7 @@ import CProtectedRoute from "../components/auth/CProtectedRoute";
 
 const mockUseAuth = vi.fn();
 
-vi.mock("./CAuthProvider", () => ({
+vi.mock("../components/auth/CAuthProvider", () => ({
 	useAuth: () => mockUseAuth(),
 }));
 

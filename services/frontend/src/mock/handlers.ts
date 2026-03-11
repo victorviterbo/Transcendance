@@ -1,4 +1,5 @@
 import { LoginHandler, RegisterHandler, RefreshHandler, LogoutHandler } from "./handlers/auth";
+import { GetMeHandler, PatchMeHandler, ProfileSearchHandler } from "./handlers/users";
 import { FetchPrivateRoom, FetchPublicRoom } from "./handlers/home";
 
 export const handlers = [
@@ -6,6 +7,9 @@ export const handlers = [
 	RegisterHandler,
 	RefreshHandler,
 	LogoutHandler,
-	FetchPublicRoom,
+	GetMeHandler,
+	PatchMeHandler,
+	ProfileSearchHandler,
 	FetchPrivateRoom,
+	FetchPublicRoom,
 ];

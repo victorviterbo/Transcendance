@@ -9,8 +9,6 @@ import {
 import { db, normalizeEmail, normalizeUsername } from "../db";
 
 type AuthPayload = Partial<IAuthUser> & { password?: string };
-
-let sessionUser: { username: string } | null = null;
 const SESSION_STORAGE_KEY = "mock-auth-session";
 
 /**
@@ -63,7 +61,7 @@ export const LoginHandler = http.post(API_AUTH_LOGIN, async ({ request }) => {
 
 	const user = db.authenticate(email, password);
 	if (user) {
-		sessionUser = { username: user.username };
+		db.setSessionUser(user.username);
 		writeSession(user.username);
 		return HttpResponse.json(
 			{
@@ -121,7 +119,7 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
 		);
 
 	const user = db.createUser(username, email, payload.password ?? "");
-	sessionUser = { username: user.username };
+	db.setSessionUser(user.username);
 	writeSession(user.username);
 	return HttpResponse.json(
 		{
@@ -137,12 +135,22 @@ export const RegisterHandler = http.post(API_AUTH_REGISTER, async ({ request }) 
  * @returns New access token if a mock session exists, 401 otherwise.
  */
 export const RefreshHandler = http.post(API_AUTH_REFRESH, async () => {
+	const sessionUser = db.getSessionUser();
 	if (!sessionUser) {
 		const persistedUsername = readSession();
 		if (!persistedUsername) {
 			return HttpResponse.json({ error: "REFRESH_TOKEN_EXPIRED" }, { status: 401 });
 		}
-		sessionUser = { username: persistedUsername };
+		db.setSessionUser(persistedUsername);
+		const freshSessionUser = db.getSessionUser();
+		if (!freshSessionUser) {
+			db.clearSessionUser();
+			return HttpResponse.json({ error: "REFRESH_TOKEN_EXPIRED" }, { status: 401 });
+		}
+		return HttpResponse.json(
+			{ access: makeAccessToken(), username: freshSessionUser.username },
+			{ status: 200 },
+		);
 	}
 	return HttpResponse.json({ access: makeAccessToken(), username: sessionUser.username });
 });
@@ -152,7 +160,7 @@ export const RefreshHandler = http.post(API_AUTH_REFRESH, async () => {
  * @returns 204 response and clears mock session.
  */
 export const LogoutHandler = http.post(API_AUTH_LOGOUT, async () => {
-	sessionUser = null;
+	db.clearSessionUser();
 	writeSession(null);
 	return new HttpResponse(null, {
 		status: 204,

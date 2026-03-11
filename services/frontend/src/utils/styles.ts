@@ -110,9 +110,9 @@ export function colorHexToColor(hexa: string): TColor {
 	};
 
 	//Major / Minor
-	color.major = color.r >= color.g && color.r >= color.b ? "r" : (color.g >= color.b ? "g" : "b");
+	color.major = color.r >= color.g && color.r >= color.b ? "r" : color.g >= color.b ? "g" : "b";
 	color.majorValue = color[`${color.major}Float` as keyof TColor] as number;
-	color.minor = color.r <= color.g && color.r <= color.b ? "r" : (color.g <= color.b ? "g" : "b");
+	color.minor = color.r <= color.g && color.r <= color.b ? "r" : color.g <= color.b ? "g" : "b";
 	color.minorValue = color[`${color.minor}Float` as keyof TColor] as number;
 
 	//Hue

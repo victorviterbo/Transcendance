@@ -17,4 +17,6 @@ function CButton({ children, sx, ...other }: CButtonProps) {
 	);
 }
 
+//<Button variant="contained" {...other} sx={{ width: "fit-content", minWidth: "auto" }}>
+
 export default CButton;

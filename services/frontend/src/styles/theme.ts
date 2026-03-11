@@ -53,7 +53,12 @@ export const appPositions: IThemePosition = {
 
 export const appSharedStyle: IThemeShared = {
 	bg: {
-		paper: colorGetBackground([appColors.greys[9], appColors.greys[8]], undefined, "radial", 135 + 180),
+		paper: colorGetBackground(
+			[appColors.greys[9], appColors.greys[8]],
+			undefined,
+			"radial",
+			135 + 180,
+		),
 	},
 };
 
@@ -61,8 +66,16 @@ export const appBG: IThemeBG = {
 	baseIndex: 0,
 	baseColor: colorGetBackground(
 		[
-			colorAlterColor(appColors.quinary[0], ["shift-saturation", "shift-brightness"], [-0.0, -0.1]),
-			colorAlterColor(appColors.quaternary[0], ["shift-saturation", "shift-brightness"], [-0.0, -0.0]),
+			colorAlterColor(
+				appColors.quinary[0],
+				["shift-saturation", "shift-brightness"],
+				[-0.0, -0.1],
+			),
+			colorAlterColor(
+				appColors.quaternary[0],
+				["shift-saturation", "shift-brightness"],
+				[-0.0, -0.0],
+			),
 		],
 		undefined,
 		"linear",
@@ -75,8 +88,16 @@ export const appBG: IThemeBG = {
 	iconSpeed: 75,
 	iconColor: colorGetBackground(
 		[
-			colorAlterColor(appColors.quinary[0], ["shift-saturation", "shift-brightness"], [-0.15, -0.15]),
-			colorAlterColor(appColors.quaternary[0], ["shift-saturation", "shift-brightness"], [-0.15, -0.05]),
+			colorAlterColor(
+				appColors.quinary[0],
+				["shift-saturation", "shift-brightness"],
+				[-0.15, -0.15],
+			),
+			colorAlterColor(
+				appColors.quaternary[0],
+				["shift-saturation", "shift-brightness"],
+				[-0.15, -0.05],
+			),
 		],
 		undefined,
 		"linear",

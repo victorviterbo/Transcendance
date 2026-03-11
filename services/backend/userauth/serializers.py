@@ -6,11 +6,16 @@ to JSON and vice-versa, namely:
     - ProfileSerializer
 """
 
+import re
 from typing import Any
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
+from userprofile.models import Profile
+from userprofile.serializers import validate_username
 
-from .models import Profile, SiteUser
+from .models import Friendship, SiteUser
 
 
 def gmail_specific_normalize(email: str) -> str:
@@ -32,13 +37,15 @@ def gmail_specific_normalize(email: str) -> str:
     name = name.split("+")[0]
     return ("@").join([name, domain])
 
-def validate_email(value: str) -> str:
+def validate_email(value: str, is_creation: bool = False) -> str:
     """Validate and normalize the incomming email address.
 
     In case of user creation (register), it performs a uniqueness check
 
     Args:
-        value: the incomming email address
+        value:          the incomming email address
+        is_creation:    boolean telling the serializer how to validate
+                        depending on context (if creation, enforce unique)
     Returns:
         The validated and normalized email address
     Raises:
@@ -51,26 +58,16 @@ def validate_email(value: str) -> str:
     value = SiteUser.objects.normalize_email(value)
     if (value.endswith("@gmail.com")):
         value = gmail_specific_normalize(value)
-    return value
+    if is_creation and SiteUser.objects.filter(email=value).exists():
+        raise serializers.ValidationError('Email already taken',
+                                        code='unique')
 
-def validate_username(value: str) -> str:
-    """Validate and normalize the incomming username.
-
-    Args:
-        value: the incomming email username
-    Returns:
-        The validated and normalized username
-    Raises:
-        ValidationError: If the username is empty
-        ValidationError: If the username is already taken
-    """
-    if not value: 
-        raise serializers.ValidationError('Username is required.',
-                                            code='invalid-data')
     return value
 
 class SiteUserSerializer(serializers.ModelSerializer):
     """Set how to serialize a user (user obj <-> JSON)."""
+
+    profile_username = serializers.CharField()
 
     class Meta:
         """Defines the metaclass for the SiteUser serializer.
@@ -79,25 +76,30 @@ class SiteUserSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'username', 'password', 'is_staff', 'is_superuser']
-        extra_kwargs = {'password': {'write_only': True}}
-    
+        fields = ['email', 'password', 'profile_username', 'is_staff', 'is_superuser']
+        extra_kwargs = {'password': {
+                                'write_only': True
+                            },
+                        'profile_username': {
+                                'validator': [validate_username]
+                            }
+                        }
+
     def validate_email(self, value: str) -> str:
-        """Specific email validation for user creation / update."""
-        value = validate_email(value)
-        if value is not None and SiteUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Email already taken',
-                                              code='unique')
+        """Specific email validation for user login."""
+        value = validate_email(value, is_creation=self.context.get('is_creation'))
         return value
     
-    def validate_username(self, value: str) -> str:
-        """Specific username validation for user creation / update."""
-        username = validate_username(value)
-        if username is not None and SiteUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError('Username already taken',
-                                              code='unique')
+    def validate_profile_username(self, value: str) -> str:
+        """Specific email validation for user login."""
+        value = validate_username(value, is_creation=self.context.get('is_creation'))
         return value
     
+    def validate_password(self, value: str) -> str:
+        """Explicitly trigger the custrom password validator."""
+        validate_password(value, user=self.instance)
+        return value
+        
     def create(self, validated_data: Any) -> SiteUser:
         """Overrride the user creation method to ensure it uses our SiteUserManager.
 
@@ -106,7 +108,12 @@ class SiteUserSerializer(serializers.ModelSerializer):
         Returns:
             The newly created SiteUser
         """
-        return SiteUser.objects.create_user(**validated_data)
+        profile_username = validated_data.pop('profile_username')
+        user = SiteUser.objects.create_user(**validated_data)
+        Profile.objects.create(user=user,
+                               username=profile_username,
+                               is_guest=False)
+        return user
 
 class LoginSerializer(serializers.ModelSerializer):
     """Specific serializer for logging in."""
@@ -115,7 +122,7 @@ class LoginSerializer(serializers.ModelSerializer):
         """Defines the metaclass for the SiteUser serializer.
         
         This part tells the rest_framework serializer how to contruct the
-        SiteUserSerializer class itself
+        LoginSerializer class itself
         """
         model = SiteUser
         fields = ['email', 'password']
@@ -127,12 +134,29 @@ class LoginSerializer(serializers.ModelSerializer):
     
     def validate_email(self, value: str) -> str:
         """Specific email validation for user login."""
-        value = validate_email(value)
+        value = validate_email(value, is_creation=False)
         return value
 
+class ComplexPasswordValidator:
+    """Define minimal password complexity rules."""
 
-class ProfileSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's profile (user profile obj <-> JSON)."""
+    def validate(self, password: str, user=None) -> None:
+        """Define specific validation process for password validation."""
+        if (len(password) < 8):
+            raise ValidationError("Use at least 8 characters.")
+
+        rules = [
+            (r'[0-9]', "Include at least 1 number."),
+            (r'[a-z]', "Include at least 1 lowercase letter."),
+            (r'[A-Z]', "Include at least 1 uppercase letter."),
+            (r'[^A-Za-z0-9]', "Include at least 1 special character."),
+        ]
+        for pattern, message in rules:
+            if not re.search(pattern, password):
+                raise ValidationError(message)
+
+class FriendshipSerializer(serializers.ModelSerializer):
+    """Set how to serialize a user's friendship requests."""
 
     class Meta:
         """Defines the metaclass for the Profile serializer.
@@ -140,5 +164,5 @@ class ProfileSerializer(serializers.ModelSerializer):
         This part tells the rest_framework serializer how to contruct the
         ProfileSerializer class itself
         """
-        model = Profile
-        fields = ['image']
+        model = Friendship
+        fields = ['from_user', 'to_user', 'status']

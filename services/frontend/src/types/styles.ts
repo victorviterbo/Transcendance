@@ -39,13 +39,13 @@ export type TColorAlteration = "shift-saturation" | "shift-brightness";
 //                   THEME
 //--------------------------------------------------
 
-	//====================== COLOR ======================
+//====================== COLOR ======================
 export interface IThemeColor {
 	primary: string[];
 	secondary: string[];
 	tertiary: string[];
-	quinary: string[]
-	quaternary: string[]
+	quinary: string[];
+	quaternary: string[];
 	greys: string[];
 	text: IThemeTextColor;
 }
@@ -55,21 +55,21 @@ export interface IThemeTextColor {
 	light: string;
 }
 
-	//====================== PSOITIONS ======================
+//====================== PSOITIONS ======================
 export interface IThemePosition {
 	mainSpacing: number;
 }
 
-	//====================== SHARED ======================
+//====================== SHARED ======================
 export interface IThemeBGs {
-	paper: string
+	paper: string;
 }
 
 export interface IThemeShared {
 	bg: IThemeBGs;
 }
 
-	//====================== BG ======================
+//====================== BG ======================
 export interface IThemeBG {
 	baseIndex: number;
 	baseColor: string;

@@ -207,6 +207,59 @@ describe("auth register unit tests", () => {
 		expect(await screen.findByText(/username_max/i)).toBeInTheDocument();
 	});
 
+	it("shows forbidden warning when username contains path traversal", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "john..doe");
+
+		expect(await screen.findByText(/username_forbidden/i)).toBeInTheDocument();
+	});
+
+	it("shows forbidden warning when username contains forbidden path chars", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "john/does");
+
+		expect(await screen.findByText(/username_forbidden/i)).toBeInTheDocument();
+	});
+
+	it("shows forbidden warning when username contains backslash or tilde", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "john\\doe");
+		expect(await screen.findByText(/username_forbidden/i)).toBeInTheDocument();
+
+		await user.clear(screen.getByLabelText(/username/i));
+		await user.type(screen.getByLabelText(/username/i), "john~doe");
+		expect(await screen.findByText(/username_forbidden/i)).toBeInTheDocument();
+	});
+
+	it("shows admin warning for reserved username", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "admin");
+
+		expect(await screen.findByText(/username_admin/i)).toBeInTheDocument();
+	});
+
+	it("shows username min warning when username is too short", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "ab");
+
+		expect(await screen.findByText(/username_min/i)).toBeInTheDocument();
+	});
+
 	it("ignores leading/trailing spaces when checking username length", async () => {
 		const user = userEvent.setup();
 

@@ -23,7 +23,7 @@ function PCreateRoom() {
 				></CToggle>
 				<CButton>PLAY_GAME</CButton>
 			</Stack>
-	</CHomePaper>
+		</CHomePaper>
 	);
 }
 

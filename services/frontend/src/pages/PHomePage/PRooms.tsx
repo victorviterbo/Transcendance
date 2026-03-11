@@ -22,8 +22,6 @@ function PRooms({ isPublic }: PRoomsProps) {
 				const res: AxiosResponse<IRoomList> = await api.get<IRoomList>(
 					isPublic ? API_PUBLIC_ROOMS : API_PRIVATE_ROOMS,
 				);
-				console.log(res.status);
-				console.log(res.data);
 				setRooms(res.data.rooms);
 			} catch (error) {
 				console.log("Failed to load rooms: ", error);
