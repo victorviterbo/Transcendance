@@ -1,3 +1,5 @@
+"""Channels WebSocket routes for room and global chat endpoints."""
+
 from django.urls import path
 
 from .consumers import ChatConsumer

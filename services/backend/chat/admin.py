@@ -1,3 +1,5 @@
+"""Admin registrations for chat models."""
+
 from django.contrib import admin
 
 from .models import Message, Room

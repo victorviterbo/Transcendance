@@ -1,3 +1,5 @@
+"""WebSocket consumer logic for public rooms and private direct messages."""
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 
@@ -5,7 +7,11 @@ from .models import Room, Message
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
+    """Handle chat WebSocket connections, message broadcasts, and status updates."""
+
     async def connect(self):
+        """Accept a socket connection after resolving the room and checking access."""
+
         url_kwargs = self.scope.get('url_route', {}).get('kwargs', {})
         self.room_name = url_kwargs.get('room_name')
 
@@ -14,6 +20,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if self.room_name and self.room is None:
             await self.close(code=4404)
             return
+
+        if self.room is not None and self.room.is_direct:
+            is_allowed = await self._is_room_participant()
+            if not is_allowed:
+                await self.close(code=4403)
+                return
 
         if self.room is not None:
             self.group_name = f'chat_room_{self.room.id}'
@@ -24,9 +36,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
+        """Remove the socket from its channel-layer group when disconnecting."""
+
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive_json(self, content, **kwargs):
+        """Process incoming message, delivered, and read actions from the client."""
+
         action = content.get('action', 'message')
 
         if action == 'message':
@@ -77,6 +93,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({'type': 'error', 'message': 'unsupported_action'})
 
     async def chat_message(self, event):
+        """Forward a chat message event to the connected client."""
+
         await self.send_json({
             'type': 'chat_message',
             'group': self.group_name,
@@ -89,6 +107,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         })
 
     async def status_update(self, event):
+        """Forward a delivery or read status update to the connected client."""
+
         await self.send_json({
             'type': 'status_update',
             'message_id': event['message_id'],
@@ -97,6 +117,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         })
 
     def _sender_name(self):
+        """Return the authenticated sender username or an anonymous fallback."""
+
         user = self.scope.get('user')
         if user and getattr(user, 'is_authenticated', False):
             return user.username
@@ -104,6 +126,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _resolve_room(self, room_ref=None):
+        """Resolve a room from either its numeric id or its string name."""
+
         if room_ref is None:
             return None
 
@@ -120,7 +144,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return None
 
     @database_sync_to_async
+    def _is_room_participant(self):
+        """Return whether the authenticated user belongs to the current direct room."""
+
+        user = self.scope.get('user')
+        if self.room is None or not user or not getattr(user, 'is_authenticated', False):
+            return False
+        return self.room.participants.filter(id=user.id).exists()
+
+    @database_sync_to_async
     def _save_message(self, body, room_identifier=None):
+        """Persist a message for the authenticated user in the resolved room."""
+
         user = self.scope.get('user')
         room = self.room
         if room is None and room_identifier is not None:
@@ -140,6 +175,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _mark_delivered(self, message_id):
+        """Mark a room message as delivered if it exists."""
+
         message = Message.objects.filter(id=message_id, room=self.room).first()
         if not message:
             return False
@@ -150,6 +187,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _mark_seen(self, message_id):
+        """Mark a room message as seen and delivered if it exists."""
+
         message = Message.objects.filter(id=message_id, room=self.room).first()
         if not message:
             return False
