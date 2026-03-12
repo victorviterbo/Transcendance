@@ -1,4 +1,4 @@
-name: temp
+name: backend
 channels:
   - defaults
   - conda-forge
@@ -112,4 +112,4 @@ dependencies:
   - zope=1.0
   - zope.interface=8.0.1
   - zstd=1.5.7
-prefix: /opt/conda/envs/temp
+prefix: /opt/conda/envs/backend

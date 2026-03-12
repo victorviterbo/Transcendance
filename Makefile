@@ -73,6 +73,12 @@ re:			clean up # Remove containers and volumes then build them again
 
 fre:		fclean up # Remove containers, prune and build them again
 
+test:		fclean
+			echo "$(YELLOW)▶️  Starting test containers...$(RESET)"
+			$(ENV) MODE=test $(COMPOSE_COMMAND) $(COMPOSE_FILE) up -d --build
+			$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) logs -f
+
+
 help:		# Display commands
 			echo "$(BLUE)📌 Available commands:$(RESET)"
 			grep -E '^[a-zA-Z]+ *:.*?#' Makefile | \

@@ -11,7 +11,6 @@ import re
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
-
 from userprofile.models import Profile
 from userprofile.serializers import validate_username
 
@@ -147,14 +146,14 @@ class ComplexPasswordValidator:
             raise ValidationError("Use at least 8 characters.")
 
         rules = [
-            (r'[0-9]', "Include at least 1 number."),
-            (r'[a-z]', "Include at least 1 lowercase letter."),
-            (r'[A-Z]', "Include at least 1 uppercase letter."),
-            (r'[^A-Za-z0-9]', "Include at least 1 special character."),
+            (r'[0-9]', "MISSING_NUMBER"),
+            (r'[a-z]', "MISSING_LOWER"),
+            (r'[A-Z]', "MISSING_UPPER"),
+            (r'[^A-Za-z0-9]', "MISSING_SPECIAL"),
         ]
         for pattern, message in rules:
             if not re.search(pattern, password):
-                raise ValidationError(message)
+                raise ValidationError(code=message)
 
 class FriendshipSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""

@@ -11,7 +11,6 @@ from django.test import TransactionTestCase, override_settings
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
-
 from userauth.serializers import SiteUserSerializer
 
 from .serializers import LightProfileSerializer, ProfileSerializer

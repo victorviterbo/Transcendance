@@ -26,11 +26,11 @@ def validate_username(value: str, is_creation: bool = False) -> str:
         raise serializers.ValidationError('Username is required.',
                                           code='invalid-data')
     if any(pattern in value for pattern in ['/', '\\', '..', '~']):
-        raise serializers.ValidationError('Use of forbiden character', code='forbidden')
+        raise serializers.ValidationError('Use of forbiden character', code='FORBIDDEN')
     if value == 'admin':
-        raise serializers.ValidationError('Who do you think you are ?', code='super-forbidden')
+        raise serializers.ValidationError('Who do you think you are ?', code='RESERVED')
     if is_creation and Profile.objects.filter(username=value).exists():
-        raise serializers.ValidationError('Username already taken', code='unique')
+        raise serializers.ValidationError('Username already taken', code='UNIQUE')
     return value
 
 class LightProfileSerializer(serializers.ModelSerializer):

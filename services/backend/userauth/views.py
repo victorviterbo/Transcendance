@@ -53,13 +53,13 @@ class RegisterView(APIView):
             error_response = {'error':{}}
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
-                if any(['unique' in e['code'] for e in error['email']]):
+                if any(['unique' in e['code'].lower() for e in error['email']]):
                     error_response['error']['email'] = 'ALREADY_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
                     error_response['error']['email'] = 'INVALID'
             if error.get('profile_username'):
-                if any(['unique' in e['code'] for e in error['profile_username']]):
+                if any(['unique' in e['code'].lower() for e in error['profile_username']]):
                     error_response['error']['username'] = 'ALREADY_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
@@ -191,54 +191,9 @@ class RefreshTokenView(TokenRefreshView):
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
 
-class FriendRequests(APIView):
-    """Define all functions related to sending seeing and accepting friend requests."""
+class FriendRequestsSee(APIView):
+    """Define the function to display friends and friend requests."""
     permission_classes = [IsAuthenticated]
-
-    def post(self, request: Request) -> Response:
-        """Create new friend requests."""
-        target = request.data.get("target-username")
-        if target is None:
-            return (Response({'error': {'target-username': 'MISSING_FIELD'}},
-                             status=status.HTTP_400_BAD_REQUEST))
-        target_user = SiteUser.object.filter(username=target)
-        if target_user.count() < 1:
-            return (Response({'error': {'target-username': 'NOT_FOUND'},
-                              'requested': request.data.get("target-username")},
-                              status=status.HTTP_400_BAD_REQUEST))
-        else:
-            recipient = target_user.first()
-            sender = request.user
-            if sender == recipient:
-                return Response({'error': 'I feel bad for you'}, 
-                                status=status.HTTP_400_BAD_REQUEST)
-            curr_relationship = Friendship.objects.filter(
-                from_user=sender, 
-                to_user=recipient
-            )
-            curr_rev_relationship = Friendship.objects.filter(
-                from_user=recipient, 
-                to_user=sender
-            )
-            if (curr_rev_relationship.exists() and
-                curr_rev_relationship.status == 'pending'):
-                curr_rev_relationship.first().status = 'accepted'
-                return Response({'description': 'REQUEST_ACCEPTED',
-                                 'target-username': target}, 
-                                status=status.HTTP_200_OK)
-            if curr_relationship.exists():
-                return Response({'error': {'friendship': 'ALREADY_EXISTS'},
-                                'request_status': curr_relationship.status},
-                                status=status.HTTP_400_BAD_REQUEST)
-            
-            Friendship.objects.create(
-                from_user=sender,
-                to_user=recipient,
-                status='pending'
-            )
-            return Response({'description': 'FRIENDSHIP_REQUEST_SENT',
-                             'target-username': target}, 
-                            status=status.HTTP_201_CREATED)
 
     def get(self, request: Request) -> Response:
         """List all friend requests for user."""
@@ -251,3 +206,75 @@ class FriendRequests(APIView):
         response_data['outgoing'] = FriendshipSerializer(outgoing_req, many=True)
         return Response(response_data, status=status.HTTP_200_OK)
 
+class FriendRequestsRespond(APIView):
+    """Define the functions related to accepting friend requests."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        """Respond to friend request."""
+        target = request.data.get('target-username')
+        if target is None:
+            return (Response({'error': {'target-username': 'MISSING_FIELD'}},
+                             status=status.HTTP_400_BAD_REQUEST))
+        target_user = SiteUser.object.filter(username=target)
+        if target_user.count() < 1:
+            return (Response({'error': {'target-username': 'NOT_FOUND'},
+                              'requested': request.data.get('target-username')},
+                              status=status.HTTP_400_BAD_REQUEST))
+        sender = target_user.first()
+        user = request.user
+        curr_relationship = Friendship.objects.filter(
+            from_user=sender,
+            to_user=user
+        ).first()
+        if curr_relationship and curr_relationship.status == 'pending':
+            if request.data['new-status'] == 'accept':
+                curr_relationship.status = 'accepted'
+                return Response({'description': 'REQUEST_ACCEPTED',
+                                    'target-username': target}, 
+                                status=status.HTTP_200_OK)
+            elif request.data['new-status'] == 'reject':
+                curr_relationship.delete()
+                return Response({'description': 'REQUEST_REJECTED',
+                                    'target-username': target}, 
+                                status=status.HTTP_200_OK)
+        
+        return Response({'error': {'friendship': 'NOT_FOUND'}}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+            
+class FriendRequestsSend(APIView):
+    """Define the functions related to sending friend requests."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        """Send friend request."""
+        target = request.data.get('target-username')
+        if target is None:
+            return (Response({'error': {'target-username': 'MISSING_FIELD'}},
+                                status=status.HTTP_400_BAD_REQUEST))
+        target_user = SiteUser.objects.filter(profile__username=target)
+        if target_user.count() < 1:
+            return (Response({'error': {'target-username': 'NOT_FOUND'},
+                                'requested': request.data.get('target-username')},
+                                status=status.HTTP_400_BAD_REQUEST))
+        recipient = target_user.first()
+        user = request.user
+        if recipient == user:
+            return Response({'error': {'friendship': 'REALLY_SAD'}}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+        curr_relationship = Friendship.objects.filter(
+            from_user=user, 
+            to_user=recipient,
+        )
+        if curr_relationship.exists():
+            return Response({'error': {'friendship': 'ALREADY_EXISTS'},
+                            'request_status': curr_relationship.first().status},
+                            status=status.HTTP_400_BAD_REQUEST)
+        Friendship.objects.create(
+            from_user=user,
+            to_user=recipient,
+            status='pending'
+        )
+        return Response({'description': 'FRIENDSHIP_REQUEST_SENT',
+                            'target-username': target}, 
+                        status=status.HTTP_201_CREATED)

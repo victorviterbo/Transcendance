@@ -36,7 +36,8 @@ userprofile:
                         refresh token is not in cookies
                     - HTTP_401_UNAUTHORIZED {'error': {'cookie': 'INVALID'}}
                         refresh token is not valid or blacklisted
-        friend-request/: 
+        friend-request/send/: 
+        friend-request/respond/: 
             post: [IsAuthenticated]
                 success: 
                     - HTTP_201_CREATED {'description': FRIENDSHIP_REQUEST_SENT, 'target-username'}

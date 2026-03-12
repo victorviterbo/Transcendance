@@ -2,10 +2,11 @@
 
 
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APIClient, APITestCase
 
 from .models import SiteUser
 from .serializers import SiteUserSerializer
+from userprofile.serializers import ProfileSerializer
 
 
 class UserAccountTests(APITestCase):
@@ -101,7 +102,8 @@ class UserAccountTests(APITestCase):
         self.client.cookies['refresh-token'] = refresh_token_copy
         refresh_response = self.client.post('/api/auth/refresh/')
         self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.data['detail'], 'Authentication credentials were not provided.')
+        self.assertEqual(response.data['detail'],
+                         'Authentication credentials were not provided.')
     
     def test_refresh(self) -> None:
         """Test success and failure of access token regeneration operation."""
@@ -154,10 +156,115 @@ class UserAccountTests(APITestCase):
                       "+newuser@gmail.com",
                       "....newuser@gmail.com",
                       "new..user@gmail.com"]:
-            i += 1
-        raw_data = {
-            "profile_username": "new_user" + str(i),
-            "email": email,
-            "password": "securePassword123+"
-        }
-        serializer = SiteUserSerializer(data=raw_data)
+            i = i + 1
+            raw_data = {
+                "profile_username": "new_user" + str(i),
+                "email": email,
+                "password": "securePassword123+"
+            }
+            serializer = SiteUserSerializer(data=raw_data)
+
+
+class FriendRequestsTests(APITestCase):
+    """Test suit specifically for friendship requests."""
+
+    def setUp(self) -> None:
+        """Set up the common variables for the tests."""
+        self.client = APIClient()
+        serializer = SiteUserSerializer(data={'email': 'user1@mail.com',
+                                              'profile_username': 'user1',
+                                              'password': 'Password123+'},
+                                              context={'is_creation': True})
+        if serializer.is_valid():
+            self.user1 = serializer.save()
+        serializer = SiteUserSerializer(data={'email': 'user2@mail.com',
+                                              'profile_username': 'user2',
+                                              'password': 'Password123+'},
+                                              context={'is_creation': True})
+        if serializer.is_valid():
+            self.user2 = serializer.save()
+        
+        serializer = ProfileSerializer(data={'username': 'an_anonymous_user',
+                                              'exp_points': '12',
+                                              'badges': 'Deaf Octopus'
+                                            },
+                                            context={'is_creation': True})
+        if serializer.is_valid():
+            self.user3 = serializer.save()
+    
+
+    def test_send_request(self) -> None:
+        """Test success and failure of access token regeneration operation."""
+        friend_request_url = '/api/auth/friend-request/send/'
+        login_url = '/api/auth/login/'
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+                                                 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        
+        for target_username in ['user1', 'user2', 'an_anonymous_user', 'not_a_user', '']:
+            response = self.client.post(friend_request_url, data={'target-username': target_username})
+            if target_username != 'user2':
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                self.assertIn('error', response.data)
+                if target_username == 'user1':
+                    self.assertIn('friendship', response.data['error'])
+                    self.assertEqual('REALLY_SAD', response.data['error']['friendship'])
+                elif target_username in ['an_anonymous_user', '']:
+                    self.assertIn('target-username', response.data['error'])
+                    self.assertEqual('NOT_FOUND', response.data['error']['target-username'])
+            else:
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(friend_request_url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIn('target-username', response.data['error'])
+        self.assertEqual('MISSING_FIELD', response.data['error']['target-username'])
+        response = self.client.post(friend_request_url, data={'target-username': 'user2'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+        self.assertIn('friendship', response.data['error'])
+        self.assertEqual('ALREADY_EXISTS', response.data['error']['friendship'])
+
+    def test_respond_request(self) -> None:
+        """Test success and failure of access token regeneration operation."""
+        friend_respond_url = '/api/auth/friend-request/respond/'
+        friend_request_url = '/api/auth/friend-request/send/'
+        login_url = '/api/auth/login/'
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+                                                 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        
+        for res in ['reject', 'accept']:
+            for target_username in ['user1', 'user2', 'an_anonymous_user', 'not_a_user', '']:
+                response = self.client.post(friend_respond_url, data={'target-username': target_username, 'new-status': res})
+                if target_username != 'user2':
+                    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                    self.assertIn('error', response.data)
+                    if target_username == 'user2':
+                        self.assertIn('friendship', response.data['error'])
+                        self.assertEqual('NOT_FOUND', response.data['error']['friendship'])
+                    elif target_username == 'user1':
+                        self.assertIn('friendship', response.data['error'])
+                        self.assertEqual('REALLY_SAD', response.data['error']['friendship'])
+                    elif target_username in ['an_anonymous_user', '']:
+                        self.assertIn('target-username', response.data['error'])
+                        self.assertEqual('NOT_FOUND', response.data['error']['target-username'])
+        response = self.client.post(friend_request_url, data={'target-username': 'user2'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        login_res = self.client.post(login_url, data={'email': 'user2@mail.com',
+                                                 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        response = self.client.post(friend_respond_url, data={'target-username': 'user2', 'new-status': res})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.asserIn('description', response.data)
+        if res == 'accept':
+            self.assertEqual('REQUEST_ACCEPTED', response.data['description'])
+        elif res == 'reject':
+            self.assertEqual('REQUEST_REJECTED', response.data['description'])

@@ -13,12 +13,12 @@ from .serializers import LightProfileSerializer, ProfileSerializer
 
 
 def parse_validation_errors(val_error: serializers.ValidationError) -> Response:
+    """Format the validation error structure to match the expected format."""
     error = val_error.get_full_details()
     error_response = {'error': {}}
     response_code = status.HTTP_400_BAD_REQUEST
     for field, details in error.items():
-        is_unique = any(item['code'] == 'unique' for item in details)
-        if is_unique:
+        if any(item['code'].lower() == 'unique' for item in details):
             error_response['error'][field] = 'ALREADY_TAKEN'
             response_code = status.HTTP_409_CONFLICT
         else:
@@ -163,7 +163,7 @@ class GuestProfileCreateView(APIView):
 class GuestCleanupView(APIView):
     """End point for guest cleanup."""
 
-    def post(self, request: Request) -> Any:
+    def post(self, request: Request) -> Response:
         """Receive front beacon to activate guest leaving."""
         session_key = request.session.session_key
         if session_key:
