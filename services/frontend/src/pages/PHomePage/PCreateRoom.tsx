@@ -2,7 +2,7 @@ import { Stack } from "@mui/material";
 import CHomePaper from "../../components/surfaces/CHomePaper";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import CToggle from "../../components/inputs/toggle/CToggle";
-import CButton from "../../components/inputs/buttons/CButton";
+import CButtonText from "../../components/inputs/buttons/CButtonText";
 
 function PCreateRoom() {
 	return (
@@ -21,7 +21,7 @@ function PCreateRoom() {
 						{ value: "public", label: "PUBLIC" },
 					]}
 				></CToggle>
-				<CButton>PLAY_GAME</CButton>
+				<CButtonText>PLAY_GAME</CButtonText>
 			</Stack>
 		</CHomePaper>
 	);

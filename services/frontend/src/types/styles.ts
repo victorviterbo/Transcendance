@@ -69,6 +69,22 @@ export interface IThemeShared {
 	bg: IThemeBGs;
 }
 
+//====================== ANIMATIONS ======================
+export interface IThemeEasing {
+	easeInOut: string;
+	easeOut: string;
+	easeIn: string;
+	sharp: string;
+}
+export interface IThemeTiming {
+	fast: number;
+	medium_fast: number;
+}
+export interface IThemeAnimations {
+	timing: IThemeTiming;
+	easing: IThemeEasing;
+}
+
 //====================== BG ======================
 export interface IThemeBG {
 	baseIndex: number;

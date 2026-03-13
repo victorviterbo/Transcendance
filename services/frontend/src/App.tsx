@@ -23,7 +23,7 @@ function App() {
 					<Route path="/leaderboard" element={<PLeaderboardPage />} />
 					<Route path="/chat_test" element={<PChat />} />
 				</Route>
-			</Routes> 
+			</Routes>
 		</ThemeProvider>
 	);
 }

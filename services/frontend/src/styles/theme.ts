@@ -1,6 +1,12 @@
 import { createTheme, type ThemeOptions } from "@mui/material";
 import { colorAlterColor, colorGetBackground } from "../utils/styles";
-import type { IThemeBG, IThemeColor, IThemePosition, IThemeShared } from "../types/styles";
+import type {
+	IThemeAnimations,
+	IThemeBG,
+	IThemeColor,
+	IThemePosition,
+	IThemeShared,
+} from "../types/styles";
 
 //--------------------------------------------------
 //                                    NAME
@@ -59,6 +65,19 @@ export const appSharedStyle: IThemeShared = {
 			"radial",
 			135 + 180,
 		),
+	},
+};
+
+export const appAnimation: IThemeAnimations = {
+	timing: {
+		fast: 100,
+		medium_fast: 150,
+	},
+	easing: {
+		easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+		easeOut: "cubic-bezier(0.0, 0, 0.2, 1)",
+		easeIn: "cubic-bezier(0.4, 0, 1, 1)",
+		sharp: "cubic-bezier(0.4, 0, 0.6, 1)",
 	},
 };
 

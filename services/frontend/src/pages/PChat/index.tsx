@@ -8,9 +8,7 @@ function PChat() {
 		<GPageBase>
 			<CTextField></CTextField>
 			<CButton>Send</CButton>
-			<Stack>
-				
-			</Stack>
+			<Stack></Stack>
 		</GPageBase>
 	);
 }
