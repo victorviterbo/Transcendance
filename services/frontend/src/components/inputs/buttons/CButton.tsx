@@ -1,7 +1,7 @@
 import { Button, type ButtonProps } from "@mui/material";
 import type { GProps } from "../../common/GProps.ts";
 import { ttr } from "../../../localization/localization.ts";
-import CButtonStyle from "../../../styles/components/inputs/CButtonStyle.ts";
+import { CButtonStyle } from "../../../styles/components/inputs/CButtonStyle.ts";
 
 export interface CButtonProps extends GProps, ButtonProps {}
 

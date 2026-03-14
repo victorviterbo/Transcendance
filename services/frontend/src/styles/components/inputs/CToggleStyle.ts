@@ -5,6 +5,7 @@ export const CToggleButtonStyle: SxProps<Theme> = (_) => ({
 	backgroundColor: appColors.tertiary[0],
 	color: appColors.text.light,
 	boxShadow: "0px 5px 0px 0px " + appColors.greys[0],
+	//border: "solid 3px " + appColors.greys[0],
 
 	"&:hover": {
 		backgroundColor: appColors.tertiary[1],

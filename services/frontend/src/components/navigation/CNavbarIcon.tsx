@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { IconButton, type IconButtonProps } from "@mui/material";
+import { type IconButtonProps } from "@mui/material";
+import CIconButton from "../inputs/buttons/CIconButton";
 
 export interface CNavbarIconProps extends Omit<IconButtonProps, "children" | "aria-label"> {
 	icon: ReactNode;
@@ -8,22 +9,13 @@ export interface CNavbarIconProps extends Omit<IconButtonProps, "children" | "ar
 
 function CNavbarIcon({ icon, aria, sx, ...other }: CNavbarIconProps) {
 	return (
-		<IconButton
-			color="inherit"
+		<CIconButton
 			aria-label={aria}
-			sx={[
-				{
-					px: 1.75,
-					py: 0.75,
-					borderRadius: 1,
-					border: "2px solid",
-				},
-				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
-			]}
+			sx={[{}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
 			{icon}
-		</IconButton>
+		</CIconButton>
 	);
 }
 

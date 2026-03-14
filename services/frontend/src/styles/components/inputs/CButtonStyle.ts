@@ -1,7 +1,7 @@
 import type { SxProps, Theme } from "@mui/material";
-import { appAnimation, appColors } from "../../theme";
+import { appAnimation, appColors, appSharedStyle } from "../../theme";
 
-const CButtonStyle: SxProps<Theme> = (theme) => ({
+export const CButtonStyle: SxProps<Theme> = (theme) => ({
 	transition: (theme) => {
 		return theme.transitions.create(["transform", "box-shadow", "background", "color"], {
 			duration: appAnimation.timing.fast,
@@ -10,8 +10,9 @@ const CButtonStyle: SxProps<Theme> = (theme) => ({
 
 	background: appColors.tertiary[0],
 	transform: "translateY(0px)",
-	boxShadow: "0px 5px 0px 0px " + appColors.greys[0],
+	boxShadow: "0px 5px 0px 0px " + appColors.greys[1],
 	color: theme.palette.grey[100],
+	//border: "solid 3px " + appColors.greys[0],
 
 	"&:hover": {
 		background: appColors.secondary[0],
@@ -21,7 +22,11 @@ const CButtonStyle: SxProps<Theme> = (theme) => ({
 	},
 });
 
-export default CButtonStyle;
+export const CIconButtonStyle: SxProps<Theme> = (_) => ({
+	px: 1.75,
+	py: 0.75,
+	borderRadius: appSharedStyle.radius + "px"
+});
 
 //--------------------------------------------------
 //                      ARCHIVES
