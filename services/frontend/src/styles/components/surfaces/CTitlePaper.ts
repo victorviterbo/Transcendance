@@ -1,11 +1,11 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors } from "../../theme";
 
-export const CHomePaperStyle: SxProps<Theme> = (_theme) => ({
+export const CTitlePaperStyle: SxProps<Theme> = (_theme) => ({
 	p: 0,
 });
 
-export const CHomePaperTitleBoxStyle: SxProps<Theme> = (theme) => ({
+export const CTitlePaperTitleBoxStyle: SxProps<Theme> = (theme) => ({
 	backgroundColor: theme.palette.primary.main,
 
 	borderTopLeftRadius: theme.shape.borderRadius,
@@ -14,10 +14,10 @@ export const CHomePaperTitleBoxStyle: SxProps<Theme> = (theme) => ({
 	p: 1,
 });
 
-export const CHomePaperTitleStyle: SxProps<Theme> = (_theme) => ({
+export const CTitlePaperTitleStyle: SxProps<Theme> = (_theme) => ({
 	color: appColors.text.dark,
 });
 
-export const CHomePaperContentBox: SxProps<Theme> = (_theme) => ({
+export const CTitlePaperContentBox: SxProps<Theme> = (_theme) => ({
 	p: 4,
 });

@@ -9,7 +9,7 @@ function CTitle({ size, children, sx, ...other }: CTitleProps) {
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
 			case "sm":
-				return "h6";
+				return "h5";
 			case "md":
 				return "h4";
 			case "lg":

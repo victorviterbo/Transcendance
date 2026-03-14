@@ -1,12 +1,12 @@
 import { Stack } from "@mui/material";
-import CHomePaper from "../../components/surfaces/CHomePaper";
+import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import CToggle from "../../components/inputs/toggle/CToggle";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
 
 function PCreateRoom() {
 	return (
-		<CHomePaper title="CREATE_ROOM" sx={{ m: 0, height: "100%", width: "100%" }}>
+		<CTitlePaper title="CREATE_ROOM" sx={{ m: 0, height: "100%", width: "100%" }}>
 			<CTextField></CTextField>
 			<Stack
 				direction={"row"}
@@ -23,7 +23,7 @@ function PCreateRoom() {
 				></CToggle>
 				<CButtonText>PLAY_GAME</CButtonText>
 			</Stack>
-		</CHomePaper>
+		</CTitlePaper>
 	);
 }
 

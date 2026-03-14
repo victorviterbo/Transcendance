@@ -1,5 +1,4 @@
 import { Box, capitalize } from "@mui/material";
-import CButton from "../inputs/buttons/CButton.tsx";
 import { useMemo, useState, type FormEvent } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import type { IEventStatus } from "../../types/events.tsx";
@@ -7,6 +6,7 @@ import type { TConfirmConfig, TFormFieldConfig } from "../../types/form.ts";
 import CTextField from "../inputs/textFields/CTextField.tsx";
 import CText from "../text/CText.tsx";
 import { ttr } from "../../localization/localization.ts";
+import CButtonText from "../inputs/buttons/CButtonText.tsx";
 
 interface CFormProps extends GCompProps {
 	submitText: string;
@@ -217,13 +217,13 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				</CText>
 			)}
 
-			<CButton type="submit" variant="contained" sx={{ mt: 2 }} disabled={isSubmitting}>
+			<CButtonText type="submit" variant="contained" sx={{ mt: 2 }} disabled={isSubmitting}>
 				{isSubmitting
 					? submittingText
 						? ttr(submittingText)
 						: ttr(submitText)
 					: ttr(submitText)}
-			</CButton>
+			</CButtonText>
 		</Box>
 	);
 }

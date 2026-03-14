@@ -63,10 +63,13 @@ export interface IThemePosition {
 //====================== SHARED ======================
 export interface IThemeBGs {
 	paper: string;
+	feedback: string;
+	menu: string;
 }
 
 export interface IThemeShared {
 	bg: IThemeBGs;
+	radius: number;
 }
 
 //====================== ANIMATIONS ======================

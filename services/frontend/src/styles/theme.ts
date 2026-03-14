@@ -65,7 +65,21 @@ export const appSharedStyle: IThemeShared = {
 			"radial",
 			135 + 180,
 		),
+		feedback: colorGetBackground(
+			[appColors.primary[1], appColors.quinary[1]],
+			[0, 100],
+			"linear",
+			225,
+		),
+		menu: colorGetBackground(
+			[appColors.primary[1], appColors.quinary[1]],
+			[0, 100],
+			"linear",
+			225,
+		),
 	},
+
+	radius: 30,
 };
 
 export const appAnimation: IThemeAnimations = {
@@ -175,7 +189,7 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	shape: {
-		borderRadius: 30,
+		borderRadius: appSharedStyle.radius,
 	},
 
 	components: {

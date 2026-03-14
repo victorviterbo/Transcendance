@@ -35,6 +35,7 @@ export const CTextFieldStyle: SxProps<Theme> = (theme) => ({
 
 	"&:hover .MuiOutlinedInput-root": {
 		backgroundColor: appColors.greys[7],
+		border: "none",
 	},
 
 	"& .MuiOutlinedInput-root.Mui-focused": {
@@ -49,16 +50,16 @@ export const CTextFieldStyle: SxProps<Theme> = (theme) => ({
 			duration: appAnimation.timing.medium_fast,
 		}),
 	},
-	"&:hover .MuiOutlinedInput-notchedOutline": {
-		borderColor: appColors.secondary[0],
+	"& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+		borderColor: () => appColors.secondary[0],
 		borderWidth: "4px",
 	},
-	"& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+	"& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
 		borderColor: appColors.secondary[0],
 		borderWidth: "4px",
 	},
 
-	"& .Mui-error .MuiOutlinedInput-notchedOutline": {
+	"& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline": {
 		borderColor: theme.palette.error.main,
 	},
 });

@@ -1,7 +1,8 @@
-import { Typography, Button } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import type { IAuthUser } from "../../types/user";
 import type { GPageProps } from "../common/GPageBases";
+import CButtonText from "../../components/inputs/buttons/CButtonText";
 
 //--------------------------------------------------
 //                TYPES / INTERFACES
@@ -30,19 +31,20 @@ function PWelcomLogin({ user, isBack, onReset }: PWelcomLoginProps) {
 	//====================== DOM ======================
 	return (
 		<>
-			<Typography align="center" sx={{ mb: 3 }}>
-				{getMSG()}
-			</Typography>
-			<Button
-				variant="contained"
-				fullWidth
-				onClick={() => {
-					onReset?.();
-					navigate("/");
-				}}
-			>
-				Back to Home
-			</Button>
+			<Stack sx={{ alignItems: "center" }}>
+				<Typography align="center" sx={{ mb: 3 }}>
+					{getMSG()}
+				</Typography>
+				<CButtonText
+					variant="contained"
+					onClick={() => {
+						onReset?.();
+						navigate("/");
+					}}
+				>
+					Back to Home
+				</CButtonText>
+			</Stack>
 		</>
 	);
 }
