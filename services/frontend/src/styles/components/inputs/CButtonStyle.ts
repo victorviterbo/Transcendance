@@ -25,7 +25,7 @@ export const CButtonStyle: SxProps<Theme> = (theme) => ({
 export const CIconButtonStyle: SxProps<Theme> = (_) => ({
 	px: 1.75,
 	py: 0.75,
-	borderRadius: appSharedStyle.radius + "px"
+	borderRadius: appSharedStyle.radius + "px",
 });
 
 //--------------------------------------------------

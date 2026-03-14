@@ -6,12 +6,9 @@ interface CIconButtonProps extends GProps, Omit<IconButtonProps, "aria-label" | 
 
 function CIconButton({ sx, children, ...other }: CIconButtonProps) {
 	return (
-		<IconButton color="inherit"
-			sx={[
-				CIconButtonStyle,
-				CButtonStyle,
-				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
-			]}
+		<IconButton
+			color="inherit"
+			sx={[CIconButtonStyle, CButtonStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
 			{children}
