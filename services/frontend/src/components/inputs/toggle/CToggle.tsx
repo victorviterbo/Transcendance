@@ -32,7 +32,7 @@ function CToggle({ options, ...other }: CToggleProps) {
 						value={item.value}
 						key={localID + "-" + index}
 					>
-						{ttr(item.label)}
+						<span>{ttr(item.label)}</span>
 					</ToggleButton>
 				);
 			})}

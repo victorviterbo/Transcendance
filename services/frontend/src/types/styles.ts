@@ -33,7 +33,7 @@ export type TColor = {
 	saturation: number;
 	brightness: number;
 };
-export type TColorAlteration = "shift-saturation" | "shift-brightness";
+export type TColorAlteration = "shift-saturation" | "shift-brightness" | "shift-hue";
 
 //--------------------------------------------------
 //                   THEME
@@ -63,6 +63,7 @@ export interface IThemePosition {
 //====================== SHARED ======================
 export interface IThemeBGs {
 	paper: string;
+	header?: string;
 	feedback: string;
 	menu: string;
 }
@@ -73,6 +74,17 @@ export interface IThemeShared {
 }
 
 //====================== ANIMATIONS ======================
+export interface IThemeBGAnim {
+	active: boolean;
+	size?: string | number;
+	speed?: number;
+	duration?: number;
+}
+
+export interface IThemeBGAnimList {
+	buttonHover?: IThemeBGAnim;
+}
+
 export interface IThemeEasing {
 	easeInOut: string;
 	easeOut: string;
@@ -86,6 +98,7 @@ export interface IThemeTiming {
 export interface IThemeAnimations {
 	timing: IThemeTiming;
 	easing: IThemeEasing;
+	bg: IThemeBGAnimList;
 }
 
 //====================== BG ======================

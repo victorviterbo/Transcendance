@@ -13,7 +13,7 @@ import CTitle from "../text/CTitle.tsx";
 import CNavbarLink from "./CNavbarLink.tsx";
 import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
-import CNavbarStyle from "../../styles/components/navigation/CNavbarStyle.ts";
+import { CNavbarStyle } from "../../styles/components/navigation/CNavbarStyle.ts";
 import CMenu from "./CMenu.tsx";
 
 function CNavbar() {

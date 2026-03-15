@@ -65,6 +65,10 @@ export function colorAlterColor(
 	} else if (alter == "shift-brightness") {
 		colorOut.brightness += Array.isArray(value) ? 0 : value;
 		colorOut.brightness = Math.max(Math.min(colorOut.brightness, 1), 0);
+	} else if (alter == "shift-hue") {
+		colorOut.hue += Array.isArray(value) ? 0 : value;
+		colorOut.brightness = Math.max(Math.min(colorOut.brightness, 360), 0);
+		colorSetBase(colorOut);
 	}
 	colorOut.r = Math.round(
 		colorOut.brightness *
@@ -84,6 +88,20 @@ export function colorAlterColor(
 //--------------------------------------------------
 //                    UTILS
 //--------------------------------------------------
+function colorSetBase(color: TColor) {
+	const secondaryComponent = 1 - Math.abs(((color.hue / 60) % 2) - 1);
+
+	if (color.hue < 60) [color.rBase, color.gBase, color.bBase] = [1, secondaryComponent, 0];
+	else if (color.hue < 120) [color.rBase, color.gBase, color.bBase] = [secondaryComponent, 1, 0];
+	else if (color.hue < 180) [color.rBase, color.gBase, color.bBase] = [0, 1, secondaryComponent];
+	else if (color.hue < 240) [color.rBase, color.gBase, color.bBase] = [0, secondaryComponent, 1];
+	else if (color.hue < 300) [color.rBase, color.gBase, color.bBase] = [secondaryComponent, 0, 1];
+	else [color.rBase, color.gBase, color.bBase] = [1, 0, secondaryComponent];
+	color.rBase = Math.trunc(color.rBase * 255);
+	color.gBase = Math.trunc(color.gBase * 255);
+	color.bBase = Math.trunc(color.bBase * 255);
+}
+
 export function colorHexToColor(hexa: string): TColor {
 	if (hexa.charAt(0) != "#") hexa = "#" + hexa;
 	const color: TColor = {
@@ -127,17 +145,7 @@ export function colorHexToColor(hexa: string): TColor {
 	if (color.hue < 0) color.hue += 360;
 
 	//BaseColor
-	const secondaryComponent = 1 - Math.abs(((color.hue / 60) % 2) - 1);
-
-	if (color.hue < 60) [color.rBase, color.gBase, color.bBase] = [1, secondaryComponent, 0];
-	else if (color.hue < 120) [color.rBase, color.gBase, color.bBase] = [secondaryComponent, 1, 0];
-	else if (color.hue < 180) [color.rBase, color.gBase, color.bBase] = [0, 1, secondaryComponent];
-	else if (color.hue < 240) [color.rBase, color.gBase, color.bBase] = [0, secondaryComponent, 1];
-	else if (color.hue < 300) [color.rBase, color.gBase, color.bBase] = [secondaryComponent, 0, 1];
-	else [color.rBase, color.gBase, color.bBase] = [1, 0, secondaryComponent];
-	color.rBase = Math.trunc(color.rBase * 255);
-	color.gBase = Math.trunc(color.gBase * 255);
-	color.bBase = Math.trunc(color.bBase * 255);
+	colorSetBase(color);
 
 	//Saturation
 	color.saturation =

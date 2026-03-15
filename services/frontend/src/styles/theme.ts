@@ -93,6 +93,14 @@ export const appAnimation: IThemeAnimations = {
 		easeIn: "cubic-bezier(0.4, 0, 1, 1)",
 		sharp: "cubic-bezier(0.4, 0, 0.6, 1)",
 	},
+	bg: {
+		buttonHover: {
+			active: true,
+			size: "400%",
+			speed: 100,
+			duration: 15,
+		},
+	},
 };
 
 export const appBG: IThemeBG = {

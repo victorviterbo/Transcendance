@@ -12,7 +12,7 @@ function CButton({ children, sx, ...other }: CButtonProps) {
 			sx={[CButtonStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
-			{typeof children == "string" ? ttr(children) : children}
+			{typeof children == "string" ? <span>{ttr(children)}</span> : children}
 		</Button>
 	);
 }
