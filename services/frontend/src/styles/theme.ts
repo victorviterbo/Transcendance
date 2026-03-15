@@ -55,6 +55,14 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	sizes: {
+		buttons: {
+			home: "40px",
+			nav: "35px",
+		},
+
+		footer: 50,
+	},
 };
 
 export const appSharedStyle: IThemeShared = {
@@ -97,8 +105,8 @@ export const appAnimation: IThemeAnimations = {
 		buttonHover: {
 			active: true,
 			size: "400%",
-			speed: 100,
-			duration: 15,
+			speed: 1750,
+			duration: 180,
 		},
 	},
 };

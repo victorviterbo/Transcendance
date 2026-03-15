@@ -3,6 +3,7 @@ import type { GProps } from "../../components/common/GProps";
 import { Box, Stack } from "@mui/material";
 import GBackground from "./GBackground";
 import CNavbar from "../../components/navigation/CNavbar";
+import { appPositions } from "../../styles/theme";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
@@ -30,7 +31,9 @@ function GPageBase({ children }: GPageProps) {
 						<Box
 							sx={{
 								flexShrink: 0,
-								height: "50px",
+								height:
+									appPositions.sizes.footer +
+									(appPositions.sizes.footer == "string" ? "" : "px"),
 								bgcolor: "primary.main",
 							}}
 						></Box>

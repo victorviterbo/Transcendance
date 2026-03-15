@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { type IconButtonProps } from "@mui/material";
 import CIconButton from "../inputs/buttons/CIconButton";
+import { appPositions } from "../../styles/theme";
 
 export interface CNavbarIconProps extends Omit<IconButtonProps, "children" | "aria-label"> {
 	icon: ReactNode;
@@ -11,7 +12,10 @@ function CNavbarIcon({ icon, aria, sx, ...other }: CNavbarIconProps) {
 	return (
 		<CIconButton
 			aria-label={aria}
-			sx={[{}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			sx={[
+				{ height: appPositions.sizes.buttons.nav },
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+			]}
 			{...other}
 		>
 			{icon}

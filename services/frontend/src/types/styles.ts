@@ -56,8 +56,18 @@ export interface IThemeTextColor {
 }
 
 //====================== PSOITIONS ======================
+export interface IThemeSize {
+	buttons: {
+		home: number | string;
+		nav: number | string;
+	};
+
+	footer: number | string;
+}
 export interface IThemePosition {
 	mainSpacing: number;
+
+	sizes: IThemeSize;
 }
 
 //====================== SHARED ======================

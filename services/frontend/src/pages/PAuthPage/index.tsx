@@ -14,7 +14,7 @@ const PAuthPage = () => {
 
 	return (
 		<GPageBase>
-			<Container maxWidth="sm">
+			<Container sx={{ mt: "5%" }} maxWidth="sm">
 				<CTitlePaper title="WELCOME" titleType="title" titleSize="md">
 					{!user ? (
 						<CTabs tabs={["LOGIN", "SIGNUP"]}>

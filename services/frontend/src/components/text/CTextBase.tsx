@@ -8,10 +8,29 @@ export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	align?: TAlign;
 	size?: TSize;
 	color?: string;
+
+	span?: boolean;
+
 	getVariant?: () => TypographyVariant;
 }
 
-function CTextBase({ align, children, color, getVariant, sx, ...other }: CTextBaseProps) {
+function CTextBase({ align, span, children, color, getVariant, sx, ...other }: CTextBaseProps) {
+	const getChildren = () => {
+		if (typeof children === "string") {
+			if (span) return <span>{ttr(children)}</span>;
+			return ttr(children);
+		}
+		const mapped = Children.map(children, (child) => {
+			if (typeof child === "string") {
+				if (span) return <span>{ttr(child)}</span>;
+				return ttr(child);
+			}
+			return child;
+		});
+
+		return mapped;
+	};
+
 	//====================== DOM ======================
 	return (
 		<Typography
@@ -22,11 +41,7 @@ function CTextBase({ align, children, color, getVariant, sx, ...other }: CTextBa
 			{...other}
 			data-testid={"CTextBase"}
 		>
-			{typeof children === "string"
-				? ttr(children)
-				: Children.map(children, (child) =>
-						typeof child === "string" ? ttr(child) : child,
-					)}
+			{getChildren()}
 		</Typography>
 	);
 }
