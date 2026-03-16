@@ -28,7 +28,7 @@ describe("auth integration tests", () => {
 
 		await user.type(screen.getByLabelText(/email/i), "john@42.fr");
 		await user.type(screen.getByLabelText(/password/i), "secret");
-		await user.click(screen.getByRole("button", { name: /log in/i }));
+		await user.click(screen.getByRole("button", { name: /login/i }));
 
 		await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("authed"));
 		expect(screen.getByTestId("username")).toHaveTextContent("john");
@@ -48,8 +48,8 @@ describe("auth integration tests", () => {
 		await user.type(screen.getByLabelText(/username/i), "alice");
 		await user.type(screen.getByLabelText(/email/i), "alice@42.fr");
 		await user.type(passwordInput, "Secret1!");
-		await user.type(screen.getByLabelText(/confirm password/i), "Secret1!");
-		await user.click(screen.getByRole("button", { name: /sign in/i }));
+		await user.type(screen.getByLabelText(/confirm_password/i), "Secret1!");
+		await user.click(screen.getByRole("button", { name: /signup/i }));
 
 		await waitFor(() => expect(screen.getByTestId("status")).toHaveTextContent("authed"));
 		expect(screen.getByTestId("username")).toHaveTextContent("alice");

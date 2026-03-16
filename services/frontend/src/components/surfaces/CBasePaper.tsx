@@ -2,13 +2,17 @@ import { Paper, type PaperOwnProps } from "@mui/material";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import CBasePaperStyle from "../../styles/components/surfaces/CBasePaper.ts";
 
-interface CBasePaperProps extends GCompProps, PaperOwnProps {}
+export interface CBasePaperProps extends GCompProps, PaperOwnProps {}
 
 //TODO: Change sx here
-function CBasePaper({ children }: CBasePaperProps) {
+function CBasePaper({ sx, children, ...other }: CBasePaperProps) {
 	//====================== DOM ======================
 	return (
-		<Paper elevation={3} sx={CBasePaperStyle}>
+		<Paper
+			elevation={6}
+			sx={[CBasePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			{...other}
+		>
 			{children}
 		</Paper>
 	);

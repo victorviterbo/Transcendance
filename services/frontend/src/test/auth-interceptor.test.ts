@@ -52,7 +52,7 @@ describe("auth interceptor", () => {
 			}),
 			http.post(REFRESH_MATCHER, () => {
 				refreshCalls += 1;
-				return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
+				return HttpResponse.json({ error: "REFRESH_TOKEN_EXPIRED" }, { status: 401 });
 			}),
 		);
 
@@ -95,7 +95,7 @@ describe("auth interceptor", () => {
 				return new HttpResponse(null, { status: 401 });
 			}),
 			http.post(REFRESH_MATCHER, () => {
-				return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
+				return HttpResponse.json({ error: "REFRESH_TOKEN_EXPIRED" }, { status: 401 });
 			}),
 		);
 
@@ -140,7 +140,7 @@ describe("auth interceptor", () => {
 		server.use(
 			http.post(REFRESH_MATCHER, () => {
 				refreshCalls += 1;
-				return HttpResponse.json({ error: "Refresh token expired" }, { status: 401 });
+				return HttpResponse.json({ error: "REFRESH_TOKEN_EXPIRED" }, { status: 401 });
 			}),
 		);
 

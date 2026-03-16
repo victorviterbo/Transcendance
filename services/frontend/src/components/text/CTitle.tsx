@@ -2,14 +2,14 @@ import { type TypographyVariant } from "@mui/material";
 import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
 
-interface CButtonProps extends CTextBaseProps {}
+export interface CTitleProps extends CTextBaseProps {}
 
-function CTitle({ size, children, ...other }: CButtonProps) {
+function CTitle({ size, children, sx, ...other }: CTitleProps) {
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
 			case "sm":
-				return "h6";
+				return "h5";
 			case "md":
 				return "h4";
 			case "lg":
@@ -19,7 +19,14 @@ function CTitle({ size, children, ...other }: CButtonProps) {
 	};
 
 	return (
-		<CTextBase getVariant={getVariant} {...other}>
+		<CTextBase
+			getVariant={getVariant}
+			sx={[
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+				(Theme) => ({ fontFamily: "Knewave, " + Theme.typography.fontFamily }),
+			]}
+			{...other}
+		>
 			{children}
 		</CTextBase>
 	);

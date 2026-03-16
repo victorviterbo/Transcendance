@@ -1,6 +1,7 @@
 """Describes the settings used for the backend."""
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,7 +16,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # During dev, used to store user's media
-MEDIA_ROOT = os.path.join(BASE_DIR, 'DB/media')
+MEDIA_ROOT = BASE_DIR / 'DB' / 'media'
 
 MEDIA_URL = '/DB/media/'
 
@@ -41,7 +42,11 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
-    'users.apps.UsersConfig'
+    'userauth',
+    'userprofile',
+    'stats',
+
+    'django_cleanup.apps.CleanupConfig'
 ]
 
 # Definition of the middlewares (Layers between the backend and the WebServer)
@@ -61,14 +66,20 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'users.authentication.CookieJWTAuthentication',
+        'userauth.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ]
 }
 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'CHECK_REVOKE_TOKEN': True,
 }
 
@@ -94,22 +105,13 @@ DATABASES = {
 
 # Define which data model is used for authentication
 # https://docs.djangoproject.com/en/6.0/topics/auth/customizing/#:~:text=AUTH_USER_MODEL%20setting%20that%20references%20a%20custom%20model%3A
-AUTH_USER_MODEL = 'users.SiteUser'
+AUTH_USER_MODEL = 'userauth.SiteUser'
 
 # Set Password module option
 # https://docs.djangoproject.com/en/6.0/topics/auth/passwords/#module-django.contrib.auth.password_validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {
-            "min_length": 8,
-        },
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },# TODO check compatibility with front for password check
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        'NAME': 'userauth.serializers.ComplexPasswordValidator',
     },
 ]
 
@@ -127,7 +129,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/6.0/topics/http/urls/#:~:text=root%20URLconf%20module%20to%20use.%20Ordinarily%2C%20this%20is%20the
 ROOT_URLCONF = 'project.urls'
 
-LOGIN_URL = '/api/users/login/'
+LOGIN_URL = '/api/auth/login/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 # define how entries are indexed, CAN LEAD TO LOSS OF BACK COMPATIBILITY

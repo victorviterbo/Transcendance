@@ -2,15 +2,26 @@ export interface MockUser {
 	username: string;
 	email: string;
 	password: string;
+	image: string | null;
+	expPoints: number;
+	badges: string;
+	isGuest?: boolean;
+	sessionKey?: string | null;
 }
 
 const defaultUser: MockUser = {
 	username: "john",
 	email: "john@42.fr",
 	password: "secret",
+	image: null,
+	expPoints: 120,
+	badges: "Rookie",
+	isGuest: false,
+	sessionKey: null,
 };
 
 let users: MockUser[] = [];
+let sessionUser: string | null = null;
 
 /**
  * @brief Normalize email for comparisons.
@@ -32,6 +43,7 @@ export const normalizeUsername = (value: string) => value.trim();
  */
 export const resetMockDb = () => {
 	users = [{ ...defaultUser }];
+	sessionUser = null;
 };
 
 /**
@@ -39,7 +51,7 @@ export const resetMockDb = () => {
  * @param email Email to search for.
  * @returns The matched user or null if not found.
  */
-const findUserByEmail = (email: string) =>
+export const findUserByEmail = (email: string) =>
 	users.find((user) => normalizeEmail(user.email) === normalizeEmail(email)) ?? null;
 
 /**
@@ -47,8 +59,11 @@ const findUserByEmail = (email: string) =>
  * @param username Username to search for.
  * @returns The matched user or null if not found.
  */
-const findUserByUsername = (username: string) =>
+export const findUserByUsername = (username: string) =>
 	users.find((user) => normalizeUsername(user.username) === normalizeUsername(username)) ?? null;
+
+export const findUserByExactUsername = (username: string) =>
+	users.find((user) => user.username === username) ?? null;
 
 /**
  * @brief Create a new user in the mock database.
@@ -57,11 +72,16 @@ const findUserByUsername = (username: string) =>
  * @param password New user's password.
  * @returns The created user record.
  */
-const createUser = (username: string, email: string, password: string) => {
+export const createUser = (username: string, email: string, password: string) => {
 	const newUser: MockUser = {
 		username: normalizeUsername(username),
 		email: normalizeEmail(email),
 		password,
+		image: null,
+		expPoints: 0,
+		badges: "Rookie",
+		isGuest: false,
+		sessionKey: null,
 	};
 	users.push(newUser);
 	return newUser;
@@ -73,10 +93,78 @@ const createUser = (username: string, email: string, password: string) => {
  * @param password Password to authenticate.
  * @returns The matched user or null if credentials are invalid.
  */
-const authenticate = (email: string, password: string) => {
+export const authenticate = (email: string, password: string) => {
 	const user = findUserByEmail(email);
 	if (!user) return null;
 	return user.password === password ? user : null;
+};
+
+/**
+ * @brief Get the currently mocked authenticated user.
+ * @returns The active user or null if none.
+ */
+export const getSessionUser = () => {
+	if (sessionUser) return findUserByUsername(sessionUser);
+	return null;
+};
+
+/**
+ * @brief Set the mocked authenticated username.
+ * @param username Current username or null.
+ */
+export const setSessionUser = (username: string | null) => {
+	sessionUser = username ? normalizeUsername(username) : null;
+};
+
+export const clearSessionUser = () => {
+	sessionUser = null;
+};
+
+/**
+ * @brief Update a user profile with partial fields.
+ * @param username Username that is being modified.
+ * @param updates Profile fields to update.
+ * @returns Updated user or null if user does not exist.
+ */
+export const updateUser = (
+	username: string,
+	updates: Partial<Pick<MockUser, "username" | "email" | "image">>,
+) => {
+	const normalizedTarget = normalizeUsername(username);
+	const index = users.findIndex((user) => normalizeUsername(user.username) === normalizedTarget);
+	if (index < 0) return null;
+
+	const current = users[index];
+	const next: MockUser = { ...current };
+
+	if (updates.username && normalizeUsername(updates.username) !== current.username) {
+		const conflict = findUserByUsername(updates.username);
+		if (conflict) return null;
+		next.username = normalizeUsername(updates.username);
+	}
+	if (updates.email) next.email = normalizeEmail(updates.email);
+	if (typeof updates.image !== "undefined") next.image = updates.image;
+
+	users[index] = next;
+
+	if (sessionUser === current.username) {
+		sessionUser = next.username;
+	}
+	return next;
+};
+
+/**
+ * @brief Delete user profile and reset session when needed.
+ * @param username User identifier.
+ * @returns true when deleted.
+ */
+export const deleteUser = (username: string) => {
+	const normalized = normalizeUsername(username);
+	const index = users.findIndex((user) => normalizeUsername(user.username) === normalized);
+	if (index < 0) return false;
+	users.splice(index, 1);
+	if (sessionUser && normalizeUsername(sessionUser) === normalized) sessionUser = null;
+	return true;
 };
 
 resetMockDb();
@@ -84,6 +172,12 @@ resetMockDb();
 export const db = {
 	findUserByEmail,
 	findUserByUsername,
+	findUserByExactUsername,
 	createUser,
 	authenticate,
+	getSessionUser,
+	setSessionUser,
+	clearSessionUser,
+	updateUser,
+	deleteUser,
 };
