@@ -29,7 +29,7 @@ def _direct_key_for(user_a, user_b):
 def _build_direct_room_response(request, target_user):
 	"""Create or fetch a direct-message room shared by the current user and target user."""
 
-	if not request.user.is_authenticated:
+	if request.user.is_guest:
 		return JsonResponse({'detail': 'Authentication required'}, status=401)
 
 	if request.user.id == target_user.id:

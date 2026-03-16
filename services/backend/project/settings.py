@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'userauth',
     'userprofile',
     'stats',
-    'chat.apps.ChatConfig',
+    'chat',
 
     'django_cleanup.apps.CleanupConfig',
 ]
