@@ -14,6 +14,11 @@ export function TDropShadowToString(Input: TDropShadow | string): string {
 	return finalSTR;
 }
 
+export function sizeMakeString(value?: string | number)
+{
+	return value ? (typeof value == "string" ? value : value + "px") : "inherit"
+}
+
 //--------------------------------------------------
 //               COLOR MANAGEMENT
 //--------------------------------------------------
