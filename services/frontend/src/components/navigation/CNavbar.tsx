@@ -15,8 +15,14 @@ import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
 import { CNavbarStyle } from "../../styles/components/navigation/CNavbarStyle.ts";
 import CMenu from "./CMenu.tsx";
+import type { GCompProps } from "../common/GProps.ts";
 
-function CNavbar() {
+
+interface CNavbarProps extends GCompProps {
+	onOpenFiend: () => void
+}
+
+function CNavbar({ onOpenFiend }: CNavbarProps) {
 	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -60,7 +66,7 @@ function CNavbar() {
 			kind: "action",
 			icon: <PeopleIcon />,
 			aria: "Friends",
-			onClick: () => alert("Coming soon"),
+			onClick: onOpenFiend,
 		},
 		{
 			kind: "action",

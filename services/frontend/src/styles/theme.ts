@@ -61,6 +61,9 @@ export const appPositions: IThemePosition = {
 			nav: "35px",
 		},
 
+		friends: "15%",
+
+		header: 68,
 		footer: 50,
 	},
 };
@@ -94,6 +97,8 @@ export const appAnimation: IThemeAnimations = {
 	timing: {
 		fast: 100,
 		medium_fast: 150,
+		enteringScreen: 225,
+		leavingScreen: 195
 	},
 	easing: {
 		easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",

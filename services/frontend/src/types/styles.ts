@@ -62,6 +62,9 @@ export interface IThemeSize {
 		nav: number | string;
 	};
 
+	friends: number | string;
+
+	header: number | string;
 	footer: number | string;
 }
 export interface IThemePosition {
@@ -104,6 +107,8 @@ export interface IThemeEasing {
 export interface IThemeTiming {
 	fast: number;
 	medium_fast: number;
+	enteringScreen: number;
+	leavingScreen: number;
 }
 export interface IThemeAnimations {
 	timing: IThemeTiming;

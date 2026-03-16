@@ -1,11 +1,12 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appAnimation, appColors, appPositions, appSharedStyle } from "../../theme";
-import { colorAlterColor } from "../../../utils/styles";
+import { colorAlterColor, sizeMakeString } from "../../../utils/styles";
 import { makeMaskTranslationAnim } from "../../animations/CommonAnimations";
 const stripesIMG = "imgs/shared/BG_Lines.png";
 
 export const CNavbarStyle: SxProps<Theme> = (_) => ({
 	background: appSharedStyle.bg.header ? appSharedStyle.bg.header : appSharedStyle.bg.paper,
+	height: sizeMakeString(appPositions.sizes.header)
 });
 
 export const CNavbarLinkStyle = (active: boolean): SxProps => {
