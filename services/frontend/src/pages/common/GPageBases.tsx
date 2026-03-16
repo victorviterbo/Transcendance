@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import type { GProps } from "../../components/common/GProps";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import GBackground from "./GBackground";
 import CNavbar from "../../components/navigation/CNavbar";
 import { appAnimation, appPositions } from "../../styles/theme";
