@@ -9,7 +9,8 @@ RUN conda env create --file environment.yml
 COPY . .
 #COPY ./manage.py .
 #COPY ./environment.yml .
-#COPY ./users .
+#COPY ./userauth .
+#COPY ./profile .
 #COPY ./project .
 
 EXPOSE 8000
