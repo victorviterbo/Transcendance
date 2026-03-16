@@ -143,21 +143,23 @@ class ComplexPasswordValidator:
     def validate(self, password: str, user=None) -> None:
         """Define specific validation process for password validation."""
         if (len(password) < 8):
-            raise ValidationError("Use at least 8 characters.")
+            raise ValidationError("PASSWORD_MIN")
 
         rules = [
-            (r'[0-9]', "MISSING_NUMBER"),
-            (r'[a-z]', "MISSING_LOWER"),
-            (r'[A-Z]', "MISSING_UPPER"),
-            (r'[^A-Za-z0-9]', "MISSING_SPECIAL"),
+            (r'[0-9]', "PASSWORD_NUMBER"),
+            (r'[a-z]', "PASSWORD_LOWERCASE"),
+            (r'[A-Z]', "PASSWORD_UPPERCASE"),
+            (r'[^A-Za-z0-9]', "PASSWORD_SPECIAL"),
         ]
         for pattern, message in rules:
             if not re.search(pattern, password):
-                raise ValidationError(code=message)
+                raise ValidationError('', code=message)
 
 class FriendshipSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""
-
+    
+    from_user = serializers.ReadOnlyField(source='from_user.profile.username')
+    to_user = serializers.ReadOnlyField(source='to_user.profile.username')
     class Meta:
         """Defines the metaclass for the Profile serializer.
         

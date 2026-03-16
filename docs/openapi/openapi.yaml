@@ -18,11 +18,33 @@ paths:
     $ref: ./paths/auth.yaml#/refresh
   /api/auth/logout:
     $ref: ./paths/auth.yaml#/logout
+  /api/auth/friends:
+    $ref: ./paths/auth.yaml#/friends
+  /api/auth/friend-request:
+    $ref: ./paths/auth.yaml#/friend-request
+  /api/auth/friend-request/send:
+    $ref: ./paths/auth.yaml#/friend-request-send
+  /api/auth/friend-request/respond:
+    $ref: ./paths/auth.yaml#/friend-request-respond
+  /api/profile:
+    $ref: ./paths/profile.yaml#/profile
+  /api/profile/search:
+    $ref: ./paths/profile.yaml#/search
+  /api/profile/guest-create:
+    $ref: ./paths/profile.yaml#/guest-create
+  /api/profile/guest-delete:
+    $ref: ./paths/profile.yaml#/guest-delete
 
 components:
   schemas:
     User:
       $ref: ./components/schemas.yaml#/User
+    Profile:
+      $ref: ./components/schemas.yaml#/Profile
+    LightProfile:
+      $ref: ./components/schemas.yaml#/LightProfile
+    Friendship:
+      $ref: ./components/schemas.yaml#/Friendship
     ValidationError:
       $ref: ./components/schemas.yaml#/ValidationError
     AuthError:
@@ -31,7 +53,14 @@ components:
       $ref: ./components/schemas.yaml#/ConflictError
     TokenResponse:
       $ref: ./components/schemas.yaml#/TokenResponse
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 
 tags:
   - name: auth
     description: Authentication and registration endpoints.
+  - name: profile
+    description: User profile endpoints.

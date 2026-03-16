@@ -1,7 +1,5 @@
 
 """Defines the views relatives to user registration, login, password change etc."""
-from typing import Any
-
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -167,7 +165,8 @@ class GuestCleanupView(APIView):
         """Receive front beacon to activate guest leaving."""
         session_key = request.session.session_key
         if session_key:
-            profile = Profile.objects.filter(session_key=session_key, is_guest=True).first()
+            profile = Profile.objects.filter(session_key=session_key,
+                                             is_guest=True).first()
             if profile:
                 profile.delete() 
         return Response(status=status.HTTP_204_NO_CONTENT)

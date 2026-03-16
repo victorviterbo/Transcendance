@@ -218,7 +218,8 @@ class ProfileTests(TransactionTestCase):
         for username in ['a_new_user', 'user1', 'an_anonymous_user', 'asuperlongusernamethatshouldfailbutnotcrash']:
             raw_data['username'] = username
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
-            serializer_light = LightProfileSerializer(data=raw_data, context={'is_creation': True})
+            serializer_light = LightProfileSerializer(data=raw_data,
+                                                      context={'is_creation': True})
             valid = serializer.is_valid()
             raw_data['image'].seek(0)
             valid_light = serializer_light.is_valid()
@@ -228,11 +229,15 @@ class ProfileTests(TransactionTestCase):
                 self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
                 self.assertIn('username', serializer.errors)
                 if username in ['user1', 'an_anonymous_user']:
-                    self.assertEqual('unique', serializer.errors['username'][0].code)
-                    self.assertEqual('unique', serializer_light.errors['username'][0].code)
+                    self.assertEqual('unique',
+                                     serializer.errors['username'][0].code)
+                    self.assertEqual('unique',
+                                     serializer_light.errors['username'][0].code)
                 elif username == 'asuperlongusernamethatshouldfailbutnotcrash':
-                    self.assertEqual('max_length', serializer.errors['username'][0].code)
-                    self.assertEqual('max_length', serializer_light.errors['username'][0].code)
+                    self.assertEqual('max_length',
+                                     serializer.errors['username'][0].code)
+                    self.assertEqual('max_length',
+                                     serializer_light.errors['username'][0].code)
             else:
                 self.assertTrue(valid, serializer.errors)
                 self.assertTrue(valid_light, serializer_light.errors)
@@ -252,8 +257,10 @@ class ProfileTests(TransactionTestCase):
                 self.assertIn('image', serializer.errors)
                 self.assertIn('image', serializer_light.errors)
                 if image in ['invalid', 'corrupt']:
-                    self.assertEqual('invalid_image', serializer.errors['image'][0].code)
-                    self.assertEqual('invalid_image', serializer_light.errors['image'][0].code)
+                    self.assertEqual('invalid_image',
+                                     serializer.errors['image'][0].code)
+                    self.assertEqual('invalid_image',
+                                     serializer_light.errors['image'][0].code)
                 elif image == 'empty':
                     self.assertEqual('empty', serializer.errors['image'][0].code)
                     self.assertEqual('empty', serializer_light.errors['image'][0].code)

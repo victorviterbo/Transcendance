@@ -27,21 +27,24 @@ profile:
                   badges: "Curious Cat"
                   created_at: "2025-06-01T12:00:00Z"
       "400":
-        description: Invalid or missing query
+        description: Invalid or missing query.
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
             examples:
               missing-query:
                 value:
-                  error: "MISSING_QUERY"
+                  error:
+                    query: "MISSING_FIELD"
               empty-query:
                 value:
-                  error: "EMPTY_QUERY"
+                  error:
+                    query: "EMPTY_FIELD"
               not-found:
                 value:
-                  error: "NOT_FOUND"
+                  error:
+                    query: "NOT_FOUND"
 
   post:
     summary: Update own profile
@@ -62,34 +65,43 @@ profile:
               image: { type: string, format: binary }
     responses:
       "200":
-        description: Profile updated
+        description: Profile updated. Returns the updated profile data.
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                description: { type: string }
-              required: [description]
+              $ref: ../openapi.yaml#/components/schemas/Profile
             examples:
               update-ok:
                 value:
-                  description: "Updated Profile successfully"
+                  username: "marc"
+                  image: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  exp_points: 420
+                  badges: "Curious Cat"
+                  created_at: "2025-06-01T12:00:00Z"
       "400":
-        description: Update failed
+        description: Field validation error.
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
             examples:
-              update-failed:
+              invalid-field:
                 value:
-                  error: "PROFILE_UPDATE_FAILED"
-      "401":
-        description: Not authenticated or validation error
+                  error:
+                    username: "INVALID"
+      "409":
+        description: Username already taken.
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
+              $ref: ../openapi.yaml#/components/schemas/ConflictError
+            examples:
+              username-taken:
+                value:
+                  error:
+                    username: "ALREADY_TAKEN"
+      "401":
+        description: Not authenticated.
 
 search:
   get:
@@ -113,15 +125,20 @@ search:
               items:
                 $ref: ../openapi.yaml#/components/schemas/LightProfile
       "400":
-        description: Missing search query
+        description: Query parameter missing or empty.
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
             examples:
               missing-query:
                 value:
-                  error: "MISSING_QUERY"
+                  error:
+                    query: "MISSING_FIELD"
+              empty-query:
+                value:
+                  error:
+                    query: "EMPTY_FIELD"
 
 guest-create:
   post:

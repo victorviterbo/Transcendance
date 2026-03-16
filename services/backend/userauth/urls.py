@@ -4,8 +4,9 @@ from django.urls import path
 
 from .views import (
     FriendRequestsRespond,
-    FriendRequestsSee,
+    FriendRequestsSeePend,
     FriendRequestsSend,
+    FriendSee,
     LoginView,
     LogoutView,
     RefreshTokenView,
@@ -13,11 +14,12 @@ from .views import (
 )
 
 urlpatterns = [
-    path('login/', LoginView.as_view(), name='user-login'),
-    path('register/', RegisterView.as_view(), name='user-register'),
-    path('logout/', LogoutView.as_view(), name="user-logout"),
-    path('refresh/', RefreshTokenView.as_view(), name="user-refresh-token"),
-    path('friend-request/', FriendRequestsSee.as_view(), name="friend-see"),
-    path('friend-request/respond/', FriendRequestsRespond.as_view(), name="friend-respond"),
-    path('friend-request/send/', FriendRequestsSend.as_view(), name="friend-send"),
+    path('login/', LoginView.as_view()),
+    path('register/', RegisterView.as_view()),
+    path('logout/', LogoutView.as_view()),
+    path('refresh/', RefreshTokenView.as_view()),
+    path('friends/', FriendSee.as_view()),
+    path('friend-request/', FriendRequestsSeePend.as_view()),
+    path('friend-request/respond/', FriendRequestsRespond.as_view()),
+    path('friend-request/send/', FriendRequestsSend.as_view()),
 ]

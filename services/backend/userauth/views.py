@@ -2,6 +2,7 @@
 from typing import Any
 
 from django.contrib.auth import authenticate
+from django.db.models import Q
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from userprofile.serializers import LightProfileSerializer
 
 from .models import Friendship, SiteUser
 from .serializers import FriendshipSerializer, LoginSerializer, SiteUserSerializer
@@ -64,8 +66,11 @@ class RegisterView(APIView):
                     response_code = status.HTTP_409_CONFLICT
                 else:
                     error_response['error']['username'] = 'INVALID'
+            if error.get('password'):
+                error_response['error']['password'] = error['password'][0]['code']
+                if error_response['error']['password'] == 'blank':
+                    error_response['error']['password'] = 'PASSWORD_MIN'
             return Response(error_response, status=response_code)
-
 
 class LoginView(APIView):
     """Define the login page."""
@@ -186,12 +191,12 @@ class RefreshTokenView(TokenRefreshView):
                 else:
                     return response
             except Exception:
-                return Response({'error': {'cookie': 'INVALID'}},
+                return Response({'error': {'cookie': 'INVALID'}}, # TODO test
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
 
-class FriendRequestsSee(APIView):
+class FriendRequestsSeePend(APIView):
     """Define the function to display friends and friend requests."""
     permission_classes = [IsAuthenticated]
 
@@ -202,9 +207,28 @@ class FriendRequestsSee(APIView):
         outgoing_req = Friendship.objects.filter(from_user=request.user,
                                                  status='pending')
         response_data = {}
-        response_data['incomming'] = FriendshipSerializer(incomming_req, many=True)
-        response_data['outgoing'] = FriendshipSerializer(outgoing_req, many=True)
+        response_data['incomming'] = FriendshipSerializer(incomming_req, many=True).data
+        response_data['outgoing'] = FriendshipSerializer(outgoing_req, many=True).data
         return Response(response_data, status=status.HTTP_200_OK)
+
+class FriendSee(APIView):
+    """Define the function to display friends and friend requests."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        """List all friend requests for user."""
+        friendships = Friendship.objects.filter(
+            (Q(to_user=request.user) | Q(from_user=request.user)), 
+            status='accepted'
+        ).select_related('from_user__profile', 'to_user__profile')
+        friends = []
+        for f in friendships:
+            if f.from_user == request.user:
+                friends.append(f.to_user.profile)
+            else:
+                friends.append(f.from_user.profile)
+        serializer = LightProfileSerializer(friends, many=True)
+        return Response({'friends': serializer.data}, status=status.HTTP_200_OK)
 
 class FriendRequestsRespond(APIView):
     """Define the functions related to accepting friend requests."""
@@ -216,7 +240,7 @@ class FriendRequestsRespond(APIView):
         if target is None:
             return (Response({'error': {'target-username': 'MISSING_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
-        target_user = SiteUser.object.filter(username=target)
+        target_user = SiteUser.objects.filter(profile__username=target)
         if target_user.count() < 1:
             return (Response({'error': {'target-username': 'NOT_FOUND'},
                               'requested': request.data.get('target-username')},
@@ -230,8 +254,9 @@ class FriendRequestsRespond(APIView):
         if curr_relationship and curr_relationship.status == 'pending':
             if request.data['new-status'] == 'accept':
                 curr_relationship.status = 'accepted'
+                curr_relationship.save()
                 return Response({'description': 'REQUEST_ACCEPTED',
-                                    'target-username': target}, 
+                                 'target-username': target}, 
                                 status=status.HTTP_200_OK)
             elif request.data['new-status'] == 'reject':
                 curr_relationship.delete()
