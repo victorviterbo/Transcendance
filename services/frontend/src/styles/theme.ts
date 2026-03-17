@@ -55,13 +55,14 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	socialMargin: { top: 15, right: 20, bottom: 50 },
 	sizes: {
 		buttons: {
 			home: "40px",
 			nav: "35px",
 		},
 
-		friends: "15%",
+		friends: "25%",
 
 		header: 68,
 		footer: 50,
@@ -88,6 +89,12 @@ export const appSharedStyle: IThemeShared = {
 			"linear",
 			225,
 		),
+		drawer: colorGetBackground(
+			[appColors.greys[9], appColors.greys[8]],
+			undefined,
+			"radial",
+			135 + 180,
+		),
 	},
 
 	radius: 30,
@@ -98,7 +105,7 @@ export const appAnimation: IThemeAnimations = {
 		fast: 100,
 		medium_fast: 150,
 		enteringScreen: 225,
-		leavingScreen: 195
+		leavingScreen: 195,
 	},
 	easing: {
 		easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",

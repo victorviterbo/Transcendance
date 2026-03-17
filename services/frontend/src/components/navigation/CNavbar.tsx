@@ -17,9 +17,8 @@ import { CNavbarStyle } from "../../styles/components/navigation/CNavbarStyle.ts
 import CMenu from "./CMenu.tsx";
 import type { GCompProps } from "../common/GProps.ts";
 
-
 interface CNavbarProps extends GCompProps {
-	onOpenFiend: () => void
+	onOpenFiend: () => void;
 }
 
 function CNavbar({ onOpenFiend }: CNavbarProps) {

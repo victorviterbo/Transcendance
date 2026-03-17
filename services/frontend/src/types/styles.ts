@@ -8,6 +8,12 @@ export type TDropShadow = {
 	color: string;
 };
 
+export type TMargin = {
+	top?: number | string;
+	right?: number | string;
+	bottom?: number | string;
+	left?: number | string;
+};
 //--------------------------------------------------
 //                    COLORING
 //--------------------------------------------------
@@ -64,11 +70,13 @@ export interface IThemeSize {
 
 	friends: number | string;
 
-	header: number | string;
+	header: number | number;
 	footer: number | string;
 }
 export interface IThemePosition {
 	mainSpacing: number;
+
+	socialMargin: TMargin;
 
 	sizes: IThemeSize;
 }
@@ -79,6 +87,7 @@ export interface IThemeBGs {
 	header?: string;
 	feedback: string;
 	menu: string;
+	drawer: string;
 }
 
 export interface IThemeShared {

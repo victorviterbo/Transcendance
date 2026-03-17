@@ -2,20 +2,28 @@ import type { SxProps, Theme } from "@mui/material";
 import type { CDrawerProps } from "../../../components/navigation/CDrawer";
 import { sizeMakeString } from "../../../utils/styles";
 
-export const CDrawerStyle = ({ width, top }: CDrawerProps): SxProps<Theme> => {
+export const CDrawerStyle = ({ width, margin }: CDrawerProps): SxProps<Theme> => {
+	console.log(margin);
 	return {
-
-		
-		top: sizeMakeString(top),
+		top: sizeMakeString(margin?.top),
+		right: sizeMakeString(margin?.right),
 		width: sizeMakeString(width),
-		
 
 		"& .MuiDrawer-paper": {
-			top: sizeMakeString(top),
+			boxShadow: "0px 0px 0px 0px black",
+			borderLeft: "solid 0px black",
+			top: sizeMakeString(margin?.top),
+			right: sizeMakeString(margin?.right),
 			width: sizeMakeString(width),
-			height: sizeMakeString(top) == "inherit" ? null : ("calc(100% - " + sizeMakeString(top) + ")"),
-
-			border: "solid 4px black"
+			height:
+				sizeMakeString(margin?.top) == "inherit" ||
+				sizeMakeString(margin?.bottom) == "inherit"
+					? null
+					: "calc(100% - " +
+						sizeMakeString(margin?.top) +
+						" - " +
+						sizeMakeString(margin?.bottom) +
+						")",
 		},
 	};
 };
