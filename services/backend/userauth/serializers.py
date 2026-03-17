@@ -14,8 +14,8 @@ from rest_framework import serializers
 from userprofile.models import Profile
 from userprofile.serializers import validate_username
 
-from .models import Friendship, SiteUser
-
+from .models import SiteUser
+from friends.models import Friendship
 
 def gmail_specific_normalize(email: str) -> str:
     """Normalizes a Gmail address.
@@ -154,17 +154,3 @@ class ComplexPasswordValidator:
         for pattern, message in rules:
             if not re.search(pattern, password):
                 raise ValidationError('', code=message)
-
-class FriendshipSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's friendship requests."""
-    
-    from_user = serializers.ReadOnlyField(source='from_user.profile.username')
-    to_user = serializers.ReadOnlyField(source='to_user.profile.username')
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Friendship
-        fields = ['from_user', 'to_user', 'status', 'created_at']
