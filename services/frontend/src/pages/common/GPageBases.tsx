@@ -1,12 +1,13 @@
 import { useState, type ReactNode } from "react";
 import type { GProps } from "../../components/common/GProps";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import GBackground from "./GBackground";
 import CNavbar from "../../components/navigation/CNavbar";
 import { appAnimation, appPositions } from "../../styles/theme";
 import CDrawer from "../../components/navigation/CDrawer";
 import { useAuth } from "../../components/auth/CAuthProvider";
-import { sizeMakeString } from "../../utils/styles";
+import { cssAddSizes, sizeMakeString } from "../../utils/styles";
+import PSocial from "../PSocial";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
@@ -63,15 +64,23 @@ function GPageBase({ children }: GPageProps) {
 							}}
 						></Box>
 					</Stack>
-					<CDrawer width="15%" top={appPositions.sizes.header} open={friendOpen}>
-						<Stack>
-							<Typography>HELLO</Typography>
-							<Typography>HELLO</Typography>
-							<Typography>HELLO</Typography>
-							<Typography>HELLO</Typography>
-							<Typography>HELLO</Typography>
-						</Stack>
-					</CDrawer>
+					{status && (
+						<CDrawer
+							width={appPositions.sizes.friends}
+							margin={{
+								top: cssAddSizes(
+									appPositions.sizes.header,
+									appPositions.socialMargin?.top,
+								),
+								right: appPositions.socialMargin?.right,
+								bottom: appPositions.socialMargin?.bottom,
+								left: appPositions.socialMargin?.left,
+							}}
+							open={friendOpen}
+						>
+							<PSocial></PSocial>
+						</CDrawer>
+					)}
 				</Stack>
 			</Box>
 		</>
