@@ -1,0 +1,189 @@
+profile:
+  get:
+    summary: Get a user profile
+    description: Retrieve a full profile by exact username lookup.
+    operationId: getProfile
+    tags: [profile]
+    parameters:
+      - in: query
+        name: q
+        required: true
+        schema: { type: string }
+        description: Exact username to look up.
+    responses:
+      "200":
+        description: Profile found
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/Profile
+            examples:
+              profile-ok:
+                value:
+                  username: "marc"
+                  email: "marc@example.com"
+                  image: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  exp_points: 420
+                  badges: "Curious Cat"
+                  created_at: "2025-06-01T12:00:00Z"
+      "400":
+        description: Invalid or missing query.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-query:
+                value:
+                  error:
+                    query: "MISSING_FIELD"
+              empty-query:
+                value:
+                  error:
+                    query: "EMPTY_FIELD"
+              not-found:
+                value:
+                  error:
+                    query: "NOT_FOUND"
+
+  post:
+    summary: Update own profile
+    description: Update the authenticated user's profile (partial update).
+    operationId: updateProfile
+    tags: [profile]
+    security:
+      - bearerAuth: []
+    requestBody:
+      description: Fields to update. Image upload requires multipart/form-data.
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              username: { type: string }
+              image: { type: string, format: binary }
+    responses:
+      "200":
+        description: Profile updated. Returns the updated profile data.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/Profile
+            examples:
+              update-ok:
+                value:
+                  username: "marc"
+                  image: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  exp_points: 420
+                  badges: "Curious Cat"
+                  created_at: "2025-06-01T12:00:00Z"
+      "400":
+        description: Field validation error.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              invalid-field:
+                value:
+                  error:
+                    username: "INVALID"
+      "409":
+        description: Username already taken.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ConflictError
+            examples:
+              username-taken:
+                value:
+                  error:
+                    username: "ALREADY_TAKEN"
+      "401":
+        description: Not authenticated.
+
+search:
+  get:
+    summary: Search profiles
+    description: Search for profiles matching the given username.
+    operationId: searchProfiles
+    tags: [profile]
+    parameters:
+      - in: query
+        name: q
+        required: true
+        schema: { type: string }
+        description: Username to search for.
+    responses:
+      "200":
+        description: List of matching profiles
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: ../openapi.yaml#/components/schemas/LightProfile
+      "400":
+        description: Query parameter missing or empty.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-query:
+                value:
+                  error:
+                    query: "MISSING_FIELD"
+              empty-query:
+                value:
+                  error:
+                    query: "EMPTY_FIELD"
+
+guest-create:
+  post:
+    summary: Create or update a guest profile
+    description: |
+      Create a guest profile tied to the current session.
+      If a guest profile already exists for the session, it is updated instead.
+    operationId: createGuestProfile
+    tags: [profile]
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              username: { type: string }
+              image: { type: string, format: binary }
+            required: [username]
+    responses:
+      "201":
+        description: Guest profile created
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/LightProfile
+      "200":
+        description: Existing guest profile updated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/LightProfile
+      "400":
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+
+guest-delete:
+  post:
+    summary: Delete guest profile
+    description: Remove the guest profile associated with the current session.
+    operationId: deleteGuestProfile
+    tags: [profile]
+    responses:
+      "204":
+        description: Guest profile deleted (or no guest profile existed)

@@ -18,10 +18,12 @@ lerna-debug.log*
 # =========================
 # Python / Backend
 # =========================
-__pycache__/
+**/__pycache__/*
 *.py[cod]
-.pytest_cache/
+**/.pytest_cache/
 *.sqlite3
+**/migrations/*
+!**/migrations/__init__.py
 
 # =========================
 # Environment variables

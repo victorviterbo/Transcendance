@@ -2,12 +2,14 @@ services:
   backend:
     container_name: backend
     image: transcendence-backend
-    build: ./backend/
+    build: ./backend/build/
     volumes:
-      - ./backend/DB:/backend/DB/
+      - ./backend/:/backend/
     ports:
       - "8000:8000"
     env_file: ./backend/.env
+    environment:
+      - APP_MODE=${MODE:-run}
 
   nginx:
     container_name: nginx

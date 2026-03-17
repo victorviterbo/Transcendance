@@ -5,9 +5,11 @@ from typing import Any
 from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from project.defaults import get_badge
 
 from .models import GameStat, UserRoundStat
+
 
 @receiver(post_save, sender=GameStat)
 def save_profile(sender: type[GameStat],

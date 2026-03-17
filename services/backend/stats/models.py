@@ -1,9 +1,8 @@
+"""Define the statistics model."""
 from __future__ import annotations
 
 from django.db import models
 from userprofile.models import Profile
-
-#from game import Track
 
 
 class GameStat(models.Model):
@@ -24,6 +23,7 @@ class GameRoundStat(models.Model):
     round_number = models.PositiveIntegerField()
     winner = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True)
     class Meta:
+        """Define the ordering of the game round statistics in the DB."""
         ordering = ['round_number']
 
 
