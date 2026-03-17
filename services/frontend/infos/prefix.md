@@ -1,5 +1,6 @@
 # COMMON PREFIX
 
+- A: Animations
 - C: Component
 - G: Global
 - I: Interface

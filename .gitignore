@@ -47,3 +47,9 @@ lerna-debug.log*
 # Docker
 # =========================
 *.pid
+
+
+# =========================
+# Front end
+# =========================
+services/frontend/public/imgs/albums/*
