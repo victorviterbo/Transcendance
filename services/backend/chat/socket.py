@@ -6,10 +6,31 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .models import Message, Room
 
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+class ChatConsumer:
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
 
-    async def ChatSubroutine(self, content, **kwargs):
+    def __init__(self, main_consumer):
+        self.main_consumer = main_consumer
+        self.scope = main_consumer.scope
+        self.channel_layer = main_consumer.channel_layer
+        self.room = None
+        self.profile = getattr(main_consumer, 'profile', None)
+        self.room_name = "default_room"
+        self.group_name = f"chat_{self.room_name}"
+
+    async def send_json(self, data):
+        await self.main_consumer.send_json(data)
+
+    async def add_to_layer(self, data):
+        await self.main_consumer.add_to_layer(data)
+
+    async def remove_from_layer(self, data):
+        await self.main_consumer.remove_from_layer(data)
+
+    async def group_send(self, data):
+        await self.main_consumer.group_send(data)
+    
+    async def chat_subroutine(self, content, **kwargs):
         """Process incoming message, delivered, and read actions from the client."""
         action = content.get('action', 'message')
 
@@ -24,7 +45,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_json({'type': 'error', 'message': 'save_failed'})
                 return
 
-            await self.channel_layer.group_send(self.group_name, {
+            await self.group_send(self.group_name, {
                 'type': 'chat.message',
                 'message_id': msg_obj.id,
                 'message': msg_obj.body,
@@ -50,7 +71,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_json({'type': 'error', 'message': 'message_not_found'})
                 return
 
-            await self.channel_layer.group_send(self.group_name, {
+            await self.group_send(self.group_name, {
                 'type': 'status.update',
                 'message_id': int(message_id),
                 'action': action,
@@ -114,7 +135,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return self.room.participants.filter(id=self.profile.id).exists()
 
     @database_sync_to_async
-    def _save_message(self, body, room_identifier=None):
+    def _save_message(self, body, room_identifier):
         """Persist a message for the profile (user) in the resolved room."""
         room = self.room
         if room is None and room_identifier is not None:
@@ -122,12 +143,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         if room is None or self.profile is None:
             return None
-
+        print(room)
         message = Message.objects.create(
-            user=self.profile,
+            sender_profile=self.profile,
             room=room,
             body=body,
         )
+
+        print("&//////////TFGHUZTGFHJUZTGFB")
         room.participants.add(self.profile)
         self.room = room
         return message

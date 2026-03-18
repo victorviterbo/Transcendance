@@ -15,7 +15,7 @@ from userprofile.models import Profile
 from userprofile.serializers import validate_username
 
 from .models import SiteUser
-from friends.models import Friendship
+
 
 def gmail_specific_normalize(email: str) -> str:
     """Normalizes a Gmail address.
@@ -109,10 +109,16 @@ class SiteUserSerializer(serializers.ModelSerializer):
             The newly created SiteUser
         """
         profile_username = validated_data.pop('profile_username')
+        request = self.context.get('request')
         user = SiteUser.objects.create_user(**validated_data)
-        Profile.objects.create(user=user,
-                               username=profile_username,
-                               is_guest=False)
+        guest_profile = getattr(request, 'profile', None)
+        if guest_profile and guest_profile.is_guest:
+            guest_profile.user = user
+            guest_profile.username = profile_username
+            guest_profile.is_guest = False
+            guest_profile.save()
+        else:
+            Profile.objects.create(user=user, username=profile_username)
         return user
 
 class LoginSerializer(serializers.ModelSerializer):

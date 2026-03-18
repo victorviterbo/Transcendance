@@ -70,6 +70,7 @@ class UserAccountTests(APITestCase):
                     if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+', 'anewpassword1', 'anewpassword1']:
                         self.assertEqual('INVALID_PASSWORD',
                                          response.data['error']['password'])
+                    self.assertTrue(('refresh-token' in self.client.cookies) or ('sessionid' in self.client.cookies))
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""

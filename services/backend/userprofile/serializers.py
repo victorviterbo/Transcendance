@@ -55,7 +55,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
             is_creation = True
         if is_creation and Profile.objects.filter(username=value).exists():
             raise serializers.ValidationError('Username already taken',
-                                              code='unique')
+                                              code='USERNAME_TAKEN')
         return validate_username(value)
 
     def validate_image(self, data: Any) -> Any:

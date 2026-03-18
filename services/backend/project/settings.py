@@ -49,11 +49,11 @@ INSTALLED_APPS = [
     'drf_spectacular',
 
     'music.apps.MusicConfig',
-    'userauth',
-    'userprofile',
-    'friends',
-    'stats',
-    'chat',
+    'userauth.apps.UsersConfig',
+    'userprofile.apps.UserprofileConfig',
+    'friends.apps.FriendsConfig',
+    'stats.apps.StatsConfig',
+    'chat.apps.ChatConfig',
 
     'django_cleanup.apps.CleanupConfig',
 ]
