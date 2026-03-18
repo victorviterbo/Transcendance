@@ -61,6 +61,10 @@ components:
       $ref: ./components/schemas.yaml#/ConflictError
     TokenResponse:
       $ref: ./components/schemas.yaml#/TokenResponse
+    WS Reponse:
+      $ref: ./components/schemas_ws.yaml#/WSReponse
+    WS Requests:
+      $ref: ./components/schemas_ws.yaml#/WSRequest
   securitySchemes:
     bearerAuth:
       type: http
