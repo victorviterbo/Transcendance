@@ -81,13 +81,45 @@ function CNavbar() {
 					component={Link}
 					to="/"
 					aria-label="Home"
+					sx={{
+						height: 54,
+						width: 54,
+						border: "3px solid rgba(255, 255, 255, 0.82)",
+						backgroundColor: "rgba(255, 255, 255, 0.16)",
+						boxShadow: "0 6px 0 rgba(23, 15, 56, 0.2)",
+						"&:hover": {
+							backgroundColor: "rgba(255, 255, 255, 0.22)",
+						},
+					}}
 				>
-					<Box component="img" src={logo} alt="Guess Tunes logo" sx={{ height: 40 }} />
+					<Box component="img" src={logo} alt="Guess Tunes logo" sx={{ height: 34 }} />
 				</IconButton>
-				<CTitle size="sm" sx={{ flexGrow: 1 }}>
+				<CTitle
+					size="sm"
+					sx={{
+						flexGrow: 1,
+						minWidth: 0,
+						display: {
+							xs: "none",
+							md: "block",
+						},
+						fontSize: "1.9rem",
+						color: "common.white",
+					}}
+				>
 					Guess Tunes
 				</CTitle>
-				<Stack direction="row" spacing={2} alignItems="center">
+				<Stack
+					direction="row"
+					spacing={1.25}
+					alignItems="center"
+					useFlexGap
+					sx={{
+						flexWrap: "wrap",
+						justifyContent: "flex-end",
+						marginLeft: "auto",
+					}}
+				>
 					<CDialogLanguage open={false} />
 					{items.map((item, idx) => {
 						if (item.kind === "link") {

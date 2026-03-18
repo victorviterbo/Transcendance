@@ -1,5 +1,5 @@
 import { createTheme, type ThemeOptions } from "@mui/material";
-import { colorAlterColor, colorGetBackground } from "../utils/styles";
+import { colorGetBackground } from "../utils/styles";
 import type {
 	IThemeAnimations,
 	IThemeBG,
@@ -28,66 +28,62 @@ import type {
 // },
 
 export const appColors: IThemeColor = {
-	primary: ["#1FE2D8", "#38C2BC", "#49A29E", "#4C827F", "#496160", "#3A4443"],
-	secondary: ["#E2BF1F", "#C2A63D", "#A28A4C", "#82704C", "#615440", "#33312A"],
-	tertiary: ["#E21FBF", "#C23DA6", "#A24C88", "#824C6E", "#614054", "#332A31"],
-	quaternary: ["#414DFA", "#5560D6", "#6168B3", "#62688F", "#585B6B", "#41434A"],
-	quinary: ["#8A41FA", "#7D55D6", "#715FB3", "#665F8F", "#57566B", "#44424A"],
+	primary: ["#42EDFF", "#28D5F3", "#1EB4DA", "#1A90B8", "#176B8F", "#134B67"],
+	secondary: ["#FFD84A", "#F9C83A", "#E7AF28", "#CC8E17", "#9D6711", "#68440A"],
+	tertiary: ["#FF58BC", "#F240AA", "#DA2E92", "#B82375", "#861B56", "#561439"],
+	quaternary: ["#536BFF", "#455CEB", "#394DCD", "#303FA6", "#253073", "#1A2149"],
+	quinary: ["#9363FF", "#7D57F3", "#6946DD", "#5535B8", "#3F2785", "#291C56"],
 
 	greys: [
-		"#E1E1E1",
-		"#CBCBCB",
-		"#B5B5B5",
-		"#9E9E9E",
-		"#888888",
-		"#727272",
-		"#5C5C5C",
-		"#454545",
-		"#2F2F2F",
-		"#191919",
+		"#FFFFFF",
+		"#F7F5FF",
+		"#ECE8FF",
+		"#D8D0F7",
+		"#BDB3E9",
+		"#988DCC",
+		"#7467A5",
+		"#51487C",
+		"#302953",
+		"#17122E",
 	],
 
 	text: {
-		dark: "#000",
+		dark: "#170F38",
 		light: "#fff",
 	},
 };
 
 export const appPositions: IThemePosition = {
-	mainSpacing: 7,
+	mainSpacing: 4,
 	sizes: {
 		buttons: {
-			home: "40px",
-			nav: "35px",
+			home: "52px",
+			nav: "44px",
 		},
 
-		footer: 50,
+		footer: 40,
 	},
 };
 
 export const appSharedStyle: IThemeShared = {
 	bg: {
-		paper: colorGetBackground(
-			[appColors.greys[9], appColors.greys[8]],
-			undefined,
-			"radial",
-			135 + 180,
-		),
+		paper: `linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 18%, rgba(255, 255, 255, 0.02) 100%), linear-gradient(145deg, #3E49B7 0%, #5038C1 45%, #842DC4 100%)`,
+		header: `linear-gradient(135deg, rgba(82, 107, 255, 0.92) 0%, rgba(52, 215, 250, 0.9) 46%, rgba(255, 88, 188, 0.84) 100%)`,
 		feedback: colorGetBackground(
-			[appColors.primary[1], appColors.quinary[1]],
+			[appColors.primary[0], appColors.tertiary[0]],
 			[0, 100],
 			"linear",
-			225,
+			130,
 		),
 		menu: colorGetBackground(
-			[appColors.primary[1], appColors.quinary[1]],
+			[appColors.quaternary[1], appColors.quinary[1]],
 			[0, 100],
 			"linear",
-			225,
+			140,
 		),
 	},
 
-	radius: 30,
+	radius: 28,
 };
 
 export const appAnimation: IThemeAnimations = {
@@ -104,60 +100,34 @@ export const appAnimation: IThemeAnimations = {
 	bg: {
 		buttonHover: {
 			active: true,
-			size: "400%",
-			speed: 1750,
-			duration: 180,
+			size: "320%",
+			speed: 1400,
+			duration: 22,
 		},
 	},
 };
 
 export const appBG: IThemeBG = {
 	baseIndex: 0,
-	baseColor: colorGetBackground(
-		[
-			colorAlterColor(
-				appColors.quinary[0],
-				["shift-saturation", "shift-brightness"],
-				[-0.0, -0.1],
-			),
-			colorAlterColor(
-				appColors.quaternary[0],
-				["shift-saturation", "shift-brightness"],
-				[-0.0, -0.0],
-			),
-		],
-		undefined,
-		"linear",
-		135 + 180,
-	),
+	baseColor:
+		"radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 20%), radial-gradient(circle at 86% 18%, rgba(255, 216, 74, 0.28) 0%, rgba(255, 216, 74, 0) 18%), radial-gradient(circle at 72% 82%, rgba(255, 88, 188, 0.24) 0%, rgba(255, 88, 188, 0) 20%), linear-gradient(160deg, #3AE8FF 0%, #2BA8FF 38%, #5B5DFF 70%, #FF55BB 100%)",
 	baseBlur: 0,
 
 	iconBG: true,
-	iconSize: 750,
-	iconSpeed: 75,
+	iconSize: 560,
+	iconSpeed: 55,
 	iconColor: colorGetBackground(
-		[
-			colorAlterColor(
-				appColors.quinary[0],
-				["shift-saturation", "shift-brightness"],
-				[-0.15, -0.15],
-			),
-			colorAlterColor(
-				appColors.quaternary[0],
-				["shift-saturation", "shift-brightness"],
-				[-0.15, -0.05],
-			),
-		],
+		["rgba(255, 255, 255, 0.22)", "rgba(255, 255, 255, 0.06)"],
 		undefined,
 		"linear",
-		135 + 180,
+		135,
 	),
 	iconMove: true,
 	iconShadow: {
 		offsetX: 1,
-		offsetY: 5,
-		blur: 0,
-		color: "black",
+		offsetY: 8,
+		blur: 24,
+		color: "rgba(17, 10, 53, 0.24)",
 	},
 
 	windmill: false,
@@ -201,7 +171,7 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	typography: {
-		fontFamily: "MochiyPop, roboto, arial",
+		fontFamily: "DynaPuff, MochiyPop, sans-serif",
 	},
 
 	shape: {
@@ -209,7 +179,41 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	components: {
-		MuiCssBaseline: {},
+		MuiCssBaseline: {
+			styleOverrides: {
+				"*": {
+					boxSizing: "border-box",
+				},
+				"html, body, #root": {
+					height: "100%",
+				},
+				body: {
+					margin: 0,
+					backgroundColor: appColors.quaternary[4],
+					color: appColors.text.light,
+				},
+				a: {
+					color: "inherit",
+				},
+				"::selection": {
+					backgroundColor: "rgba(255, 216, 74, 0.35)",
+					color: appColors.text.dark,
+				},
+				"::-webkit-scrollbar": {
+					width: "12px",
+					height: "12px",
+				},
+				"::-webkit-scrollbar-thumb": {
+					background:
+						"linear-gradient(180deg, rgba(255, 216, 74, 0.92) 0%, rgba(255, 88, 188, 0.92) 100%)",
+					borderRadius: "999px",
+					border: "3px solid rgba(23, 18, 46, 0.24)",
+				},
+				"::-webkit-scrollbar-track": {
+					backgroundColor: "rgba(23, 18, 46, 0.18)",
+				},
+			},
+		},
 	},
 };
 const appTheme = createTheme(appThemeBase);

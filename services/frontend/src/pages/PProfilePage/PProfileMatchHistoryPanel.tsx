@@ -1,6 +1,6 @@
-import { Box, Divider, List, ListItem, ListItemText } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import CText from "../../components/text/CText";
-import { Fragment } from "react";
+import CTitle from "../../components/text/CTitle";
 
 export interface MatchHistoryItem {
 	date: string;
@@ -42,20 +42,82 @@ function ProfileMatchHistoryPanel({
 		return <CText>{emptyMessage}</CText>;
 	}
 
+	const getResultStyle = (result: string) => {
+		if (result === "WIN") {
+			return {
+				backgroundColor: "rgba(255, 216, 74, 0.94)",
+				color: "rgba(23, 15, 56, 0.94)",
+			};
+		}
+		if (result === "DRAW") {
+			return {
+				backgroundColor: "rgba(66, 237, 255, 0.9)",
+				color: "rgba(23, 15, 56, 0.94)",
+			};
+		}
+		return {
+			backgroundColor: "rgba(255, 88, 188, 0.92)",
+			color: "rgba(255, 255, 255, 0.94)",
+		};
+	};
+
 	return (
-		<List>
+		<Stack spacing={1.5}>
 			{effectiveHistory.map((match) => (
-				<Fragment key={`${match.date}-${match.opponent}-${match.result}`}>
-					<ListItem>
-						<ListItemText
-							primary={`${match.date} — ${match.opponent}`}
-							secondary={`Score: ${match.score} • ${match.result}`}
-						/>
-					</ListItem>
-					<Divider component={Box} />
-				</Fragment>
+				<Box
+					key={`${match.date}-${match.opponent}-${match.result}`}
+					sx={{
+						p: 2.25,
+						borderRadius: "24px",
+						backgroundColor: "rgba(23, 15, 56, 0.18)",
+						border: "2px solid rgba(255, 255, 255, 0.18)",
+					}}
+				>
+					<Stack
+						direction={{ xs: "column", md: "row" }}
+						spacing={2}
+						alignItems={{ xs: "flex-start", md: "center" }}
+						justifyContent="space-between"
+					>
+						<Stack spacing={0.7}>
+							<CText size="sm" sx={{ color: "rgba(255, 255, 255, 0.72)" }}>
+								{match.date}
+							</CText>
+							<CTitle size="sm" sx={{ color: "common.white" }}>
+								{match.opponent}
+							</CTitle>
+						</Stack>
+						<Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
+							<Box
+								sx={{
+									px: 1.5,
+									py: 0.75,
+									borderRadius: "999px",
+									backgroundColor: "rgba(255, 255, 255, 0.12)",
+									border: "2px solid rgba(255, 255, 255, 0.2)",
+								}}
+							>
+								<CText size="sm">Score: {match.score}</CText>
+							</Box>
+							<Box
+								sx={{
+									px: 1.5,
+									py: 0.75,
+									borderRadius: "999px",
+									fontFamily: "DynaPuff, sans-serif",
+									fontSize: "0.82rem",
+									fontWeight: 700,
+									letterSpacing: "0.04em",
+									...getResultStyle(match.result),
+								}}
+							>
+								{match.result}
+							</Box>
+						</Stack>
+					</Stack>
+				</Box>
 			))}
-		</List>
+		</Stack>
 	);
 }
 

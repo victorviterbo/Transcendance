@@ -23,7 +23,13 @@ function CTitle({ size, children, sx, ...other }: CTitleProps) {
 			getVariant={getVariant}
 			sx={[
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
-				(Theme) => ({ fontFamily: "Knewave, " + Theme.typography.fontFamily }),
+				(Theme) => ({
+					fontFamily: "DynaPuff, " + Theme.typography.fontFamily,
+					fontWeight: 700,
+					lineHeight: 0.95,
+					letterSpacing: "0.03em",
+					textShadow: "0 4px 0 rgba(23, 15, 56, 0.22)",
+				}),
 			]}
 			{...other}
 		>

@@ -3,13 +3,16 @@ import type { GCompProps } from "../../common/GProps";
 import type { TOption } from "../../../types/data";
 import React, { useId, useState } from "react";
 import { ttr } from "../../../localization/localization";
-import { CToggleButtonStyle } from "../../../styles/components/inputs/CToggleStyle";
+import {
+	CToggleButtonStyle,
+	CToggleGroupStyle,
+} from "../../../styles/components/inputs/CToggleStyle";
 
 interface CToggleProps extends GCompProps, ToggleButtonGroupProps {
 	options: TOption[];
 }
 
-function CToggle({ options, ...other }: CToggleProps) {
+function CToggle({ options, sx, ...other }: CToggleProps) {
 	const localID: string = useId();
 	const [value, setValue] = useState<string>(options.length > 0 ? options[0].value : "");
 
@@ -22,6 +25,7 @@ function CToggle({ options, ...other }: CToggleProps) {
 			value={value}
 			color="secondary"
 			exclusive
+			sx={[CToggleGroupStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 			onChange={handleChange}
 		>

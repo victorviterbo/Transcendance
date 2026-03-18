@@ -11,7 +11,7 @@ interface CMenuProps extends GCompProps, MenuProps {
 
 //TODO: Replace sx
 function CMenu({ sx, options, ...other }: CMenuProps) {
-	const localID = useId;
+	const localID = useId();
 
 	return (
 		<Menu sx={[CMenuStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} {...other}>

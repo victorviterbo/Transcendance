@@ -16,7 +16,7 @@ function CNavbarLink({ to, sx, label, icon, active = false }: CNavbarLinkProps) 
 	return (
 		<Link to={to} style={{ textDecoration: "none", color: "inherit" }}>
 			<CText
-				size="lg"
+				size="md"
 				span={true}
 				sx={[CNavbarLinkStyle(active), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			>

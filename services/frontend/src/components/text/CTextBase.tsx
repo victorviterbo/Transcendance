@@ -14,7 +14,16 @@ export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	getVariant?: () => TypographyVariant;
 }
 
-function CTextBase({ align, span, children, color, getVariant, sx, ...other }: CTextBaseProps) {
+function CTextBase({
+	align,
+	span,
+	children,
+	color,
+	getVariant,
+	sx,
+	gutterBottom,
+	...other
+}: CTextBaseProps) {
 	const getChildren = () => {
 		if (typeof children === "string") {
 			if (span) return <span>{ttr(children)}</span>;
@@ -30,14 +39,16 @@ function CTextBase({ align, span, children, color, getVariant, sx, ...other }: C
 
 		return mapped;
 	};
+	const typographyComponent = span ? ({ component: "span" } as const) : {};
 
 	//====================== DOM ======================
 	return (
 		<Typography
 			variant={getVariant ? getVariant() : "body1"}
 			align={align}
-			gutterBottom
+			gutterBottom={gutterBottom ?? false}
 			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
+			{...typographyComponent}
 			{...other}
 			data-testid={"CTextBase"}
 		>

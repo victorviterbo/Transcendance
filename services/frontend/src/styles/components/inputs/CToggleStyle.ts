@@ -3,71 +3,100 @@ import { appAnimation, appColors } from "../../theme";
 import { makeMaskTranslationAnim } from "../../animations/CommonAnimations";
 import { colorAlterColor } from "../../../utils/styles";
 const stripesIMG = "imgs/shared/BG_Lines.png";
+const buttonHoverAnimation =
+	"toggleButtonHoverBGAnimation " +
+	(appAnimation.bg.buttonHover?.duration ? appAnimation.bg.buttonHover.duration : "10") +
+	"s linear infinite";
+
+export const CToggleGroupStyle: SxProps<Theme> = (theme) => ({
+	backgroundColor: "rgba(23, 15, 56, 0.22)",
+	border: "3px solid rgba(255, 255, 255, 0.82)",
+	borderRadius: "999px",
+	padding: theme.spacing(0.5),
+	boxShadow: "0 8px 0 rgba(23, 15, 56, 0.24)",
+	backdropFilter: "blur(12px)",
+	overflow: "hidden",
+	gap: theme.spacing(0.5),
+	"& .MuiToggleButtonGroup-grouped": {
+		margin: 0,
+		border: 0,
+		borderRadius: "999px",
+	},
+});
 
 export const CToggleButtonStyle: SxProps<Theme> = (_) => ({
-	backgroundColor: appColors.tertiary[0],
-	color: appColors.text.light,
-	boxShadow: "0px 5px 0px 0px " + appColors.greys[0],
-	//border: "solid 3px " + appColors.greys[0],
+	position: "relative",
+	minHeight: 44,
+	paddingInline: "18px",
+	backgroundColor: "transparent",
+	color: "rgba(255, 255, 255, 0.84)",
+	fontFamily: "DynaPuff, sans-serif",
+	fontWeight: 700,
+	letterSpacing: "0.04em",
+	textTransform: "uppercase",
 	overflow: "hidden",
 
-	"&:hover": {
-		backgroundColor: appColors.tertiary[1],
+	"& > *": {
+		position: "relative",
+		zIndex: 1,
 	},
 
-	"&.Mui-selected": {
-		backgroundColor: appColors.secondary[0],
-		color: appColors.text.dark,
-		boxShadow: "0px 0px 0px 0px " + appColors.greys[0],
-		transform: "translateY(5px)",
-	},
-
-	"&:hover.Mui-selected": {
-		backgroundColor: appColors.secondary[0],
-	},
-
-	"&.Mui-selected::before": appAnimation.bg.buttonHover?.active
+	"&::before": appAnimation.bg.buttonHover?.active
 		? {
 				content: '""',
 				position: "absolute",
 				inset: 0,
 				zIndex: 0,
-
-				opacity: 1,
-
-				backgroundColor: colorAlterColor(appColors.secondary[0], "shift-hue", -15),
-
+				opacity: 0,
+				backgroundColor: colorAlterColor(appColors.primary[0], "shift-hue", 12),
 				maskImage: `url(${stripesIMG})`,
 				maskSize: appAnimation.bg.buttonHover.size
 					? appAnimation.bg.buttonHover.size +
 						(typeof appAnimation.bg.buttonHover.size == "string" ? "" : "px")
 					: "200%",
-
 				WebkitMaskImage: `url(${stripesIMG})`,
 				WebkitMaskSize: appAnimation.bg.buttonHover.size
 					? appAnimation.bg.buttonHover.size +
 						(typeof appAnimation.bg.buttonHover.size == "string" ? "" : "px")
 					: "200%",
-
-				"@keyframes buttonHoverBGAnimation": makeMaskTranslationAnim(
+				"@keyframes toggleButtonHoverBGAnimation": makeMaskTranslationAnim(
 					appAnimation.bg.buttonHover.speed ? appAnimation.bg.buttonHover.speed : 100,
 				),
-				animation:
-					"buttonHoverBGAnimation " +
-					(appAnimation.bg.buttonHover.duration
-						? appAnimation.bg.buttonHover.duration
-						: "10") +
-					"s linear infinite",
+				animation: "none",
 			}
 		: {},
 
-	"& > *": {
-		zIndex: 1,
+	"&:hover": {
+		backgroundColor: "rgba(255, 255, 255, 0.08)",
+	},
+
+	"&:hover::before": appAnimation.bg.buttonHover?.active
+		? {
+				opacity: 0.18,
+				animation: buttonHoverAnimation,
+			}
+		: {},
+
+	"&.Mui-selected": {
+		background: `linear-gradient(135deg, ${appColors.secondary[0]} 0%, ${appColors.primary[0]} 100%)`,
+		color: appColors.text.dark,
+		boxShadow: "inset 0 -3px 0 rgba(23, 15, 56, 0.24)",
+	},
+
+	"&.Mui-selected::before": appAnimation.bg.buttonHover?.active
+		? {
+				opacity: 0.32,
+				animation: buttonHoverAnimation,
+			}
+		: {},
+
+	"&:hover.Mui-selected": {
+		background: `linear-gradient(135deg, ${appColors.secondary[0]} 0%, ${appColors.primary[0]} 100%)`,
 	},
 
 	transition: (theme) => {
 		return theme.transitions.create(["transform", "box-shadow", "background", "color"], {
-			duration: appAnimation.timing.fast,
+			duration: appAnimation.timing.medium_fast,
 		});
 	},
 });

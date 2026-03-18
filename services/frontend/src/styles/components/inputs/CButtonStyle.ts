@@ -3,31 +3,55 @@ import { appAnimation, appColors, appSharedStyle } from "../../theme";
 import { makeMaskTranslationAnim } from "../../animations/CommonAnimations";
 import { colorAlterColor } from "../../../utils/styles";
 const stripesIMG = "imgs/shared/BG_Lines.png";
+const buttonHoverAnimation =
+	"buttonHoverBGAnimation " +
+	(appAnimation.bg.buttonHover?.duration ? appAnimation.bg.buttonHover.duration : "10") +
+	"s linear infinite";
 
 export const CButtonStyle: SxProps<Theme> = (theme) => ({
+	position: "relative",
 	transition: (theme) => {
 		return theme.transitions.create(["transform", "box-shadow", "background", "color"], {
-			duration: appAnimation.timing.fast,
+			duration: appAnimation.timing.medium_fast,
 		});
 	},
 
-	background: appColors.tertiary[0],
+	minHeight: 48,
+	paddingInline: theme.spacing(3),
+	borderRadius: "999px",
+	border: "3px solid rgba(255, 255, 255, 0.9)",
+	background: `linear-gradient(135deg, ${appColors.tertiary[0]} 0%, ${appColors.secondary[0]} 100%)`,
 	transform: "translateY(0px)",
-	boxShadow: "0px 5px 0px 0px " + appColors.greys[1],
-	color: theme.palette.grey[100],
-
+	boxShadow:
+		"0 8px 0 rgba(23, 15, 56, 0.34), 0 14px 24px rgba(23, 15, 56, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+	color: appColors.text.dark,
+	fontFamily: "DynaPuff, sans-serif",
+	fontWeight: 700,
+	letterSpacing: "0.04em",
+	textTransform: "uppercase",
 	overflow: "hidden",
-	//border: "solid 3px " + appColors.greys[0],
 
 	"& > *": {
 		zIndex: 1,
 	},
 
 	"&:hover": {
-		background: appColors.secondary[0],
+		background: `linear-gradient(135deg, ${appColors.secondary[0]} 0%, ${appColors.primary[0]} 100%)`,
+		transform: "translateY(3px) scale(1.01)",
+		boxShadow:
+			"0 4px 0 rgba(23, 15, 56, 0.34), 0 10px 16px rgba(23, 15, 56, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+		color: appColors.text.dark,
+	},
+
+	"&:active": {
 		transform: "translateY(5px)",
-		boxShadow: "0px 0px 0px 0px " + appColors.greys[0],
-		color: theme.palette.grey[900],
+		boxShadow: "0 2px 0 rgba(23, 15, 56, 0.28)",
+	},
+
+	"&.Mui-disabled": {
+		opacity: 0.6,
+		color: "rgba(23, 15, 56, 0.72)",
+		boxShadow: "0 6px 0 rgba(23, 15, 56, 0.18)",
 	},
 
 	"&::before": appAnimation.bg.buttonHover?.active
@@ -54,33 +78,32 @@ export const CButtonStyle: SxProps<Theme> = (theme) => ({
 				"@keyframes buttonHoverBGAnimation": makeMaskTranslationAnim(
 					appAnimation.bg.buttonHover.speed ? appAnimation.bg.buttonHover.speed : 100,
 				),
-				animation:
-					"buttonHoverBGAnimation " +
-					(appAnimation.bg.buttonHover.duration
-						? appAnimation.bg.buttonHover.duration
-						: "10") +
-					"s linear infinite",
-
+				animation: "none",
 				opacity: 0,
 				transition: (theme) => {
-					return theme.transitions.create(["opacity", "background-color"], {
-						duration: appAnimation.timing.fast,
+					return theme.transitions.create(["opacity", "background-color", "transform"], {
+						duration: appAnimation.timing.medium_fast,
 					});
 				},
 			}
 		: {},
 
-	"&:hover::before": appAnimation.bg.buttonHover?.active
+	"&:hover::before, &:focus-visible::before, &:active::before": appAnimation.bg.buttonHover
+		?.active
 		? {
-				opacity: 1,
+				animation: buttonHoverAnimation,
+				opacity: 0.36,
 				backgroundColor: colorAlterColor(appColors.secondary[0], "shift-hue", -15),
 			}
 		: {},
 });
 
 export const CIconButtonStyle: SxProps<Theme> = (_) => ({
-	px: 1.75,
-	py: 0.75,
+	minWidth: 48,
+	width: 48,
+	height: 48,
+	px: 0,
+	py: 0,
 	borderRadius: appSharedStyle.radius + "px",
 });
 

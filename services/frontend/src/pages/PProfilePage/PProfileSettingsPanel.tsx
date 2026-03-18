@@ -19,6 +19,35 @@ export interface ProfileSettingsPanelProps extends GPageProps {
 const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 	const [expanded, setExpanded] = useState<string | false>("username");
 	const { setAuth, user } = useAuth();
+	const accordionStyle = {
+		mb: 1.5,
+		overflow: "hidden",
+		backgroundColor: "rgba(23, 15, 56, 0.18)",
+		border: "2px solid rgba(255, 255, 255, 0.18)",
+		boxShadow: "none",
+		"&::before": {
+			display: "none",
+		},
+		"& .MuiAccordionSummary-root": {
+			px: 2.5,
+			minHeight: 70,
+		},
+		"& .MuiAccordionSummary-root.Mui-expanded": {
+			minHeight: 70,
+		},
+		"& .MuiAccordionSummary-content": {
+			my: 1.5,
+			alignItems: "center",
+		},
+		"& .MuiAccordionSummary-expandIconWrapper": {
+			color: "rgba(255, 255, 255, 0.82)",
+		},
+		"& .MuiAccordionDetails-root": {
+			px: { xs: 2, md: 2.5 },
+			pb: 2.5,
+			pt: 0,
+		},
+	};
 	const usernameFields = useMemo<TFormFieldConfig[]>(
 		() => [
 			{
@@ -142,7 +171,11 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 
 	return (
 		<div>
-			<Accordion expanded={expanded === "username"} onChange={handlePanel("username")}>
+			<Accordion
+				expanded={expanded === "username"}
+				onChange={handlePanel("username")}
+				sx={accordionStyle}
+			>
 				<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 					<CTitle size="sm">CHANGE_USERNAME</CTitle>
 				</AccordionSummary>
@@ -155,7 +188,11 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					/>
 				</AccordionDetails>
 			</Accordion>
-			<Accordion expanded={expanded === "email"} onChange={handlePanel("email")}>
+			<Accordion
+				expanded={expanded === "email"}
+				onChange={handlePanel("email")}
+				sx={accordionStyle}
+			>
 				<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 					<CTitle size="sm">CHANGE_EMAIL</CTitle>
 				</AccordionSummary>
@@ -168,7 +205,11 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					/>
 				</AccordionDetails>
 			</Accordion>
-			<Accordion expanded={expanded === "password"} onChange={handlePanel("password")}>
+			<Accordion
+				expanded={expanded === "password"}
+				onChange={handlePanel("password")}
+				sx={accordionStyle}
+			>
 				<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 					<CTitle size="sm">CHANGE_PASSWORD</CTitle>
 				</AccordionSummary>
@@ -181,7 +222,11 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					/>
 				</AccordionDetails>
 			</Accordion>
-			<Accordion expanded={expanded === "delete"} onChange={handlePanel("delete")}>
+			<Accordion
+				expanded={expanded === "delete"}
+				onChange={handlePanel("delete")}
+				sx={accordionStyle}
+			>
 				<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 					<CTitle size="sm">DELETE_ACCOUNT</CTitle>
 				</AccordionSummary>
