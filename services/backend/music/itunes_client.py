@@ -1,5 +1,5 @@
-from typing import List, Dict
-from django.conf import settings
+from urllib.parse import urlencode
+
 import requests
 
 
@@ -40,7 +40,17 @@ def fetch_ids_from_rss(rss_url: str) -> list[dict]:
 		print(f"[itunes_client] RSS fetch error: {e}")
 		return []
 	
-def batch_lookup(track_ids: list[int]) -> dict[int, str]:
+def _build_lookup_url(track_ids: list[int], country: str | None = None) -> str:
+	"""Build iTunes lookup URL with optional storefront country."""
+	params = {
+		"id": ",".join(str(tid) for tid in track_ids),
+	}
+	if country:
+		params["country"] = country.upper()
+	return f"https://itunes.apple.com/lookup?{urlencode(params)}"
+
+
+def batch_lookup(track_ids: list[int], country: str | None = None) -> dict[int, str]:
 	"""
 	Perform a batch lookup to get preview URLs for the given track IDs.
 	Returns a dict mapping track_id to preview_url.
@@ -49,8 +59,7 @@ def batch_lookup(track_ids: list[int]) -> dict[int, str]:
 		return {}
 	
 	try:
-		ids_str = ",".join(str(tid) for tid in track_ids)
-		url = f"https://itunes.apple.com/lookup?id={ids_str}"
+		url = _build_lookup_url(track_ids, country=country)
 		response = requests.get(url, timeout=10)
 		response.raise_for_status()
 		data = response.json()
@@ -71,7 +80,7 @@ def batch_lookup(track_ids: list[int]) -> dict[int, str]:
 		print(f"[itunes_client] Batch lookup error: {e}")
 		return {}
 
-def full_lookup(track_ids: list[int]) -> dict[int, dict]:
+def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, dict]:
 	"""
 	Perform a batch lookup and return full metadata for each track ID.
 	Returns a dict mapping track_id to {title, artist, kind, artwork_url, preview_url}.
@@ -80,8 +89,7 @@ def full_lookup(track_ids: list[int]) -> dict[int, dict]:
 		return {}
 
 	try:
-		ids_str = ",".join(str(tid) for tid in track_ids)
-		url = f"https://itunes.apple.com/lookup?id={ids_str}"
+		url = _build_lookup_url(track_ids, country=country)
 		response = requests.get(url, timeout=10)
 		response.raise_for_status()
 		data = response.json()
