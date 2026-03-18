@@ -101,11 +101,8 @@ class ProfileTests(TransactionTestCase):
                 if query == '':
                     self.assertEqual('MISSING_FIELD',
                                      response.data['error']['query'])
-                elif query == '?q=':
-                    self.assertEqual('EMPTY_FIELD',
-                                     response.data['error']['query'])
-                elif query == '?q=not_a_user':
-                    self.assertEqual('NOT_FOUND',
+                elif query in ['?q=', '?q=not_a_user']:
+                    self.assertEqual('USER_NOT_FOUND',
                                      response.data['error']['query'])
 
     def test_profile_post(self) -> None:
@@ -144,14 +141,13 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('image', response.data['error'])
-        self.assertEqual('INVALID', response.data['error']['image'])
+        self.assertEqual('INVALID_IMAGE', response.data['error']['image'])
 
         response = self.client.post(profile_url, data={'username': 'user2'})
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertIn('error', response.data)
         self.assertIn('username', response.data['error'])
-        self.assertEqual('ALREADY_TAKEN', response.data['error']['username'])
-
+        self.assertEqual('USERNAME_TAKEN', response.data['error']['username'])
 
         new_data['image'] = image_generator('corrupt')
         new_data['image'].seek(0)
@@ -161,8 +157,8 @@ class ProfileTests(TransactionTestCase):
         self.assertIn('error', response.data)
         self.assertIn('username', response.data['error'])
         self.assertIn('image', response.data['error'])
-        self.assertEqual('ALREADY_TAKEN', response.data['error']['username'])
-        self.assertEqual('INVALID', response.data['error']['image'])
+        self.assertEqual('USERNAME_TAKEN', response.data['error']['username'])
+        self.assertEqual('INVALID_IMAGE', response.data['error']['image'])
 
         response = self.client.get(profile_url + "?q=a_new_user")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

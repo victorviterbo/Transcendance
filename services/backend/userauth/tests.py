@@ -37,7 +37,7 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
                     self.assertIn('error', response.data)
                     self.assertIn('auth', response.data['error'])
-                    self.assertEqual(response.data['error']['auth'], 'AUTH_FAIL')
+                    self.assertEqual(response.data['error']['auth'], 'INVALID_CREDENTIALS')
 
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""
@@ -62,28 +62,13 @@ class UserAccountTests(APITestCase):
                     else:
                         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                     if email == 'test@mail.com':
-                        self.assertEqual('ALREADY_TAKEN',
+                        self.assertEqual('EMAIL_TAKEN',
                                          response.data['error']['email'])
                     if username == 'testuser':
-                        self.assertEqual('ALREADY_TAKEN',
+                        self.assertEqual('USERNAME_TAKEN',
                                          response.data['error']['username'])
-                    if email in ['', 'test']:
-                        self.assertEqual('INVALID',
-                                         response.data['error']['email'])
-                    if username == '':
-                        self.assertEqual('INVALID',
-                                         response.data['error']['username'])
-                    if password == 'AnewPassword+':
-                        self.assertEqual('PASSWORD_NUMBER',
-                                         response.data['error']['password'])
-                    if password == 'ANEWPASSWORD1+':
-                        self.assertEqual('PASSWORD_LOWERCASE',
-                                         response.data['error']['password'])
-                    if password == 'anewpassword1':
-                        self.assertEqual('PASSWORD_UPPERCASE',
-                                         response.data['error']['password'])
-                    if password == 'anewpassword1':
-                        self.assertEqual('PASSWORD_SPECIAL',
+                    if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+', 'anewpassword1', 'anewpassword1']:
+                        self.assertEqual('INVALID_PASSWORD',
                                          response.data['error']['password'])
 
     def test_logout(self) -> None:
@@ -131,11 +116,21 @@ class UserAccountTests(APITestCase):
         })
         self.assertIn('refresh-token', login_res.cookies)
         self.assertNotIn('refresh-token', login_res.data)
+        orig_cookie = login_res.cookies.get('refresh-token').value
+
         response = self.client.post(refresh_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('username', response.data)
         self.assertEqual('testuser', response.data['username'])
+        #test blacklisting
+        self.client.cookies['refresh-token'] = orig_cookie
+        response = self.client.post(refresh_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn('error', response.data)
+        self.assertNotIn('access', response.data)
+        self.assertNotIn('username', response.data)
+        self.assertEqual('TOKEN_NOT_VALID', response.data['error']['cookie'])
 
     def test_user_validation(self) -> None:
         """Test success and failure of user validation."""

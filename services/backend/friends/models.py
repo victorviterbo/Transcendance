@@ -18,3 +18,10 @@ class Friendship(models.Model):
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'),
                                                       ('accepted', 'Accepted')])
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        """Contrains the model to prevent multiple friendrequests."""
+        constraints = [
+            models.UniqueConstraint(fields=['from_user', 'to_user'],
+                                    name='unique_friend_request')
+        ]

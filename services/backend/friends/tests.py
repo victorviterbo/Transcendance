@@ -64,7 +64,7 @@ class FriendRequestsTests(APITestCase):
                     self.assertEqual('REALLY_SAD', response.data['error']['friendship'])
                 elif target_username in ['an_anonymous_user', '']:
                     self.assertIn('target-username', response.data['error'])
-                    self.assertEqual('NOT_FOUND',
+                    self.assertEqual('USER_NOT_FOUND',
                                      response.data['error']['target-username'])
             else:
                 self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -88,7 +88,7 @@ class FriendRequestsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('friendship', response.data['error'])
-        self.assertEqual('ALREADY_EXISTS', response.data['error']['friendship'])
+        self.assertEqual('FRIENDSHIP_ALREADY_EXISTS', response.data['error']['friendship'])
 
     def test_respond_request(self) -> None:
         """Test success and failure of access token regeneration operation."""
@@ -115,11 +115,11 @@ class FriendRequestsTests(APITestCase):
                     self.assertIn('error', response.data)
                     if target_username in ['user1', 'user2']:
                         self.assertIn('friendship', response.data['error'])
-                        self.assertEqual('NOT_FOUND',
+                        self.assertEqual('FRIENDSHIP_NOT_FOUND',
                                          response.data['error']['friendship'])
                     elif target_username in ['an_anonymous_user', '']:
                         self.assertIn('target-username', response.data['error'])
-                        self.assertEqual('NOT_FOUND',
+                        self.assertEqual('USER_NOT_FOUND',
                                          response.data['error']['target-username'])
             
             login_res = user1.post(login_url, data={'email': 'user1@mail.com',
@@ -154,7 +154,7 @@ class FriendRequestsTests(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertIn('description', response.data)
             if res == 'accept':
-                self.assertEqual('REQUEST_ACCEPTED', response.data['description'])
+                self.assertEqual('FRIENDSHIP_REQUEST_ACCEPTED', response.data['description'])
                 response = user2.get(friend_request_see_url)
                 self.assertEqual(0, len(response.data['outgoing']))
                 self.assertEqual(0, len(response.data['incomming']))
@@ -163,7 +163,7 @@ class FriendRequestsTests(APITestCase):
                 self.assertEqual(1, len(response.data['friends']))
 
             elif res == 'reject':
-                self.assertEqual('REQUEST_REJECTED', response.data['description'])
+                self.assertEqual('FRIENDSHIP_REQUEST_REJECTED', response.data['description'])
                 response = user2.get(friend_request_see_url)
                 self.assertEqual(0, len(response.data['incomming']))
                 self.assertEqual(0, len(response.data['outgoing']))
