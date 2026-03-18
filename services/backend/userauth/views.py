@@ -54,20 +54,19 @@ class RegisterView(APIView):
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
                 if any(['unique' in e['code'].lower() for e in error['email']]):
-                    error_response['error']['email'] = 'ALREADY_TAKEN'
+                    error_response['error']['email'] = 'EMAIL_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
-                    error_response['error']['email'] = 'INVALID'
+                    error_response['error']['email'] = 'INVALID_EMAIL'
             if error.get('profile_username'):
-                if any(['unique' in e['code'].lower() for e in error['profile_username']]):
-                    error_response['error']['username'] = 'ALREADY_TAKEN'
+                if any([e['code'] in ['unique', 'USERNAME_TAKEN']
+                        for e in error['profile_username']]):
+                    error_response['error']['username'] = 'USERNAME_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
-                    error_response['error']['username'] = 'INVALID'
+                    error_response['error']['username'] = 'INVALID_USERNAME'
             if error.get('password'):
-                error_response['error']['password'] = error['password'][0]['code']
-                if error_response['error']['password'] == 'blank':
-                    error_response['error']['password'] = 'PASSWORD_MIN'
+                error_response['error']['password'] = 'INVALID_PASSWORD'
             return Response(error_response, status=response_code)
 
 class LoginView(APIView):
@@ -90,7 +89,7 @@ class LoginView(APIView):
         """
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({'error': {'auth': 'AUTH_FAIL'}},
+            return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                         status=status.HTTP_401_UNAUTHORIZED)
         email = serializer.validated_data.get('email')
         password = serializer.validated_data.get('password')
@@ -110,9 +109,9 @@ class LoginView(APIView):
                 )
                 return response
             except ValueError:
-                return Response({'error': {'auth': 'AUTH_FAIL'}},
+                return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
-        return Response({'error': {'auth': 'AUTH_FAIL'}},
+        return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                         status=status.HTTP_401_UNAUTHORIZED)
 
 class LogoutView(APIView):
@@ -140,7 +139,7 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                return Response({'error': {'auth': 'AUTH_FAIL'}},
+                return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
@@ -188,8 +187,8 @@ class RefreshTokenView(TokenRefreshView):
                     return response
                 else:
                     return response
-            except Exception:
-                return Response({'error': {'cookie': 'INVALID'}}, # TODO test
+            except Exception as e:
+                return Response({'error': {'cookie': e.detail['code'].upper()}}, # TODO test
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)

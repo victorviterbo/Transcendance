@@ -2,8 +2,6 @@
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from userauth.models import SiteUser
-from userprofile.models import Profile
 
 from .models import Message, Room
 
@@ -11,41 +9,7 @@ from .models import Message, Room
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
 
-    async def connect(self):
-        """Accept a socket connection after resolving the room and checking access."""
-        self.profile = await self._get_profile_from_scope()
-        if not self.profile:
-            await self.close(code=4401)
-            return
-        
-        url_kwargs = self.scope.get('url_route', {}).get('kwargs', {})
-        self.room_name = url_kwargs.get('room_name')
-
-        self.room = await self._resolve_room(self.room_name)
-
-        if self.room_name and self.room is None:
-            await self.close(code=4404)
-            return
-
-        if self.room is not None and self.room.is_direct:
-            is_allowed = await self._is_room_participant()
-            if not is_allowed:
-                await self.close(code=4403)
-                return
-
-        if self.room is not None:
-            self.group_name = f'chat_room_{self.room.id}'
-        else:
-            self.group_name = 'chat_global'
-
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        """Remove the socket from its channel-layer group when disconnecting."""
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
-
-    async def receive_json(self, content, **kwargs):
+    async def ChatSubroutine(self, content, **kwargs):
         """Process incoming message, delivered, and read actions from the client."""
         action = content.get('action', 'message')
 
@@ -195,20 +159,3 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if changed:
             message.save(update_fields=['delivered', 'seen'])
         return True
-
-    @database_sync_to_async
-    def _get_profile_from_scope(self):
-        """Custom helper to find the Profile identity for a WebSocket connection."""
-        user = self.scope.get('user')
-        if user and isinstance(user, SiteUser) and user.is_authenticated:
-            try:
-                return user.profile 
-            except Profile.DoesNotExist:
-                return None
-        elif isinstance(user, Profile):
-            return user
-        session = self.scope.get('session', {})
-        guest_id = session.get('guest_profile_id')
-        if guest_id:
-            return Profile.objects.filter(id=guest_id, is_guest=True).first()
-        return None

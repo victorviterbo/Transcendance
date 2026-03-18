@@ -5,11 +5,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from userauth.models import SiteUser
 from userprofile.serializers import LightProfileSerializer
 
 from .models import Friendship
 from .serializers import FriendshipSerializer
-from userauth.models import SiteUser
+
 
 class FriendRequestsSeePend(APIView):
     """Define the function to display friends and friend requests."""
@@ -57,7 +58,7 @@ class FriendRequestsRespond(APIView):
                              status=status.HTTP_400_BAD_REQUEST))
         target_user = SiteUser.objects.filter(profile__username=target)
         if target_user.count() < 1:
-            return (Response({'error': {'target-username': 'NOT_FOUND'},
+            return (Response({'error': {'target-username': 'USER_NOT_FOUND'},
                               'requested': request.data.get('target-username')},
                               status=status.HTTP_400_BAD_REQUEST))
         sender = target_user.first()
@@ -70,16 +71,16 @@ class FriendRequestsRespond(APIView):
             if request.data['new-status'] == 'accept':
                 curr_relationship.status = 'accepted'
                 curr_relationship.save()
-                return Response({'description': 'REQUEST_ACCEPTED',
-                                 'target-username': target}, 
+                return Response({'description': 'FRIENDSHIP_REQUEST_ACCEPTED',
+                                 'target-username': target},
                                 status=status.HTTP_200_OK)
             elif request.data['new-status'] == 'reject':
                 curr_relationship.delete()
-                return Response({'description': 'REQUEST_REJECTED',
+                return Response({'description': 'FRIENDSHIP_REQUEST_REJECTED',
                                     'target-username': target}, 
                                 status=status.HTTP_200_OK)
         
-        return Response({'error': {'friendship': 'NOT_FOUND'}}, 
+        return Response({'error': {'friendship': 'FRIENDSHIP_NOT_FOUND'}},
                         status=status.HTTP_400_BAD_REQUEST)
             
 class FriendRequestsSend(APIView):
@@ -94,7 +95,7 @@ class FriendRequestsSend(APIView):
                                 status=status.HTTP_400_BAD_REQUEST))
         target_user = SiteUser.objects.filter(profile__username=target)
         if target_user.count() < 1:
-            return (Response({'error': {'target-username': 'NOT_FOUND'},
+            return (Response({'error': {'target-username': 'USER_NOT_FOUND'},
                                 'requested': request.data.get('target-username')},
                                 status=status.HTTP_400_BAD_REQUEST))
         recipient = target_user.first()
@@ -107,7 +108,7 @@ class FriendRequestsSend(APIView):
             to_user=recipient,
         )
         if curr_relationship.exists():
-            return Response({'error': {'friendship': 'ALREADY_EXISTS'},
+            return Response({'error': {'friendship': 'FRIENDSHIP_ALREADY_EXISTS'},
                             'request_status': curr_relationship.first().status},
                             status=status.HTTP_400_BAD_REQUEST)
         Friendship.objects.create(

@@ -54,13 +54,13 @@ def validate_email(value: str, is_creation: bool = False) -> str:
     """
     if not value:
         raise serializers.ValidationError('Email is required.',
-                                            code='invalid-data')
+                                            code='MISSING_FIELD')
     value = SiteUser.objects.normalize_email(value)
     if (value.endswith("@gmail.com")):
         value = gmail_specific_normalize(value)
     if is_creation and SiteUser.objects.filter(email=value).exists():
         raise serializers.ValidationError('Email already taken',
-                                        code='unique')
+                                        code='EMAIL_TAKEN')
 
     return value
 

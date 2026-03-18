@@ -9,7 +9,7 @@ badges_strings = ["Deaf Octopus", # <100
                   "Attentive Owl", # < 2000
                   "Rhythmic Raptor", # < 5000
                   "Sonic Shark", # < 10000
-                  "Echolocating Bat" # > 100000
+                  "Echolocating Bat" # > 10000
                  ]
 
 def get_badge(number: int) -> str:

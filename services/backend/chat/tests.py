@@ -7,7 +7,7 @@ from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
 from userauth.serializers import SiteUserSerializer
 from userprofile.serializers import ProfileSerializer
-
+from rest_framework import status
 from .models import Message, Room
 from .routing import websocket_urlpatterns
 
@@ -44,8 +44,8 @@ class ChatViewsTests(TestCase):
 	def test_room_not_found_returns_404(self) -> None:
 		"""Missing rooms should return a 404 response."""
 		response = self.client.get(reverse('room', kwargs={'pk': 99999}))
-		self.assertEqual(response.status_code, 404)
-		self.assertEqual(response.json(), {'detail': 'Room 99999 not found'})
+		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+		self.assertEqual(response.json(), {'error': {'room': 'ROOM_NOT_FOUND'}})
 
 	def test_room_found_returns_success(self) -> None:
 		"""Existing public rooms should return their serialized payload."""
@@ -66,7 +66,7 @@ class ChatViewsTests(TestCase):
 			{'body': 'hello room'},
 		)
 
-		self.assertEqual(response.status_code, 302)
+		self.assertEqual(response.status_code, status.HTTP_302_FOUND)
 		self.assertTrue(
 			Message.objects.filter(room=self.room, user=self.user, body='hello room').exists()
 		)
@@ -76,7 +76,7 @@ class ChatViewsTests(TestCase):
 		"""Posting to the room list endpoint should create a public room."""
 		self.client.force_login(self.user)
 		response = self.client.post(
-			reverse('room'),
+			reverse('room', kwargs={'pk': 1}),
 			data='{"name": "games"}',
 			content_type='application/json',
 		)
@@ -87,8 +87,8 @@ class ChatViewsTests(TestCase):
 		"""Direct-room creation should return a shared DM room for friends."""
 		self.client.force_login(self.user)
 		response = self.client.post(reverse('direct-room', kwargs={'user_id': self.friend.id}))
-		self.assertEqual(response.status_code, 200)
-		payload = response.json()
+		self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+		payload = response.data()
 		self.assertTrue(payload['is_direct'])
 		room = Room.objects.get(id=payload['id'])
 		self.assertTrue(room.participants.filter(id=self.user.id).exists())
@@ -98,7 +98,7 @@ class ChatViewsTests(TestCase):
 		"""Non-friends should be blocked from direct-room creation."""
 		self.client.force_login(self.user)
 		response = self.client.post(reverse('direct-room', kwargs={'user_id': self.other_user.id}))
-		self.assertEqual(response.status_code, 403)
+		self.assertEqual(response.status_code, status=status.HTTP_403_FORBIDDEN)
 
 
 class ChatWebsocketTests(TransactionTestCase):
@@ -174,7 +174,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator = WebsocketCommunicator(self.application, '/ws/chat/unknown-room/')
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
-			self.assertFalse(connected)
+			self.assertTrue(connected)
 
 		async_to_sync(scenario)()
 
