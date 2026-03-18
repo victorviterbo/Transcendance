@@ -79,9 +79,8 @@ class ProfileView(APIView):
                 400: {"error": "Could not update Profile"}
                 401: {"error": "Unauthorized: <error>"}
         """
-        profile = request.user.profile
         try:
-            profile_serializer = ProfileSerializer(instance=profile,
+            profile_serializer = ProfileSerializer(instance=request.profile,
                                                    data=request.data,
                                                    partial=True,
                                                    many=False)

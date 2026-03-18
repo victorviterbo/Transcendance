@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from userprofile.models import Profile
 
 from .models import SiteUser
 from .serializers import LoginSerializer, SiteUserSerializer
@@ -33,10 +34,13 @@ class RegisterView(APIView):
         try:
             renamed_data = request.data.copy()
             renamed_data['profile_username'] = renamed_data.pop('username')
-            serializer = SiteUserSerializer(data=renamed_data,
-                                            context={'is_creation': True})
+            serializer = serializer = SiteUserSerializer(data=renamed_data,
+                                                         context={
+                                                             'request': request,
+                                                             'is_creation': True}
+            )
             if serializer.is_valid(raise_exception=True):
-                serializer.save(profile_username=request.data.get('username'))
+                user = serializer.save(profile_username=request.data.get('username'))
                 token = RefreshToken.for_user(serializer.instance)
                 response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},
@@ -47,7 +51,10 @@ class RegisterView(APIView):
                     httponly=True, secure=True, samesite='Lax',
                     path='/api/auth/'
                 )
+                request.session.pop('guest_profile_id', None)
+                request.session.modified = True
                 return response
+        
         except serializers.ValidationError as e:
             error = e.get_full_details()
             error_response = {'error':{}}
@@ -107,6 +114,11 @@ class LoginView(APIView):
                     httponly=True, secure=True, samesite='Lax',
                     path='/api/auth/'
                 )
+                guest_id = request.session.get('guest_profile_id')
+                if guest_id:
+                    Profile.objects.filter(id=guest_id, is_guest=True).delete()
+                    request.profile = user.profile
+                    request.session.pop('guest_profile_id', None)
                 return response
             except ValueError:
                 return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},

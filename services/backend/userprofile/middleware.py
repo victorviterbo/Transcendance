@@ -19,13 +19,12 @@ class ProfileMiddleware:
                 request.profile = Profile.objects.filter(id=guest_id, is_guest=True).first()
         if not request.profile:
             guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
-            profile = Profile.objects.create(
+            request.profile = Profile.objects.create(
                 username=guest_username,
                 is_guest=True
             )
-            request.session['guest_profile_id'] = profile.id
+            request.session['guest_profile_id'] = request.profile.id
             request.session.modified = True
 
-        request.profile = profile
         
         return self.get_response(request)

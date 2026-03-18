@@ -38,6 +38,10 @@ class Profile(models.Model):
 
     is_guest = models.BooleanField(default=True)
 
+    is_online = models.BooleanField(default=True)
+    
+    last_active = models.DateTimeField(auto_now=True)
+    
     class Meta:
         """Enforce uniqueness only if the username is not Anonymous."""
         constraints = [
