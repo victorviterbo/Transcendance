@@ -16,18 +16,18 @@ from .models import Message, Room
 User = get_user_model()
 
 
-def _direct_key_for(user_a: Profile, user_b: Profile) -> str:
+def _direct_key_for(profile_a: Profile, profile_b: Profile) -> str:
     """Generate a stable, unique key for a direct message room between two users.
 
     Ensures Alice↔Bob has the same key regardless of call order.
 
     Args:
-        user_a, user_b: User objects
+        profile_a, profile_b: User's Profile objects
     
     Returns:
         String key 'user_<min_id>_user_<max_id>'
     """
-    id_a, id_b = user_a.id, user_b.id
+    id_a, id_b = profile_a.id, profile_b.id
     min_id, max_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
     return f'user_{min_id}_user_{max_id}'
 

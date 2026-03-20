@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.db import models
+from game.models import Game
 from project.defaults import badges_strings
 from userauth.models import SiteUser
 
@@ -41,7 +42,7 @@ class Profile(models.Model):
     is_online = models.BooleanField(default=True)
     
     last_active = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         """Enforce uniqueness only if the username is not Anonymous."""
         constraints = [
