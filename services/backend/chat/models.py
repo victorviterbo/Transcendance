@@ -38,4 +38,4 @@ class Message(models.Model):
 
 	def __str__(self) -> None:
 		"""Return a short preview of the message body."""
-		return self.body[0:50]
+		return f'{self.body[0:50]} from {self.sender_profile}'

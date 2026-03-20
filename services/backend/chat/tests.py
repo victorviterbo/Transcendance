@@ -1,16 +1,16 @@
 """Tests for chat HTTP endpoints and WebSocket behavior."""
 
 from asgiref.sync import async_to_sync
-from channels.routing import URLRouter
 from channels.testing import WebsocketCommunicator
 from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
+from project.asgi import application
+from rest_framework import status
 from userauth.serializers import SiteUserSerializer
 from userprofile.serializers import ProfileSerializer
-from rest_framework import status
+
 from .models import Message, Room
-from project.routing import websocket_urlpatterns
-from project.asgi import application
+
 
 class ChatViewsTests(TestCase):
 	"""Validate chat HTTP endpoints."""
@@ -129,6 +129,13 @@ class ChatWebsocketTests(TransactionTestCase):
 
 		serializer = ProfileSerializer(data={'username':'guest_user'},
 										context={'is_creation': True})
+	
+		Room.objects.create(name='default_room', is_direct=False)
+		if serializer.is_valid():
+			self.stranger = serializer.save()
+
+		serializer = ProfileSerializer(data={'username':'guest_user'},
+										context={'is_creation': True})
 		
 		if serializer.is_valid():
 			self.anonymous = serializer.save()
@@ -163,7 +170,6 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator = WebsocketCommunicator(application, '/ws/global/')
 			communicator.scope['user'] = self.anonymous
 			connected, _ = await communicator.connect()
-			print(_)
 			self.assertTrue(connected)
 			await communicator.disconnect()
 
@@ -204,6 +210,7 @@ class ChatWebsocketTests(TransactionTestCase):
 
 			await communicator.send_json_to({'module': 'chat', 'action': 'message', 'message': 'hello websocket'})
 			response = await communicator.receive_json_from()
+			print(response)
 			self.assertEqual(response['type'], 'chat_message')
 			self.assertEqual(response['sender'], 'chat_test_user')
 			self.assertEqual(response['message'], 'hello websocket')
@@ -211,11 +218,13 @@ class ChatWebsocketTests(TransactionTestCase):
 			await communicator.disconnect()
 
 		async_to_sync(scenario)()
-
+		print(Message.objects.all())
+		print(self.user.profile)
 		self.assertTrue(
-			Message.objects.filter(room=self.room, user=self.user.profile,
+			Message.objects.filter(sender_profile=self.user.profile,
 									body='hello websocket').exists()
 		)
+		print(self.room.participants)
 		self.assertTrue(self.room.participants.filter(id=self.user.profile.id).exists())
 
 	def test_direct_room_websocket_rejects_non_participant(self) -> None:
