@@ -3,6 +3,8 @@
 The following models are defines:
     - Friendship
 """
+import uuid
+
 from django.db import models
 from userauth.models import SiteUser
 
@@ -12,11 +14,16 @@ class Friendship(models.Model):
     from_user = models.ForeignKey(SiteUser,
                                   related_name='sent_requests',
                                   on_delete=models.CASCADE)
+    
     to_user = models.ForeignKey(SiteUser,
                                 related_name='received_requests',
                                 on_delete=models.CASCADE)
+    
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'),
                                                       ('accepted', 'Accepted')])
+
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

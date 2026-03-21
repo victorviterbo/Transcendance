@@ -2,9 +2,8 @@
 
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from userprofile.serializers import ProfileSerializer
-
 from userauth.serializers import SiteUserSerializer
+from userprofile.serializers import ProfileSerializer
 
 
 class FriendRequestsTests(APITestCase):
