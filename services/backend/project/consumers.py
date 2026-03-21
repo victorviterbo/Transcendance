@@ -1,11 +1,13 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
 from channels.db import database_sync_to_async
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import (
+    AsyncJsonWebsocketConsumer,
+    AsyncWebsocketConsumer,
+)
 from chat.models import Message, Room
-from friends import Friendship
-
-#from chat.socket import ChatConsumer
+from friends.models import Friendship
+from game.models import Game
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -22,7 +24,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.group_name = None
         self.chat_group_name = f"chat_{self.room_name}"
     
-    async def connect(self):
+    async def connect(self) -> None:
         self.profile = await self._get_profile_from_scope()
         if not self.profile:
             await self.close(code=4401)
@@ -34,14 +36,14 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
         return
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, close_code) -> None:
         """Remove the socket from its channel-layer group when disconnecting."""
         for layer in self.active_layers:
             await self.channel_layer.group_discard(layer, self.channel_name)
         await self._update_online_status(False)
         return
     
-    async def receive_json(self, content):
+    async def receive_json(self, content) -> None:
         module = content.get("module")
         if module == "chat":
             await self.chat_subroutine(content)
@@ -51,24 +53,24 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=4405)
         return
     
-    async def add_to_layer(self, group_name):
+    async def add_to_layer(self, group_name: str) -> None:
         await self.channel_layer.group_add(group_name, self.channel_name)
         self.active_layers.add(group_name)
 
-    async def remove_from_layer(self, group_name):
+    async def remove_from_layer(self, group_name: str) -> None:
         await self.channel_layer.group_discard(group_name, self.channel_name)
         self.active_layers.remove(group_name)
 
-    async def group_send(self, group_name, message):
+    async def group_send(self, group_name: str, message: dict) -> None:
         await self.channel_layer.group_send(group_name, message)
 
     @database_sync_to_async
-    def _get_profile_from_scope(self):
+    def _get_profile_from_scope(self) -> Profile:
         """Custom helper to find the Profile identity for a WebSocket connection."""
-        user = self.scope.get('user')
-        if user and isinstance(user, SiteUser) and user.is_authenticated:
+        self.user = self.scope.get('user')
+        if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
             try:
-                return user.profile
+                return self.user.profile
             except Profile.DoesNotExist:
                 return None
         profile = self.scope.get('profile')
@@ -90,19 +92,19 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_json({'type': 'error',
                                       'message': 'message is required'})
                 return
-            msg_obj, response = await self._save_message(body, action, content)
-            if not msg_obj:
-                await self.send_json(response)
+            success, message = await self._save_message(body, action, content)
+            if not success:
+                await self.send_json(message)
                 return
 
             await self.group_send(f'user_{self.profile.id}', {
                 'type': 'chat.message',
-                'message_id': msg_obj.id,
-                'message': msg_obj.body,
+                'message_uid': message.uid,
+                'message': message.body,
                 'sender': self._sender_name(),
-                'created': msg_obj.created.isoformat(),
-                'delivered': msg_obj.delivered,
-                'seen': msg_obj.seen,
+                'created': message.created.isoformat(),
+                'delivered': message.delivered,
+                'seen': message.seen,
             })
             return
         elif action == 'direct-message':
@@ -111,19 +113,19 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_json({'type': 'error',
                                       'message': 'message is required'})
                 return
-            msg_obj, response = await self._save_message(body, action)
-            if not msg_obj:
-                await self.send_json(response)
+            success, message = await self._save_message(body, action, content)
+            if not success:
+                await self.send_json(message)
                 return
 
             await self.group_send(f'user_{self.profile.id}', {
                 'type': 'chat.message',
-                'message_id': msg_obj.id,
-                'message': msg_obj.body,
+                'message_id': message.id,
+                'message': message.body,
                 'sender': self._sender_name(),
-                'created': msg_obj.created.isoformat(),
-                'delivered': msg_obj.delivered,
-                'seen': msg_obj.seen,
+                'created': message.created.isoformat(),
+                'delivered': message.delivered,
+                'seen': message.seen,
             })
             return
         elif action in ('delivered', 'read'):
@@ -152,12 +154,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({'type': 'error', 'message': 'unsupported_action'})
 
     @database_sync_to_async
-    def _update_online_status(self, is_online):
+    def _update_online_status(self, is_online: bool) -> None:
         self.profile.is_online = is_online
         self.profile.save(update_fields=['is_online'])
     
 
-    async def chat_message(self, event):
+    async def chat_message(self, event: dict) -> None:
         """Forward a chat message event to the connected client."""
         await self.send_json({
             'type': 'chat_message',
@@ -170,7 +172,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'seen': event.get('seen'),
         })
 
-    async def status_update(self, event):
+    async def status_update(self, event: dict) -> None:
         """Forward a delivery or read status update to the connected client."""
         await self.send_json({
             'type': 'status_update',
@@ -179,27 +181,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'username': event['username'],
         })
 
-    def _sender_name(self):
+    def _sender_name(self) -> str:
         """Return the authenticated sender username or an anonymous fallback."""
         if self.profile:
             return self.profile.username
         return 'anonymous'
-
-    def _resolve_room(self): #, room_ref=None
-        """Resolve a room from either its numeric id or its string name."""
-        """if room_ref is None:
-            return None
-        try:
-            room_id = int(room_ref)
-            room = Room.objects.filter(id=room_id).first()
-            if room:
-                return room
-        except (TypeError, ValueError):
-            pass
-
-        if room_ref:
-            return Room.objects.filter(name=room_ref).first()
-        return None"""
+    
 
     def _is_room_participant(self) -> bool:
         """Return whether profile (user) belongs to the current direct room."""
@@ -208,41 +195,59 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return self.room.participants.filter(id=self.profile.id).exists()
 
     @database_sync_to_async
-    def _save_message(self, body, action, content):
+    def _save_message(self, body: str,
+                      action: str,
+                      content: dict) -> tuple[bool, Message | dict]:
         """Persist a message for the profile (user) in the resolved room."""
+        room = None
         if action == 'direct-message':
-            target_profile = Profile.objects.filter(username=content['target-username'])
-            if not target_profile.exists():
-                return False, {'type': 'error', 'message': 'Username not found'}
-            if not self.user or not self.user.isauthenticated:
-                return False, {'type': 'error', 'message': 'Authentication failed'}
-            if not (Friendship.objects.filter(from_user=target_profile.user, to_user=self.user).exists() or
-                    Friendship.objects.filter(from_user=self.user, to_user=target_profile.user).exists()):
-                return False, {'type': 'error', 'message': 'Target is not a friend'}
-            id_a, id_b = self.profile.id, target_profile
+            if not self.user or not self.user.is_authenticated:
+                return False, {'type': 'error',
+                               'message': 'Authentication failed'}
+            target_user = SiteUser.objects.filter(uid=content['user-uid']).first()
+            if target_user is None:
+                return False, {'type': 'error',
+                               'message': 'User not found'}
+            if not (Friendship.objects.filter(from_user__in=[target_user, self.user],
+                                              to_user__in=[self.user, target_user]).exists()):
+                return False, {'type': 'error',
+                               'message': 'Target is not a friend'}
+            target_profile = target_user.profile
+            id_a, id_b = self.profile.uid, target_profile.uid
             min_id, max_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
-            room, created = Room.objects.get_or_create(room_name=f'user_{min_id}_user_{max_id}')
+            room, created = Room.objects.get_or_create(name=f'user_{min_id}_user_{max_id}')
             if created:
-                room.add_participants(self.profile)
-                room.add_participants(target_profile)
+                room.participants.add(self.profile)
+                room.participants.add(target_profile)
         elif action == 'chat-message':
-            if self.profile.game and self.profile.game:
-                self.room = self.profile.game.room
+            if content.get('room-uid'):
+                room = Room.objects.filter(uid=content['room-uid']).first()
+                self.room = room
+            elif self.room:
                 room = self.room
+            else:
+                game = Game.objects.filter(
+                    is_over=False,
+                    players=self.profile).first().room
+                if game and self.profile.game:
+                    self.room = game.room
+                    room = self.room
         if room is None or self.profile is None:
-            return False, {'type': 'error', 'message': 'An unexpected error occured'}
-        
+            return False, {'type': 'error',
+                           'message': 'An unexpected error occured'}
+        if not room.participants.filter(uid=self.profile.uid).exists():
+            return False, {'type': 'error',
+                           'message': 'Not a chat member'}
         message = Message.objects.create(
             sender_profile=self.profile,
             room=room,
             body=body,
         )
 
-        room.participants.add(self.profile)
-        return message
+        return True, message
 
     @database_sync_to_async
-    def _mark_delivered(self, message_id):
+    def _mark_delivered(self, message_id: str) -> bool:
         """Mark a room message as delivered if it exists."""
         message = Message.objects.filter(id=message_id).first()
         if not message:
@@ -253,7 +258,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return True
 
     @database_sync_to_async
-    def _mark_seen(self, message_id):
+    def _mark_seen(self, message_id) -> bool:
         """Mark a room message as seen and delivered if it exists."""
         message = Message.objects.filter(id=message_id, room=self.room).first()
         if not message:
@@ -268,3 +273,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if changed:
             message.save(update_fields=['delivered', 'seen'])
         return True
+
+class NotFoundConsumer(AsyncWebsocketConsumer):
+    """Handle non-existant endpoint communication."""
+
+    async def connect(self) -> None:
+        """Reject connections to wrong endpoints."""
+        await self.close(code=4040)

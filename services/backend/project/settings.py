@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
+    'game.apps.GameConfig',
     'music.apps.MusicConfig',
     'userauth.apps.UsersConfig',
     'userprofile.apps.UserprofileConfig',

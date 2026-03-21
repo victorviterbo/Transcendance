@@ -22,7 +22,7 @@ def validate_username(value: str, is_creation: bool = False) -> str:
         ValidationError: If the username is empty
         ValidationError: If the username is already taken
     """
-    if not value: 
+    if not value:
         raise serializers.ValidationError('Username is required.',
                                           code='invalid-data')
     if any(pattern in value for pattern in ['/', '\\', '..', '~']):
