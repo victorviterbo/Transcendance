@@ -1,4 +1,5 @@
 """Define the statistics model."""
+
 from __future__ import annotations
 
 from datetime import timedelta

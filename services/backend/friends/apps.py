@@ -1,3 +1,5 @@
+"""Django app configuration for the friends application."""
+
 from django.apps import AppConfig
 
 

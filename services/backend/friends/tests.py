@@ -1,3 +1,5 @@
+"""Tests for the friends module."""
+
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userprofile.serializers import ProfileSerializer

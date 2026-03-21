@@ -1,4 +1,5 @@
 """Defines the views relatives to user registration, login, password change etc."""
+
 from django.db.models import Q
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
