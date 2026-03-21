@@ -1,4 +1,5 @@
 """Defines the views relatives to user registration, login, password change etc."""
+
 from typing import Any
 
 from django.contrib.auth import authenticate

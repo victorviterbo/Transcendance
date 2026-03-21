@@ -1,5 +1,5 @@
-
 """Define export of Profile (full and light version) and Freiendship handling."""
+
 from io import BytesIO
 from typing import Any
 

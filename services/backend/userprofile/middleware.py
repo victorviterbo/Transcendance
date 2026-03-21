@@ -1,4 +1,5 @@
 """Attach the profile to every client on the site."""
+
 import uuid
 
 from userprofile.models import Profile

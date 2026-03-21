@@ -1,5 +1,5 @@
-
 """Defines the views relatives to user registration, login, password change etc."""
+
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request

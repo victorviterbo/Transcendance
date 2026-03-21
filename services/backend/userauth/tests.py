@@ -1,9 +1,7 @@
-"""Tests for the users module."""
-
+"""Tests for the authentication user module."""
 
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
-from userprofile.serializers import ProfileSerializer
+from rest_framework.test import APITestCase
 
 from .models import SiteUser
 from .serializers import SiteUserSerializer
