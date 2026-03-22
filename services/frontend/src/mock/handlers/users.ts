@@ -114,10 +114,7 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 		}
 	}
 
-	if (
-		typeof payload.currentPassword === "string" ||
-		typeof payload.newPassword === "string"
-	) {
+	if (typeof payload.currentPassword === "string" || typeof payload.newPassword === "string") {
 		const currentPassword =
 			typeof payload.currentPassword === "string" ? payload.currentPassword : "";
 		const newPassword = typeof payload.newPassword === "string" ? payload.newPassword : "";
@@ -150,9 +147,16 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 	}
 
 	if (nextPassword) {
-		const passwordUpdated = db.updatePassword(updated.username, sessionUser.password, nextPassword);
+		const passwordUpdated = db.updatePassword(
+			updated.username,
+			sessionUser.password,
+			nextPassword,
+		);
 		if (!passwordUpdated) {
-			return HttpResponse.json({ error: { currentPassword: "INVALID_PASSWORD" } }, { status: 400 });
+			return HttpResponse.json(
+				{ error: { currentPassword: "INVALID_PASSWORD" } },
+				{ status: 400 },
+			);
 		}
 	}
 
