@@ -2,8 +2,9 @@ import { useState } from "react";
 import CButtonLanguage from "../../inputs/buttons/CButtonLanguage";
 import CDialog, { type CDialogProps } from "./CDialog";
 import CRadioGroup from "../../inputs/radio/CRadioGroup";
-import { Box, DialogTitle } from "@mui/material";
-import { currentLang, onLangChanged, ttr } from "../../../localization/localization";
+import { Box } from "@mui/material";
+import { currentLang, onLangChanged } from "../../../localization/localization";
+import CDialogTitle from "./CDialogTitle";
 
 export interface CDialogLanguageProps extends CDialogProps {}
 
@@ -25,7 +26,7 @@ function CDialogLanguage({ open, ...other }: CDialogLanguageProps) {
 				{...other}
 			>
 				<Box>
-					<DialogTitle>{ttr("LANG_SELECT")}</DialogTitle>
+					<CDialogTitle>LANG_SELECT</CDialogTitle>
 					<CRadioGroup
 						defaultValue={currentLangState}
 						options={[
