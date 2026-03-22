@@ -212,7 +212,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 			})}
 
 			{formError && (
-				<CText color="error" size="sm" sx={{ mt: 1 }}>
+				<CText color="error.main" size="sm" sx={{ mt: 1 }}>
 					{formError}
 				</CText>
 			)}

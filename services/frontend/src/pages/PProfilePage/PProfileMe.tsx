@@ -49,7 +49,7 @@ const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfo
 					<CText size="sm">Badge: {badge}</CText>
 					<CText size="sm">XP: {xp}</CText>
 					{error && (
-						<CText size="sm" color="error">
+						<CText size="sm" color="error.main">
 							{error}
 						</CText>
 					)}

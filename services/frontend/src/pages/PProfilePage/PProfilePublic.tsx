@@ -88,7 +88,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 								<CText size="sm">Badge: {displayBadge}</CText>
 								<CText size="sm">XP: {displayXp}</CText>
 								{error && (
-									<CText size="sm" color="error">
+									<CText size="sm" color="error.main">
 										{error}
 									</CText>
 								)}
