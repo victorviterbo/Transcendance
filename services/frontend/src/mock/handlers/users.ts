@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { checkEmailValid, checkPasswordValid, checkUsernameValid } from "../../utils/enforcement";
-import { db, normalizeEmail, normalizeUsername } from "../db";
+import { db, normalizeEmail, normalizeUsername, type MockUser } from "../db";
 import { API_PROFILE, API_PROFILE_SEARCH } from "../../constants";
 
 type ProfilePayload = {
@@ -12,6 +12,16 @@ type ProfilePayload = {
 };
 
 const unauthorized = () => HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
+const DEFAULT_PROFILE_IMAGE = "/DB/media/default_pp.jpg";
+
+const toProfileResponse = (user: MockUser) => ({
+	username: user.username,
+	image: DEFAULT_PROFILE_IMAGE,
+	exp_points: user.expPoints,
+	badges: user.badges,
+	created_at: new Date().toISOString(),
+	email: user.email,
+});
 
 const readProfilePayload = async (request: Request): Promise<Record<string, unknown>> => {
 	const contentType = request.headers.get("content-type") ?? "";
@@ -48,17 +58,7 @@ export const GetMeHandler = http.get(API_PROFILE, ({ request }) => {
 		return HttpResponse.json({ error: "No profile with this username" }, { status: 400 });
 	}
 
-	return HttpResponse.json(
-		{
-			username: user.username,
-			image: user.image ?? "/DB/media/default_pp.jpg",
-			exp_points: user.expPoints,
-			badges: user.badges,
-			email: db.findUserByUsername(user.username)?.email,
-			created_at: new Date().toISOString(),
-		},
-		{ status: 200 },
-	);
+	return HttpResponse.json(toProfileResponse(user), { status: 200 });
 });
 
 export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
@@ -114,10 +114,6 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 		}
 	}
 
-	if (typeof payload.image === "string") {
-		updates.image = payload.image.trim().length > 0 ? payload.image.trim() : null;
-	}
-
 	if (
 		typeof payload.currentPassword === "string" ||
 		typeof payload.newPassword === "string"
@@ -160,7 +156,7 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 		}
 	}
 
-	return HttpResponse.json({ description: "Updated Profile successfully" }, { status: 200 });
+	return HttpResponse.json(toProfileResponse(updated), { status: 200 });
 });
 
 export const ProfileSearchHandler = http.get(API_PROFILE_SEARCH, ({ request }) => {
@@ -181,7 +177,7 @@ export const ProfileSearchHandler = http.get(API_PROFILE_SEARCH, ({ request }) =
 		[
 			{
 				username: user.username,
-				image: user.image ?? "/DB/media/default_pp.jpg",
+				image: DEFAULT_PROFILE_IMAGE,
 				is_guest: user.isGuest ?? false,
 				session_key: user.sessionKey ?? null,
 			},
