@@ -32,13 +32,7 @@ const PAuthPage = () => {
 							/>
 						</CTabs>
 					) : (
-						<PWelcomLogin
-							user={user}
-							isBack={isBack}
-							onReset={() => {
-								setUser(null);
-							}}
-						></PWelcomLogin>
+						<PWelcomLogin user={user} isBack={isBack}></PWelcomLogin>
 					)}
 				</CTitlePaper>
 			</Container>

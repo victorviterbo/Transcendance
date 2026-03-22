@@ -11,16 +11,13 @@ interface PWelcomLoginProps extends GPageProps {
 	//Data
 	user: IAuthUser;
 	isBack: boolean;
-
-	//Events
-	onReset?: () => void;
 }
 
 //--------------------------------------------------
 //                   COMPONENT
 //--------------------------------------------------
 //TODO: Replace with cutom button and text
-function PWelcomLogin({ user, isBack, onReset }: PWelcomLoginProps) {
+function PWelcomLogin({ user, isBack }: PWelcomLoginProps) {
 	const navigate = useNavigate();
 	//====================== FUNCTIONS ======================
 	function getMSG(): string {
@@ -38,11 +35,10 @@ function PWelcomLogin({ user, isBack, onReset }: PWelcomLoginProps) {
 				<CButtonText
 					variant="contained"
 					onClick={() => {
-						onReset?.();
 						navigate("/");
 					}}
 				>
-					Back to Home
+					Back to home
 				</CButtonText>
 			</Stack>
 		</>
