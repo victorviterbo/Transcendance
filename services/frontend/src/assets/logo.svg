@@ -22,12 +22,12 @@
     <!-- Music note -->
     <g transform="rotate(-8 90 78)">
       <ellipse cx="76" cy="100" rx="16" ry="11.5" fill="url(#note-fill)" stroke="#170F38" stroke-width="4"/>
-      <rect x="89" y="52" width="11" height="44" rx="5.5" fill="url(#note-fill)" stroke="#170F38" stroke-width="4"/>
       <path d="M94 56
                C101 49.5 111 47.5 118 50.5
                L118 65
                C110 61.5 101 62.5 94 68 Z"
             fill="url(#note-fill)" stroke="#170F38" stroke-width="4" stroke-linejoin="round"/>
+      <rect x="89" y="52" width="11" height="44" rx="5.5" fill="url(#note-fill)" stroke="#170F38" stroke-width="4"/>
     </g>
 
 <g transform="translate(19,8) scale(0.95)">
