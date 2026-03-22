@@ -76,15 +76,34 @@ function CNavbar() {
 			<Toolbar>
 				<IconButton
 					size="medium"
-					edge="start"
 					color="inherit"
 					component={Link}
 					to="/"
 					aria-label="Home"
+					sx={{
+						height: 54,
+						width: 54,
+						padding: "4px",
+						border: "3px solid rgba(255, 255, 255, 0.82)",
+						backgroundColor: "rgba(255, 255, 255, 0.16)",
+						boxShadow: "0 6px 0 rgba(23, 15, 56, 0.2)",
+						"&:hover": {
+							backgroundColor: "rgba(255, 255, 255, 0.22)",
+						},
+					}}
 				>
-					<Box component="img" src={logo} alt="Guess Tunes logo" sx={{ height: 40 }} />
+					<Box
+						component="img"
+						src={logo}
+						alt="Guess Tunes logo"
+						sx={{
+							height: 42,
+							width: 42,
+							display: "block",
+						}}
+					/>
 				</IconButton>
-				<CTitle size="sm" sx={{ flexGrow: 1 }}>
+				<CTitle size="sm" sx={{ pl: 5, flexGrow: 1 }}>
 					Guess Tunes
 				</CTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
