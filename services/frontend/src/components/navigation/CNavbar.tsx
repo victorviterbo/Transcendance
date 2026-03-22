@@ -43,8 +43,8 @@ function CNavbar() {
 	};
 
 	const guestItems: TNavItem[] = [
-		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
-		{ kind: "link", label: "Log in", to: "/auth" },
+		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
+		{ kind: "link", label: "LOGIN", to: "/auth" },
 	];
 
 	const authedItems: TNavItem[] = [
