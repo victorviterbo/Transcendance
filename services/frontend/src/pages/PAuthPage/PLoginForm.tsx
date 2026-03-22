@@ -49,7 +49,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 				password: values.password.trim(),
 			});
 			if (!res.data?.access || !res.data?.username) {
-				return { valid: false, msg: "Login failed." };
+				return { valid: false, msg: "LOGIN_FAILED" };
 			}
 			const username = res.data.username;
 			const user: IAuthUser = { username, email: values.email };
@@ -57,7 +57,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 			onSuccess?.(user);
 			return { valid: true };
 		} catch (error) {
-			return { valid: false, msg: getErrorMessage(error, "Login failed.") };
+			return { valid: false, msg: getErrorMessage(error, "LOGIN_FAILED") };
 		}
 	}
 

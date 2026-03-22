@@ -40,6 +40,8 @@ JOIN,Join,Rejoindre,参加,Used to join a room
 FRIEND_ROOM,Friends' rooms,Salles d'amis,フレンドのルーム,The word room is for a virtual room
 PUBLIC_ROOM,Public rooms,Salles publiques,公開ルーム,The word room is for a virtual room
 MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Shown when a required field is missing
+LOGIN_FAILED,Login failed,Connexion échouée,ログインに失敗しました,Shown when an unknown error occured while logging in
+REGISTRATION_FAILED,Registration failed,Inscription échouée,登録に失敗しました,Shown when an unknown error occured while registering
 INVALID_USERNAME,Invalid username,Nom d'utilisateur invalide,ユーザー名が無効です,Shown when username fails validation
 INVALID_EMAIL,Invalid email,Adresse e-mail invalide,メールアドレスが無効です,Shown when email fails validation
 INVALID_PASSWORD,Invalid password,Mot de passe invalide,パスワードが無効です,Shown when password fails validation
