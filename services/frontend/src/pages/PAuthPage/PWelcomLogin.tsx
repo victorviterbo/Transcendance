@@ -35,7 +35,7 @@ function PWelcomLogin({ user, isBack }: PWelcomLoginProps) {
 				<CButtonText
 					variant="contained"
 					onClick={() => {
-						navigate("/");
+						navigate("/", { replace: true });
 					}}
 				>
 					Back to home
