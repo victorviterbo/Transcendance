@@ -1,6 +1,9 @@
 id,en,fr,jp,desc
 LANG_SELECT,Language selection,Sélection de la langue,言語の選択,Language selection menu
 WELCOME,Welcome,Bienvenue,ようこそ,Generic welcome text
+WELCOME_BACK_USER,"Welcome back, {username}!","Content de te revoir, {username} !","おかえりなさい、{username} さん！",Shown after successful login
+WELCOME_ACCOUNT_READY_USER,"Welcome, {username}! Your account is ready.","Bienvenue, {username} ! Ton compte est prêt.","ようこそ、{username} さん！アカウントの準備ができました。",Shown after successful registration
+BACK_TO_HOME,Back to home,Retour à l'accueil,ホームに戻る,Button label to return to the home page
 USERNAME,Username,Nom d'utilisateur,ユーザー名,As it appears in form fields
 NEW_USERNAME,New Username,Nouveau nom d'utilisateur,新しいユーザー名,As it appears in form fields
 EMAIL,Email,Adresse e-mail,メールアドレス,As it appears in form fields

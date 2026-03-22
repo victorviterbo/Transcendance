@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { IAuthUser } from "../../types/user";
 import type { GPageProps } from "../common/GPageBases";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
+import { ttrf } from "../../localization/localization";
 
 //--------------------------------------------------
 //                TYPES / INTERFACES
@@ -16,21 +17,17 @@ interface PWelcomLoginProps extends GPageProps {
 //--------------------------------------------------
 //                   COMPONENT
 //--------------------------------------------------
-//TODO: Replace with cutom button and text
 function PWelcomLogin({ user, isBack }: PWelcomLoginProps) {
 	const navigate = useNavigate();
-	//====================== FUNCTIONS ======================
-	function getMSG(): string {
-		if (isBack) return `Welcome back, ${user.username}!`;
-		return `Welcome, ${user.username}! Your account is ready.`;
-	}
-
+	const message = ttrf(isBack ? "WELCOME_BACK_USER" : "WELCOME_ACCOUNT_READY_USER", {
+		username: user.username,
+	});
 	//====================== DOM ======================
 	return (
 		<>
 			<Stack sx={{ alignItems: "center" }}>
 				<Typography align="center" sx={{ mb: 3 }}>
-					{getMSG()}
+					{message}
 				</Typography>
 				<CButtonText
 					variant="contained"
@@ -38,7 +35,7 @@ function PWelcomLogin({ user, isBack }: PWelcomLoginProps) {
 						navigate("/", { replace: true });
 					}}
 				>
-					Back to home
+					BACK_TO_HOME
 				</CButtonText>
 			</Stack>
 		</>
