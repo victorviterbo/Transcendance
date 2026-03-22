@@ -133,3 +133,11 @@ export function ttr(id: string): string {
 	});
 	return finalData;
 }
+
+export function ttrf(id: string, params: Record<string, string>): string {
+	let text = ttr(id);
+	for (const [key, value] of Object.entries(params)) {
+		text = text.replaceAll(`{${key}}`, String(value));
+	}
+	return text;
+}
