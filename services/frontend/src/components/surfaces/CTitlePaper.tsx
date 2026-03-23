@@ -2,7 +2,7 @@ import type { GCompProps } from "../common/GProps";
 import CText from "../text/CText";
 import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
 
-import type { TSize } from "../../types/string";
+import type { TOverflow, TSize } from "../../types/string";
 import CTitle from "../text/CTitle";
 import type { CTitleBasePaperProps } from "./CTitleBasePaper";
 import CTitleBasePaper from "./CTitleBasePaper";
@@ -11,6 +11,10 @@ export interface CTitlePaperProps extends GCompProps, Omit<CTitleBasePaperProps,
 	title: string;
 	titleType?: "text" | "title";
 	titleSize?: TSize;
+
+	contentFlex?: number;
+	isFlex?: boolean;
+	overflow?: TOverflow;
 }
 
 function CTitlePaper({ title, titleType, titleSize, children, ...other }: CTitlePaperProps) {
