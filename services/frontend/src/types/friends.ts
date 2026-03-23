@@ -11,6 +11,10 @@ export interface IFriendsList {
 	error?: IErrorStruct;
 }
 
+export interface IFriendsList {
+	friends: IFriendInfo[];
+}
+
 export interface IFriendInfo {
 	uid: string;
 	username: string;
