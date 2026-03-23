@@ -116,6 +116,7 @@ export interface IThemeEasing {
 export interface IThemeTiming {
 	fast: number;
 	medium_fast: number;
+	medium_slow: number;
 	enteringScreen: number;
 	leavingScreen: number;
 }

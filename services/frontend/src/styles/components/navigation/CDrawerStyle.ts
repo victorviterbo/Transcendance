@@ -3,7 +3,6 @@ import type { CDrawerProps } from "../../../components/navigation/CDrawer";
 import { sizeMakeString } from "../../../utils/styles";
 
 export const CDrawerStyle = ({ width, margin }: CDrawerProps): SxProps<Theme> => {
-	console.log(margin);
 	return {
 		top: sizeMakeString(margin?.top),
 		right: sizeMakeString(margin?.right),

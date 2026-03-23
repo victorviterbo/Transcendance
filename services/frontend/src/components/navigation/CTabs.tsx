@@ -1,10 +1,10 @@
-import { Tabs, Tab } from "@mui/material";
+import { Tabs, Tab, type TabsProps } from "@mui/material";
 import { useState, type SyntheticEvent, type ReactNode, Children } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import { ttr } from "../../localization/localization.ts";
 import { CTabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 
-interface CTabsProps extends GCompProps {
+interface CTabsProps extends GCompProps, TabsProps {
 	tabs: string[];
 	children: ReactNode;
 }
