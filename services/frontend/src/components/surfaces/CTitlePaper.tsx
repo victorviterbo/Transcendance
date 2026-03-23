@@ -9,22 +9,38 @@ import {
 	CTitlePaperTitleStyle,
 } from "../../styles/components/surfaces/CTitlePaper";
 
-import type { TSize } from "../../types/string";
+import type { TOverflow, TSize } from "../../types/string";
 import CTitle from "../text/CTitle";
 
-interface CTitlePaperProps extends GCompProps, CBasePaperProps {
+export interface CTitlePaperProps extends GCompProps, CBasePaperProps {
 	title: string;
 	titleType?: "text" | "title";
 	titleSize?: TSize;
+
+	contentFlex?: number;
+	isFlex?: boolean;
+	overflow?: TOverflow;
 }
 
-function CTitlePaper({ title, titleType, titleSize, children, sx, ...other }: CTitlePaperProps) {
+function CTitlePaper({
+	title,
+	titleType,
+	titleSize,
+	children,
+
+	contentFlex,
+	isFlex,
+	overflow,
+
+	sx,
+	...other
+}: CTitlePaperProps) {
 	return (
 		<CBasePaper
 			sx={[CTitlePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
-			<Stack sx={{ alignItems: "stretch" }}>
+			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
 				<Box sx={CTitlePaperTitleBoxStyle}>
 					{titleType == undefined || titleType == "text" ? (
 						<CText
@@ -44,7 +60,19 @@ function CTitlePaper({ title, titleType, titleSize, children, sx, ...other }: CT
 						</CTitle>
 					)}
 				</Box>
-				<Box sx={CTitlePaperContentBox}>{children}</Box>
+				<Box
+					sx={[
+						isFlex ? { display: "flex", flexDirection: "column" } : {},
+						{ overflow: overflow, flex: contentFlex },
+						...(Array.isArray(CTitlePaperContentBox)
+							? CTitlePaperContentBox
+							: CTitlePaperContentBox
+								? [CTitlePaperContentBox]
+								: []),
+					]}
+				>
+					{children}
+				</Box>
 			</Stack>
 		</CBasePaper>
 	);

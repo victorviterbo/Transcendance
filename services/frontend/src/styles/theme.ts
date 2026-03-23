@@ -104,6 +104,7 @@ export const appAnimation: IThemeAnimations = {
 	timing: {
 		fast: 100,
 		medium_fast: 150,
+		medium_slow: 500,
 		enteringScreen: 225,
 		leavingScreen: 195,
 	},

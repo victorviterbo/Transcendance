@@ -160,11 +160,7 @@ export const updateUser = (
  * @param newPassword Replacement password.
  * @returns Updated user or null if the user does not exist or the password is wrong.
  */
-export const updatePassword = (
-	username: string,
-	currentPassword: string,
-	newPassword: string,
-) => {
+export const updatePassword = (username: string, currentPassword: string, newPassword: string) => {
 	const normalizedTarget = normalizeUsername(username);
 	const index = users.findIndex((user) => normalizeUsername(user.username) === normalizedTarget);
 	if (index < 0) return null;

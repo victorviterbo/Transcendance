@@ -19,11 +19,6 @@ export function cssAddSizes(value1?: number | string, value2?: number | string) 
 	if (!value1) return sizeMakeString(value2);
 	if (!value2) return sizeMakeString(value1);
 
-	console.log(
-		value1,
-		value2,
-		"calc(" + sizeMakeString(value1) + " + " + sizeMakeString(value2) + ")",
-	);
 	return "calc(" + sizeMakeString(value1) + " + " + sizeMakeString(value2) + ")";
 }
 export function sizeMakeString(value?: string | number) {
