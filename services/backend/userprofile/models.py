@@ -2,15 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-
 from django.db import models
 from project.defaults import badges_strings
 from userauth.models import SiteUser
 
 
-def profile_pic_path(instance, filename):
+def profile_pic_path(instance: Profile, filename: str) -> str:
+    """Construct the path at wich the profile picture will be stored."""
     return f'profile_pics/user_{instance.pk}_profile.png'
 
 class Profile(models.Model):

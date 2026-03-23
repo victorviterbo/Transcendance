@@ -7,7 +7,6 @@ to JSON and vice-versa, namely:
 """
 
 import re
-from typing import Any
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -15,8 +14,8 @@ from rest_framework import serializers
 from userprofile.models import Profile
 from userprofile.serializers import validate_username
 
-from .models import Friendship, SiteUser
-
+from .models import SiteUser
+from friends.models import Friendship
 
 def gmail_specific_normalize(email: str) -> str:
     """Normalizes a Gmail address.
@@ -46,6 +45,7 @@ def validate_email(value: str, is_creation: bool = False) -> str:
         value:          the incomming email address
         is_creation:    boolean telling the serializer how to validate
                         depending on context (if creation, enforce unique)
+
     Returns:
         The validated and normalized email address
     Raises:
@@ -100,7 +100,7 @@ class SiteUserSerializer(serializers.ModelSerializer):
         validate_password(value, user=self.instance)
         return value
         
-    def create(self, validated_data: Any) -> SiteUser:
+    def create(self, validated_data: dict) -> SiteUser:
         """Overrride the user creation method to ensure it uses our SiteUserManager.
 
         Args:
@@ -143,26 +143,14 @@ class ComplexPasswordValidator:
     def validate(self, password: str, user=None) -> None:
         """Define specific validation process for password validation."""
         if (len(password) < 8):
-            raise ValidationError("Use at least 8 characters.")
+            raise ValidationError("PASSWORD_MIN")
 
         rules = [
-            (r'[0-9]', "Include at least 1 number."),
-            (r'[a-z]', "Include at least 1 lowercase letter."),
-            (r'[A-Z]', "Include at least 1 uppercase letter."),
-            (r'[^A-Za-z0-9]', "Include at least 1 special character."),
+            (r'[0-9]', "PASSWORD_NUMBER"),
+            (r'[a-z]', "PASSWORD_LOWERCASE"),
+            (r'[A-Z]', "PASSWORD_UPPERCASE"),
+            (r'[^A-Za-z0-9]', "PASSWORD_SPECIAL"),
         ]
         for pattern, message in rules:
             if not re.search(pattern, password):
-                raise ValidationError(message)
-
-class FriendshipSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's friendship requests."""
-
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Friendship
-        fields = ['from_user', 'to_user', 'status']
+                raise ValidationError('', code=message)

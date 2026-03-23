@@ -9,6 +9,7 @@ from project.defaults import get_badge
 
 from .models import GameStat, UserRoundStat
 
+
 @receiver(post_save, sender=GameStat)
 def save_profile(sender: type[GameStat],
                  instance: GameStat,

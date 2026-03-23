@@ -1,0 +1,36 @@
+me:
+  ws:
+    summary: Get current user
+    description: Retrieve the authenticated user's profile.
+    operationId: getCurrentUser
+    tags: [social]
+    responses:
+      "200":
+        description: Current user profile
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string }
+                title: { type: string }
+                xp: { type: integer }
+                availableTitles:
+                  type: array
+                  items: { type: string }
+              required: [username, email, title, xp, availableTitles]
+            examples:
+              user-ok:
+                value:
+                  username: "marc"
+                  email: "marc@42.fr"
+                  title: "Rookie"
+                  xp: 120
+                  availableTitles: ["Rookie", "Speedrunner"]
+      "401":
+        description: Not authenticated
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError

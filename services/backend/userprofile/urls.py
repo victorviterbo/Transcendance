@@ -10,8 +10,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path('', ProfileView.as_view(), name="user-profile"),
-    path('search/', ProfileSearchView.as_view(), name="profile-search"),
-    path('guest-create/', GuestProfileCreateView.as_view(), name="profile-search"),
-    path('guest-delete/', GuestCleanupView.as_view(), name="profile-search"),
+    path('', ProfileView.as_view()),
+    path('search/', ProfileSearchView.as_view()),
+    path('guest-create/', GuestProfileCreateView.as_view()),
+    path('guest-delete/', GuestCleanupView.as_view()),
 ]

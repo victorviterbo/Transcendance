@@ -6,6 +6,37 @@ User:
     username: { type: string }
     email: { type: string }
 
+Profile:
+  type: object
+  description: Full user profile data.
+  properties:
+    username: { type: string }
+    image: { type: string, format: uri }
+    exp_points: { type: integer }
+    badges: { type: string }
+    created_at: { type: string, format: date-time }
+    email:
+      type: string
+      description: Only present for profiles linked to a registered user.
+
+LightProfile:
+  type: object
+  description: Minimal profile data (guests and search results).
+  properties:
+    username: { type: string }
+    image: { type: string, format: uri }
+    is_guest: { type: boolean }
+    session_key: { type: string }
+
+Friendship:
+  type: object
+  description: A friendship or pending friend request between two users.
+  properties:
+    from_user: { type: string, description: Username of the request sender. }
+    to_user: { type: string, description: Username of the request recipient. }
+    status: { type: string, enum: [pending, accepted] }
+    created_at: { type: string, format: date-time }
+
 ValidationError:
   type: object
   description: Structured validation error details (values are localization keys).
@@ -19,7 +50,10 @@ AuthError:
   type: object
   description: Authentication or authorization error details (values are localization keys).
   properties:
-    error: { type: string }
+    error:
+      type: object
+      additionalProperties: { type: string }
+  required: [error]
 
 ConflictError:
   type: object

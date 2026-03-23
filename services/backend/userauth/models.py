@@ -2,7 +2,6 @@
 
 The following models are defines:
     - SiteUser (and it's manager)
-    - Profile
 """
 from __future__ import annotations
 
@@ -84,7 +83,7 @@ class SiteUser(AbstractUser):
 
     email = models.EmailField('email', unique=True, null=False, blank=False)
     friends = models.ManyToManyField("self",
-                                     through='Friendship',
+                                     through='friends.Friendship',
                                      blank=True,
                                      symmetrical=False
                                     )
@@ -97,15 +96,3 @@ class SiteUser(AbstractUser):
     def __str__(self) -> str:
         """Return the user as it's email address string."""
         return self.email
-
-class Friendship(models.Model):
-    """Define a Friend request status and infos."""
-    from_user = models.ForeignKey(SiteUser,
-                                  related_name='sent_requests',
-                                  on_delete=models.CASCADE)
-    to_user = models.ForeignKey(SiteUser,
-                                related_name='received_requests',
-                                on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'),
-                                                      ('accepted', 'Accepted')])
-    created_at = models.DateTimeField(auto_now_add=True)
