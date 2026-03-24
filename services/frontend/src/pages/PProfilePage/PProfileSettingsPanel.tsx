@@ -7,7 +7,7 @@ import CForm from "../../components/layout/CForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import api, { getAccessToken } from "../../api";
-import { getErrorMessage } from "../../utils/error";
+import { getErrorMessage } from "../../utils/error.tsx";
 import { API_PROFILE } from "../../constants";
 import CTitle from "../../components/text/CTitle";
 import { useAuth } from "../../components/auth/CAuthProvider";

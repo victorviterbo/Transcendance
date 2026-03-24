@@ -62,3 +62,5 @@ WELCOME,Welcome,Bienvenue,ようこそ,Generic welcome text
 FRIEND_TITLE,Friends,Amis,フレンド,Friends panel title
 FRIEND_LISTS,Lists,,,Friends list tab
 FRIEND_REQUESTS,Requests,,,Friends  requests tab
+FRIEND_EMPTY,"Sorry, you currenlty have no friends",,,
+FRIEND_ERROR,"Error: couldn't load friends list",,,Trigger on internal error
