@@ -105,6 +105,26 @@ function PSocial({ onTabChanged, activeTab }: PSocialProps) {
 		);
 	}
 
+	function getFriendsList(): ReactNode | ReactNode[] {
+		if (error) return error;
+
+		if (friends.length == 0) return <CText align="center">FRIEND_EMPTY</CText>;
+		return friends.map((value: IFriendInfo, index: number) => {
+			return (
+				<PFriendNode
+					user={value}
+					key={localId + index}
+					hidden={
+						friendsFilter != "" &&
+						!value.username
+							.toLocaleLowerCase()
+							.includes(friendsFilter.toLocaleLowerCase())
+					}
+				></PFriendNode>
+			);
+		});
+	}
+
 	return (
 		<CTitleBasePaper
 			overflow="hidden"
