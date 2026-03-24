@@ -33,9 +33,11 @@ export const friendConnHandler = friends.addEventListener("connection", () => {
 });
 
 export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
+
+	const isError = 1;
 	const list: IFriendInfo[] = [];
 
 	const max = Math.floor(Math.random() * 10);
 	for (let i = 0; i < max; i++) list.push(generateFriend());
-	return HttpResponse.json({ friends: list });
+	return HttpResponse.json({ friends: list, error: {default: [{message: "Friends are disabled", code: "Friends are disabled"}, {message: "No friends", code: "FRIEND_ERROR"}]}}, {status: isError ? 200 : 200});
 });
