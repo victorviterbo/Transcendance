@@ -15,8 +15,8 @@ export interface GPageProps extends GProps {
 }
 
 function GPageBase({ children }: GPageProps) {
-	const { status } = useAuth();
-	const [friendOpen, setFriendOpen] = useState<boolean>(true);
+	const { user } = useAuth();
+	const [friendOpen, setFriendOpen] = useState<boolean>(false);
 
 	const handleOpenFriend = () => {
 		setFriendOpen(!friendOpen);
@@ -57,7 +57,7 @@ function GPageBase({ children }: GPageProps) {
 						</Box>
 						<CFooter />
 					</Stack>
-					{status && (
+					{user && (
 						<CDrawer
 							width={appPositions.sizes.friends}
 							margin={{
@@ -70,6 +70,7 @@ function GPageBase({ children }: GPageProps) {
 								left: appPositions.socialMargin?.left,
 							}}
 							open={friendOpen}
+							data-testid="PSocialDrawer"
 						>
 							<PSocial></PSocial>
 						</CDrawer>

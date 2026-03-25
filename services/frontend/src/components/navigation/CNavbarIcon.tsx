@@ -16,6 +16,7 @@ function CNavbarIcon({ icon, aria, sx, ...other }: CNavbarIconProps) {
 				{ height: appPositions.sizes.buttons.nav },
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
 			]}
+			data-testid={aria + "_CIconButton"}
 			{...other}
 		>
 			{icon}

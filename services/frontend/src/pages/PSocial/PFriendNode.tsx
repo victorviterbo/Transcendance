@@ -22,8 +22,11 @@ export interface PFriendNodeProps extends GPageProps {
 
 function PFriendNode({ user, hidden }: PFriendNodeProps) {
 	return (
-		<Collapse in={!hidden}>
-			<Box sx={(theme) => PFriendNodeStyle(theme, { hidden, user })}>
+		<Collapse in={!hidden} data-testid="PFriendNode">
+			<Box
+				sx={(theme) => PFriendNodeStyle(theme, { hidden, user })}
+				data-testid="PFriendNodeBox"
+			>
 				<Stack direction="row">
 					<CAvatar
 						sx={PFriendNodeAvatarStyle}
