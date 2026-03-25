@@ -8,7 +8,7 @@ const friends = ws.link("ws://localhost:5173/");
 //--------------------------------------------------
 //                    HELPERS
 //--------------------------------------------------
-function generateFriend(): IFriendInfo {
+export function mockGenerateFriend(): IFriendInfo {
 	const usernames = ["Sarah", "John", "Marc", "Ava", "由美子", "岡田"];
 	const badges = ["The mask singer", "Pro gesser", "Diva", "DJ", "casual gamer", "Guess master"];
 
@@ -33,11 +33,23 @@ export const friendConnHandler = friends.addEventListener("connection", () => {
 });
 
 export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
-
 	const isError = 1;
 	const list: IFriendInfo[] = [];
 
 	const max = Math.floor(Math.random() * 10);
-	for (let i = 0; i < max; i++) list.push(generateFriend());
-	return HttpResponse.json({ friends: list, error: {default: [{message: "Friends are disabled", code: "Friends are disabled"}, {message: "No friends", code: "FRIEND_ERROR"}]}}, {status: isError ? 200 : 200});
+	for (let i = 0; i < max; i++) list.push(mockGenerateFriend());
+	if (isError)
+		return HttpResponse.json(
+			{
+				friends: list,
+				error: {
+					default: [
+						{ message: "Friends are disabled", code: "Friends are disabled" },
+						{ message: "No friends", code: "FRIEND_ERROR" },
+					],
+				},
+			},
+			{ status: isError ? 400 : 200 },
+		);
+	return HttpResponse.json({ friends: list });
 });

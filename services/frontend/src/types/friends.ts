@@ -4,7 +4,7 @@ export type TFriendStatus = "offline" | "busy" | "online";
 
 export interface IFriendsList {
 	friends: IFriendInfo[];
-	error?: IErrorStruct
+	error?: IErrorStruct;
 }
 
 export interface IFriendInfo {
