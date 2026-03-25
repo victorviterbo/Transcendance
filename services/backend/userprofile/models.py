@@ -46,6 +46,7 @@ class Profile(models.Model):
 
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
+
     class Meta:
         """Enforce uniqueness only if the username is not Anonymous."""
         constraints = [

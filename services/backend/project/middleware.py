@@ -12,20 +12,18 @@ class ProfileMiddleware:
 
     def __call__(self, request):
         request.profile = None
-        if request.user.is_authenticated:
+        if request.user and request.user.is_authenticated:
             request.profile = getattr(request.user, 'profile', None)
         else:
-            guest_id = request.session.get('guest_profile_id')
-            if guest_id:
-                request.profile = Profile.objects.filter(id=guest_id, is_guest=True).first()
+            guest_uid = request.session.get('guest_profile_uid')
+            if guest_uid:
+                request.profile = Profile.objects.filter(uid=guest_uid).first()
         if not request.profile:
             guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
             request.profile = Profile.objects.create(
                 username=guest_username,
                 is_guest=True
             )
-            request.session['guest_profile_id'] = request.profile.id
+            request.session['guest_profile_uid'] = str(request.profile.uid)
             request.session.modified = True
-
-        
         return self.get_response(request)

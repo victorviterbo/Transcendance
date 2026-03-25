@@ -47,7 +47,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
         """
         model = Profile
         fields = ['username', 'image', 'is_guest', 'session_key']
-        read_only_fields = ['is_guest', 'session_key']
+        read_only_fields = ['is_guest', 'session_key', 'uid']
 
     def validate_username(self, value: str, is_creation: bool = False) -> str:
         """Specific username validation for user creation / update."""
@@ -94,5 +94,5 @@ class ProfileSerializer(LightProfileSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'image', 'exp_points', 'badges', 'created_at']
-        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key']
+        fields = ['username', 'image', 'exp_points', 'badges', 'created_at',]
+        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key', 'uid']

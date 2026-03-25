@@ -2,7 +2,7 @@
 
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from userauth.serializers import SiteUserSerializer
+from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
 
 
@@ -12,13 +12,13 @@ class FriendRequestsTests(APITestCase):
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
         self.client = APIClient()
-        serializer = SiteUserSerializer(data={'email': 'user1@mail.com',
+        serializer = RegisterSerializer(data={'email': 'user1@mail.com',
                                               'profile_username': 'user1',
                                               'password': 'Password123+'},
                                               context={'is_creation': True})
         if serializer.is_valid():
             self.user1 = serializer.save()
-        serializer = SiteUserSerializer(data={'email': 'user2@mail.com',
+        serializer = RegisterSerializer(data={'email': 'user2@mail.com',
                                               'profile_username': 'user2',
                                               'password': 'Password123+'},
                                               context={'is_creation': True})
@@ -41,6 +41,7 @@ class FriendRequestsTests(APITestCase):
         friend_see_url = '/api/social/friends/list/'
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
+        
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
@@ -54,27 +55,25 @@ class FriendRequestsTests(APITestCase):
         self.assertEqual(0, len(response.data['outgoing']))
         self.assertEqual(0, len(response.data['incomming']))
 
-        for target_username in ['user1', 'user2', 'an_anonymous_user', 'not_a_user', '']:
+        for user_uid in [self.user1.uid, self.user2.uid]: #, self.user1.profile.uid
             response = self.client.post(friend_request_url, data={
-                'target-username': target_username})
-            if target_username != 'user2':
+                'user_uid': user_uid})
+            if user_uid != self.user2.uid:
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn('error', response.data)
-                if target_username == 'user1':
+                if user_uid == self.user1.uid:
                     self.assertIn('friendship', response.data['error'])
                     self.assertEqual('REALLY_SAD', response.data['error']['friendship'])
-                elif target_username in ['an_anonymous_user', '']:
-                    self.assertIn('target-username', response.data['error'])
+                else:
+                    self.assertIn('user_uid', response.data['error'])
                     self.assertEqual('USER_NOT_FOUND',
-                                     response.data['error']['target-username'])
+                                     response.data['error']['user_uid'])
             else:
                 self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
         response = self.client.get(friend_request_see_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data['outgoing']))
         self.assertEqual(0, len(response.data['incomming']))
-
         response = self.client.get(friend_see_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data['friends']))
@@ -82,10 +81,10 @@ class FriendRequestsTests(APITestCase):
         response = self.client.post(friend_request_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
-        self.assertIn('target-username', response.data['error'])
-        self.assertEqual('MISSING_FIELD', response.data['error']['target-username'])
+        self.assertIn('user_uid', response.data['error'])
+        self.assertEqual('MISSING_FIELD', response.data['error']['user_uid'])
         response = self.client.post(friend_request_url, data={
-            'target-username': 'user2'})
+            'user_uid': self.user2.uid})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('friendship', response.data['error'])
@@ -107,21 +106,21 @@ class FriendRequestsTests(APITestCase):
         user1.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
         
         for res in ['reject', 'accept']:
-            for target_username in ['user1', 'user2', 'an_anonymous_user', 'not_a_user', '']:
+            for user_uid in [self.user1.uid, self.user2.uid]: #, 'abc123', ''
                 response = user1.post(friend_respond_url, data={
-                                            'target-username': target_username,
+                                            'user_uid': user_uid,
                                             'new-status': res})
-                if target_username != 'user2':
+                if user_uid != self.user2.uid:
                     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                     self.assertIn('error', response.data)
-                    if target_username in ['user1', 'user2']:
+                    if user_uid in [self.user1.uid, self.user2.uid]:
                         self.assertIn('friendship', response.data['error'])
                         self.assertEqual('FRIENDSHIP_NOT_FOUND',
                                          response.data['error']['friendship'])
-                    elif target_username in ['an_anonymous_user', '']:
-                        self.assertIn('target-username', response.data['error'])
+                    else:
+                        self.assertIn('user-uid', response.data['error'])
                         self.assertEqual('USER_NOT_FOUND',
-                                         response.data['error']['target-username'])
+                                         response.data['error']['user-uid'])
             
             login_res = user1.post(login_url, data={'email': 'user1@mail.com',
                                                     'password': 'Password123+'})
@@ -134,14 +133,15 @@ class FriendRequestsTests(APITestCase):
             self.assertEqual(0, len(response.data['incomming']))
 
             response = user1.post(friend_request_url, data={
-                'target-username': 'user2'})
+                'user_uid': self.user2.uid})
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
             response = user1.get(friend_request_see_url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data['outgoing']))
-            self.assertEqual('user1', response.data['outgoing'][0]['from_user'])
-            self.assertEqual('user2', response.data['outgoing'][0]['to_user'])
+            print(response.data)
+            self.assertEqual(str(self.user1.uid), response.data['outgoing'][0]['from_user']['uid'])
+            self.assertEqual(str(self.user2.uid), response.data['outgoing'][0]['to_user']['uid'])
             self.assertEqual('pending', response.data['outgoing'][0]['status'])
             self.assertEqual(0, len(response.data['incomming']))
 
@@ -151,7 +151,7 @@ class FriendRequestsTests(APITestCase):
             access_token = login_res.data.get('access')
             user2.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
             response = user2.post(friend_respond_url, data={
-                'target-username': 'user1', 'new-status': res})
+                'user_uid': self.user1.uid, 'new-status': res})
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertIn('description', response.data)
             if res == 'accept':

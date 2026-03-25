@@ -64,7 +64,40 @@ def validate_email(value: str, is_creation: bool = False) -> str:
 
     return value
 
-class SiteUserSerializer(serializers.ModelSerializer):
+
+class UsersSerializer(serializers.ModelSerializer):
+    """Set how to serialize a user (user obj <-> JSON)."""
+    class Meta:
+        """Defines the metaclass for the SiteUser serializer.
+        
+        This part tells the rest_framework serializer how to contruct the
+        SiteUserSerializer class itself
+        """
+        model = SiteUser
+        fields = ['email', 'password', 'is_staff', 'is_superuser', 'uid']
+        extra_kwargs = {'password': {
+                                'write_only': True
+                            },
+                        'uid': {
+                                'read_only': True
+                            }}
+
+    def validate_email(self, value: str) -> str:
+        """Specific email validation for user login."""
+        value = validate_email(value, is_creation=self.context.get('is_creation'))
+        return value
+    
+    def validate_profile_username(self, value: str) -> str:
+        """Specific email validation for user login."""
+        value = validate_username(value, is_creation=self.context.get('is_creation'))
+        return value
+    
+    def validate_password(self, value: str) -> str:
+        """Explicitly trigger the custrom password validator."""
+        validate_password(value, user=self.instance)
+        return value
+
+class RegisterSerializer(serializers.ModelSerializer):
     """Set how to serialize a user (user obj <-> JSON)."""
 
     profile_username = serializers.CharField()
@@ -76,9 +109,12 @@ class SiteUserSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'password', 'profile_username', 'is_staff', 'is_superuser']
+        fields = ['email', 'password', 'profile_username', 'is_staff', 'is_superuser', 'uid']
         extra_kwargs = {'password': {
                                 'write_only': True
+                            },
+                        'uid': {
+                                'read_only': True
                             },
                         'profile_username': {
                                 'validator': [validate_username]
@@ -118,7 +154,9 @@ class SiteUserSerializer(serializers.ModelSerializer):
             guest_profile.is_guest = False
             guest_profile.save()
         else:
-            Profile.objects.create(user=user, username=profile_username)
+            Profile.objects.create(user=user,
+                                   username=profile_username,
+                                   is_guest=False) #TODO remove: should not happen
         return user
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -131,7 +169,7 @@ class LoginSerializer(serializers.ModelSerializer):
         LoginSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'password']
+        fields = ['email', 'password', 'uid']
         extra_kwargs = {'password': {'write_only': True},
                         'email': {
                             'validators': []

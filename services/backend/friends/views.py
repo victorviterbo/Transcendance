@@ -53,14 +53,14 @@ class FriendRequestsRespond(APIView):
 
     def post(self, request: Request) -> Response:
         """Respond to friend request."""
-        target = request.data.get('target-username')
+        target = request.data.get('user_uid')
         if target is None:
-            return (Response({'error': {'target-username': 'MISSING_FIELD'}},
+            return (Response({'error': {'user_uid': 'MISSING_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
-        target_user = SiteUser.objects.filter(profile__username=target)
+        target_user = SiteUser.objects.filter(uid=target)
         if target_user.count() < 1:
-            return (Response({'error': {'target-username': 'USER_NOT_FOUND'},
-                              'requested': request.data.get('target-username')},
+            return (Response({'error': {'user_uid': 'USER_NOT_FOUND'},
+                              'requested': request.data.get('user-uid')},
                               status=status.HTTP_400_BAD_REQUEST))
         sender = target_user.first()
         user = request.user
@@ -73,12 +73,12 @@ class FriendRequestsRespond(APIView):
                 curr_relationship.status = 'accepted'
                 curr_relationship.save()
                 return Response({'description': 'FRIENDSHIP_REQUEST_ACCEPTED',
-                                 'target-username': target},
+                                 'user_uid': target},
                                 status=status.HTTP_200_OK)
             elif request.data['new-status'] == 'reject':
                 curr_relationship.delete()
                 return Response({'description': 'FRIENDSHIP_REQUEST_REJECTED',
-                                    'target-username': target}, 
+                                    'user_uid': target}, 
                                 status=status.HTTP_200_OK)
         
         return Response({'error': {'friendship': 'FRIENDSHIP_NOT_FOUND'}},
@@ -90,19 +90,18 @@ class FriendRequestsSend(APIView):
 
     def post(self, request: Request) -> Response:
         """Send friend request."""
-        target = request.data.get('target-username')
+        target = request.data.get('user_uid')
         if target is None:
-            return (Response({'error': {'target-username': 'MISSING_FIELD'}},
+            return (Response({'error': {'user_uid': 'MISSING_FIELD'}},
                                 status=status.HTTP_400_BAD_REQUEST))
-        target_user = SiteUser.objects.filter(profile__username=target)
-        if target_user.count() < 1:
-            return (Response({'error': {'target-username': 'USER_NOT_FOUND'},
-                                'requested': request.data.get('target-username')},
+        recipient = SiteUser.objects.filter(uid=target).first()
+        if not recipient:
+            return (Response({'error': {'user_uid': 'USER_NOT_FOUND'},
+                                'requested': request.data.get('user_uid')},
                                 status=status.HTTP_400_BAD_REQUEST))
-        recipient = target_user.first()
         user = request.user
         if recipient == user:
-            return Response({'error': {'friendship': 'REALLY_SAD'}}, 
+            return Response({'error': {'friendship': 'REALLY_SAD'}},
                             status=status.HTTP_400_BAD_REQUEST)
         curr_relationship = Friendship.objects.filter(
             from_user=user, 
@@ -118,5 +117,5 @@ class FriendRequestsSend(APIView):
             status='pending'
         )
         return Response({'description': 'FRIENDSHIP_REQUEST_SENT',
-                            'target-username': target}, 
+                         'user-uid': target}, 
                         status=status.HTTP_201_CREATED)

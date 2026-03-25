@@ -204,7 +204,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             if not self.user or not self.user.is_authenticated:
                 return False, {'type': 'error',
                                'message': 'Authentication failed'}
-            target_user = SiteUser.objects.filter(uid=content['user-uid']).first()
+            target_user = SiteUser.objects.filter(uid=content['user_uid']).first()
             if target_user is None:
                 return False, {'type': 'error',
                                'message': 'User not found'}
@@ -214,14 +214,14 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                                'message': 'Target is not a friend'}
             target_profile = target_user.profile
             id_a, id_b = self.profile.uid, target_profile.uid
-            min_id, max_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
-            room, created = Room.objects.get_or_create(name=f'user_{min_id}_user_{max_id}')
+            min_uid, max_uid = (id_a, id_b) if id_a < id_b else (id_b, id_a)
+            room, created = Room.objects.get_or_create(name=f'user_{min_uid}_user_{max_uid}')
             if created:
                 room.participants.add(self.profile)
                 room.participants.add(target_profile)
         elif action == 'chat-message':
-            if content.get('room-uid'):
-                room = Room.objects.filter(uid=content['room-uid']).first()
+            if content.get('room_uid'):
+                room = Room.objects.filter(uid=content['room_uid']).first()
                 self.room = room
             elif self.room:
                 room = self.room
@@ -243,7 +243,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             room=room,
             body=body,
         )
-
         return True, message
 
     @database_sync_to_async
@@ -258,9 +257,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return True
 
     @database_sync_to_async
-    def _mark_seen(self, message_id) -> bool:
+    def _mark_seen(self, message_uid) -> bool:
         """Mark a room message as seen and delivered if it exists."""
-        message = Message.objects.filter(id=message_id, room=self.room).first()
+        message = Message.objects.filter(uid=message_uid, room=self.room).first()
         if not message:
             return False
         changed = False
