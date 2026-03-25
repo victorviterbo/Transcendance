@@ -88,7 +88,8 @@ class FriendRequestsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('friendship', response.data['error'])
-        self.assertEqual('FRIENDSHIP_ALREADY_EXISTS', response.data['error']['friendship'])
+        self.assertEqual('FRIENDSHIP_ALREADY_EXISTS',
+                         response.data['error']['friendship'])
 
     def test_respond_request(self) -> None:
         """Test success and failure of access token regeneration operation."""
@@ -140,8 +141,10 @@ class FriendRequestsTests(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data['outgoing']))
             print(response.data)
-            self.assertEqual(str(self.user1.uid), response.data['outgoing'][0]['from_user']['uid'])
-            self.assertEqual(str(self.user2.uid), response.data['outgoing'][0]['to_user']['uid'])
+            self.assertEqual(str(self.user1.uid),
+                             response.data['outgoing'][0]['from_user']['uid'])
+            self.assertEqual(str(self.user2.uid),
+                             response.data['outgoing'][0]['to_user']['uid'])
             self.assertEqual('pending', response.data['outgoing'][0]['status'])
             self.assertEqual(0, len(response.data['incomming']))
 
@@ -155,7 +158,8 @@ class FriendRequestsTests(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertIn('description', response.data)
             if res == 'accept':
-                self.assertEqual('FRIENDSHIP_REQUEST_ACCEPTED', response.data['description'])
+                self.assertEqual('FRIENDSHIP_REQUEST_ACCEPTED',
+                                 response.data['description'])
                 response = user2.get(friend_request_see_url)
                 self.assertEqual(0, len(response.data['outgoing']))
                 self.assertEqual(0, len(response.data['incomming']))
