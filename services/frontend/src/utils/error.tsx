@@ -14,8 +14,7 @@ export const getErrorNode = (error: unknown, fallback: string): ReactNode => {
 					{fallback}
 				</CText>
 			);
-	}
-	else if(error && typeof error == "object"){
+	} else if (error && typeof error == "object") {
 		finalError = error as IErrorStruct;
 	}
 

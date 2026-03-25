@@ -21,8 +21,8 @@ function PSocial() {
 		async function getFriends(): Promise<void> {
 			try {
 				const res: AxiosResponse<IFriendsList> = await api.get(API_SOCIAL_FRIENDS);
-				if(res.data.error)
-					throw res.data.error;
+				if (!res) throw {};
+				if (res.data.error) throw res.data.error;
 				if (typeof res.data != "object" || !res.data.friends) {
 					console.error("Failed to load friends: 'Unknown'");
 					setFriends([]);
@@ -90,6 +90,7 @@ function PSocial() {
 				overflow: "hidden",
 			}}
 			title={"FRIEND_TITLE"}
+			data-testid="PSocial"
 		>
 			<CTabs tabs={["FRIEND_LISTS", "FRIEND_REQUESTS"]}>
 				<Stack sx={{ overflow: "hidden", flex: 1 }}>
@@ -97,6 +98,7 @@ function PSocial() {
 						onChange={(e) => {
 							setFriendsFilter(e.target.value);
 						}}
+						data-testid="PSocialSearchList"
 					></CTextField>
 					<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
 						<Stack sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
