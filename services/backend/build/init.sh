@@ -5,7 +5,6 @@ if [ ! -d "/backend/DB/website" ]; then
 fi
 
 rm /backend/DB/website/db.sqlite3
-
 find . -path "*/migrations/0*" -delete
 
 conda run -n backend python /backend/manage.py makemigrations
