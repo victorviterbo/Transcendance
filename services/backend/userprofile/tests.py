@@ -11,7 +11,7 @@ from django.test import TransactionTestCase, override_settings
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
-from userauth.serializers import SiteUserSerializer
+from userauth.serializers import RegisterSerializer
 
 from .serializers import LightProfileSerializer, ProfileSerializer
 
@@ -46,13 +46,13 @@ class ProfileTests(TransactionTestCase):
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
         self.client = APIClient()
-        serializer = SiteUserSerializer(data={'email': 'user1@mail.com',
+        serializer = RegisterSerializer(data={'email': 'user1@mail.com',
                                               'profile_username': 'user1',
                                               'password': 'Password123+'},
                                               context={'is_creation': True})
         if serializer.is_valid():
             self.user1 = serializer.save()
-        serializer = SiteUserSerializer(data={'email': 'user2@mail.com',
+        serializer = RegisterSerializer(data={'email': 'user2@mail.com',
                                               'profile_username': 'user2',
                                               'password': 'Password123+'},
                                               context={'is_creation': True})

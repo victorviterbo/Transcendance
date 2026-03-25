@@ -2,25 +2,27 @@
 
 After validation if needed, it converts different python objects
 to JSON and vice-versa, namely:
-    - Friendship
+    - Game
 """
 from rest_framework import serializers
-from userauth.serializers import RegisterSerializer, UsersSerializer
 
-from .models import Friendship
+from .models import Game
 
 
-class FriendshipSerializer(serializers.ModelSerializer):
+class GameSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""
     
-    from_user = UsersSerializer(read_only=True)
-    to_user = UsersSerializer(read_only=True)
     class Meta:
         """Defines the metaclass for the Profile serializer.
         
         This part tells the rest_framework serializer how to contruct the
         ProfileSerializer class itself
         """
-        model = Friendship
-        fields = ['from_user', 'to_user', 'status', 'created_at', 'uid']
-    
+        model = Game
+        fields = ['game_name',
+                  'players',
+                  'tracks',
+                  'room',
+                  'played_at',
+                  'is_over',
+                  'uid']

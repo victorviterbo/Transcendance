@@ -20,7 +20,7 @@ class Friendship(models.Model):
                                 on_delete=models.CASCADE)
     
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'),
-                                                      ('accepted', 'Accepted')])
+                                                      ('accepted', 'accepted')])
 
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 

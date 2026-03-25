@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import SiteUser
-from .serializers import SiteUserSerializer
+from .serializers import RegisterSerializer
 
 
 class UserAccountTests(APITestCase):
@@ -12,7 +12,7 @@ class UserAccountTests(APITestCase):
 
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
-        serializer = SiteUserSerializer(data={'email': 'test@mail.com',
+        serializer = RegisterSerializer(data={'email': 'test@mail.com',
                                               'profile_username': 'testuser',
                                               'password': 'Password123+'
                                               },
@@ -138,7 +138,7 @@ class UserAccountTests(APITestCase):
             "profile_username": "auniqueuser",
             "password": "securePassword123+"
         }
-        serializer = SiteUserSerializer(data=raw_data)
+        serializer = RegisterSerializer(data=raw_data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data['email'], "new_user@gmail.com")
         user_instance = serializer.save()
@@ -150,7 +150,7 @@ class UserAccountTests(APITestCase):
             "profile_username": "auniqueuser2",
             "password": "securePassword123+"
         }
-        serializer = SiteUserSerializer(data=raw_data)
+        serializer = RegisterSerializer(data=raw_data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data['email'], "new1@gmail.com")
         user_instance = serializer.save()
@@ -168,5 +168,5 @@ class UserAccountTests(APITestCase):
                 "email": email,
                 "password": "securePassword123+"
             }
-            serializer = SiteUserSerializer(data=raw_data)
+            serializer = RegisterSerializer(data=raw_data)
 

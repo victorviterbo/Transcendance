@@ -13,7 +13,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
 
 from .models import SiteUser
-from .serializers import LoginSerializer, SiteUserSerializer
+from .serializers import LoginSerializer, RegisterSerializer
 
 
 class RegisterView(APIView):
@@ -35,7 +35,7 @@ class RegisterView(APIView):
         try:
             renamed_data = request.data.copy()
             renamed_data['profile_username'] = renamed_data.pop('username')
-            serializer = serializer = SiteUserSerializer(data=renamed_data,
+            serializer = serializer = RegisterSerializer(data=renamed_data,
                                                          context={
                                                              'request': request,
                                                              'is_creation': True}

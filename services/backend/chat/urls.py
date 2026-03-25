@@ -2,9 +2,9 @@
 
 from django.urls import path
 
-from .views import RoomView, DirectMessageView
+from .views import DirectMessageView, RoomView
 
 urlpatterns = [
-	path('direct/<int:user_uid>/', DirectMessageView.as_view(), name='direct-room'),
-	path('room/<int:room_uid>/', RoomView.as_view(), name='room')
+	path('direct/', DirectMessageView.as_view(), name='direct-room'),
+	path('room/<uuid:room_uid>/', RoomView.as_view(), name='room')
 ]

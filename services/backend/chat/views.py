@@ -1,17 +1,19 @@
 """HTTP views for chat room lookups, direct-message room creation, and fallback posting."""
 
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from django.shortcuts import redirect
 from friends.models import Friendship
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from userprofile.models import Profile
 
-from .models import Message, Room
+from .models import Room
+from .serializers import MessageSerializer, RoomSerializer
 
 User = get_user_model()
 
@@ -40,22 +42,22 @@ class DirectMessageView(APIView):
         if request.profile.is_guest:
             return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                             status=status.HTTP_401_UNAUTHORIZED)
-        if not request.data.get('target-username'):
-            return Response({'error': {'target-username': 'MISSING_FIELD'}},
+        if not request.data.get('user_uid'):
+            return Response({'error': {'user_uid': 'MISSING_FIELD'}},
                                 status=status.HTTP_400_BAD_REQUEST)
-        target_profile = Profile.objects.filter(username=request.data.get('target-username')).first()
+        target_profile = Profile.objects.filter(user__uid=self.request.data['user_uid']).first()
         if not target_profile:
-            return Response({'error': {'target-username': 'USER_NOT_FOUND'}},
+            return Response({'error': {'user_uid': 'USER_NOT_FOUND'}},
                                 status=status.HTTP_400_BAD_REQUEST)
-        if request.profile.id == target_profile.id:
-            return Response({'error': {'target-username': 'CANNOT_SELF_DM'}},
+        if request.profile.uid == target_profile.uid:
+            return Response({'error': {'user_uid': 'CANNOT_SELF_DM'}},
                                 status=status.HTTP_400_BAD_REQUEST)
-        are_friends = Friendship.objects.filter(Q(status='accepted') &
-                ((Q(from_user=request.profile.user) & Q(to_user=target_profile.user)) |
-                (Q(from_user=target_profile.user) & Q(to_user=request.profile.user)))
-            ).exists()
+        are_friends = Friendship.objects.filter(status='accepted',
+                                                from_user__in=[request.profile.user, target_profile.user],
+                                                to_user__in=[request.profile.user, target_profile.user]
+                                                ).exists()
         if not are_friends:
-            return Response({'error': {'target-username': 'USER_NOT_FRIEND'}},
+            return Response({'error': {'user_uid': 'USER_NOT_FRIEND'}},
                                 status=status.HTTP_403_FORBIDDEN)
 
         direct_key = _direct_key_for(request.profile, target_profile)
@@ -70,9 +72,10 @@ class DirectMessageView(APIView):
         if created:
             room.participants.add(request.profile, target_profile)
         return Response({
-            'room_id': room.id,
+            'room_uid': room.uid,
             'room_name': room.name,
-            'is_new': created
+            'is_new': created,
+            'is_direct': True,
         }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
@@ -80,22 +83,19 @@ class RoomView(APIView):
     """HTTP view to see room status or create one."""
     permission_classes=[AllowAny]
 
-    def get(self, request: Request, pk: int) -> Response:
+    def get(self, request: Request, room_uid: uuid.UUID) -> Response:
         """Return room metadata."""
         try:
-            room = Room.objects.get(id=pk)
+            room = Room.objects.get(uid=room_uid)
             if room:
-                return Response({
-                    'room_id': room.id,
-                    'room_name': room.name,
-                    'is_new': False
-                },
-                status=status.HTTP_200_OK)
+                serializer = RoomSerializer(room)
+                return Response(serializer.data,
+                    status=status.HTTP_200_OK)
         except Room.DoesNotExist:
             return Response({'error': {'room': 'ROOM_NOT_FOUND'}},
                             status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request: Request, pk: int) -> Response:
+    def post(self, request: Request, room_uid: uuid.UUID) -> Response:
         """Create a message through the HTTP fallback form flow.
         
         HTTP POST fallback (INPUT): the page form submits here when JS/WebSocket
@@ -103,19 +103,16 @@ class RoomView(APIView):
         back to the room.
         """
         try:
-            room = Room.objects.get(id=pk)
+            room = Room.objects.get(uid=room_uid)
         except Room.DoesNotExist:
             return Response({'error': {'room': 'ROOM_NOT_FOUND'}},
                             status=status.HTTP_404_NOT_FOUND)
-        if not room.participants.filter(id=request.profile.id).exists():
+        if not room.participants.filter(uid=request.profile.uid).exists():
             room.participants.add(request.profile)
-        Message.objects.create(
-            sender_profile=request.profile,
-            room=room,
-            body=request.POST.get('body')
-        )
-        return Response({
-            'room_id': room.id,
-            'room_name': room.name,
-            'is_new': False
-        }, status=status.HTTP_200_OK)
+        serializer = MessageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(sender_profile=request.profile, room=room)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
