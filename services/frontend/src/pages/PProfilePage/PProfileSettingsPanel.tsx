@@ -100,7 +100,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		return payload && typeof payload === "object" ? payload : null;
 	};
 
-async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
+	async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
 		try {
 			await api.post<{ access?: string; username?: string }>(`${API_PROFILE}?q=${username}`, {
 				username: values.username,
@@ -120,7 +120,7 @@ async function handleChangeUsername(values: Record<string, string>): Promise<IEv
 		}
 	}
 
-async function handleChangeEmail(values: Record<string, string>): Promise<IEventStatus> {
+	async function handleChangeEmail(values: Record<string, string>): Promise<IEventStatus> {
 		try {
 			await api.post<{ access?: string; email?: string }>(`${API_PROFILE}?q=${username}`, {
 				email: values.email,
@@ -140,9 +140,12 @@ async function handleChangeEmail(values: Record<string, string>): Promise<IEvent
 		}
 	}
 
-async function handleChangePassword(values: Record<string, string>): Promise<IEventStatus> {
+	async function handleChangePassword(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			const response = await changeProfilePassword(values.currentPassword, values.newPassword);
+			const response = await changeProfilePassword(
+				values.currentPassword,
+				values.newPassword,
+			);
 			return {
 				valid: true,
 				msg:
@@ -261,7 +264,10 @@ async function handleChangePassword(values: Record<string, string>): Promise<IEv
 						</CText>
 					) : null}
 					<DialogActions sx={{ px: 0, pb: 0, pt: 1 }}>
-						<CButtonText onClick={handleCloseDeleteConfirm} disabled={isDeletingProfile}>
+						<CButtonText
+							onClick={handleCloseDeleteConfirm}
+							disabled={isDeletingProfile}
+						>
 							CANCEL
 						</CButtonText>
 						<CButtonText onClick={handleConfirmDelete} disabled={isDeletingProfile}>
