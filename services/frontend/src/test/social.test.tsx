@@ -13,7 +13,6 @@ import PFriendNode from "../pages/PSocial/PFriendNode";
 const getMock = vi.fn();
 const postMock = vi.fn();
 let accessToken: string | null = null;
-let _authFailureHandler: (() => void) | null = null;
 
 vi.mock("../api", () => ({
 	default: {
@@ -27,9 +26,7 @@ vi.mock("../api", () => ({
 		accessToken = null;
 	},
 	getAccessToken: () => accessToken,
-	setAuthFailureHandler: (handler: (() => void) | null) => {
-		_authFailureHandler = handler;
-	},
+	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
 
 function logUser() {
@@ -50,7 +47,6 @@ describe("Socials", () => {
 		postMock.mockReset();
 
 		accessToken = null;
-		_authFailureHandler = null;
 	});
 
 	//DRAWER
@@ -99,7 +95,7 @@ describe("Socials", () => {
 		expect(firstChild).not.toBeVisible();
 	});
 
-	it("DRAWER: Friends panel closed by default", async () => {
+	it("DRAWER: Opening friends panel", async () => {
 		logUser();
 		render(
 			<CAuthProvider>
@@ -246,7 +242,7 @@ describe("Socials", () => {
 	it("FRIEND NODE: Check for base data", async () => {
 		const user: IFriendInfo = mockGenerateFriend();
 
-		render(<PFriendNode user={user} />);
+		render(<PFriendNode user={user} type="friend" />);
 
 		expect(screen.getByText(user.username)).toBeInTheDocument();
 		expect(screen.getByText(user.badges)).toBeInTheDocument();
@@ -271,10 +267,10 @@ describe("Socials", () => {
 
 		render(
 			<>
-				<PFriendNode user={users[0]} />
-				<PFriendNode user={users[1]} />
-				<PFriendNode user={users[2]} />
-				<PFriendNode user={users[3]} />
+				<PFriendNode user={users[0]} type="friend" />
+				<PFriendNode user={users[1]} type="friend" />
+				<PFriendNode user={users[2]} type="friend" />
+				<PFriendNode user={users[3]} type="friend" />
 			</>,
 		);
 
