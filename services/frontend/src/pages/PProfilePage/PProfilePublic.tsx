@@ -8,7 +8,8 @@ import GPageBase from "../common/GPageBases";
 import ProfileMatchHistoryPanel from "./PProfileMatchHistoryPanel";
 import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
 import { getErrorMessage } from "../../utils/error";
-import { fetchProfile, resolveProfileImage } from "../../api/profile";
+import CLevelProgress from "../../components/feedback/CLevelProgress";
+import { fetchProfile, getProfileLevelProgress, resolveProfileImage } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
 
 interface ProfileState {
@@ -60,6 +61,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 	const displayUsername = profile?.username ?? username;
 	const displayBadge = profile?.badges ?? "Unknown";
 	const displayXp = profile?.exp_points ?? 0;
+	const levelProgress = getProfileLevelProgress(displayXp);
 
 	return (
 		<GPageBase>
@@ -83,10 +85,13 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 							>
 								{displayUsername.charAt(0).toUpperCase()}
 							</Avatar>
-							<Stack>
+							<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
 								<CTitle size="md">{displayUsername}</CTitle>
-								<CText size="sm">Badge: {displayBadge}</CText>
-								<CText size="sm">XP: {displayXp}</CText>
+								<CLevelProgress
+									level={levelProgress.level}
+									progressPercent={levelProgress.progressPercent}
+									title={displayBadge}
+								/>
 								{error && (
 									<CText size="sm" color="error.main">
 										{error}

@@ -11,7 +11,8 @@ import ProfileModifyMePanel from "./PProfileSettingsPanel";
 import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
 import { getErrorMessage } from "../../utils/error";
 import PProfileAvatarEditor from "./PProfileAvatarEditor";
-import { fetchProfile } from "../../api/profile";
+import CLevelProgress from "../../components/feedback/CLevelProgress";
+import { fetchProfile, getProfileLevelProgress } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
 
 interface ProfileState {
@@ -31,6 +32,7 @@ const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfo
 	const displayUsername = profile?.username ?? username;
 	const xp = profile?.exp_points ?? 0;
 	const badge = profile?.badges ?? "Unknown";
+	const levelProgress = getProfileLevelProgress(xp);
 
 	return (
 		<CBasePaper sx={{ p: 2 }}>
@@ -44,10 +46,13 @@ const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfo
 					image={profile?.image}
 					onUploaded={onAvatarUploaded}
 				/>
-				<Stack>
+				<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
 					<CTitle size="md">{displayUsername}</CTitle>
-					<CText size="sm">Badge: {badge}</CText>
-					<CText size="sm">XP: {xp}</CText>
+					<CLevelProgress
+						level={levelProgress.level}
+						progressPercent={levelProgress.progressPercent}
+						title={badge}
+					/>
 					{error && (
 						<CText size="sm" color="error.main">
 							{error}
