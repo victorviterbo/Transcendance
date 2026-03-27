@@ -64,6 +64,7 @@ CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を
 CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,Shown on profile accordion heading
 CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Shown on profile accordion heading
 DELETE_ACCOUNT,Delete Account,Supprimer le compte,アカウントを削除する,Delete account action label
+DELETE_ACCOUNT_CONFIRMATION,This will permanently delete your profile. Are you sure you want to continue?,Cela supprimera définitivement votre profil. Voulez-vous vraiment continuer ?,プロフィールが完全に削除されます。本当に続行しますか？,Shown in the delete profile confirmation dialog
 DELETE,Delete,Supprimer,削除,Delete button text
 DELETING,Deleting...,Suppression...,削除中...,Delete button in progress state
 DELETE_FAILED,Delete failed,La suppression a échoué,削除に失敗しました,Shows when an unknown error occured while deleting profile
