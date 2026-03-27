@@ -2,17 +2,22 @@ import type { SxProps, Theme } from "@mui/material";
 import { colorAlterColor, colorGetBackground } from "../../../utils/styles";
 import { appAnimation, appColors, appSharedStyle } from "../../theme";
 import type { PFriendNodeProps } from "../../../pages/PSocial/PFriendNode";
+import type { IFriendInfo } from "../../../types/friends";
 
 export function PFriendNodeStyle(theme: Theme, props: PFriendNodeProps) {
 	let bgColors: string[] = [];
 
-	if (props.user.status == "online") bgColors = [appColors.primary[0], appColors.quinary[0]];
-	if (props.user.status == "busy")
-		bgColors = [
-			appColors.secondary[0],
-			colorAlterColor(appColors.secondary[0], "shift-hue", -30),
-		];
-	if (props.user.status == "offline") bgColors = [appColors.greys[3], appColors.greys[5]];
+	if (props.type == "friend") {
+		if ((props.user as IFriendInfo).status == "online")
+			bgColors = [appColors.primary[0], appColors.quinary[0]];
+		if ((props.user as IFriendInfo).status == "busy")
+			bgColors = [
+				appColors.secondary[0],
+				colorAlterColor(appColors.secondary[0], "shift-hue", -30),
+			];
+		if ((props.user as IFriendInfo).status == "offline")
+			bgColors = [appColors.greys[3], appColors.greys[5]];
+	} else bgColors = [appColors.primary[0], appColors.quinary[0]];
 
 	return {
 		background: colorGetBackground([bgColors[0], bgColors[1]], undefined, "linear", 160),
