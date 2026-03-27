@@ -18,7 +18,7 @@ function PSocial() {
 			title={"FRIEND_TITLE"}
 			data-testid="PSocial"
 		>
-			<CTabs tabs={["FRIEND_LISTS", "FRIENDS_ADD", "FRIEND_REQUESTS"]}>
+			<CTabs tabs={["FRIEND_LISTS", "FRIENDS_ADD", "FRIEND_REQUESTS"]} testid="PSocialTab">
 				<PFriendList></PFriendList>
 				<PFriendAdd></PFriendAdd>
 			</CTabs>

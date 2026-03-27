@@ -45,12 +45,18 @@ function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 						</CText>
 					</Stack>
 					{type == "friend" && (
-						<CIconButton sx={PFriendNodeMessageStyle}>
+						<CIconButton
+							sx={PFriendNodeMessageStyle}
+							data-testid="PFriendNode_MessageButton"
+						>
 							<MessageIcon />
 						</CIconButton>
 					)}
 					{type == "user" && (
-						<CIconButton sx={PFriendNodeMessageStyle}>
+						<CIconButton
+							sx={PFriendNodeMessageStyle}
+							data-testid="PFriendNode_AddButton"
+						>
 							<PersonAddIcon />
 						</CIconButton>
 					)}

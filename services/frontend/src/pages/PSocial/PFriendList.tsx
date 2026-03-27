@@ -73,7 +73,7 @@ function PFriendList() {
 	}
 
 	return (
-		<Stack sx={{ overflow: "hidden", flex: 1 }}>
+		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendList">
 			<CTextField
 				onChange={(e) => {
 					setFriendsFilter(e.target.value);

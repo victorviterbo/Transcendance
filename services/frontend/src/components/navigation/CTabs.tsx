@@ -10,7 +10,7 @@ interface CTabsProps extends GCompProps, TabsProps {
 }
 
 //TODO: Replace sx
-function CTabs({ tabs, children }: CTabsProps) {
+function CTabs({ tabs, testid, children }: CTabsProps) {
 	//====================== STATS ======================
 	const [tab, setTab] = useState<number>(0);
 
@@ -25,9 +25,15 @@ function CTabs({ tabs, children }: CTabsProps) {
 				onChange={(_: SyntheticEvent, newValue: number) => setTab(newValue)}
 				centered
 				sx={{ mb: 3 }}
+				data-testid={testid ? testid : null}
 			>
 				{tabs.map((item, index) => (
-					<Tab sx={CTabStyle} key={index} label={ttr(item)} />
+					<Tab
+						sx={CTabStyle}
+						key={index}
+						label={ttr(item)}
+						data-testid={testid ? testid + index : null}
+					/>
 				))}
 			</Tabs>
 			{childList[tab]}
