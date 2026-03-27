@@ -1,12 +1,16 @@
 import { http, HttpResponse } from "msw";
 import { checkEmailValid, checkPasswordValid, checkUsernameValid } from "../../utils/enforcement";
-import { db, normalizeEmail, normalizeUsername, type MockUser } from "../db";
-import { API_PROFILE, API_PROFILE_SEARCH } from "../../constants";
+import { db, getBadgeForXp, normalizeEmail, normalizeUsername, type MockUser } from "../db";
+import { API_PROFILE, API_PROFILE_PASSWORD, API_PROFILE_SEARCH } from "../../constants";
 
 type ProfilePayload = {
 	username?: unknown;
 	email?: unknown;
 	image?: unknown;
+	password?: unknown;
+};
+
+type PasswordPayload = {
 	currentPassword?: unknown;
 	newPassword?: unknown;
 };
@@ -18,7 +22,7 @@ const toProfileResponse = (user: MockUser) => ({
 	username: user.username,
 	image: DEFAULT_PROFILE_IMAGE,
 	exp_points: user.expPoints,
-	badges: user.badges,
+	badges: getBadgeForXp(user.expPoints),
 	created_at: new Date().toISOString(),
 	email: user.email,
 });
@@ -72,7 +76,6 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 		image?: string | null;
 	} = {};
 	const errors: Record<string, string> = {};
-	let nextPassword: string | null = null;
 
 	if (typeof payload.username === "string") {
 		const username = payload.username.trim();
@@ -114,29 +117,6 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 		}
 	}
 
-	if (typeof payload.currentPassword === "string" || typeof payload.newPassword === "string") {
-		const currentPassword =
-			typeof payload.currentPassword === "string" ? payload.currentPassword : "";
-		const newPassword = typeof payload.newPassword === "string" ? payload.newPassword : "";
-
-		if (currentPassword.length === 0) {
-			errors.currentPassword = "MISSING_FIELD";
-		} else if (sessionUser.password !== currentPassword) {
-			errors.currentPassword = "INVALID_PASSWORD";
-		}
-
-		if (newPassword.length === 0) {
-			errors.newPassword = "MISSING_FIELD";
-		} else {
-			const passwordErrors = checkPasswordValid(newPassword);
-			if (passwordErrors.length > 0) {
-				errors.newPassword = passwordErrors[0];
-			} else {
-				nextPassword = newPassword;
-			}
-		}
-	}
-
 	if (Object.keys(errors).length > 0) {
 		return HttpResponse.json({ error: errors }, { status: 400 });
 	}
@@ -146,21 +126,65 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 		return HttpResponse.json({ error: "Unauthorized: profile unavailable" }, { status: 401 });
 	}
 
-	if (nextPassword) {
-		const passwordUpdated = db.updatePassword(
-			updated.username,
-			sessionUser.password,
-			nextPassword,
-		);
-		if (!passwordUpdated) {
-			return HttpResponse.json(
-				{ error: { currentPassword: "INVALID_PASSWORD" } },
-				{ status: 400 },
-			);
+	return HttpResponse.json(toProfileResponse(updated), { status: 200 });
+});
+
+export const ChangePasswordHandler = http.post(API_PROFILE_PASSWORD, async ({ request }) => {
+	const sessionUser = db.getSessionUser();
+	if (!sessionUser) return unauthorized();
+
+	const payload = (await readProfilePayload(request)) as PasswordPayload;
+	const currentPassword =
+		typeof payload.currentPassword === "string" ? payload.currentPassword : "";
+	const newPassword = typeof payload.newPassword === "string" ? payload.newPassword : "";
+	const errors: Record<string, string> = {};
+
+	if (currentPassword.length === 0) {
+		errors.currentPassword = "MISSING_FIELD";
+	} else if (sessionUser.password !== currentPassword) {
+		errors.currentPassword = "INVALID_PASSWORD";
+	}
+
+	if (newPassword.length === 0) {
+		errors.newPassword = "MISSING_FIELD";
+	} else if (newPassword === currentPassword) {
+		errors.newPassword = "PASSWORD_UNCHANGED";
+	} else {
+		const passwordErrors = checkPasswordValid(newPassword);
+		if (passwordErrors.length > 0) {
+			errors.newPassword = passwordErrors[0];
 		}
 	}
 
-	return HttpResponse.json(toProfileResponse(updated), { status: 200 });
+	if (Object.keys(errors).length > 0) {
+		return HttpResponse.json({ error: errors }, { status: 400 });
+	}
+
+	const updated = db.updatePassword(sessionUser.username, currentPassword, newPassword);
+	if (!updated) {
+		return HttpResponse.json({ error: { currentPassword: "INVALID_PASSWORD" } }, { status: 400 });
+	}
+
+	return HttpResponse.json({ description: "PASSWORD_UPDATED" }, { status: 200 });
+});
+
+export const DeleteProfileHandler = http.delete(API_PROFILE, async ({ request }) => {
+	const sessionUser = db.getSessionUser();
+	if (!sessionUser) return unauthorized();
+
+	const payload = (await readProfilePayload(request)) as ProfilePayload;
+	const password = typeof payload.password === "string" ? payload.password : "";
+
+	if (password.length === 0) {
+		return HttpResponse.json({ error: { password: "MISSING_FIELD" } }, { status: 400 });
+	}
+
+	if (sessionUser.password !== password) {
+		return HttpResponse.json({ error: { password: "INVALID_PASSWORD" } }, { status: 400 });
+	}
+
+	db.deleteUser(sessionUser.username);
+	return new HttpResponse(null, { status: 204 });
 });
 
 export const ProfileSearchHandler = http.get(API_PROFILE_SEARCH, ({ request }) => {
