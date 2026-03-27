@@ -108,7 +108,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
-			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
+			return { valid: false, msg: getErrorMessage(error, "CHANGE_FAILED") };
 		}
 	}
 
@@ -128,7 +128,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
-			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
+			return { valid: false, msg: getErrorMessage(error, "CHANGE_FAILED") };
 		}
 	}
 
@@ -139,7 +139,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
-			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
+			return { valid: false, msg: getErrorMessage(error, "CHANGE_FAILED") };
 		}
 	}
 
@@ -151,7 +151,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
-			return { valid: false, msg: getErrorMessage(error, "Delete failed.") };
+			return { valid: false, msg: getErrorMessage(error, "DELETE_FAILED") };
 		}
 	}
 

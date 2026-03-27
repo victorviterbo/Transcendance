@@ -59,12 +59,14 @@ MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Shown in the user
 PROFILE_SETTINGS,Settings,Paramètres,設定,Shown in the user profile
 CHANGE,Change,Changer,変更,Shown on a button to update information
 CHANGING,Changing...,Modification...,変更中...,Shown on a pressed button to update information
+CHANGE_FAILED,Change failed,La modification a échoué,変更に失敗しました,Shows when an unknown error occured while changing a profile field
 CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を変更する,Shown on profile accordion heading
 CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,Shown on profile accordion heading
 CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Shown on profile accordion heading
 DELETE_ACCOUNT,Delete Account,Supprimer le compte,アカウントを削除する,Delete account action label
 DELETE,Delete,Supprimer,削除,Delete button text
 DELETING,Deleting...,Suppression...,削除中...,Delete button in progress state
+DELETE_FAILED,Delete failed,La suppression a échoué,削除に失敗しました,Shows when an unknown error occured while deleting profile
 UPDATE_PROFILE_PICTURE,Update profile picture,Changer la photo de profil,プロフィール画像を更新する,Dialog title for profile picture upload
 CHOOSE_PICTURE_PREVIEW,Choose a picture to preview it before uploading,Choisissez une image pour la prévisualiser,アップロード前にプレビューする画像を選択してください,Helper text for profile picture preview before upload
 CANCEL,Cancel,Annuler,キャンセル,To cancel an action
