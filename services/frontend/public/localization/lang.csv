@@ -66,3 +66,4 @@ FRIEND_EMPTY,"Sorry, you currenlty have no friends",,,
 FRIEND_ERROR,"Error: couldn't load friends list",,,Trigger on internal error
 FRIENDS_ADD,Add,,,Tab to add a new friends
 USERS_NOTFOUND,No user found,,,Shown when seraching fo users and none is found
+USERS_ADD_EROOR,"Error: couldn't load user list",,,Shown when seraching fo users and none is found

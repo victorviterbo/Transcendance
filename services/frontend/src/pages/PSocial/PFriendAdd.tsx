@@ -35,7 +35,7 @@ function PFriendAdd() {
 			setUsers(res.data.users);
 			setSearch(value);
 		} catch (error) {
-			setError(getErrorNode(error, "FRIEND_ERROR"));
+			setError(getErrorNode(error, "USERS_ADD_EROOR"));
 			setUsers([]);
 		}
 	};
@@ -51,7 +51,7 @@ function PFriendAdd() {
 	}
 
 	return (
-		<Stack sx={{ overflow: "hidden", flex: 1 }}>
+		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendAdd">
 			<CTextField
 				onChange={(e) => {
 					onSearch(e.target.value);
@@ -59,7 +59,12 @@ function PFriendAdd() {
 				data-testid="PSocialASearchAdd"
 			></CTextField>
 			<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
-				<Stack sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>{getUserList()}</Stack>
+				<Stack
+					sx={{ mt: "20px", flex: 1, overflowY: "auto" }}
+					data-testid="PFriendAdd_Stack"
+				>
+					{getUserList()}
+				</Stack>
 			</Box>
 		</Stack>
 	);
