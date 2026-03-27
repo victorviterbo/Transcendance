@@ -1,3 +1,5 @@
+import type { IErrorStruct } from "./error";
+
 export interface IAuthUser {
 	username: string;
 	id?: number;
@@ -5,3 +7,20 @@ export interface IAuthUser {
 }
 
 export type TAuthStatus = "loading" | "authed" | "guest";
+
+export interface IExtUserSearch {
+	search: string;
+}
+
+export interface IExtUserList {
+	users: IExtUserInfo[];
+	error?: IErrorStruct;
+}
+
+export interface IExtUserInfo {
+	uid: string;
+	username: string;
+	image: string;
+
+	badges: string;
+}

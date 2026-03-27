@@ -14,17 +14,20 @@ import {
 import CText from "../../components/text/CText";
 import MessageIcon from "@mui/icons-material/Message";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
+import type { IExtUserInfo } from "../../types/user";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
 export interface PFriendNodeProps extends GPageProps {
-	user: IFriendInfo;
+	user: IFriendInfo | IExtUserInfo;
+	type: "friend" | "user";
 	hidden?: boolean;
 }
 
-function PFriendNode({ user, hidden }: PFriendNodeProps) {
+function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 	return (
 		<Collapse in={!hidden} data-testid="PFriendNode">
 			<Box
-				sx={(theme) => PFriendNodeStyle(theme, { hidden, user })}
+				sx={(theme) => PFriendNodeStyle(theme, { hidden, type, user })}
 				data-testid="PFriendNodeBox"
 			>
 				<Stack direction="row">
@@ -41,9 +44,16 @@ function PFriendNode({ user, hidden }: PFriendNodeProps) {
 							{user.badges}
 						</CText>
 					</Stack>
-					<CIconButton sx={PFriendNodeMessageStyle}>
-						<MessageIcon />
-					</CIconButton>
+					{type == "friend" && (
+						<CIconButton sx={PFriendNodeMessageStyle}>
+							<MessageIcon />
+						</CIconButton>
+					)}
+					{type == "user" && (
+						<CIconButton sx={PFriendNodeMessageStyle}>
+							<PersonAddIcon />
+						</CIconButton>
+					)}
 				</Stack>
 			</Box>
 		</Collapse>
