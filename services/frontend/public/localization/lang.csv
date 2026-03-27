@@ -60,6 +60,7 @@ PROFILE_SETTINGS,Settings,Paramètres,設定,Shown in the user profile
 CHANGE,Change,Changer,変更,Shown on a button to update information
 CHANGING,Changing...,Modification...,変更中...,Shown on a pressed button to update information
 CHANGE_FAILED,Change failed,La modification a échoué,変更に失敗しました,Shows when an unknown error occured while changing a profile field
+CHANGE_SUCCESS,Change saved,Modification enregistrée,変更を保存しました,Shown when a profile change succeeds
 CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を変更する,Shown on profile accordion heading
 CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,Shown on profile accordion heading
 CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Shown on profile accordion heading

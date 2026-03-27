@@ -100,7 +100,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		return payload && typeof payload === "object" ? payload : null;
 	};
 
-	async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
+async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
 		try {
 			await api.post<{ access?: string; username?: string }>(`${API_PROFILE}?q=${username}`, {
 				username: values.username,
@@ -112,7 +112,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					email: user?.email,
 				});
 			}
-			return { valid: true };
+			return { valid: true, msg: "CHANGE_SUCCESS", resetOnSuccess: true };
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
@@ -120,7 +120,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		}
 	}
 
-	async function handleChangeEmail(values: Record<string, string>): Promise<IEventStatus> {
+async function handleChangeEmail(values: Record<string, string>): Promise<IEventStatus> {
 		try {
 			await api.post<{ access?: string; email?: string }>(`${API_PROFILE}?q=${username}`, {
 				email: values.email,
@@ -132,7 +132,7 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					email: values.email.trim(),
 				});
 			}
-			return { valid: true };
+			return { valid: true, msg: "CHANGE_SUCCESS", resetOnSuccess: true };
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
@@ -140,10 +140,17 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		}
 	}
 
-	async function handleChangePassword(values: Record<string, string>): Promise<IEventStatus> {
+async function handleChangePassword(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			await changeProfilePassword(values.currentPassword, values.newPassword);
-			return { valid: true };
+			const response = await changeProfilePassword(values.currentPassword, values.newPassword);
+			return {
+				valid: true,
+				msg:
+					response.description && response.description !== "PASSWORD_UPDATED"
+						? response.description
+						: "CHANGE_SUCCESS",
+				resetOnSuccess: true,
+			};
 		} catch (error) {
 			const fieldErrors = getFieldErrors(error);
 			if (fieldErrors) return { valid: false, fieldErrors };
