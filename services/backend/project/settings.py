@@ -48,12 +48,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
+    'game.apps.GameConfig',
     'music.apps.MusicConfig',
-    'userauth',
-    'userprofile',
-    'friends',
-    'stats',
-    'chat',
+    'userauth.apps.UsersConfig',
+    'userprofile.apps.UserprofileConfig',
+    'friends.apps.FriendsConfig',
+    'stats.apps.StatsConfig',
+    'chat.apps.ChatConfig',
 
     'django_cleanup.apps.CleanupConfig',
 ]
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'project.middleware.ProfileMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

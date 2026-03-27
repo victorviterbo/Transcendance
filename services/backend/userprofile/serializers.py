@@ -1,5 +1,5 @@
-
 """Define export of Profile (full and light version) and Freiendship handling."""
+
 from io import BytesIO
 from typing import Any
 
@@ -22,15 +22,18 @@ def validate_username(value: str, is_creation: bool = False) -> str:
         ValidationError: If the username is empty
         ValidationError: If the username is already taken
     """
-    if not value: 
+    if not value:
         raise serializers.ValidationError('Username is required.',
                                           code='invalid-data')
     if any(pattern in value for pattern in ['/', '\\', '..', '~']):
-        raise serializers.ValidationError('Use of forbiden character', code='FORBIDDEN')
-    if value == 'admin':
-        raise serializers.ValidationError('Who do you think you are ?', code='RESERVED')
+        raise serializers.ValidationError('Use of forbiden character',
+                                          code='USERNAME_FORBIDDEN_CHAR')
+    if value.lower() == 'admin':
+        raise serializers.ValidationError('Who do you think you are ?',
+                                          code='RESERVED_USERNAME')
     if is_creation and Profile.objects.filter(username=value).exists():
-        raise serializers.ValidationError('Username already taken', code='UNIQUE')
+        raise serializers.ValidationError('Username already taken',
+                                          code='USERNAME_TAKEN')
     return value
 
 class LightProfileSerializer(serializers.ModelSerializer):
@@ -44,7 +47,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
         """
         model = Profile
         fields = ['username', 'image', 'is_guest', 'session_key']
-        read_only_fields = ['is_guest', 'session_key']
+        read_only_fields = ['is_guest', 'session_key', 'uid']
 
     def validate_username(self, value: str, is_creation: bool = False) -> str:
         """Specific username validation for user creation / update."""
@@ -52,7 +55,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
             is_creation = True
         if is_creation and Profile.objects.filter(username=value).exists():
             raise serializers.ValidationError('Username already taken',
-                                              code='unique')
+                                              code='USERNAME_TAKEN')
         return validate_username(value)
 
     def validate_image(self, data: Any) -> Any:
@@ -91,5 +94,5 @@ class ProfileSerializer(LightProfileSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'image', 'exp_points', 'badges', 'created_at']
-        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key']
+        fields = ['username', 'image', 'exp_points', 'badges', 'created_at',]
+        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key', 'uid']

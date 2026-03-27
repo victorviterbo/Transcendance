@@ -1,5 +1,5 @@
-
 """Defines the views relatives to user registration, login, password change etc."""
+
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -16,11 +16,11 @@ def parse_validation_errors(val_error: serializers.ValidationError) -> Response:
     error_response = {'error': {}}
     response_code = status.HTTP_400_BAD_REQUEST
     for field, details in error.items():
-        if any(item['code'].lower() == 'unique' for item in details):
-            error_response['error'][field] = 'ALREADY_TAKEN'
-            response_code = status.HTTP_409_CONFLICT
+        if field == 'username' and details[0]['code'] == 'unique' or details[0]['code'] == 'USERNAME_TAKEN':
+                response_code = status.HTTP_409_CONFLICT
+                error_response['error'][field] = 'USERNAME_TAKEN'
         else:
-            error_response['error'][field] = 'INVALID'
+            error_response['error'][field] = details[0]['code'].upper()
     return Response(error_response, status=response_code)
 
 class ProfileView(APIView):
@@ -50,12 +50,9 @@ class ProfileView(APIView):
         if query is None:
             return (Response({'error': {'query': 'MISSING_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
-        elif query == '':
-            return (Response({'error': {'query': 'EMPTY_FIELD'}},
-                             status=status.HTTP_400_BAD_REQUEST))
         queried_profiles = Profile.objects.filter(username=query)
         if not queried_profiles.exists():
-            return Response({'error': {'query': 'NOT_FOUND'}},
+            return Response({'error': {'query': 'USER_NOT_FOUND'}},
                             status=status.HTTP_400_BAD_REQUEST)
         queried_profile = queried_profiles.first()
         try:
@@ -82,9 +79,8 @@ class ProfileView(APIView):
                 400: {"error": "Could not update Profile"}
                 401: {"error": "Unauthorized: <error>"}
         """
-        profile = request.user.profile
         try:
-            profile_serializer = ProfileSerializer(instance=profile,
+            profile_serializer = ProfileSerializer(instance=request.profile,
                                                    data=request.data,
                                                    partial=True,
                                                    many=False)

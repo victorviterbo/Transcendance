@@ -1,4 +1,5 @@
 """Defines the views relatives to user registration, login, password change etc."""
+
 from typing import Any
 
 from django.contrib.auth import authenticate
@@ -9,9 +10,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from userprofile.models import Profile
 
 from .models import SiteUser
-from .serializers import LoginSerializer, SiteUserSerializer
+from .serializers import LoginSerializer, RegisterSerializer
 
 
 class RegisterView(APIView):
@@ -33,10 +35,13 @@ class RegisterView(APIView):
         try:
             renamed_data = request.data.copy()
             renamed_data['profile_username'] = renamed_data.pop('username')
-            serializer = SiteUserSerializer(data=renamed_data,
-                                            context={'is_creation': True})
+            serializer = serializer = RegisterSerializer(data=renamed_data,
+                                                         context={
+                                                             'request': request,
+                                                             'is_creation': True}
+            )
             if serializer.is_valid(raise_exception=True):
-                serializer.save(profile_username=request.data.get('username'))
+                user = serializer.save(profile_username=request.data.get('username'))
                 token = RefreshToken.for_user(serializer.instance)
                 response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},
@@ -47,27 +52,29 @@ class RegisterView(APIView):
                     httponly=True, secure=True, samesite='Lax',
                     path='/api/auth/'
                 )
+                request.session.pop('guest_profile_id', None)
+                request.session.modified = True
                 return response
+        
         except serializers.ValidationError as e:
             error = e.get_full_details()
             error_response = {'error':{}}
             response_code = status.HTTP_400_BAD_REQUEST
             if error.get('email'):
                 if any(['unique' in e['code'].lower() for e in error['email']]):
-                    error_response['error']['email'] = 'ALREADY_TAKEN'
+                    error_response['error']['email'] = 'EMAIL_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
-                    error_response['error']['email'] = 'INVALID'
+                    error_response['error']['email'] = 'INVALID_EMAIL'
             if error.get('profile_username'):
-                if any(['unique' in e['code'].lower() for e in error['profile_username']]):
-                    error_response['error']['username'] = 'ALREADY_TAKEN'
+                if any([e['code'] in ['unique', 'USERNAME_TAKEN']
+                        for e in error['profile_username']]):
+                    error_response['error']['username'] = 'USERNAME_TAKEN'
                     response_code = status.HTTP_409_CONFLICT
                 else:
-                    error_response['error']['username'] = 'INVALID'
+                    error_response['error']['username'] = 'INVALID_USERNAME'
             if error.get('password'):
-                error_response['error']['password'] = error['password'][0]['code']
-                if error_response['error']['password'] == 'blank':
-                    error_response['error']['password'] = 'PASSWORD_MIN'
+                error_response['error']['password'] = 'INVALID_PASSWORD'
             return Response(error_response, status=response_code)
 
 class LoginView(APIView):
@@ -90,7 +97,7 @@ class LoginView(APIView):
         """
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({'error': {'auth': 'AUTH_FAIL'}},
+            return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                         status=status.HTTP_401_UNAUTHORIZED)
         email = serializer.validated_data.get('email')
         password = serializer.validated_data.get('password')
@@ -108,11 +115,16 @@ class LoginView(APIView):
                     httponly=True, secure=True, samesite='Lax',
                     path='/api/auth/'
                 )
+                guest_id = request.session.get('guest_profile_id')
+                if guest_id:
+                    Profile.objects.filter(id=guest_id, is_guest=True).delete()
+                    request.profile = user.profile
+                    request.session.pop('guest_profile_id', None)
                 return response
             except ValueError:
-                return Response({'error': {'auth': 'AUTH_FAIL'}},
+                return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
-        return Response({'error': {'auth': 'AUTH_FAIL'}},
+        return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                         status=status.HTTP_401_UNAUTHORIZED)
 
 class LogoutView(APIView):
@@ -140,7 +152,7 @@ class LogoutView(APIView):
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                return Response({'error': {'auth': 'AUTH_FAIL'}},
+                return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
@@ -188,8 +200,8 @@ class RefreshTokenView(TokenRefreshView):
                     return response
                 else:
                     return response
-            except Exception:
-                return Response({'error': {'cookie': 'INVALID'}}, # TODO test
+            except Exception as e:
+                return Response({'error': {'cookie': e.detail['code'].upper()}}, # TODO test
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
