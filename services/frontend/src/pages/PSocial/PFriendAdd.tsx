@@ -13,6 +13,7 @@ function PFriendAdd() {
 	const [users, setUsers] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [search, setSearch] = useState<string>("");
+	let lastTO: ReturnType<typeof setTimeout> | null = null;
 	const localId = useId();
 
 	const onSearch = async (value: string) => {
@@ -54,7 +55,13 @@ function PFriendAdd() {
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendAdd">
 			<CTextField
 				onChange={(e) => {
-					onSearch(e.target.value);
+					if (lastTO) {
+						clearTimeout(lastTO);
+						lastTO = null;
+					}
+					lastTO = setTimeout(() => {
+						onSearch(e.target.value);
+					}, 500);
 				}}
 				data-testid="PSocialASearchAdd"
 			></CTextField>

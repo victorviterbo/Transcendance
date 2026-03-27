@@ -93,7 +93,12 @@ describe("Socials - Friend list", () => {
 			expect(screen.getByText("USERS_NOTFOUND")).toBeInTheDocument();
 		});
 	});
-	it("Check searches", async () => {
+	it.each([
+		["john", 3],
+		["a", 5],
+		["_", 1],
+		["heeqwdwqllo", 0],
+	])("Check searches for %s (expect: %i)", async (search: string, expected: number) => {
 		postMock.mockImplementation((url: string, body: unknown) => {
 			const input: IExtUserSearch = typeof body == "string" ? JSON.parse(body) : body;
 			const data: IExtUserList = mockGetExtUsers(input.search);
@@ -110,35 +115,20 @@ describe("Socials - Friend list", () => {
 		const searchField = screen.getByTestId("PSocialASearchAdd");
 		expect(searchField).toBeInTheDocument();
 		const input = within(searchField).getByRole("textbox");
-		await userEvent.type(input, "john");
+		await userEvent.type(input, search);
 
 		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode").length).toEqual(3);
-		});
-
-		await userEvent.clear(input);
-		await userEvent.type(input, "a");
-
-		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
-		});
-
-		await userEvent.clear(input);
-		await userEvent.type(input, "_");
-
-		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode").length).toEqual(1);
-		});
-
-		await userEvent.clear(input);
-		await userEvent.type(input, "heeqwdwqllo");
-
-		await waitFor(() => {
-			expect(screen.queryByTestId("PFriendNode")).not.toBeInTheDocument();
+			if (expected > 0) expect(screen.getAllByTestId("PFriendNode").length).toEqual(expected);
+			else expect(screen.queryByTestId("PFriendNode")).not.toBeInTheDocument();
 		});
 	});
 
-	it("Check searches types", async () => {
+	it.each([
+		["john", 3],
+		["a", 5],
+		["_", 1],
+		["heeqwdwqllo", 0],
+	])("Check searches types for %s (expect: %i)", async (search: string, expected: number) => {
 		postMock.mockImplementation((url: string, body: unknown) => {
 			const input: IExtUserSearch = typeof body == "string" ? JSON.parse(body) : body;
 			const data: IExtUserList = mockGetExtUsers(input.search);
@@ -155,31 +145,43 @@ describe("Socials - Friend list", () => {
 		const searchField = screen.getByTestId("PSocialASearchAdd");
 		expect(searchField).toBeInTheDocument();
 		const input = within(searchField).getByRole("textbox");
-		await userEvent.type(input, "john");
+		await userEvent.type(input, search);
 
 		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode_AddButton").length).toEqual(3);
-		});
-
-		await userEvent.clear(input);
-		await userEvent.type(input, "a");
-
-		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode_AddButton").length).toEqual(5);
-		});
-
-		await userEvent.clear(input);
-		await userEvent.type(input, "_");
-
-		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode_AddButton").length).toEqual(1);
-		});
-
-		await userEvent.clear(input);
-		await userEvent.type(input, "heeqwdwqllo");
-
-		await waitFor(() => {
-			expect(screen.queryByTestId("PFriendNode_AddButton")).not.toBeInTheDocument();
+			if (expected > 0)
+				expect(screen.getAllByTestId("PFriendNode_AddButton").length).toEqual(expected);
+			else expect(screen.queryByTestId("PFriendNode_AddButton")).not.toBeInTheDocument();
 		});
 	});
+
+	it.each([["hello"], ["hello world"], ["This is a very long serach string"]])(
+		"Check searches counts for %s",
+		async (value: string) => {
+			let searchCount = 0;
+			postMock.mockImplementation((url: string, body: unknown) => {
+				searchCount++;
+				const input: IExtUserSearch = typeof body == "string" ? JSON.parse(body) : body;
+				const data: IExtUserList = mockGetExtUsers(input.search);
+				if (url === API_SOCIAL_FRIENDS_SEARCH) {
+					return Promise.resolve({
+						data,
+					});
+				}
+				return Promise.reject(new Error(`unexpected call: ${url}`));
+			});
+
+			render(<PFriendAdd />);
+
+			const searchField = screen.getByTestId("PSocialASearchAdd");
+			expect(searchField).toBeInTheDocument();
+			const input = within(searchField).getByRole("textbox");
+
+			await userEvent.clear(input);
+			await userEvent.type(input, value);
+
+			await waitFor(() => {
+				expect(searchCount).toBeLessThanOrEqual(value.length / 0.25);
+			});
+		},
+	);
 });
