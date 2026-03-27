@@ -11,6 +11,7 @@ import { getErrorMessage } from "../../utils/error";
 import { API_PROFILE } from "../../constants";
 import CTitle from "../../components/text/CTitle";
 import { useAuth } from "../../components/auth/CAuthProvider";
+import { changeProfilePassword, deleteProfile } from "../../api/profile";
 
 export interface ProfileSettingsPanelProps extends GPageProps {
 	username: string | undefined;
@@ -18,7 +19,7 @@ export interface ProfileSettingsPanelProps extends GPageProps {
 
 const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 	const [expanded, setExpanded] = useState<string | false>("username");
-	const { setAuth, user } = useAuth();
+	const { setAuth, user, logout } = useAuth();
 	const usernameFields = useMemo<TFormFieldConfig[]>(
 		() => [
 			{
@@ -83,6 +84,14 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		[],
 	);
 
+	const getFieldErrors = (error: unknown): Record<string, string> | null => {
+		const maybe = error as {
+			response?: { data?: { error?: Record<string, string> } };
+		};
+		const payload = maybe.response?.data?.error;
+		return payload && typeof payload === "object" ? payload : null;
+	};
+
 	async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
 		try {
 			await api.post<{ access?: string; username?: string }>(`${API_PROFILE}?q=${username}`, {
@@ -97,6 +106,8 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 			}
 			return { valid: true };
 		} catch (error) {
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
 			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
 		}
 	}
@@ -115,25 +126,33 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 			}
 			return { valid: true };
 		} catch (error) {
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
 			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
 		}
 	}
 
 	async function handleChangePassword(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			await api.post<{ description?: string }>(`${API_PROFILE}?q=${username}`, {
-				currentPassword: values.currentPassword,
-				newPassword: values.newPassword,
-			});
+			await changeProfilePassword(values.currentPassword, values.newPassword);
 			return { valid: true };
 		} catch (error) {
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
 			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
 		}
 	}
 
-	async function handleDeleteAccount(_: Record<string, string>): Promise<IEventStatus> {
-		alert("Coming soon");
-		return { valid: true };
+	async function handleDeleteAccount(values: Record<string, string>): Promise<IEventStatus> {
+		try {
+			await deleteProfile(values.password);
+			await logout();
+			return { valid: true };
+		} catch (error) {
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
+			return { valid: false, msg: getErrorMessage(error, "Delete failed.") };
+		}
 	}
 
 	const handlePanel = (panel: string) => (_: SyntheticEvent, isExpanded: boolean) => {
