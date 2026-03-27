@@ -18,9 +18,8 @@ describe("CLevelProgress", () => {
 		expect(screen.getByText("75%")).toBeInTheDocument();
 		expect(screen.queryByText("275 XP total")).not.toBeInTheDocument();
 		expect(screen.queryByText("75 / 100 XP this level")).not.toBeInTheDocument();
-		expect(screen.getByRole("progressbar", { name: "Arcade Hero level progress" })).toHaveAttribute(
-			"aria-valuenow",
-			"75",
-		);
+		expect(
+			screen.getByRole("progressbar", { name: "Arcade Hero level progress" }),
+		).toHaveAttribute("aria-valuenow", "75");
 	});
 });

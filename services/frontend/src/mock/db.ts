@@ -24,7 +24,9 @@ const mockBadgeBreakpoints = [100, 200, 500, 1000, 2000, 5000, 10000] as const;
 export const getBadgeForXp = (xp: number) => {
 	const safeXp = Math.max(0, Math.floor(xp));
 	const badgeIndex = mockBadgeBreakpoints.findIndex((breakpoint) => safeXp < breakpoint);
-	return badgeIndex === -1 ? mockBadgeStrings[mockBadgeStrings.length - 1] : mockBadgeStrings[badgeIndex];
+	return badgeIndex === -1
+		? mockBadgeStrings[mockBadgeStrings.length - 1]
+		: mockBadgeStrings[badgeIndex];
 };
 
 const defaultUser: MockUser = {

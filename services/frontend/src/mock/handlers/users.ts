@@ -162,7 +162,10 @@ export const ChangePasswordHandler = http.post(API_PROFILE_PASSWORD, async ({ re
 
 	const updated = db.updatePassword(sessionUser.username, currentPassword, newPassword);
 	if (!updated) {
-		return HttpResponse.json({ error: { currentPassword: "INVALID_PASSWORD" } }, { status: 400 });
+		return HttpResponse.json(
+			{ error: { currentPassword: "INVALID_PASSWORD" } },
+			{ status: 400 },
+		);
 	}
 
 	return HttpResponse.json({ description: "PASSWORD_UPDATED" }, { status: 200 });
