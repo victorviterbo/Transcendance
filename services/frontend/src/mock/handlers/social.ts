@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 import { API_SOCIAL_FRIENDS, API_SOCIAL_FRIENDS_SEARCH } from "../../constants";
 import type { IFriendInfo, TFriendStatus } from "../../types/friends";
 import { mockProfilesPics } from "../rcs/profilepics";
-import type { IExtUserList, IExtUserSearch } from "../../types/user";
+import type { IExtUserInfo, IExtUserList, IExtUserSearch } from "../../types/user";
 
 // const friends = ws.link("ws://localhost:5173/");
 
@@ -36,6 +36,10 @@ export function mockGenerateFriend(): IFriendInfo {
 		status: ["online", "busy", "offline"][Math.floor(Math.random() * 3)] as TFriendStatus,
 		created_at: new Date().toString(),
 	};
+}
+export function mockGetExtUser(index: number): IExtUserInfo {
+	const userList: IExtUserList = mockGetExtUsers("");
+	return userList.users[index];
 }
 
 export function mockGetExtUsers(searchFilter: string): IExtUserList {
