@@ -7,7 +7,9 @@ const bgPolar = "/imgs/shared/BGPolarMask.png";
 
 export const SBGBox: SxProps<Theme> = {
 	position: "fixed",
-	inset: 0,
+
+	height: "100%",
+	width: "100%",
 	filter: "blur(" + appBG.baseBlur + "px)",
 };
 

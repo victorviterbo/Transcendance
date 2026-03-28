@@ -90,6 +90,12 @@ FRIEND_ERROR,"Error: couldn't load friends list",,,Trigger on internal error
 FRIENDS_ADD,Add,,,Tab to add a new friends
 USERS_NOTFOUND,No user found,,,Shown when seraching fo users and none is found
 USERS_ADD_EROOR,"Error: couldn't load user list",,,Shown when seraching fo users and none is found
+SOCIAL_INCOMING_REQUESTS,Incoming requests,,,Incoming friends requests section
+SOCIAL_OUTGOING_REQUESTS,Outgoing requests,,,Outgoing friends requests section
+SOCIAL_NO_OUTGOING,No outgoing requests,,,Displayed when there is no outgoing friends requests
+SOCIAL_NO_INCOMING,No incoming requests,,,Displayed when there is no incoming friends requests
+SOCIAL_REQUESTS_ERROR,Couldn't load requests,,,Displayed or error  when trying to load friends requests
+SOCIAL_REQUESTS_OUTGOING, Sent,,,Displayed when waiting for the other personne to answer
 MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Shown in the user profile
 PROFILE_SETTINGS,Settings,Paramètres,設定,Shown in the user profile
 CHANGE,Change,Changer,変更,Shown on a button to update information

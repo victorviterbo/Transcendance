@@ -16,6 +16,8 @@ import MessageIcon from "@mui/icons-material/Message";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import type { IExtUserInfo } from "../../types/user";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import CValidButton from "../../components/inputs/buttons/CValidButton";
+import CCancelButton from "../../components/inputs/buttons/CCancelButton";
 
 export interface PFriendNodeProps extends GPageProps {
 	user: IFriendInfo | IExtUserInfo;
@@ -44,7 +46,7 @@ function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 							{user.badges}
 						</CText>
 					</Stack>
-					{type == "friend" && (
+					{(type == "friend" || (user as IExtUserInfo).relation == "friends") && (
 						<CIconButton
 							sx={PFriendNodeMessageStyle}
 							data-testid="PFriendNode_MessageButton"
@@ -52,13 +54,37 @@ function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 							<MessageIcon />
 						</CIconButton>
 					)}
-					{type == "user" && (
+					{type == "user" && (user as IExtUserInfo).relation == "not-friends" && (
 						<CIconButton
 							sx={PFriendNodeMessageStyle}
 							data-testid="PFriendNode_AddButton"
 						>
 							<PersonAddIcon />
 						</CIconButton>
+					)}
+					{type == "user" && (user as IExtUserInfo).relation == "outgoing" && (
+						<CText size="sm" sx={{ my: "auto" }}>
+							SOCIAL_REQUESTS_OUTGOING
+						</CText>
+					)}
+					{type == "user" && (user as IExtUserInfo).relation == "incoming" && (
+						<Stack direction={"row"}>
+							<CValidButton
+								sx={PFriendNodeMessageStyle}
+								data-testid="PFriendNode_ValidButton"
+							></CValidButton>
+							<CCancelButton
+								sx={[
+									{ ml: "5px" },
+									...(Array.isArray(PFriendNodeMessageStyle)
+										? PFriendNodeMessageStyle
+										: PFriendNodeMessageStyle
+											? [PFriendNodeMessageStyle]
+											: []),
+								]}
+								data-testid="PFriendNode_CencelButton"
+							></CCancelButton>
+						</Stack>
 					)}
 				</Stack>
 			</Box>

@@ -17,3 +17,4 @@ export const API_PRIVATE_ROOMS = "/api/private/rooms";
 //SOCIAL
 export const API_SOCIAL_FRIENDS = "/api/auth/friends";
 export const API_SOCIAL_FRIENDS_SEARCH = "/api/auth/friends-search";
+export const API_SOCIAL_FRIENDS_REQUEST = "/api/auth/friends-request";

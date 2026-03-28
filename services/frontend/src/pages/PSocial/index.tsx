@@ -2,6 +2,7 @@ import CTabs from "../../components/navigation/CTabs";
 import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import PFriendAdd from "./PFriendAdd";
 import PFriendList from "./PFriendList";
+import PFriendReq from "./PFriendReq";
 function PSocial() {
 	return (
 		<CTitlePaper
@@ -21,6 +22,7 @@ function PSocial() {
 			<CTabs tabs={["FRIEND_LISTS", "FRIENDS_ADD", "FRIEND_REQUESTS"]} testid="PSocialTab">
 				<PFriendList></PFriendList>
 				<PFriendAdd></PFriendAdd>
+				<PFriendReq></PFriendReq>
 			</CTabs>
 		</CTitlePaper>
 	);
