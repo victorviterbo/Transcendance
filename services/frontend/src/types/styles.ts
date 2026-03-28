@@ -53,6 +53,8 @@ export interface IThemeColor {
 	quinary: string[];
 	quaternary: string[];
 	greys: string[];
+	cancel: string[];
+	validate: string[];
 	text: IThemeTextColor;
 }
 

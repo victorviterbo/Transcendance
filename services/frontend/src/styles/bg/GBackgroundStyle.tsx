@@ -6,7 +6,7 @@ const bgIcons = "imgs/shared/BG_Icons.png";
 const bgPolar = "imgs/shared/BGPolarMask.png";
 
 export const SBGBox: SxProps<Theme> = {
-	position: "fix",
+	position: "fixed",
 
 	height: "100%",
 	width: "100%",

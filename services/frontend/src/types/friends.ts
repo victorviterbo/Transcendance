@@ -1,6 +1,8 @@
 import type { IErrorStruct } from "./error";
+import type { IExtUserInfo } from "./user";
 
 export type TFriendStatus = "offline" | "busy" | "online";
+export type TFriendRelation = "not-friends" | "friends" | "incoming" | "outgoing";
 
 export interface IFriendsList {
 	friends: IFriendInfo[];
@@ -17,4 +19,10 @@ export interface IFriendInfo {
 
 	created_at: string;
 	status: TFriendStatus;
+}
+
+export interface IFriendRequests {
+	incoming: IExtUserInfo[];
+	outgoing: IExtUserInfo[];
+	error?: IErrorStruct;
 }

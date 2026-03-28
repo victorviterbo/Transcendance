@@ -34,6 +34,9 @@ export const appColors: IThemeColor = {
 	quaternary: ["#414DFA", "#5560D6", "#6168B3", "#62688F", "#585B6B", "#41434A"],
 	quinary: ["#8A41FA", "#7D55D6", "#715FB3", "#665F8F", "#57566B", "#44424A"],
 
+	cancel: ["#FA4141", "#D65555", "#B36161", "#8F6262", "#6B5858", "#4A4141"],
+	validate: ["#41FA6A", "#55D676", "#61B37A", "#628F75", "#586B5E", "#414A43"],
+
 	greys: [
 		"#E1E1E1",
 		"#CBCBCB",
