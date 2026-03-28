@@ -33,7 +33,10 @@ class CookieJWTAuthentication(JWTAuthentication):
                         request.auth is set to None
                         permissions are set (IsAuthenticated, IsAdminUser)
         """
-        raw_token = request.headers.get('Authorization')
+        header = self.get_header(request)
+        if header is None:
+            return None
+        raw_token = self.get_raw_token(header)
         if raw_token is None:
             return None
         try:

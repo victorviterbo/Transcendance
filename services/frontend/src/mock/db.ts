@@ -154,6 +154,30 @@ export const updateUser = (
 };
 
 /**
+ * @brief Update a user's password if the current password matches.
+ * @param username Username being modified.
+ * @param currentPassword Current password to verify.
+ * @param newPassword Replacement password.
+ * @returns Updated user or null if the user does not exist or the password is wrong.
+ */
+export const updatePassword = (
+	username: string,
+	currentPassword: string,
+	newPassword: string,
+) => {
+	const normalizedTarget = normalizeUsername(username);
+	const index = users.findIndex((user) => normalizeUsername(user.username) === normalizedTarget);
+	if (index < 0) return null;
+	if (users[index].password !== currentPassword) return null;
+
+	users[index] = {
+		...users[index],
+		password: newPassword,
+	};
+	return users[index];
+};
+
+/**
  * @brief Delete user profile and reset session when needed.
  * @param username User identifier.
  * @returns true when deleted.
@@ -179,5 +203,6 @@ export const db = {
 	setSessionUser,
 	clearSessionUser,
 	updateUser,
+	updatePassword,
 	deleteUser,
 };
