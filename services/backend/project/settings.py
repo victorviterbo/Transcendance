@@ -46,12 +46,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
-    'music.apps.MusicConfig'
+    'music.apps.MusicConfig',
     'userauth',
     'userprofile',
     'stats',
 
-    'django_cleanup.apps.CleanupConfig'
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 # Definition of the middlewares (Layers between the backend and the WebServer)
