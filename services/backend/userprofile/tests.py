@@ -222,8 +222,6 @@ class ProfileTests(TransactionTestCase):
             valid_light = serializer_light.is_valid()
             raw_data['avatar'].seek(0)
             if username != 'a_new_user':
-                print(Profile.objects.all())
-                print(raw_data)
                 self.assertFalse(serializer.is_valid(), serializer.errors)
                 self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
                 self.assertIn('username', serializer.errors)
