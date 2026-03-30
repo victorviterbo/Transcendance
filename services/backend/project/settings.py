@@ -131,7 +131,7 @@ AUTH_USER_MODEL = 'userauth.SiteUser'
 # https://docs.djangoproject.com/en/6.0/topics/auth/passwords/#module-django.contrib.auth.password_validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'userauth.serializers.ComplexPasswordValidator',
+        'NAME': 'project.validators.ComplexPasswordValidator',
     },
 ]
 

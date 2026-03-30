@@ -104,7 +104,7 @@ class FriendRequestsSend(APIView):
             return Response({'error': {'friendship': 'REALLY_SAD'}},
                             status=status.HTTP_400_BAD_REQUEST)
         curr_relationship = Friendship.objects.filter(
-            from_user=user, 
+            from_user=user,
             to_user=recipient,
         )
         if curr_relationship.exists():
