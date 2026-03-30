@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Profile
-from .serializers import LightProfileSerializer, ProfileSerializer
+from .serializers import LightProfileSerializer, ProfileSerializer, UsersSerializer
 
 
 def parse_validation_errors(val_error: serializers.ValidationError) -> Response:
@@ -30,22 +30,12 @@ class ProfileView(APIView):
         """Specify necessary permissions for different operations."""
         if self.request.method == 'GET':
             return [AllowAny()]
-        elif self.request.method == 'POST':
+        elif self.request.method in ['POST', 'DELETE']:
             return [IsAuthenticated()]
         return super().get_permissions()
     
     def get(self, request: Request) -> Response:
-        """Handles display of user profile.
-        
-        Args:
-            request:
-                Header: [Authorization]
-
-        Returns:
-            Response:
-                200: {image}
-                400: {error{email, username}}
-        """
+        """Handles display of user profile."""
         query = self.request.query_params.get('q')
         if query is None:
             return (Response({'error': {'query': 'MISSING_FIELD'}},
@@ -90,6 +80,39 @@ class ProfileView(APIView):
                                 status=status.HTTP_200_OK)
             else:
                 return Response({'error': {'profile': 'UPDATE_FAIL'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except serializers.ValidationError as e:
+            return parse_validation_errors(e)
+        
+    def post(self, request: Request) -> Response:
+        """Handles update of user profile."""
+        try:
+            serializer = UsersSerializer(instance=request.profile,
+                                                   data=request.data,
+                                                   partial=True,
+                                                   many=False)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response(serializer.data,
+                                status=status.HTTP_200_OK)
+            else:
+                return Response({'error': {'profile': 'UPDATE_FAIL'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except serializers.ValidationError as e:
+            return parse_validation_errors(e)
+    
+    def delete(self, request: Request) -> Response:
+        """Handles update of user profile."""
+        try:
+            profile_serializer = ProfileSerializer(instance=request.profile,
+                                                   data=request.data,
+                                                   partial=True,
+                                                   many=False)
+            if profile_serializer.is_valid(raise_exception=True):
+                profile_serializer.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({'error': {'profile': 'USER_DELETE_FAIL'}},
                                 status=status.HTTP_400_BAD_REQUEST)
         except serializers.ValidationError as e:
             return parse_validation_errors(e)

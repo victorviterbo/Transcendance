@@ -3,7 +3,7 @@
 from django.apps import AppConfig
 
 
-class UsersConfig(AppConfig):
+class UsersauthConfig(AppConfig):
     """Define linking of user module to the rest of the backend."""
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'userauth'

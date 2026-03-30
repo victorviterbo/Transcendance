@@ -14,6 +14,7 @@ from rest_framework.test import APIClient
 from userauth.serializers import RegisterSerializer
 
 from .serializers import LightProfileSerializer, ProfileSerializer
+from .models import Profile
 
 image_dict = {
     'valid': '',
@@ -89,7 +90,7 @@ class ProfileTests(TransactionTestCase):
             response = self.client.get(profile_url + profile_query)
             if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
-                self.assertEqual(response.data['image'], '/DB/media/default_pp.jpg')
+                self.assertEqual(response.data['avatar'], '/DB/media/default_pp.jpg')
                 self.assertIn('username', response.data)
                 self.assertIn('exp_points', response.data)
                 self.assertIn('badges', response.data)
@@ -111,10 +112,10 @@ class ProfileTests(TransactionTestCase):
         profile_url = '/api/profile/'
         new_data = {
             'username': 'a_new_user',
-            'image': image_generator('valid'),
+            'avatar': image_generator('valid'),
             'exp_points': 1000000000,
         }
-        new_data['image'].seek(0)
+        new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -127,21 +128,21 @@ class ProfileTests(TransactionTestCase):
         self.assertIn('refresh-token', self.client.cookies)
         new_data = {
             'username': 'a_new_user',
-            'image': image_generator('valid'),
+            'avatar': image_generator('valid'),
             'exp_points': 5001,
             'badge': 'Sonic Shark'
         }
-        new_data['image'].seek(0)
+        new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        new_data['image'] = image_generator('corrupt')
-        new_data['image'].seek(0)
+        new_data['avatar'] = image_generator('corrupt')
+        new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
-        self.assertIn('image', response.data['error'])
-        self.assertEqual('INVALID_IMAGE', response.data['error']['image'])
+        self.assertIn('avatar', response.data['error'])
+        self.assertEqual('INVALID_IMAGE', response.data['error']['avatar'])
 
         response = self.client.post(profile_url, data={'username': 'user2'})
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
@@ -149,23 +150,23 @@ class ProfileTests(TransactionTestCase):
         self.assertIn('username', response.data['error'])
         self.assertEqual('USERNAME_TAKEN', response.data['error']['username'])
 
-        new_data['image'] = image_generator('corrupt')
-        new_data['image'].seek(0)
+        new_data['avatar'] = image_generator('corrupt')
+        new_data['avatar'].seek(0)
         new_data['username'] = 'user2'
         response = self.client.post(profile_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertIn('error', response.data)
         self.assertIn('username', response.data['error'])
-        self.assertIn('image', response.data['error'])
+        self.assertIn('avatar', response.data['error'])
         self.assertEqual('USERNAME_TAKEN', response.data['error']['username'])
-        self.assertEqual('INVALID_IMAGE', response.data['error']['image'])
+        self.assertEqual('INVALID_IMAGE', response.data['error']['avatar'])
 
         response = self.client.get(profile_url + "?q=a_new_user")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
         self.assertEqual(response.data['badges'], 'Deaf Octopus')
-        self.assertTrue(Path(MEDIA_ROOT / response.data['image'].lstrip('/DB/media/')).is_file())
+        self.assertTrue(Path(MEDIA_ROOT / response.data['avatar'].lstrip('/DB/media/')).is_file())
     
     def test_guest_profile(self) -> None:
         """Test creation updating and deleting guests users."""
@@ -185,13 +186,13 @@ class ProfileTests(TransactionTestCase):
 
         new_data = {
             'username': 'with_a_pic',
-            'image': image_generator('valid'),
+            'avatar': image_generator('valid'),
             'exp_points': 1000000000,
         }
-        new_data['image'].seek(0)
+        new_data['avatar'].seek(0)
         response = self.client.post(guest_create_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        original_img_path = Path(MEDIA_ROOT / response.data['image'].lstrip('/DB/media/'))
+        original_img_path = Path(MEDIA_ROOT / response.data['avatar'].lstrip('/DB/media/'))
         self.assertTrue(original_img_path.is_file())
         self.assertNotIn('exp_points', response.data)
 
@@ -207,7 +208,7 @@ class ProfileTests(TransactionTestCase):
         """Test success and failure of profile validation."""
         raw_data = {
             'username': 'a_new_user',
-            'image': image_generator('valid'),
+            'avatar': image_generator('valid'),
             'exp_points': '0',
             'badges': 'Deaf Octopus'
         }
@@ -217,10 +218,12 @@ class ProfileTests(TransactionTestCase):
             serializer_light = LightProfileSerializer(data=raw_data,
                                                       context={'is_creation': True})
             valid = serializer.is_valid()
-            raw_data['image'].seek(0)
+            raw_data['avatar'].seek(0)
             valid_light = serializer_light.is_valid()
-            raw_data['image'].seek(0)
+            raw_data['avatar'].seek(0)
             if username != 'a_new_user':
+                print(Profile.objects.all())
+                print(raw_data)
                 self.assertFalse(serializer.is_valid(), serializer.errors)
                 self.assertFalse(serializer_light.is_valid(), serializer_light.errors)
                 self.assertIn('username', serializer.errors)
@@ -239,31 +242,31 @@ class ProfileTests(TransactionTestCase):
                 self.assertTrue(valid_light, serializer_light.errors)
         raw_data['username'] = 'a_new_user'
         for image in image_dict:
-            raw_data['image'] = image_generator(image)
+            raw_data['avatar'] = image_generator(image)
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
             serializer_light = LightProfileSerializer(data=raw_data,
                                                       context={'is_creation': True})
             valid = serializer.is_valid()
-            raw_data['image'].seek(0)
+            raw_data['avatar'].seek(0)
             valid_light = serializer_light.is_valid()
-            raw_data['image'].seek(0)
+            raw_data['avatar'].seek(0)
             if image != 'valid':
                 self.assertFalse(valid, serializer.errors)
                 self.assertFalse(valid_light, serializer_light.errors)
-                self.assertIn('image', serializer.errors)
-                self.assertIn('image', serializer_light.errors)
+                self.assertIn('avatar', serializer.errors)
+                self.assertIn('avatar', serializer_light.errors)
                 if image in ['invalid', 'corrupt']:
                     self.assertEqual('invalid_image',
-                                     serializer.errors['image'][0].code)
+                                     serializer.errors['avatar'][0].code)
                     self.assertEqual('invalid_image',
-                                     serializer_light.errors['image'][0].code)
+                                     serializer_light.errors['avatar'][0].code)
                 elif image == 'empty':
-                    self.assertEqual('empty', serializer.errors['image'][0].code)
-                    self.assertEqual('empty', serializer_light.errors['image'][0].code)
+                    self.assertEqual('empty', serializer.errors['avatar'][0].code)
+                    self.assertEqual('empty', serializer_light.errors['avatar'][0].code)
             else:
-                raw_data['image'] = image_generator(image)
-                raw_data['image'].seek(0)
+                raw_data['avatar'] = image_generator(image)
+                raw_data['avatar'].seek(0)
                 self.assertTrue(valid, serializer.errors)
-                raw_data['image'] = image_generator(image)
-                raw_data['image'].seek(0)
+                raw_data['avatar'] = image_generator(image)
+                raw_data['avatar'].seek(0)
                 self.assertTrue(valid_light, serializer_light.errors)

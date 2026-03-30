@@ -25,7 +25,7 @@ class Profile(models.Model):
                                 unique=True,
                                 null=False)
     
-    image = models.ImageField(default='default_pp.jpg',
+    avatar = models.ImageField(default='default_pp.jpg',
                               upload_to=profile_pic_path)
     
     exp_points = models.IntegerField(default=0)
