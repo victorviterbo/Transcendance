@@ -1,6 +1,5 @@
 """Define the incomming request rerouting for the backend based on the requested url."""
 
-
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView

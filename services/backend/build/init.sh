@@ -5,7 +5,6 @@ if [ ! -d "/backend/DB/website" ]; then
 fi
 
 rm /backend/DB/website/db.sqlite3
-
 find . -path "*/migrations/0*" -delete
 
 conda run -n backend python /backend/manage.py makemigrations
@@ -13,8 +12,8 @@ conda run -n backend python /backend/manage.py migrate
 
 if [ "$APP_MODE" = "run" ]; then
     echo "Starting Production Server..."
-    conda run --no-capture-output -n backend python /backend/manage.py runserver 0.0.0.0:8000
+    exec conda run --no-capture-output -n backend daphne -b 0.0.0.0 -p 8000 project.asgi:application
 else
     echo "Running Tests..."
-    conda run --no-capture-output -n backend python /backend/manage.py test
+    exec conda run --no-capture-output -n backend python /backend/manage.py test
 fi

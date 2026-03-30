@@ -28,25 +28,17 @@ paths:
     $ref: ./paths/auth.yaml#/friend-request-respond
   /api/profile:
     $ref: ./paths/profile.yaml#/profile
+  /api/profile/password:
+    $ref: ./paths/profile.yaml#/password
   /api/profile/search:
     $ref: ./paths/profile.yaml#/search
   /api/profile/guest-create:
     $ref: ./paths/profile.yaml#/guest-create
   /api/profile/guest-delete:
     $ref: ./paths/profile.yaml#/guest-delete
-  /api/users/me:
-    $ref: ./paths/users.yaml#/me
-  /api/users/{username}:
-    $ref: ./paths/users.yaml#/byUsername
-  /api/users/me/password:
-    $ref: ./paths/users.yaml#/password
-  /api/users/me/avatar:
-    $ref: ./paths/users.yaml#/avatar
 
 components:
   schemas:
-    User:
-      $ref: ./components/schemas.yaml#/User
     Profile:
       $ref: ./components/schemas.yaml#/Profile
     LightProfile:
@@ -61,6 +53,12 @@ components:
       $ref: ./components/schemas.yaml#/ConflictError
     TokenResponse:
       $ref: ./components/schemas.yaml#/TokenResponse
+    DescriptionResponse:
+      $ref: ./components/schemas.yaml#/DescriptionResponse
+    ProfileDeleteRequest:
+      $ref: ./components/schemas.yaml#/ProfileDeleteRequest
+    ProfilePasswordChangeRequest:
+      $ref: ./components/schemas.yaml#/ProfilePasswordChangeRequest
     WS Reponse:
       $ref: ./components/schemas_ws.yaml#/WSReponse
     WS Requests:
@@ -75,6 +73,4 @@ tags:
   - name: auth
     description: Authentication and registration endpoints.
   - name: profile
-    description: User profile endpoints.
-  - name: users
-    description: User profile and account management.
+    description: User profile and account management endpoints.

@@ -1,6 +1,9 @@
 id,en,fr,jp,desc
 LANG_SELECT,Language selection,Sélection de la langue,言語の選択,Language selection menu
 WELCOME,Welcome,Bienvenue,ようこそ,Generic welcome text
+WELCOME_BACK_USER,"Welcome back, {username}!","Content de te revoir, {username} !","おかえりなさい、{username} さん！",Shown after successful login
+WELCOME_ACCOUNT_READY_USER,"Welcome, {username}! Your account is ready.","Bienvenue, {username} ! Ton compte est prêt.","ようこそ、{username} さん！アカウントの準備ができました。",Shown after successful registration
+BACK_TO_HOME,Back to home,Retour à l'accueil,ホームに戻る,Button label to return to the home page
 USERNAME,Username,Nom d'utilisateur,ユーザー名,As it appears in form fields
 NEW_USERNAME,New Username,Nouveau nom d'utilisateur,新しいユーザー名,As it appears in form fields
 EMAIL,Email,Adresse e-mail,メールアドレス,As it appears in form fields
@@ -40,9 +43,12 @@ JOIN,Join,Rejoindre,参加,Used to join a room
 FRIEND_ROOM,Friends' rooms,Salles d'amis,フレンドのルーム,The word room is for a virtual room
 PUBLIC_ROOM,Public rooms,Salles publiques,公開ルーム,The word room is for a virtual room
 MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Shown when a required field is missing
+LOGIN_FAILED,Login failed,Connexion échouée,ログインに失敗しました,Shown when an unknown error occured while logging in
+REGISTRATION_FAILED,Registration failed,Inscription échouée,登録に失敗しました,Shown when an unknown error occured while registering
 INVALID_USERNAME,Invalid username,Nom d'utilisateur invalide,ユーザー名が無効です,Shown when username fails validation
 INVALID_EMAIL,Invalid email,Adresse e-mail invalide,メールアドレスが無効です,Shown when email fails validation
 INVALID_PASSWORD,Invalid password,Mot de passe invalide,パスワードが無効です,Shown when password fails validation
+PASSWORD_UNCHANGED,Choose a different password,Choisissez un mot de passe différent,別のパスワードを選択してください,Shown when the new password matches the current password
 USERNAME_TAKEN,Username already taken,Nom d'utilisateur déjà pris,ユーザー名は既に使用されています,Shown when username is already taken
 EMAIL_TAKEN,Email already taken,Adresse e-mail déjà utilisée,メールアドレスは既に使用されています,Shown when email is already taken
 INVALID_CREDENTIALS,Wrong email or password,E-mail ou mot de passe incorrect,メールアドレスまたはパスワードが違います,Shown when login credentials are invalid
@@ -53,9 +59,23 @@ MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Shown in the user
 PROFILE_SETTINGS,Settings,Paramètres,設定,Shown in the user profile
 CHANGE,Change,Changer,変更,Shown on a button to update information
 CHANGING,Changing...,Modification...,変更中...,Shown on a pressed button to update information
+CHANGE_FAILED,Change failed,La modification a échoué,変更に失敗しました,Shows when an unknown error occured while changing a profile field
+CHANGE_SUCCESS,Change saved,Modification enregistrée,変更を保存しました,Shown when a profile change succeeds
 CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を変更する,Shown on profile accordion heading
 CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,Shown on profile accordion heading
 CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Shown on profile accordion heading
 DELETE_ACCOUNT,Delete Account,Supprimer le compte,アカウントを削除する,Delete account action label
+DELETE_ACCOUNT_CONFIRMATION,This will permanently delete your profile. Are you sure you want to continue?,Cela supprimera définitivement votre profil. Voulez-vous vraiment continuer ?,プロフィールが完全に削除されます。本当に続行しますか？,Shown in the delete profile confirmation dialog
 DELETE,Delete,Supprimer,削除,Delete button text
-DELETING,Deleting...,Deleting...,削除中...,Delete button in progress state
+DELETING,Deleting...,Suppression...,削除中...,Delete button in progress state
+DELETE_FAILED,Delete failed,La suppression a échoué,削除に失敗しました,Shows when an unknown error occured while deleting profile
+UPDATE_PROFILE_PICTURE,Update profile picture,Changer la photo de profil,プロフィール画像を更新する,Dialog title for profile picture upload
+CHOOSE_PICTURE_PREVIEW,Choose a picture to preview it before uploading,Choisissez une image pour la prévisualiser,アップロード前にプレビューする画像を選択してください,Helper text for profile picture preview before upload
+CANCEL,Cancel,Annuler,キャンセル,To cancel an action
+CHOOSE_IMAGE,Choose Image,Choisir,画像を選択する,Button label to select an image file
+SAVE,Save,Sauvegarder,保存,Confirm button text
+PROFILE_IMAGE_REQUIREMENTS,Use PNG JPG WEBP GIF or BMP up to 5 MB,Utilisez un fichier PNG JPG WEBP GIF ou BMP de 5 Mo maximum,PNG JPG WEBP GIF または BMP を 5 MB 以内で使用してください,Helper text for accepted avatar image formats and size
+PROFILE_IMAGE_INVALID_TYPE,Unsupported image format,Format d'image non pris en charge,サポートされていない画像形式です,Shown when the selected avatar file format is not supported
+PROFILE_IMAGE_TOO_LARGE,Image is too large,L'image est trop volumineuse,画像サイズが大きすぎます,Shown when the selected avatar image exceeds the size limit
+PROFILE_IMAGE_INVALID_FILE,Invalid image file,Fichier image invalide,無効な画像ファイルです,Shown when the selected avatar file cannot be decoded as a valid image
+UPLOAD_FAILED,Upload failed,L'envoi a échoué,アップロードに失敗しました,Shown when an image upload fails for an unknown reason

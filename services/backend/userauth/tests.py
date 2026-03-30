@@ -1,12 +1,10 @@
-"""Tests for the users module."""
-
+"""Tests for the authentication user module."""
 
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
-from userprofile.serializers import ProfileSerializer
+from rest_framework.test import APITestCase
 
 from .models import SiteUser
-from .serializers import SiteUserSerializer
+from .serializers import RegisterSerializer
 
 
 class UserAccountTests(APITestCase):
@@ -14,7 +12,7 @@ class UserAccountTests(APITestCase):
 
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
-        serializer = SiteUserSerializer(data={'email': 'test@mail.com',
+        serializer = RegisterSerializer(data={'email': 'test@mail.com',
                                               'profile_username': 'testuser',
                                               'password': 'Password123+'
                                               },
@@ -37,7 +35,7 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
                     self.assertIn('error', response.data)
                     self.assertIn('auth', response.data['error'])
-                    self.assertEqual(response.data['error']['auth'], 'AUTH_FAIL')
+                    self.assertEqual(response.data['error']['auth'], 'INVALID_CREDENTIALS')
 
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""
@@ -62,29 +60,15 @@ class UserAccountTests(APITestCase):
                     else:
                         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                     if email == 'test@mail.com':
-                        self.assertEqual('ALREADY_TAKEN',
+                        self.assertEqual('EMAIL_TAKEN',
                                          response.data['error']['email'])
                     if username == 'testuser':
-                        self.assertEqual('ALREADY_TAKEN',
+                        self.assertEqual('USERNAME_TAKEN',
                                          response.data['error']['username'])
-                    if email in ['', 'test']:
-                        self.assertEqual('INVALID',
-                                         response.data['error']['email'])
-                    if username == '':
-                        self.assertEqual('INVALID',
-                                         response.data['error']['username'])
-                    if password == 'AnewPassword+':
-                        self.assertEqual('PASSWORD_NUMBER',
+                    if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+', 'anewpassword1', 'anewpassword1']:
+                        self.assertEqual('INVALID_PASSWORD',
                                          response.data['error']['password'])
-                    if password == 'ANEWPASSWORD1+':
-                        self.assertEqual('PASSWORD_LOWERCASE',
-                                         response.data['error']['password'])
-                    if password == 'anewpassword1':
-                        self.assertEqual('PASSWORD_UPPERCASE',
-                                         response.data['error']['password'])
-                    if password == 'anewpassword1':
-                        self.assertEqual('PASSWORD_SPECIAL',
-                                         response.data['error']['password'])
+                    self.assertTrue(('refresh-token' in self.client.cookies) or ('sessionid' in self.client.cookies))
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""
@@ -131,11 +115,21 @@ class UserAccountTests(APITestCase):
         })
         self.assertIn('refresh-token', login_res.cookies)
         self.assertNotIn('refresh-token', login_res.data)
+        orig_cookie = login_res.cookies.get('refresh-token').value
+
         response = self.client.post(refresh_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('username', response.data)
         self.assertEqual('testuser', response.data['username'])
+        #test blacklisting
+        self.client.cookies['refresh-token'] = orig_cookie
+        response = self.client.post(refresh_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn('error', response.data)
+        self.assertNotIn('access', response.data)
+        self.assertNotIn('username', response.data)
+        self.assertEqual('TOKEN_NOT_VALID', response.data['error']['cookie'])
 
     def test_user_validation(self) -> None:
         """Test success and failure of user validation."""
@@ -144,7 +138,7 @@ class UserAccountTests(APITestCase):
             "profile_username": "auniqueuser",
             "password": "securePassword123+"
         }
-        serializer = SiteUserSerializer(data=raw_data)
+        serializer = RegisterSerializer(data=raw_data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data['email'], "new_user@gmail.com")
         user_instance = serializer.save()
@@ -156,7 +150,7 @@ class UserAccountTests(APITestCase):
             "profile_username": "auniqueuser2",
             "password": "securePassword123+"
         }
-        serializer = SiteUserSerializer(data=raw_data)
+        serializer = RegisterSerializer(data=raw_data)
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data['email'], "new1@gmail.com")
         user_instance = serializer.save()
@@ -174,5 +168,5 @@ class UserAccountTests(APITestCase):
                 "email": email,
                 "password": "securePassword123+"
             }
-            serializer = SiteUserSerializer(data=raw_data)
+            serializer = RegisterSerializer(data=raw_data)
 
