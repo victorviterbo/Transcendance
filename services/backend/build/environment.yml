@@ -13,11 +13,14 @@ dependencies:
   - autobahn=25.10.2
   - automat=24.8.1
   - bcrypt=5.0.0
+  - brotlicffi=1.2.0.0
   - bzip2=1.0.8
   - ca-certificates=2026.2.25
   - cairo=1.18.4
+  - certifi=2026.02.25
   - cffi=2.0.0
   - channels=4.3.2
+  - charset-normalizer=3.4.4
   - constantly=23.10.4
   - cryptography=46.0.5
   - daphne=4.2.1
@@ -80,12 +83,14 @@ dependencies:
   - pycparser=2.21
   - pyjwt=2.10.1
   - pyopenssl=25.3.0
+  - pysocks=1.7.1
   - python=3.14.3
   - python-dotenv=1.2.2
   - python_abi=3.14
   - pyyaml=6.0.3
   - readline=8.3
   - referencing=0.37.0
+  - requests=2.32.5
   - rpds-py=0.28.0
   - service_identity=24.2.0
   - setuptools=80.10.2
@@ -99,6 +104,7 @@ dependencies:
   - typing_extensions=4.15.0
   - tzdata=2026a
   - uritemplate=4.2.0
+  - urllib3=2.6.3
   - wheel=0.46.3
   - xorg-libx11=1.8.12
   - xorg-libxau=1.0.12

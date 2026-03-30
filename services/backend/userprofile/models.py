@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from django.db import models
 from project.defaults import badges_strings
 from userauth.models import SiteUser
@@ -23,7 +25,7 @@ class Profile(models.Model):
                                 unique=True,
                                 null=False)
     
-    image = models.ImageField(default='default_pp.jpg',
+    avatar = models.ImageField(default='default_pp.jpg',
                               upload_to=profile_pic_path)
     
     exp_points = models.IntegerField(default=0)
@@ -37,6 +39,13 @@ class Profile(models.Model):
     session_key = models.CharField(max_length=40, null=True, blank=True, db_index=True)
 
     is_guest = models.BooleanField(default=True)
+
+    is_online = models.BooleanField(default=True)
+    
+    last_active = models.DateTimeField(auto_now=True)
+
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
 
     class Meta:
         """Enforce uniqueness only if the username is not Anonymous."""

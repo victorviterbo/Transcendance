@@ -48,12 +48,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
+    'game.apps.GameConfig',
     'music.apps.MusicConfig',
-    'userauth',
-    'userprofile',
-    'friends',
-    'stats',
-    'chat',
+    'userauth.apps.UsersauthConfig',
+    'userprofile.apps.UserprofileConfig',
+    'friends.apps.FriendsConfig',
+    'stats.apps.StatsConfig',
+    'chat.apps.ChatConfig',
 
     'django_cleanup.apps.CleanupConfig',
 ]
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'project.middleware.ProfileMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -129,7 +131,7 @@ AUTH_USER_MODEL = 'userauth.SiteUser'
 # https://docs.djangoproject.com/en/6.0/topics/auth/passwords/#module-django.contrib.auth.password_validation
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'userauth.serializers.ComplexPasswordValidator',
+        'NAME': 'project.validators.ComplexPasswordValidator',
     },
 ]
 

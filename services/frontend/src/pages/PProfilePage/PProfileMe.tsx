@@ -1,4 +1,5 @@
-import { Avatar, Container, Stack } from "@mui/material";
+import { Container, Stack } from "@mui/material";
+import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
@@ -8,12 +9,30 @@ import { useAuth } from "../../components/auth/CAuthProvider";
 import ProfileMatchHistoryPanel from "./PProfileMatchHistoryPanel";
 import ProfileModifyMePanel from "./PProfileSettingsPanel";
 import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
+import { getErrorMessage } from "../../utils/error";
+import PProfileAvatarEditor from "./PProfileAvatarEditor";
+import CLevelProgress from "../../components/feedback/CLevelProgress";
+import { fetchProfile, getProfileLevelProgress } from "../../api/profile";
+import { type IProfileData } from "../../types/profile";
 
-const ProfileInfo = () => {
-	const { user } = useAuth();
-	const username = user?.username ?? "Unknown";
-	const xp = 1280;
-	const title = "Rookie";
+interface ProfileState {
+	username: string;
+	profile: IProfileData | null;
+	error: string | null;
+}
+
+interface ProfileInfoProps {
+	username: string;
+	profile: IProfileData | null;
+	error: string | null;
+	onAvatarUploaded: (nextProfile: IProfileData) => void;
+}
+
+const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfoProps) => {
+	const displayUsername = profile?.username ?? username;
+	const xp = profile?.exp_points ?? 0;
+	const badge = profile?.badges ?? "Unknown";
+	const levelProgress = getProfileLevelProgress(xp);
 
 	return (
 		<CBasePaper sx={{ p: 2 }}>
@@ -22,21 +41,23 @@ const ProfileInfo = () => {
 				spacing={2}
 				alignItems={{ xs: "flex-start", sm: "center" }}
 			>
-				<Avatar
-					sx={{
-						width: 88,
-						height: 88,
-						bgcolor: "secondary.main",
-						fontWeight: "bold",
-						fontSize: "2rem",
-					}}
-				>
-					{username.charAt(0).toUpperCase()}
-				</Avatar>
-				<Stack>
-					<CTitle size="md">{username}</CTitle>
-					<CText size="sm">Title: {title}</CText>
-					<CText size="sm">XP: {xp}</CText>
+				<PProfileAvatarEditor
+					username={displayUsername}
+					image={profile?.image}
+					onUploaded={onAvatarUploaded}
+				/>
+				<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+					<CTitle size="md">{displayUsername}</CTitle>
+					<CLevelProgress
+						level={levelProgress.level}
+						progressPercent={levelProgress.progressPercent}
+						title={badge}
+					/>
+					{error && (
+						<CText size="sm" color="error.main">
+							{error}
+						</CText>
+					)}
 				</Stack>
 			</Stack>
 		</CBasePaper>
@@ -45,12 +66,58 @@ const ProfileInfo = () => {
 
 const PProfileMe = () => {
 	const { user } = useAuth();
+	const [profileState, setProfileState] = useState<ProfileState>({
+		username: "",
+		profile: null,
+		error: null,
+	});
+	const username = user?.username ?? "";
+	const profile = profileState.username === username ? profileState.profile : null;
+	const error = profileState.username === username ? profileState.error : null;
+
+	useEffect(() => {
+		if (!username) return;
+
+		let ignore = false;
+		void fetchProfile(username)
+			.then((nextProfile) => {
+				if (ignore) return;
+				setProfileState({
+					username,
+					profile: nextProfile,
+					error: null,
+				});
+			})
+			.catch((profileError) => {
+				if (ignore) return;
+				setProfileState({
+					username,
+					profile: null,
+					error: getErrorMessage(profileError, "Failed to load profile."),
+				});
+			});
+
+		return () => {
+			ignore = true;
+		};
+	}, [username]);
 
 	return (
 		<GPageBase>
 			<Container maxWidth="lg">
 				<Stack spacing={3}>
-					<ProfileInfo />
+					<ProfileInfo
+						username={username || "Unknown"}
+						profile={profile}
+						error={error}
+						onAvatarUploaded={(nextProfile) => {
+							setProfileState({
+								username: nextProfile.username,
+								profile: nextProfile,
+								error: null,
+							});
+						}}
+					/>
 
 					<CBasePaper>
 						<CTabs tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}>

@@ -102,6 +102,111 @@ profile:
                     username: "ALREADY_TAKEN"
       "401":
         description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+
+  delete:
+    summary: Delete own profile
+    description: Permanently delete the authenticated user's account and profile after password confirmation.
+    operationId: deleteProfile
+    tags: [profile]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/ProfileDeleteRequest
+          examples:
+            confirm-delete:
+              value:
+                password: "Password123+"
+    responses:
+      "204":
+        description: Profile deleted successfully.
+      "400":
+        description: Validation error.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-password:
+                value:
+                  error:
+                    password: "MISSING_FIELD"
+              invalid-password:
+                value:
+                  error:
+                    password: "INVALID_PASSWORD"
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+
+password:
+  post:
+    summary: Change password
+    description: |
+      Update the authenticated user's password using the current password and a new password.
+      The new password must be different from the current password.
+    operationId: changeProfilePassword
+    tags: [profile]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/ProfilePasswordChangeRequest
+          examples:
+            change-password:
+              value:
+                currentPassword: "Password123+"
+                newPassword: "NewPassword123+"
+    responses:
+      "200":
+        description: Password changed successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/DescriptionResponse
+            examples:
+              password-updated:
+                value:
+                  description: "Updated password successfully"
+      "400":
+        description: Validation error.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-fields:
+                value:
+                  error:
+                    currentPassword: "MISSING_FIELD"
+                    newPassword: "MISSING_FIELD"
+              invalid-current-password:
+                value:
+                  error:
+                    currentPassword: "INVALID_PASSWORD"
+              unchanged-password:
+                value:
+                  error:
+                    newPassword: "PASSWORD_UNCHANGED"
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
 
 search:
   get:

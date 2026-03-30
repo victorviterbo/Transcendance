@@ -108,7 +108,7 @@ export async function startLocalization(): Promise<void> {
 		})
 		.then((text: string | undefined) => {
 			if (!text) return;
-			const linesRaw: string[] = text.split("\r\n");
+			const linesRaw: string[] = text.split(/\r?\n/);
 			if (linesRaw.length < 2) throw Error("No available localization data");
 
 			langData.headers = splitLines(linesRaw[0]);
@@ -132,4 +132,12 @@ export function ttr(id: string): string {
 		});
 	});
 	return finalData;
+}
+
+export function ttrf(id: string, params: Record<string, string>): string {
+	let text = ttr(id);
+	for (const [key, value] of Object.entries(params)) {
+		text = text.replaceAll(`{${key}}`, String(value));
+	}
+	return text;
 }

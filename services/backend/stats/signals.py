@@ -7,18 +7,18 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from project.defaults import get_badge
 
-from .models import GameStat, UserRoundStat
+from .models import GameStats, UserRoundStats
 
 
-@receiver(post_save, sender=GameStat)
-def save_profile(sender: type[GameStat],
-                 instance: GameStat,
+@receiver(post_save, sender=GameStats)
+def save_profile(sender: type[GameStats],
+                 instance: GameStats,
                  **kwargs: Any) -> None:
     """Trigger updating of profile after updating a user."""
     if instance.is_terminated:
         players = instance.players.all()
         for player in players:
-            total_game_xp = UserRoundStat.objects.filter(
+            total_game_xp = UserRoundStats.objects.filter(
                 player=player,
                 round__game=instance # See the use of __ for join queries
             ).aggregate(total=Sum('xp_earned'))['total'] or 0

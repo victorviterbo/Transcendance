@@ -1,3 +1,5 @@
+"""Tests for the music module."""
+
 from io import StringIO
 from unittest.mock import Mock, patch
 
@@ -6,8 +8,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from music.itunes_client import batch_lookup, fetch_ids_from_rss, full_lookup
-from music.management.commands.seed_playlists import PLAYLISTS
-from music.management.commands.seed_playlists import STATIC_TRACK_IDS
+from music.management.commands.seed_playlists import PLAYLISTS, STATIC_TRACK_IDS
 from music.models import Playlist, Track
 
 

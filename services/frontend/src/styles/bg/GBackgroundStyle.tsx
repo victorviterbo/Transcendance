@@ -2,14 +2,12 @@ import type { SxProps, Theme } from "@mui/material";
 import { appBG } from "../theme";
 import { TDropShadowToString } from "../../utils/styles";
 import { ARotation, makeMaskTranslationAnim } from "../animations/CommonAnimations";
-const bgIcons = "imgs/shared/BG_Icons.png";
-const bgPolar = "imgs/shared/BGPolarMask.png";
+const bgIcons = "/imgs/shared/BG_Icons.png";
+const bgPolar = "/imgs/shared/BGPolarMask.png";
 
 export const SBGBox: SxProps<Theme> = {
-	position: "fix",
-
-	height: "100%",
-	width: "100%",
+	position: "fixed",
+	inset: 0,
 	filter: "blur(" + appBG.baseBlur + "px)",
 };
 
