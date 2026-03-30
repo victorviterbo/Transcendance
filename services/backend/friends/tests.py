@@ -140,7 +140,6 @@ class FriendRequestsTests(APITestCase):
             response = user1.get(friend_request_see_url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data['outgoing']))
-            print(response.data)
             self.assertEqual(str(self.user1.uid),
                              response.data['outgoing'][0]['from_user']['uid'])
             self.assertEqual(str(self.user2.uid),
