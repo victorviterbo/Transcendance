@@ -50,8 +50,9 @@ INSTALLED_APPS = [
 
     'game.apps.GameConfig',
     'music.apps.MusicConfig',
-    'userauth.apps.UsersConfig',
+    'userauth.apps.UsersauthConfig',
     'userprofile.apps.UserprofileConfig',
+    'users.apps.UsersConfig',
     'friends.apps.FriendsConfig',
     'stats.apps.StatsConfig',
     'chat.apps.ChatConfig',

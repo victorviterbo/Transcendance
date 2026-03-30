@@ -5,7 +5,7 @@ to JSON and vice-versa, namely:
     - Friendship
 """
 from rest_framework import serializers
-from userauth.serializers import RegisterSerializer, UsersSerializer
+from users.serializers import UsersSerializer
 
 from .models import Friendship
 

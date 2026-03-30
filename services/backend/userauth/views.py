@@ -132,17 +132,7 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
-        """Handles display of user profile.
-        
-        Args:
-            request:
-                Header: [Authorization]
-
-        Returns:
-            Response:
-                200: {image}
-                400: {error{email, username}}
-        """
+        """Handles display of user profile."""
         refresh_token = request.COOKIES.get('refresh-token')
         
         if not refresh_token:
@@ -168,19 +158,7 @@ class RefreshTokenView(TokenRefreshView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Handles display of user profile.
-        
-        Args:
-            request:
-                Cookie: [refresh token]
-            args: additional arguments that might be needed by the parent class
-            kwargs: additional arguments that might be needed by the parent class
-
-        Returns:
-            Response:
-                200: {image}
-                400: {error{email, username}}
-        """
+        """Handles display of user profile."""
         refresh_token = request.COOKIES.get('refresh-token')
         if refresh_token:
             request.data['refresh'] = refresh_token
