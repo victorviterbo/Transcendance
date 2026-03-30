@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'music.apps.MusicConfig',
     'userauth.apps.UsersauthConfig',
     'userprofile.apps.UserprofileConfig',
-    'users.apps.UsersConfig',
     'friends.apps.FriendsConfig',
     'stats.apps.StatsConfig',
     'chat.apps.ChatConfig',
