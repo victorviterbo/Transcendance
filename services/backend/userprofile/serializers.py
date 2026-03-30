@@ -5,35 +5,10 @@ from typing import Any
 
 from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
+from project.validators import validate_email, validate_username
 from rest_framework import serializers
+
 from .models import Profile
-
-
-def validate_username(value: str, is_creation: bool = False) -> str:
-    """Validate and normalize the incomming username.
-
-    Args:
-        value:          the incomming username
-        is_creation:    flag about the context of serialization
-    Returns:
-        The validated and normalized username
-    Raises:
-        ValidationError: If the username is empty
-        ValidationError: If the username is already taken
-    """
-    if not value:
-        raise serializers.ValidationError('Username is required.',
-                                          code='INVALID_USERNAME')
-    if any(pattern in value for pattern in ['/', '\\', '..', '~']):
-        raise serializers.ValidationError('Use of forbiden character',
-                                          code='USERNAME_FORBIDDEN_CHAR')
-    if value.lower() == 'admin':
-        raise serializers.ValidationError('Who do you think you are ?',
-                                          code='RESERVED_USERNAME')
-    if is_creation and Profile.objects.filter(username=value).exists():
-        raise serializers.ValidationError('Username already taken',
-                                          code='USERNAME_TAKEN')
-    return value
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -55,16 +30,11 @@ class UsersSerializer(serializers.ModelSerializer):
         value = validate_email(value, is_creation=self.context.get('is_creation'))
         return value
     
-    def validate_profile_username(self, value: str) -> str:
+    def validate_username(self, value: str) -> str:
         """Specific email validation for user login."""
         value = validate_username(value, is_creation=self.context.get('is_creation'))
         return value
     
-    def validate_password(self, value: str) -> str:
-        """Explicitly trigger the custrom password validator."""
-        validate_password(value, user=self.instance)
-        return value
-
 class LightProfileSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's profile."""
 
