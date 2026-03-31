@@ -80,7 +80,12 @@ PROFILE_IMAGE_TOO_LARGE,Image is too large,L'image est trop volumineuse,画像�
 PROFILE_IMAGE_INVALID_FILE,Invalid image file,Fichier image invalide,無効な画像ファイルです,Shown when the selected avatar file cannot be decoded as a valid image
 UPLOAD_FAILED,Upload failed,L'envoi a échoué,アップロードに失敗しました,Shown when an image upload fails for an unknown reason
 CONTACT,Contact,Contact,お問い合わせ,Footer link for contact page
+CONTACT_INTRO,The people behind Guess Tunes,Les personnes derrière Guess Tunes,Guess Tunes を支えるメンバー,Intro text shown on the contact page
 Q_AND_A,Q&A,FAQ,よくある質問,Footer link for Q and A page
 TERMS_OF_SERVICE,Terms of Service,Conditions d'utilisation,利用規約,Footer link for terms page
 PRIVACY_POLICY,Privacy Policy,Politique de confidentialité,プライバシーポリシー,Footer link for privacy page
+PROJECT_MANAGER,Project Manager,Chef de projet,プロジェクトマネージャー,Role label shown on the contact page
+PRODUCT_OWNER,Product Owner,Product Owner,プロダクトオーナー,Role label shown on the contact page
+TECH_LEAD,Tech Lead,Responsable technique,テックリード,Role label shown on the contact page
+DEVELOPER,Developer,Développeur,開発者,Role label shown on the contact page
 NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
