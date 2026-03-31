@@ -2,16 +2,24 @@ import { http, HttpResponse } from "msw";
 import {
 	API_SOCIAL_FRIENDS,
 	API_SOCIAL_FRIENDS_REQUEST,
+	API_SOCIAL_FRIENDS_REQUEST_SEND,
 	API_SOCIAL_FRIENDS_SEARCH,
 } from "../../constants";
 import type {
 	IFriendInfo,
+	IFriendReqSend,
 	IFriendRequests,
-	TFriendRelation,
 	TFriendStatus,
 } from "../../types/friends";
 import { mockProfilesPics } from "../rcs/profilepics";
-import type { IExtUserInfo, IExtUserList, IExtUserSearch } from "../../types/user";
+import type { IExtUserInfo, IExtUserSearch } from "../../types/user";
+import {
+	mockGetExtUsers,
+	mockOnAddRequestSend,
+	mockSocialDB,
+	mockSocialSetDB,
+} from "../dbs/social_dbs";
+import type { IErrorReturn } from "../../types/error";
 
 // const friends = ws.link("ws://localhost:5173/");
 
@@ -47,50 +55,6 @@ export function mockGenerateFriend(): IFriendInfo {
 	};
 }
 
-export function mockGetExtUser(index: number): IExtUserInfo {
-	const userList: IExtUserList = mockGetExtUsers("");
-	return userList.users[index];
-}
-export function mockGetExtUsers(searchFilter: string): IExtUserList {
-	const usernames = [
-		"Sarah",
-		"John",
-		"Marc",
-		"Ava",
-		"由美子",
-		"岡田",
-		"WillIAm",
-		"Dua_",
-		"John74",
-		"John99",
-		"SdS",
-	];
-	const badges = ["The mask singer", "Pro gesser", "Diva", "DJ", "casual gamer", "Guess master"];
-	const relation: TFriendRelation[] = ["not-friends", "incoming", "outgoing"];
-
-	const list: IExtUserList = { users: [] };
-	usernames.forEach((name: string, index: number) => {
-		if (
-			searchFilter !== "" &&
-			!name.toLocaleLowerCase().includes(searchFilter.toLocaleLowerCase())
-		)
-			return;
-
-		list.users.push({
-			uid: "00000",
-			username: name,
-			image: mockProfilesPics[index % mockProfilesPics.length],
-			badges: badges[index % badges.length],
-			relation: relation[index % relation.length],
-		});
-	});
-
-	return list;
-}
-export function mockGetMaxUsers(): number {
-	return 11;
-}
-
 //--------------------------------------------------
 //                   HANDLERS
 //--------------------------------------------------
@@ -121,8 +85,11 @@ export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
 });
 
 export const friendsSearchHandler = http.post(API_SOCIAL_FRIENDS_SEARCH, async ({ request }) => {
+	mockSocialSetDB();
+
 	const isError: boolean = false;
 	const data: IExtUserSearch = (await request.json()) as IExtUserSearch;
+
 	if (isError)
 		return HttpResponse.json(
 			{
@@ -139,24 +106,17 @@ export const friendsSearchHandler = http.post(API_SOCIAL_FRIENDS_SEARCH, async (
 });
 
 export const friendsRequestsHandler = http.get(API_SOCIAL_FRIENDS_REQUEST, async () => {
+	mockSocialSetDB();
 	const isError: boolean = false;
-
 	const res: IFriendRequests = {
 		outgoing: [],
 		incoming: [],
 	};
 
-	const displayed = Math.floor(Math.random() * 7);
-
-	for (let i = 0; i < displayed; i++) {
-		if (Math.round(Math.random())) {
-			res.outgoing.push(mockGetExtUser(i % mockGetMaxUsers()));
-			res.outgoing[res.outgoing.length - 1].relation = "outgoing";
-		} else {
-			res.incoming.push(mockGetExtUser(i % mockGetMaxUsers()));
-			res.incoming[res.incoming.length - 1].relation = "incoming";
-		}
-	}
+	mockSocialDB.forEach((value: IExtUserInfo) => {
+		if (value.relation == "incoming") res.incoming.push(value);
+		if (value.relation == "outgoing") res.outgoing.push(value);
+	});
 
 	if (isError) {
 		res.error = {
@@ -165,3 +125,29 @@ export const friendsRequestsHandler = http.get(API_SOCIAL_FRIENDS_REQUEST, async
 	}
 	return HttpResponse.json(res, { status: isError ? 400 : 200 });
 });
+
+export const friendsRequestsSendHandler = http.post(
+	API_SOCIAL_FRIENDS_REQUEST_SEND,
+	async ({ request }) => {
+		mockSocialSetDB();
+		const data: IFriendReqSend = (await request.json()) as IFriendReqSend;
+		const out: IExtUserInfo | IErrorReturn = mockOnAddRequestSend(data);
+		if ("error" in out)
+			return HttpResponse.json(
+				{
+					error: out.error,
+				},
+				{ status: out.status ? out.status : 400 },
+			);
+		const user: IExtUserInfo = out as IExtUserInfo;
+		user.relation = "outgoing";
+		return HttpResponse.json(
+			{
+				"target-username": user.username,
+				"target-uid": user.uid,
+				description: "FRIENDSHIP_REQUEST_SENT",
+			},
+			{ status: 201 },
+		);
+	},
+);
