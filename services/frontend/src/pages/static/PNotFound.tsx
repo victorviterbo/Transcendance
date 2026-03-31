@@ -1,17 +1,13 @@
-import CTitlePaper from "../../components/surfaces/CTitlePaper";
-import { Container } from "@mui/material";
-import GPageBase from "../common/GPageBases";
 import CText from "../../components/text/CText";
+import PStaticPageShell from "./PStaticPageShell";
 
 const PNotFound = () => {
 	return (
-		<GPageBase>
-			<Container sx={{ mt: "5%" }} maxWidth="sm">
-				<CTitlePaper title="404" titleType="title" titleSize="lg">
-					<CText>NOT_FOUND</CText>
-				</CTitlePaper>
-			</Container>
-		</GPageBase>
+		<PStaticPageShell title="404" titleSize="lg" maxWidth="sm">
+			<CText align="center" size="md" sx={{ mb: 0 }}>
+				NOT_FOUND
+			</CText>
+		</PStaticPageShell>
 	);
 };
 
