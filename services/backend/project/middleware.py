@@ -27,4 +27,3 @@ class ProfileMiddleware:
             request.session['guest_profile_uid'] = str(request.profile.uid)
             request.session.modified = True
         return self.get_response(request)
-    
