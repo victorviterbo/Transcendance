@@ -104,7 +104,7 @@ const PProfileMe = () => {
 
 	return (
 		<GPageBase>
-			<Container maxWidth="lg">
+			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3}>
 					<ProfileInfo
 						username={username || "Unknown"}
