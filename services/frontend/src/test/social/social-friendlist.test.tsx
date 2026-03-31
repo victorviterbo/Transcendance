@@ -90,7 +90,7 @@ describe("Socials - Friend list", () => {
 		});
 	});
 	it("Check for Randoms friends", async () => {
-		const count = Math.round(Math.random() * 100);
+		const count = Math.round(Math.random() * 100) + 1;
 		const data: IFriendsList = {
 			friends: [],
 		};

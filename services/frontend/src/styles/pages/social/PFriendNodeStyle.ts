@@ -41,14 +41,17 @@ export const PFriendNodeAvatarStyle: SxProps<Theme> = (_) => ({
 export const PFriendNodeTextsStyle: SxProps<Theme> = (_) => ({
 	flex: 1,
 	mx: "15px",
+	justifyContent: "center",
 });
 
 export const PFriendNodeNameStyle: SxProps<Theme> = (_) => ({
 	m: 0,
+	whiteSpace: "nowrap",
 });
 
 export const PFriendNodeBadgeStyle: SxProps<Theme> = (_) => ({
 	m: 0,
+	whiteSpace: "nowrap",
 });
 
 export const PFriendNodeMessageStyle: SxProps<Theme> = (_) => ({

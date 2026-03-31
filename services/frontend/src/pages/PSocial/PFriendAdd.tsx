@@ -61,7 +61,7 @@ function PFriendAdd() {
 					}
 					lastTO = setTimeout(() => {
 						onSearch(e.target.value);
-					}, 500);
+					}, 300);
 				}}
 				data-testid="PSocialASearchAdd"
 			></CTextField>
