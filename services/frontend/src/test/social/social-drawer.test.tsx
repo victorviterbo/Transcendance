@@ -144,6 +144,15 @@ describe("Socials - Drawer", () => {
 		await waitFor(() => {
 			expect(screen.queryByTestId("PFriendList")).not.toBeInTheDocument();
 			expect(screen.queryByTestId("PFriendAdd")).toBeInTheDocument();
+			expect(screen.queryByTestId("PFriendReq")).not.toBeInTheDocument();
+		});
+
+		await userEvent.click(reqButton);
+
+		await waitFor(() => {
+			expect(screen.queryByTestId("PFriendList")).not.toBeInTheDocument();
+			expect(screen.queryByTestId("PFriendAdd")).not.toBeInTheDocument();
+			expect(screen.queryByTestId("PFriendReq")).toBeInTheDocument();
 		});
 
 		await userEvent.click(listButton);
@@ -151,6 +160,7 @@ describe("Socials - Drawer", () => {
 		await waitFor(() => {
 			expect(screen.queryByTestId("PFriendList")).toBeInTheDocument();
 			expect(screen.queryByTestId("PFriendAdd")).not.toBeInTheDocument();
+			expect(screen.queryByTestId("PFriendReq")).not.toBeInTheDocument();
 		});
 	});
 });

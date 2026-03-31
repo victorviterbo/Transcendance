@@ -4,7 +4,7 @@ import { API_SOCIAL_FRIENDS_SEARCH } from "../../constants";
 import type { IExtUserList, IExtUserSearch } from "../../types/user";
 import PFriendAdd from "../../pages/PSocial/PFriendAdd";
 import userEvent from "@testing-library/user-event";
-import { mockGetExtUsers } from "../../mock/handlers/social";
+import { mockGetExtUsers } from "../../mock/dbs/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -149,8 +149,17 @@ describe("Socials - Friend list", () => {
 
 		await waitFor(() => {
 			if (expected > 0)
-				expect(screen.getAllByTestId("PFriendNode_AddButton").length).toEqual(expected);
-			else expect(screen.queryByTestId("PFriendNode_AddButton")).not.toBeInTheDocument();
+				expect(
+					screen.getAllByTestId(
+						/PFriendNode_AddButton|PFriendNode_Sent|PFriendNode_ValidButton/,
+					).length,
+				).toEqual(expected);
+			else
+				expect(
+					screen.queryByTestId(
+						/PFriendNode_AddButton|PFriendNode_Sent|PFriendNode_ValidButton/,
+					),
+				).not.toBeInTheDocument();
 		});
 	});
 

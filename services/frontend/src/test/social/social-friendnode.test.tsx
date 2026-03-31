@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import type { IFriendInfo } from "../../types/friends";
-import { mockGenerateFriend, mockGetExtUser } from "../../mock/handlers/social";
+import type { IFriendInfo, TFriendRelation } from "../../types/friends";
+import { mockGenerateFriend } from "../../mock/handlers/social";
 import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo } from "../../types/user";
+import { mockGetExtUser } from "../../mock/dbs/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -49,23 +50,44 @@ describe("Socials - Friend/user node", () => {
 
 		expect(screen.getByText(user.username)).toBeInTheDocument();
 		expect(screen.getByText(user.badges)).toBeInTheDocument();
+		expect(
+			screen.getByTestId(/PFriendNode_AddButton|PFriendNode_Sent|PFriendNode_ValidButton/),
+		).toBeInTheDocument();
 	});
 
-	it("Check unique type data (friend)", async () => {
-		const user: IFriendInfo = mockGenerateFriend();
+	it.each([
+		["friend", "friends"],
+		["user", "not-friends"],
+		["user", "incoming"],
+		["user", "outgoing"],
+	])("Check unique type data (Type: %s - Relation: %s)", async (TypeArg, RelationArg) => {
+		const type = TypeArg as "friend" | "user";
+		const relation = RelationArg as TFriendRelation;
 
-		render(<PFriendNode user={user} type="friend" />);
+		let user: IFriendInfo | IExtUserInfo | undefined;
+		if (type == "friend") user = mockGenerateFriend();
+		else {
+			user = mockGetExtUser(0);
+			user.relation = relation;
+		}
 
-		expect(screen.getByTestId("PFriendNode_MessageButton")).toBeInTheDocument();
-		expect(screen.queryByTestId("PFriendNode_AddButton")).not.toBeInTheDocument();
-	});
-	it("Check for base data (user)", async () => {
-		const user: IExtUserInfo = mockGetExtUser(0);
+		render(<PFriendNode user={user} type={type} />);
 
-		render(<PFriendNode user={user} type="user" />);
+		if (type == "friend" || (user as IExtUserInfo).relation == "friends")
+			expect(screen.getByTestId("PFriendNode_MessageButton")).toBeInTheDocument();
+		else expect(screen.queryByTestId("PFriendNode_MessageButton")).not.toBeInTheDocument();
 
-		expect(screen.getByTestId("PFriendNode_AddButton")).toBeInTheDocument();
-		expect(screen.queryByTestId("PFriendNode_MessageButton")).not.toBeInTheDocument();
+		if (type == "user" && (user as IExtUserInfo).relation == "not-friends")
+			expect(screen.getByTestId("PFriendNode_AddButton")).toBeInTheDocument();
+		else expect(screen.queryByTestId("PFriendNode_AddButton")).not.toBeInTheDocument();
+
+		if (type == "user" && (user as IExtUserInfo).relation == "incoming")
+			expect(screen.getByTestId("PFriendNode_ValidButton")).toBeInTheDocument();
+		else expect(screen.queryByTestId("PFriendNode_ValidButton")).not.toBeInTheDocument();
+
+		if (type == "user" && (user as IExtUserInfo).relation == "outgoing")
+			expect(screen.getByTestId("PFriendNode_Sent")).toBeInTheDocument();
+		else expect(screen.queryByTestId("PFriendNode_Sent")).not.toBeInTheDocument();
 	});
 
 	it("Check for color status (friend)", async () => {

@@ -1,19 +1,38 @@
 import axios from "axios";
 import type { ReactNode } from "react";
 import CText from "../components/text/CText";
-import type { IError, IErrorStruct } from "../types/error.ts";
+import type { IError, IErrorOptions, IErrorStruct } from "../types/error.ts";
 import { Stack } from "@mui/material";
 
-export const getErrorNode = (error: unknown, fallback: string): ReactNode => {
+export const getErrorNode = (
+	error: unknown,
+	fallback: string,
+	options?: IErrorOptions,
+): ReactNode => {
+	function getComponent(children: ReactNode | string, key?: string) {
+		return (
+			<CText
+				size={options?.size}
+				key={key}
+				align="center"
+				sx={
+					options?.sx
+						? [
+								{ color: "red" },
+								...(Array.isArray(options) ? options : options ? [options] : []),
+							]
+						: { color: "red" }
+				}
+			>
+				{children}
+			</CText>
+		);
+	}
+
 	let finalError: IErrorStruct | undefined = undefined;
 	if (axios.isAxiosError(error)) {
 		finalError = error.response?.data?.error;
-		if (!finalError)
-			return (
-				<CText sx={{ color: "red" }} align="center">
-					{fallback}
-				</CText>
-			);
+		if (!finalError) return getComponent(fallback);
 	} else if (error && typeof error == "object") {
 		finalError = error as IErrorStruct;
 	}
@@ -28,19 +47,11 @@ export const getErrorNode = (error: unknown, fallback: string): ReactNode => {
 		return (
 			<Stack>
 				{finalError.default.map((value: IError, index: number) => {
-					return (
-						<CText key={"Error" + index} sx={{ color: "red" }} align="center">
-							{value.code}
-						</CText>
-					);
+					return getComponent(value.code, "Error" + index);
 				})}
 			</Stack>
 		);
-	return (
-		<CText sx={{ color: "red" }} align="center">
-			{fallback}
-		</CText>
-	);
+	return getComponent(fallback);
 };
 
 export const getErrorMessage = (error: unknown, fallback: string): string => {

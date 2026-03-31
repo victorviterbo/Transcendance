@@ -4,6 +4,7 @@ import { FetchPrivateRoom, FetchPublicRoom } from "./handlers/home";
 import {
 	friendsListHandler,
 	friendsRequestsHandler,
+	friendsRequestsSendHandler,
 	friendsSearchHandler,
 } from "./handlers/social";
 
@@ -21,4 +22,5 @@ export const handlers = [
 	friendsListHandler,
 	friendsSearchHandler,
 	friendsRequestsHandler,
+	friendsRequestsSendHandler,
 ];

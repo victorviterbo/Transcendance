@@ -22,6 +22,7 @@ function PFriendReq() {
 				const res: AxiosResponse<IFriendRequests> = await api.get(
 					API_SOCIAL_FRIENDS_REQUEST,
 				);
+
 				if (!res) throw {};
 				if (res.data.error) throw res.data.error;
 				if (typeof res.data != "object" || !res.data.incoming || !res.data.outgoing)
@@ -71,17 +72,17 @@ function PFriendReq() {
 	}
 
 	return (
-		<Stack sx={{ overflowY: "auto", flex: 1 }} data-testid="PFriendAdd">
+		<Stack sx={{ overflowY: "auto", flex: 1 }} data-testid="PFriendReq">
 			<CAccordionSimple
 				title="SOCIAL_INCOMING_REQUESTS"
 				fontSize="sm"
 				sx={{ mb: "10px" }}
 				defaultExpanded={true}
 			>
-				<Stack>{getIncoming()}</Stack>
+				<Stack data-testid="PFriendReq_incoming">{getIncoming()}</Stack>
 			</CAccordionSimple>
 			<CAccordionSimple title="SOCIAL_OUTGOING_REQUESTS" fontSize="sm" defaultExpanded={true}>
-				<Stack>{getOutgoing()}</Stack>
+				<Stack data-testid="PFriendReq_outgoing">{getOutgoing()}</Stack>
 			</CAccordionSimple>
 		</Stack>
 	);

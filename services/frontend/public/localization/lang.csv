@@ -72,4 +72,5 @@ SOCIAL_OUTGOING_REQUESTS,Outgoing requests,,,Outgoing friends requests section
 SOCIAL_NO_OUTGOING,No outgoing requests,,,Displayed when there is no outgoing friends requests
 SOCIAL_NO_INCOMING,No incoming requests,,,Displayed when there is no incoming friends requests
 SOCIAL_REQUESTS_ERROR,Couldn't load requests,,,Displayed or error  when trying to load friends requests
-SOCIAL_REQUESTS_OUTGOING, Sent,,,Displayed when waiting for the other personne to answer
+SOCIAL_REQUESTS_OUTGOING,Sent,,,Displayed when waiting for the other personne to answer
+SOCIAL_ADD_FRIEND_FAILED,Failed to send friend requests,,,Error message used when user sent friend requests and failed
