@@ -26,3 +26,15 @@ export interface IFriendRequests {
 	outgoing: IExtUserInfo[];
 	error?: IErrorStruct;
 }
+
+export interface IFriendReqSend {
+	"target-username": string;
+	"target-uid": string;
+}
+
+export interface IFriendReqSendResponse {
+	description: string;
+	"target-username": string;
+	"target-uid": string;
+	error?: IErrorStruct;
+}
