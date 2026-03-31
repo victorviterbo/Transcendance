@@ -17,6 +17,7 @@ function CContactCard({ name, image, email, roles, className, sx, ...other }: CC
 			className={className}
 			sx={{
 				display: "block",
+				height: "100%",
 				color: "inherit",
 				textDecoration: "none",
 				"&:hover .CContactCard-paper": {
@@ -30,6 +31,7 @@ function CContactCard({ name, image, email, roles, className, sx, ...other }: CC
 				sx={[
 					{
 						p: 1.25,
+						height: "100%",
 						overflow: "hidden",
 						transition: "transform 150ms ease, box-shadow 150ms ease",
 					},
@@ -37,7 +39,7 @@ function CContactCard({ name, image, email, roles, className, sx, ...other }: CC
 				]}
 				{...other}
 			>
-				<Stack spacing={1.5}>
+				<Stack spacing={1.5} sx={{ height: "100%" }}>
 					<Box
 						component="img"
 						src={image}
@@ -54,7 +56,7 @@ function CContactCard({ name, image, email, roles, className, sx, ...other }: CC
 					<CText size="lg" align="center" sx={{ mb: 0, fontWeight: 700 }}>
 						{name}
 					</CText>
-					<Stack spacing={0.25} alignItems="center">
+					<Stack spacing={0.25} alignItems="center" sx={{ mt: "auto" }}>
 						{roles.map((role) => (
 							<CText
 								key={`${name}-${role}`}
