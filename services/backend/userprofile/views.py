@@ -16,7 +16,8 @@ def parse_validation_errors(val_error: serializers.ValidationError) -> Response:
     error_response = {'error': {}}
     response_code = status.HTTP_400_BAD_REQUEST
     for field, details in error.items():
-        if field == 'username' and details[0]['code'] == 'unique' or details[0]['code'] == 'USERNAME_TAKEN':
+        if (field == 'username' and details[0]['code'] == 'unique'
+        or details[0]['code'] == 'USERNAME_TAKEN'):
                 response_code = status.HTTP_409_CONFLICT
                 error_response['error'][field] = 'USERNAME_TAKEN'
         else:

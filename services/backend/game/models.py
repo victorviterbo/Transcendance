@@ -31,6 +31,8 @@ class Game(models.Model):
 
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
+    is_public = models.BooleanField(default=False)
+
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-played_at']
