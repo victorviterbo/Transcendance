@@ -5,6 +5,8 @@ The following models are defines:
 """
 from __future__ import annotations
 
+import uuid
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
@@ -92,6 +94,8 @@ class SiteUser(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = SiteUserManager() 
+
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self) -> str:
         """Return the user as it's email address string."""

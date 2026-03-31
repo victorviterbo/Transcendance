@@ -1,5 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
-import { API_AUTH_LOGIN, API_AUTH_LOGOUT, API_AUTH_REFRESH, API_AUTH_REGISTER } from "./constants";
+import { API_AUTH_LOGIN, API_AUTH_LOGOUT, API_AUTH_REFRESH, API_AUTH_REGISTER } from "../constants";
 
 let accessToken: string | null = null;
 let isRefreshing = false;

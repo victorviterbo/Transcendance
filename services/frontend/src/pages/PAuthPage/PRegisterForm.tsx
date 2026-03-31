@@ -62,7 +62,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				password: values.password,
 			});
 			if (!res.data?.access || !res.data?.username) {
-				return { valid: false, msg: "Registration failed." };
+				return { valid: false, msg: "REGISTRATION_FAILED" };
 			}
 			const user: IAuthUser = { username: res.data.username, email: values.email };
 			setAuth(res.data.access, user);
@@ -76,7 +76,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 			if (payload && typeof payload === "object") {
 				return { valid: false, fieldErrors: payload };
 			}
-			return { valid: false, msg: getErrorMessage(error, "Registration failed.") };
+			return { valid: false, msg: getErrorMessage(error, "REGISTRATION_FAILED") };
 		}
 	}
 

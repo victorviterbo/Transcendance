@@ -3,7 +3,7 @@ import type { GProps } from "../../components/common/GProps";
 import { Box, Stack } from "@mui/material";
 import GBackground from "./GBackground";
 import CNavbar from "../../components/navigation/CNavbar";
-import { appPositions } from "../../styles/theme";
+import CFooter from "../../components/navigation/CFooter";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
@@ -12,7 +12,7 @@ export interface GPageProps extends GProps {
 function GPageBase({ children }: GPageProps) {
 	return (
 		<>
-			<Box sx={{ position: "fixed", width: "100%", height: "100%" }}>
+			<Box sx={{ position: "fixed", inset: 0 }}>
 				<GBackground />
 				<Stack
 					sx={{
@@ -28,15 +28,7 @@ function GPageBase({ children }: GPageProps) {
 					<CNavbar />
 					<Stack sx={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
 						<Box sx={{ flex: 1 }}>{children}</Box>
-						<Box
-							sx={{
-								flexShrink: 0,
-								height:
-									appPositions.sizes.footer +
-									(appPositions.sizes.footer == "string" ? "" : "px"),
-								bgcolor: "primary.main",
-							}}
-						></Box>
+						<CFooter />
 					</Stack>
 				</Stack>
 			</Box>

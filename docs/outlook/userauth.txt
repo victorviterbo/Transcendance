@@ -16,7 +16,7 @@ userauth:
                     - HTTP_200_OK {'username', 'access'}
                         credentials generated and cookie set
                 failure:
-                    - HTTP_401_UNAUTHORIZED {'error': {'auth': 'AUTH_FAIL'}}
+                    - HTTP_401_UNAUTHORIZED {'error': {'auth': 'INVALID_CREDENTIALS'}}
                         we want to be vague for security reasons
         logout/:
             post: [AllowAny]
@@ -24,7 +24,7 @@ userauth:
                     - HTTP_204_NO_CONTENT
                         credentials are blacklisted and cookies removed
                 failure:
-                    - HTTP_401_UNAUTHORIZED {'error': {'auth': 'AUTH_FAIL'}}
+                    - HTTP_401_UNAUTHORIZED {'error': {'auth': 'INVALID_CREDENTIALS'}}
                         the user was not logged in in the first place
         refresh/:
             post: [AllowAny]

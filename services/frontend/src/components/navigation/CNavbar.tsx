@@ -43,8 +43,8 @@ function CNavbar() {
 	};
 
 	const guestItems: TNavItem[] = [
-		{ kind: "link", label: "Play", to: "/", icon: <SportsEsportsIcon /> },
-		{ kind: "link", label: "Log in", to: "/auth" },
+		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
+		{ kind: "link", label: "LOGIN", to: "/auth" },
 	];
 
 	const authedItems: TNavItem[] = [
@@ -70,50 +70,72 @@ function CNavbar() {
 		},
 	];
 	const items = status === "authed" ? authedItems : guestItems;
+	const linkItems = items.filter(
+		(item): item is Extract<TNavItem, { kind: "link" }> => item.kind === "link",
+	);
+	const actionItems = items.filter(
+		(item): item is Extract<TNavItem, { kind: "action" }> => item.kind === "action",
+	);
 
 	return (
 		<AppBar position="static" sx={CNavbarStyle}>
 			<Toolbar>
 				<IconButton
 					size="medium"
-					edge="start"
 					color="inherit"
 					component={Link}
 					to="/"
 					aria-label="Home"
+					sx={{
+						height: 54,
+						width: 54,
+						padding: "4px",
+						border: "3px solid rgba(255, 255, 255, 0.82)",
+						backgroundColor: "rgba(255, 255, 255, 0.16)",
+						boxShadow: "0 6px 0 rgba(23, 15, 56, 0.2)",
+						"&:hover": {
+							backgroundColor: "rgba(255, 255, 255, 0.22)",
+						},
+					}}
 				>
-					<Box component="img" src={logo} alt="Guess Tunes logo" sx={{ height: 40 }} />
+					<Box
+						component="img"
+						src={logo}
+						alt="Guess Tunes logo"
+						sx={{
+							height: 42,
+							width: 42,
+							display: "block",
+						}}
+					/>
 				</IconButton>
-				<CTitle size="sm" sx={{ flexGrow: 1 }}>
+				<CTitle size="sm" sx={{ pl: 5, flexGrow: 1 }}>
 					Guess Tunes
 				</CTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
-					<CDialogLanguage open={false} />
-					{items.map((item, idx) => {
-						if (item.kind === "link") {
-							const isActive =
-								item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-							return (
-								<CNavbarLink
-									key={`${item.label}-${idx}`}
-									to={item.to}
-									label={item.label}
-									icon={item.icon}
-									active={isActive}
-								/>
-							);
-						}
-
+					{linkItems.map((item, idx) => {
+						const isActive =
+							item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
 						return (
-							<CNavbarIcon
-								key={`${item.aria}-${idx}`}
-								aria={item.aria}
+							<CNavbarLink
+								key={`${item.label}-${idx}`}
+								to={item.to}
+								label={item.label}
 								icon={item.icon}
-								onClick={item.onClick}
-								disabled={item.disabled}
+								active={isActive}
 							/>
 						);
 					})}
+					<CDialogLanguage open={false} />
+					{actionItems.map((item, idx) => (
+						<CNavbarIcon
+							key={`${item.aria}-${idx}`}
+							aria={item.aria}
+							icon={item.icon}
+							onClick={item.onClick}
+							disabled={item.disabled}
+						/>
+					))}
 				</Stack>
 			</Toolbar>
 			<CMenu

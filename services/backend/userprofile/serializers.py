@@ -1,38 +1,40 @@
-
 """Define export of Profile (full and light version) and Freiendship handling."""
+
 from io import BytesIO
 from typing import Any
 
 from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
+from project.validators import validate_email, validate_username
 from rest_framework import serializers
 
 from .models import Profile
 
 
-def validate_username(value: str, is_creation: bool = False) -> str:
-    """Validate and normalize the incomming username.
+class UsersSerializer(serializers.ModelSerializer):
+    """Set how to serialize a user (user obj <-> JSON)."""
 
-    Args:
-        value:          the incomming username
-        is_creation:    flag about the context of serialization
-    Returns:
-        The validated and normalized username
-    Raises:
-        ValidationError: If the username is empty
-        ValidationError: If the username is already taken
-    """
-    if not value: 
-        raise serializers.ValidationError('Username is required.',
-                                          code='invalid-data')
-    if any(pattern in value for pattern in ['/', '\\', '..', '~']):
-        raise serializers.ValidationError('Use of forbiden character', code='FORBIDDEN')
-    if value == 'admin':
-        raise serializers.ValidationError('Who do you think you are ?', code='RESERVED')
-    if is_creation and Profile.objects.filter(username=value).exists():
-        raise serializers.ValidationError('Username already taken', code='UNIQUE')
-    return value
+    email = serializers.URLField(source='SiteUser.avatar', read_only=True)
+    class Meta:
+        """Defines the metaclass for the SiteUser serializer.
+        
+        This part tells the rest_framework serializer how to contruct the
+        SiteUserSerializer class itself
+        """
+        model = Profile
+        fields = ['email', 'username', 'avatar', 'exp_points', 'badges', 'created_at', 'is_guest', 'session_key', 'uid']
+        read_only_fields = ['exp_points', 'badges', 'created_at', 'is_guest', 'session_key', 'uid']
 
+    def validate_email(self, value: str) -> str:
+        """Specific email validation for user login."""
+        value = validate_email(value, is_creation=self.context.get('is_creation'))
+        return value
+    
+    def validate_username(self, value: str) -> str:
+        """Specific email validation for user login."""
+        value = validate_username(value, is_creation=self.context.get('is_creation'))
+        return value
+    
 class LightProfileSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's profile."""
 
@@ -43,8 +45,8 @@ class LightProfileSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'image', 'is_guest', 'session_key']
-        read_only_fields = ['is_guest', 'session_key']
+        fields = ['username', 'avatar', 'is_guest', 'session_key']
+        read_only_fields = ['is_guest', 'session_key', 'uid']
 
     def validate_username(self, value: str, is_creation: bool = False) -> str:
         """Specific username validation for user creation / update."""
@@ -52,11 +54,11 @@ class LightProfileSerializer(serializers.ModelSerializer):
             is_creation = True
         if is_creation and Profile.objects.filter(username=value).exists():
             raise serializers.ValidationError('Username already taken',
-                                              code='unique')
+                                              code='USERNAME_TAKEN')
         return validate_username(value)
 
-    def validate_image(self, data: Any) -> Any:
-        """Convert to PNG and resize image."""
+    def validate_avatar(self, data: Any) -> Any:
+        """Convert to PNG and resize avatar."""
         if not data:
             return data
         try:
@@ -77,8 +79,8 @@ class LightProfileSerializer(serializers.ModelSerializer):
         """Define how the Profile is exported to json."""
         ret = super().to_representation(instance)
         request = self.context.get('request')
-        if instance.image and request:
-            ret['image'] = request.build_absolute_uri(instance.image.url)
+        if instance.avatar and request:
+            ret['avatar'] = request.build_absolute_uri(instance.avatar.url)
         return ret
 
 class ProfileSerializer(LightProfileSerializer):
@@ -91,5 +93,5 @@ class ProfileSerializer(LightProfileSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'image', 'exp_points', 'badges', 'created_at']
-        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key']
+        fields = ['username', 'avatar', 'exp_points', 'badges', 'created_at',]
+        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key', 'uid']
