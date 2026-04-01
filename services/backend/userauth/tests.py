@@ -35,14 +35,16 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
                     self.assertIn('error', response.data)
                     self.assertIn('auth', response.data['error'])
-                    self.assertEqual(response.data['error']['auth'], 'INVALID_CREDENTIALS')
+                    self.assertEqual(response.data['error']['auth'],
+                                     'INVALID_CREDENTIALS')
 
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""
         url = '/api/auth/register/'
         for email in ['test@mail.com', '', 'test', 'newuser@mail.com']:
             for username in ['testuser', '', 'newuser']:
-                for password in ['AnewPassword1+', '', 'shortpw', 'anewpassword1+', 'AnewPassword+', 'ANEWPASSWORD1+']:
+                for password in ['AnewPassword1+', '', 'shortpw', 'anewpassword1+',
+                                 'AnewPassword+', 'ANEWPASSWORD1+']:
                     data = {'email': email,
                             'username': username,
                             'password': password}
@@ -58,17 +60,20 @@ class UserAccountTests(APITestCase):
                            and password != 'AnewPassword1+')):
                         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
                     else:
-                        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                        self.assertEqual(response.status_code,
+                                         status.HTTP_400_BAD_REQUEST)
                     if email == 'test@mail.com':
                         self.assertEqual('EMAIL_TAKEN',
                                          response.data['error']['email'])
                     if username == 'testuser':
                         self.assertEqual('USERNAME_TAKEN',
                                          response.data['error']['username'])
-                    if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+', 'anewpassword1', 'anewpassword1']:
+                    if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+',
+                                    'anewpassword1', 'anewpassword1']:
                         self.assertEqual('INVALID_PASSWORD',
                                          response.data['error']['password'])
-                    self.assertTrue(('refresh-token' in self.client.cookies) or ('sessionid' in self.client.cookies))
+                    self.assertTrue(('refresh-token' in self.client.cookies)
+                                    or ('sessionid' in self.client.cookies))
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""

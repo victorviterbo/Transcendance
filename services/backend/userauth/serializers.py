@@ -9,7 +9,6 @@ from django.contrib.auth.password_validation import validate_password
 from project.validators import validate_email, validate_username
 from rest_framework import serializers
 from userprofile.models import Profile
-from userprofile.serializers import validate_username
 
 from .models import SiteUser
 
@@ -26,7 +25,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'password', 'profile_username', 'is_staff', 'is_superuser', 'uid']
+        fields = ['email', 'password', 'profile_username',
+                  'is_staff', 'is_superuser', 'uid']
         extra_kwargs = {'password': {
                                 'write_only': True
                             },

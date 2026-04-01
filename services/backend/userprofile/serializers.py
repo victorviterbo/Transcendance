@@ -22,8 +22,10 @@ class UsersSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = Profile
-        fields = ['email', 'username', 'avatar', 'exp_points', 'badges', 'created_at', 'is_guest', 'session_key', 'uid']
-        read_only_fields = ['exp_points', 'badges', 'created_at', 'is_guest', 'session_key', 'uid']
+        fields = ['email', 'username', 'avatar', 'exp_points', 'badges',
+                    'created_at', 'is_guest', 'session_key', 'uid']
+        read_only_fields = ['exp_points', 'badges',
+                    'created_at', 'is_guest', 'session_key', 'uid']
 
     def validate_email(self, value: str) -> str:
         """Specific email validation for user login."""

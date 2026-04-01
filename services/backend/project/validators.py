@@ -1,4 +1,4 @@
-
+"""Define validators that are used in multiple modules."""
 
 import re
 

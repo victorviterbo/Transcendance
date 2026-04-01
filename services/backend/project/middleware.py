@@ -2,15 +2,19 @@
 
 import uuid
 
+from django.http import HttpRequest, HttpResponse
 from userprofile.models import Profile
 
 
 class ProfileMiddleware:
     """Extra layer before execution of the request."""
-    def __init__(self, get_response):
+
+    def __init__(self, get_response: callable) -> None:
+        """Define construction of the middleware class."""
         self.get_response = get_response
 
-    def __call__(self, request):
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        """Define procedure to be performed prior to treatment of request."""
         request.profile = None
         if request.user and request.user.is_authenticated:
             request.profile = getattr(request.user, 'profile', None)

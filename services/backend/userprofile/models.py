@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import os
 import random
 import uuid
-from pathlib import Path
 
-from project import settings
 from django.db import models
 from project.defaults import badges_strings
 from userauth.models import SiteUser

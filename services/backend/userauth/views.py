@@ -3,8 +3,9 @@
 from typing import Any
 
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -41,7 +42,7 @@ class RegisterView(APIView):
                                                              'is_creation': True}
             )
             if serializer.is_valid(raise_exception=True):
-                user = serializer.save(profile_username=request.data.get('username'))
+                serializer.save(profile_username=request.data.get('username'))
                 token = RefreshToken.for_user(serializer.instance)
                 response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},
@@ -183,3 +184,34 @@ class RefreshTokenView(TokenRefreshView):
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+class UpdatePasswordView(APIView):
+    """Define updating of password."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Define updating of password."""
+        if (request.data.get('old_password') is None and
+            request.data.get('new_password') is None):
+            return Response({'error': {'old_password': 'MISSING_FIELD',
+                                       'new_password': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get('old_password') is None:
+            return Response({'error': {'old_password': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get('new_password') is None:
+            return Response({'error': {'new_password': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not self.user.check_password(request.data['password']):
+            return Response({'error': {'password': 'INVALID_PASSWORD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            validate_password(request.data['new_password'], user=self.request.user)
+            self.request.user.set_password(request.data['new_password'])
+            self.request.user.save()
+            return Response('PASSWORD_UPDATED', status=status.HTTP_200_OK)
+        except serializers.ValidationError as e:
+            return Response({'error': {'password': 'INVALID_PASSWORD'}})
+

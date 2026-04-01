@@ -55,36 +55,6 @@ class ProfileView(APIView):
         except serializers.ValidationError as e:
             return parse_validation_errors(e)
             
-    
-    def post(self, request: Request) -> Response:
-        """Handles update of user profile.
-        
-        Args:
-            request:
-                Header: [Authorization]
-                payload: json with updated values of profile informations
-
-        Returns:
-            Response:
-                200: {"description": "Updated Profile successfully"
-                400: {"error": "Could not update Profile"}
-                401: {"error": "Unauthorized: <error>"}
-        """
-        try:
-            profile_serializer = ProfileSerializer(instance=request.profile,
-                                                   data=request.data,
-                                                   partial=True,
-                                                   many=False)
-            if profile_serializer.is_valid(raise_exception=True):
-                profile_serializer.save()
-                return Response(profile_serializer.data,
-                                status=status.HTTP_200_OK)
-            else:
-                return Response({'error': {'profile': 'UPDATE_FAIL'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        except serializers.ValidationError as e:
-            return parse_validation_errors(e)
-        
     def post(self, request: Request) -> Response:
         """Handles update of user profile."""
         try:
@@ -103,20 +73,14 @@ class ProfileView(APIView):
             return parse_validation_errors(e)
     
     def delete(self, request: Request) -> Response:
-        """Handles update of user profile."""
-        try:
-            profile_serializer = ProfileSerializer(instance=request.profile,
-                                                   data=request.data,
-                                                   partial=True,
-                                                   many=False)
-            if profile_serializer.is_valid(raise_exception=True):
-                profile_serializer.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response({'error': {'profile': 'USER_DELETE_FAIL'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        except serializers.ValidationError as e:
-            return parse_validation_errors(e)
+        """Handles deletion of user profile."""
+        user = self.request.user
+        if user:
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'error': {'profile': 'USER_DELETE_FAIL'}},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 class   ProfileSearchView(APIView):
     """Search for a specific profile.
