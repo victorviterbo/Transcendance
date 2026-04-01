@@ -111,10 +111,10 @@ describe("Socials - Interactions", () => {
 	});
 
 	it.each([
-		["a", 5, "Dua_"],
-		["a", 5, "Ava"],
+		["a", 18, "Dua_"],
+		["a", 18, "Ava"],
 		["john", 3, "John99"],
-		["h", 4, "John74"],
+		["h", 11, "John74"],
 	])(
 		"Checking friends management (Searching: %s (%d), Traget: %s)",
 		async (search: string, expected: number, target: string) => {
@@ -225,8 +225,8 @@ describe("Socials - Interactions", () => {
 			expect(incomingStack).toBeInTheDocument();
 			expect(outgoingStack).toBeInTheDocument();
 
-			expect(within(incomingStack).getAllByTestId("PFriendNode").length).toEqual(2);
-			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(2);
+			expect(within(incomingStack).getAllByTestId("PFriendNode").length).toEqual(4);
+			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(4);
 			expect(within(outgoingStack).getByText(target)).toBeInTheDocument();
 		},
 	);
