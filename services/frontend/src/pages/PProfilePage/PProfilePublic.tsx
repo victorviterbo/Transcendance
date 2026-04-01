@@ -65,7 +65,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 
 	return (
 		<GPageBase>
-			<Container maxWidth="lg">
+			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3} sx={{ mt: 3 }}>
 					<CBasePaper sx={{ p: 3 }}>
 						<Stack
