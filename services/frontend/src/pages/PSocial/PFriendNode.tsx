@@ -4,7 +4,8 @@ import {
 	type TFriendRelation,
 	type IFriendInfo,
 	type IFriendReqSend,
-	type IFriendReqSendResponse,
+	type IFriendReqResponse,
+	type IFriendReqRes,
 } from "../../types/friends";
 import CAvatar from "../../components/images/CAvatar";
 import CTitle from "../../components/text/CTitle";
@@ -27,15 +28,20 @@ import { useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { AxiosResponse } from "axios";
 import api from "../../api";
-import { API_SOCIAL_FRIENDS_REQUEST_SEND } from "../../constants";
+import {
+	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
+	API_SOCIAL_FRIENDS_REQUEST_SEND,
+} from "../../constants";
 
 export interface PFriendNodeProps extends GPageProps {
 	user: IFriendInfo | IExtUserInfo;
 	type: "friend" | "user";
 	hidden?: boolean;
+
+	onStateChanged?: () => void;
 }
 
-function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
+function PFriendNode({ user, type, hidden, onStateChanged }: PFriendNodeProps) {
 	const [error, setError] = useState<ReactNode | undefined>();
 	const [relation, setRelation] = useState<TFriendRelation>(
 		type == "friend" ? "friends" : (user as IExtUserInfo).relation,
@@ -45,7 +51,7 @@ function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 		try {
 			if (type != "user") throw {};
 
-			const res: AxiosResponse<IFriendReqSendResponse> = await api.post(
+			const res: AxiosResponse<IFriendReqResponse> = await api.post(
 				API_SOCIAL_FRIENDS_REQUEST_SEND,
 				{ "target-uid": user.uid, "target-username": user.username } as IFriendReqSend,
 			);
@@ -54,6 +60,26 @@ function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 			setRelation("outgoing");
 		} catch (error) {
 			setError(getErrorNode(error, "SOCIAL_ADD_FRIEND_FAILED", { size: "sm" }));
+		}
+	}
+
+	async function handleOnAction(Action: "accept" | "refuse") {
+		try {
+			if (type != "user") throw {};
+
+			const res: AxiosResponse<IFriendReqResponse> = await api.post(
+				API_SOCIAL_FRIENDS_REQUEST_RESPOND,
+				{
+					"target-uid": user.uid,
+					"target-username": user.username,
+					"new-status": Action,
+				} as IFriendReqRes,
+			);
+			if (!res) throw {};
+			if (res.data.error) throw res.data.error;
+			if (onStateChanged) onStateChanged();
+		} catch (error) {
+			setError(getErrorNode(error, "SOCIAL_RESPOND_FRIEND_FAILED", { size: "sm" }));
 		}
 	}
 
@@ -110,9 +136,15 @@ function PFriendNode({ user, type, hidden }: PFriendNodeProps) {
 							<Stack direction={"row"}>
 								<CValidButton
 									sx={PFriendNodeMessageStyle}
+									onClick={() => {
+										handleOnAction("accept");
+									}}
 									data-testid="PFriendNode_ValidButton"
 								></CValidButton>
 								<CCancelButton
+									onClick={() => {
+										handleOnAction("refuse");
+									}}
 									sx={[
 										{ ml: "5px" },
 										...(Array.isArray(PFriendNodeMessageStyle)

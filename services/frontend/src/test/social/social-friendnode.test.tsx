@@ -1,10 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import type { IFriendInfo, TFriendRelation } from "../../types/friends";
-import { mockGenerateFriend } from "../../mock/handlers/social";
 import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo } from "../../types/user";
-import { mockGetExtUser } from "../../mock/dbs/social_dbs";
+import { mockGetExtUser, mockSocialDB, mockSocialResetDB } from "../../mock/dbs/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -26,6 +25,10 @@ vi.mock("../../api", () => ({
 }));
 
 describe("Socials - Friend/user node", () => {
+	beforeEach(() => {
+		mockSocialResetDB();
+	});
+
 	afterEach(() => {
 		vi.resetAllMocks();
 		getMock.mockReset();
@@ -36,12 +39,10 @@ describe("Socials - Friend/user node", () => {
 
 	//FRIEND NODE
 	it("Check for base data (friend)", async () => {
-		const user: IFriendInfo = mockGenerateFriend();
+		render(<PFriendNode user={mockSocialDB.friends[0]} type="friend" />);
 
-		render(<PFriendNode user={user} type="friend" />);
-
-		expect(screen.getByText(user.username)).toBeInTheDocument();
-		expect(screen.getByText(user.badges)).toBeInTheDocument();
+		expect(screen.getByText(mockSocialDB.friends[0].username)).toBeInTheDocument();
+		expect(screen.getByText(mockSocialDB.friends[0].badges)).toBeInTheDocument();
 	});
 	it("Check for base data (user)", async () => {
 		const user: IExtUserInfo = mockGetExtUser(0);
@@ -65,7 +66,7 @@ describe("Socials - Friend/user node", () => {
 		const relation = RelationArg as TFriendRelation;
 
 		let user: IFriendInfo | IExtUserInfo | undefined;
-		if (type == "friend") user = mockGenerateFriend();
+		if (type == "friend") user = mockSocialDB.friends[0];
 		else {
 			user = mockGetExtUser(0);
 			user.relation = relation;
@@ -91,12 +92,7 @@ describe("Socials - Friend/user node", () => {
 	});
 
 	it("Check for color status (friend)", async () => {
-		const users: IFriendInfo[] = [
-			mockGenerateFriend(),
-			mockGenerateFriend(),
-			mockGenerateFriend(),
-			mockGenerateFriend(),
-		];
+		const users: IFriendInfo[] = mockSocialDB.friends;
 
 		users.forEach((user: IFriendInfo, index: number) => {
 			user.username = "test_" + index;

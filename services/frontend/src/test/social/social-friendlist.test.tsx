@@ -1,10 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { API_SOCIAL_FRIENDS } from "../../constants";
 import userEvent from "@testing-library/user-event";
 import type { IFriendsList } from "../../types/friends";
-import { mockGenerateFriend } from "../../mock/handlers/social";
 import PFriendList from "../../pages/PSocial/PFriendList";
+import { mockSocialDB, mockSocialResetDB } from "../../mock/dbs/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -26,6 +26,10 @@ vi.mock("../../api", () => ({
 }));
 
 describe("Socials - Friend list", () => {
+	beforeEach(() => {
+		mockSocialResetDB();
+	});
+
 	afterEach(() => {
 		vi.resetAllMocks();
 		getMock.mockReset();
@@ -68,17 +72,10 @@ describe("Socials - Friend list", () => {
 		});
 		expect(screen.queryByTestId("PFriendNode")).not.toBeInTheDocument();
 	});
-	it("Check for 10 friends", async () => {
-		const data: IFriendsList = {
-			friends: [],
-		};
-		for (let i = 0; i < 10; i++) data.friends.push(mockGenerateFriend());
-
+	it("Check for friends", async () => {
 		getMock.mockImplementation((url: string) => {
 			if (url === API_SOCIAL_FRIENDS) {
-				return Promise.resolve({
-					data,
-				});
+				return Promise.resolve({ data: { friends: mockSocialDB.friends } });
 			}
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
@@ -86,43 +83,14 @@ describe("Socials - Friend list", () => {
 		render(<PFriendList />);
 
 		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode").length).toEqual(10);
-		});
-	});
-	it("Check for Randoms friends", async () => {
-		const count = Math.round(Math.random() * 100) + 1;
-		const data: IFriendsList = {
-			friends: [],
-		};
-		for (let i = 0; i < count; i++) data.friends.push(mockGenerateFriend());
-
-		getMock.mockImplementation((url: string) => {
-			if (url === API_SOCIAL_FRIENDS) {
-				return Promise.resolve({
-					data,
-				});
-			}
-			return Promise.reject(new Error(`unexpected call: ${url}`));
-		});
-
-		render(<PFriendList />);
-
-		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode").length).toEqual(count);
+			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
 		});
 	});
 
 	it("Check friend nodes have correct type input", async () => {
-		const data: IFriendsList = {
-			friends: [],
-		};
-		for (let i = 0; i < 10; i++) data.friends.push(mockGenerateFriend());
-
 		getMock.mockImplementation((url: string) => {
 			if (url === API_SOCIAL_FRIENDS) {
-				return Promise.resolve({
-					data,
-				});
+				return Promise.resolve({ data: { friends: mockSocialDB.friends } });
 			}
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
@@ -130,29 +98,23 @@ describe("Socials - Friend list", () => {
 		render(<PFriendList />);
 
 		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode_MessageButton").length).toEqual(10);
+			expect(screen.getAllByTestId("PFriendNode_MessageButton").length).toEqual(5);
 		});
 	});
 	it("Check for search input", async () => {
-		const data: IFriendsList = {
-			friends: [],
-		};
-		for (let i = 0; i < 10; i++) data.friends.push(mockGenerateFriend());
-		data.friends[0].username = "test";
-		data.friends[5].username = "TEst";
+		mockSocialDB.friends[0].username = "test";
+		mockSocialDB.friends[4].username = "TEst";
 
 		getMock.mockImplementation((url: string) => {
 			if (url === API_SOCIAL_FRIENDS) {
-				return Promise.resolve({
-					data,
-				});
+				return Promise.resolve({ data: { friends: mockSocialDB.friends } });
 			}
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
 		render(<PFriendList />);
 		await waitFor(() => {
-			expect(screen.getAllByTestId("PFriendNode").length).toEqual(10);
+			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
 		});
 
 		const searchField = screen.getByTestId("PSocialSearchList");
