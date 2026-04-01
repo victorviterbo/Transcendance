@@ -63,15 +63,13 @@ export function mockGenerateFriend(): IFriendInfo {
 // });
 
 export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
+	mockSocialSetDB();
 	const isError = 0;
-	const list: IFriendInfo[] = [];
-
-	const max = Math.floor(Math.random() * 10);
-	for (let i = 0; i < max; i++) list.push(mockGenerateFriend());
+	
 	if (isError)
 		return HttpResponse.json(
 			{
-				friends: list,
+				friends: mockSocialDB.friends,
 				error: {
 					default: [
 						{ message: "Friends are disabled", code: "Friends are disabled" },
@@ -81,7 +79,7 @@ export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
 			},
 			{ status: isError ? 400 : 200 },
 		);
-	return HttpResponse.json({ friends: list });
+	return HttpResponse.json({ friends: mockSocialDB.friends });
 });
 
 export const friendsSearchHandler = http.post(API_SOCIAL_FRIENDS_SEARCH, async ({ request }) => {
@@ -113,7 +111,7 @@ export const friendsRequestsHandler = http.get(API_SOCIAL_FRIENDS_REQUEST, async
 		incoming: [],
 	};
 
-	mockSocialDB.forEach((value: IExtUserInfo) => {
+	mockSocialDB.users.forEach((value: IExtUserInfo) => {
 		if (value.relation == "incoming") res.incoming.push(value);
 		if (value.relation == "outgoing") res.outgoing.push(value);
 	});
