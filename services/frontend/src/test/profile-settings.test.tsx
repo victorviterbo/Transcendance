@@ -101,8 +101,10 @@ describe("profile settings panel", () => {
 		const passwordSummary = screen.getByRole("button", { name: /change_password/i });
 		await user.click(passwordSummary);
 		const passwordPanel = passwordSummary.closest(".MuiAccordion-root");
-		expect(passwordPanel).not.toBeNull();
-		if (!passwordPanel) throw new Error("Password panel not found");
+		expect(passwordPanel).toBeInstanceOf(HTMLElement);
+		if (!(passwordPanel instanceof HTMLElement)) {
+			throw new Error("Password panel not found");
+		}
 
 		await user.type(within(passwordPanel).getByLabelText(/current_password/i), "Secret1!");
 		await user.type(within(passwordPanel).getByLabelText(/^new_password$/i), "Secret1!");

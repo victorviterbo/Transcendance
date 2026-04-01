@@ -24,7 +24,8 @@ def _direct_key_for(profile_a: Profile, profile_b: Profile) -> str:
     Ensures Alice↔Bob has the same key regardless of call order.
 
     Args:
-        profile_a, profile_b: User's Profile objects
+        profile_a: User's Profile objects
+        profile_b: User's Profile objects
     
     Returns:
         String key 'user_<min_id>_user_<max_id>'

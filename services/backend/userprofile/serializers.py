@@ -14,7 +14,7 @@ from .models import Profile
 class UsersSerializer(serializers.ModelSerializer):
     """Set how to serialize a user (user obj <-> JSON)."""
 
-    email = serializers.URLField(source='SiteUser.avatar', read_only=True)
+    email = serializers.URLField(source='SiteUser.email', read_only=True)
     class Meta:
         """Defines the metaclass for the SiteUser serializer.
         

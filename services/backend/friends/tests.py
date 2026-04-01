@@ -167,7 +167,8 @@ class FriendRequestsTests(APITestCase):
                 self.assertEqual(1, len(response.data['friends']))
 
             elif res == 'reject':
-                self.assertEqual('FRIENDSHIP_REQUEST_REJECTED', response.data['description'])
+                self.assertEqual('FRIENDSHIP_REQUEST_REJECTED',
+                                 response.data['description'])
                 response = user2.get(friend_request_see_url)
                 self.assertEqual(0, len(response.data['incomming']))
                 self.assertEqual(0, len(response.data['outgoing']))

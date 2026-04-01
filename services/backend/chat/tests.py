@@ -4,7 +4,7 @@ import uuid
 
 from asgiref.sync import async_to_sync
 from channels.testing import WebsocketCommunicator
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase
 from django.urls import reverse
 from friends.models import Friendship
 from project.asgi import application
