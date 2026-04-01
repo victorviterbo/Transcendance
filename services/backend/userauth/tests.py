@@ -146,14 +146,14 @@ class UserAccountTests(APITestCase):
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
-        response = self.client.post(update_password_url, data={'old_password': 'Password123+',
-                                                    'new_password': 'should_fail'})
+        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+                                                    'newPassword': 'should_fail'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        response = self.client.post(update_password_url, data={'old_password': 'Password123+',
-                                                    'new_password': 'AnotherBadPassword111'})
+        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+                                                    'newPassword': 'AnotherBadPassword111'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        response = self.client.post(update_password_url, data={'old_password': 'Password123+',
-                                                    'new_password': 'FinallyAGood1+'})
+        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+                                                    'newPassword': 'FinallyAGood1+'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         login_res = self.client.post(login_url, data={'email': 'test@mail.com',
                                                       'password': 'Password123+'})

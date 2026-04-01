@@ -75,6 +75,12 @@ class ProfileView(APIView):
     def delete(self, request: Request) -> Response:
         """Handles deletion of user profile."""
         user = self.request.user
+        if request.data.get('password') is None:
+            return Response({'error': {'password': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not self.request.user.check_password(request.data['password']):
+            return Response({'error': {'password': 'INVALID_PASSWORD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
         if user:
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

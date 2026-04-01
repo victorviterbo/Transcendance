@@ -7,14 +7,13 @@ from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
 from project.validators import validate_email, validate_username
 from rest_framework import serializers
-
 from .models import Profile
 
 
 class UsersSerializer(serializers.ModelSerializer):
     """Set how to serialize a user (user obj <-> JSON)."""
 
-    email = serializers.URLField(source='SiteUser.email', read_only=True)
+    email = serializers.EmailField(source='user.email')
     class Meta:
         """Defines the metaclass for the SiteUser serializer.
         
@@ -23,9 +22,9 @@ class UsersSerializer(serializers.ModelSerializer):
         """
         model = Profile
         fields = ['email', 'username', 'avatar', 'exp_points', 'badges',
-                    'created_at', 'is_guest', 'session_key', 'uid']
+                    'created_at', 'is_guest', 'uid']
         read_only_fields = ['exp_points', 'badges',
-                    'created_at', 'is_guest', 'session_key', 'uid']
+                    'created_at', 'is_guest', 'uid']
 
     def validate_email(self, value: str) -> str:
         """Specific email validation for user login."""
@@ -37,6 +36,19 @@ class UsersSerializer(serializers.ModelSerializer):
         value = validate_username(value, is_creation=self.context.get('is_creation'))
         return value
     
+    def update(self, instance: Profile, validated_data: dict) -> Profile:
+        """Define specific procedure to save serialized data."""
+        user_data = validated_data.pop('user', None)
+        if user_data and instance.user:
+            new_email = user_data.get('email')
+            if new_email:
+                instance.user.email = new_email
+                instance.user.save()
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
 class LightProfileSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's profile."""
 
@@ -48,7 +60,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
         """
         model = Profile
         fields = ['username', 'avatar', 'is_guest', 'session_key']
-        read_only_fields = ['is_guest', 'session_key', 'uid']
+        read_only_fields = ['is_guest', 'uid']
 
     def validate_username(self, value: str, is_creation: bool = False) -> str:
         """Specific username validation for user creation / update."""
@@ -96,4 +108,4 @@ class ProfileSerializer(LightProfileSerializer):
         """
         model = Profile
         fields = ['username', 'avatar', 'exp_points', 'badges', 'created_at',]
-        read_only_fields = ['exp_points', 'badges', 'is_guest', 'session_key', 'uid']
+        read_only_fields = ['exp_points', 'badges', 'is_guest', 'uid']

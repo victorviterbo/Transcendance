@@ -153,8 +153,7 @@ class LogoutView(APIView):
             path='/api/auth/'
         )
         return response
-    
-    
+
 class RefreshTokenView(TokenRefreshView):
     """Define generation of new access token operation view."""
     permission_classes = [AllowAny]
@@ -186,31 +185,29 @@ class RefreshTokenView(TokenRefreshView):
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
 
-
-
 class UpdatePasswordView(APIView):
     """Define updating of password."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Define updating of password."""
-        if (request.data.get('old_password') is None and
-            request.data.get('new_password') is None):
-            return Response({'error': {'old_password': 'MISSING_FIELD',
-                                       'new_password': 'MISSING_FIELD'}},
+        if (request.data.get('currentPassword') is None and
+            request.data.get('newPassword') is None):
+            return Response({'error': {'currentPassword': 'MISSING_FIELD',
+                                       'newPassword': 'MISSING_FIELD'}},
                             status=status.HTTP_400_BAD_REQUEST)
-        if request.data.get('old_password') is None:
-            return Response({'error': {'old_password': 'MISSING_FIELD'}},
+        if request.data.get('currentPassword') is None:
+            return Response({'error': {'currentPassword': 'MISSING_FIELD'}},
                             status=status.HTTP_400_BAD_REQUEST)
-        if request.data.get('new_password') is None:
-            return Response({'error': {'new_password': 'MISSING_FIELD'}},
+        if request.data.get('newPassword') is None:
+            return Response({'error': {'newPassword': 'MISSING_FIELD'}},
                             status=status.HTTP_400_BAD_REQUEST)
-        if not self.request.user.check_password(request.data['old_password']):
-            return Response({'error': {'old_password': 'INVALID_PASSWORD'}},
+        if not self.request.user.check_password(request.data['currentPassword']):
+            return Response({'error': {'currentPassword': 'INVALID_PASSWORD'}},
                             status=status.HTTP_400_BAD_REQUEST)
         try:
-            validate_password(request.data['new_password'], user=self.request.user)
-            self.request.user.set_password(request.data['new_password'])
+            validate_password(request.data['newPassword'], user=self.request.user)
+            self.request.user.set_password(request.data['newPassword'])
             self.request.user.save()
             return Response('PASSWORD_UPDATED', status=status.HTTP_200_OK)
         except coreValidationError:

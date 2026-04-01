@@ -130,6 +130,7 @@ class ProfileTests(TransactionTestCase):
         self.assertIn('refresh-token', self.client.cookies)
         new_data = {
             'username': 'a_new_user',
+            'email': 'anewemail@mail.com',
             'avatar': image_generator('valid'),
             'exp_points': 5001,
             'badge': 'Sonic Shark'
@@ -137,6 +138,10 @@ class ProfileTests(TransactionTestCase):
         new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('email', response.data)
+        self.assertEqual(response.data['email'], 'anewemail@mail.com')
+        self.assertIn('username', response.data)
+        self.assertEqual(response.data['username'], 'a_new_user')
 
         new_data['avatar'] = image_generator('corrupt')
         new_data['avatar'].seek(0)
@@ -171,6 +176,7 @@ class ProfileTests(TransactionTestCase):
         self.assertTrue(Path(MEDIA_ROOT / response.data['avatar'].lstrip('/DB/media/')).is_file())
     
     def test_profile_delete(self) -> None:
+        """Test profile deletion operation."""
         login_url = '/api/auth/login/'
         profile_url = '/api/profile/'
 
@@ -180,7 +186,7 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
-        response = self.client.delete(profile_url)
+        response = self.client.delete(profile_url, data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})

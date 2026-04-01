@@ -97,3 +97,4 @@ class LoginSerializer(serializers.ModelSerializer):
         """Specific email validation for user login."""
         value = validate_email(value, is_creation=False)
         return value
+
