@@ -2,58 +2,27 @@ import { http, HttpResponse } from "msw";
 import {
 	API_SOCIAL_FRIENDS,
 	API_SOCIAL_FRIENDS_REQUEST,
+	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
 	API_SOCIAL_FRIENDS_REQUEST_SEND,
 	API_SOCIAL_FRIENDS_SEARCH,
 } from "../../constants";
 import type {
 	IFriendInfo,
+	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
-	TFriendStatus,
 } from "../../types/friends";
-import { mockProfilesPics } from "../rcs/profilepics";
 import type { IExtUserInfo, IExtUserSearch } from "../../types/user";
 import {
 	mockGetExtUsers,
 	mockOnAddRequestSend,
+	mockSocialOnResponse,
 	mockSocialDB,
 	mockSocialSetDB,
 } from "../dbs/social_dbs";
 import type { IErrorReturn } from "../../types/error";
 
 // const friends = ws.link("ws://localhost:5173/");
-
-//--------------------------------------------------
-//                    HELPERS
-//--------------------------------------------------
-export function mockGenerateFriend(): IFriendInfo {
-	const usernames = [
-		"Sarah",
-		"John",
-		"Marc",
-		"Ava",
-		"由美子",
-		"岡田",
-		"WillIAm",
-		"Dua_",
-		"John74",
-		"John99",
-		"SdS",
-	];
-	const badges = ["The mask singer", "Pro gesser", "Diva", "DJ", "casual gamer", "Guess master"];
-
-	return {
-		uid: "00000",
-		username: usernames[Math.floor(Math.random() * usernames.length)],
-		image: mockProfilesPics[Math.floor(Math.random() * mockProfilesPics.length)],
-
-		exp_points: Math.floor(Math.random() * 20000),
-		badges: badges[Math.floor(Math.random() * badges.length)],
-
-		status: ["online", "busy", "offline"][Math.floor(Math.random() * 3)] as TFriendStatus,
-		created_at: new Date().toString(),
-	};
-}
 
 //--------------------------------------------------
 //                   HANDLERS
@@ -141,6 +110,43 @@ export const friendsRequestsSendHandler = http.post(
 			);
 		const user: IExtUserInfo = out as IExtUserInfo;
 		user.relation = "outgoing";
+		return HttpResponse.json(
+			{
+				"target-username": user.username,
+				"target-uid": user.uid,
+				description: "FRIENDSHIP_REQUEST_SENT",
+			},
+			{ status: 201 },
+		);
+	},
+);
+
+export const friendsRequestsResponseHandler = http.post(
+	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
+	async ({ request }) => {
+		mockSocialSetDB();
+		const data: IFriendReqRes = (await request.json()) as IFriendReqRes;
+		const out: IExtUserInfo | IFriendInfo | IErrorReturn = mockSocialOnResponse(data);
+		if ("error" in out)
+			return HttpResponse.json(
+				{
+					error: out.error,
+				},
+				{ status: out.status ? out.status : 400 },
+			);
+
+		if ("created_at" in out) {
+			const user: IFriendInfo = out as IFriendInfo;
+			return HttpResponse.json(
+				{
+					"target-username": user.username,
+					"target-uid": user.uid,
+					description: "FRIENDSHIP_REQUEST_ACCEPTED",
+				},
+				{ status: 201 },
+			);
+		}
+		const user: IExtUserInfo = out as IExtUserInfo;
 		return HttpResponse.json(
 			{
 				"target-username": user.username,
