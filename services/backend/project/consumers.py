@@ -1,5 +1,7 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
+import uuid
+
 from channels.db import database_sync_to_async
 from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
@@ -209,13 +211,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                                'message': 'User not found'}
             if not (Friendship.objects.filter(from_user__in=[target_user, self.user],
-                                              to_user__in=[self.user, target_user]).exists()):
+                                              to_user__in=[self.user, target_user],
+                                              status='accepted'
+                                              ).exists()):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             target_profile = target_user.profile
             id_a, id_b = self.profile.uid, target_profile.uid
             min_uid, max_uid = (id_a, id_b) if id_a < id_b else (id_b, id_a)
-            room, created = Room.objects.get_or_create(name=f'user_{min_uid}_user_{max_uid}')
+            room, created = Room.objects.get_or_create(
+                name=f'user_{min_uid}_user_{max_uid}')
             if created:
                 room.participants.add(self.profile)
                 room.participants.add(target_profile)
@@ -257,7 +262,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return True
 
     @database_sync_to_async
-    def _mark_seen(self, message_uid) -> bool:
+    def _mark_seen(self, message_uid: uuid.UUID) -> bool:
         """Mark a room message as seen and delivered if it exists."""
         message = Message.objects.filter(uid=message_uid, room=self.room).first()
         if not message:

@@ -90,7 +90,7 @@ class ProfileTests(TransactionTestCase):
             response = self.client.get(profile_url + profile_query)
             if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
-                self.assertEqual(response.data['avatar'], '/DB/media/default_pp.jpg')
+                self.assertStartsWith(response.data['avatar'], '/DB/media/default_avatars/default_avatar_')
                 self.assertIn('username', response.data)
                 self.assertIn('exp_points', response.data)
                 self.assertIn('badges', response.data)

@@ -24,7 +24,7 @@ lerna-debug.log*
 *.sqlite3
 **/migrations/*
 !**/migrations/__init__.py
-**/media/*
+**/media/avatars/*
 
 # =========================
 # Environment variables
