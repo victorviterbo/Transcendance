@@ -111,3 +111,53 @@ export function mockOnAddRequestSend(data: IFriendReqSend): IExtUserInfo | IErro
 	user.relation = "outgoing";
 	return user;
 }
+
+export function mockSocialOnResponse(
+	data: IFriendReqRes,
+): IExtUserInfo | IFriendInfo | IErrorReturn {
+	if (!data["target-username"])
+		return {
+			error: {
+				"target-username": [
+					{ message: "'target-username' is missing", code: "MISSING_FIELD" },
+				],
+			},
+		};
+
+	if (!data["target-uid"])
+		return {
+			error: {
+				"target-uid": [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
+			},
+		};
+
+	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
+		return user.uid == data["target-uid"];
+	});
+	const userPos: number = mockSocialDB.users.findIndex((user: IExtUserInfo) => {
+		return user.uid == data["target-uid"];
+	});
+	if (!user)
+		return {
+			error: { notfound: [{ message: "target not found", code: "NOT_FOUND" }] },
+			status: 404,
+		};
+
+	if (data["new-status"] == "refuse") {
+		user.relation = "not-friends";
+		return user;
+	}
+	mockSocialDB.friends.push({
+		uid: mockSocialDB.users[userPos].uid,
+		username: mockSocialDB.users[userPos].username,
+		image: mockSocialDB.users[userPos].image,
+
+		exp_points: Math.round(Math.random() * 1000),
+		badges: mockSocialDB.users[userPos].badges,
+
+		created_at: new Date().toLocaleDateString(),
+		status: status[Math.floor(Math.random() * status.length)],
+	});
+	mockSocialDB.users.splice(userPos, 1);
+	return mockSocialDB.friends[mockSocialDB.friends.length - 1];
+}
