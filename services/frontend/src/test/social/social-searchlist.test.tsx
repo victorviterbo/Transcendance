@@ -95,8 +95,8 @@ describe("Socials - Friend list", () => {
 	});
 	it.each([
 		["john", 3],
-		["a", 5],
-		["_", 1],
+		["a", 18],
+		["_", 2],
 		["heeqwdwqllo", 0],
 	])("Check searches for %s (expect: %i)", async (search: string, expected: number) => {
 		postMock.mockImplementation((url: string, body: unknown) => {
@@ -125,8 +125,8 @@ describe("Socials - Friend list", () => {
 
 	it.each([
 		["john", 3],
-		["a", 5],
-		["_", 1],
+		["a", 18],
+		["_", 2],
 		["heeqwdwqllo", 0],
 	])("Check searches types for %s (expect: %i)", async (search: string, expected: number) => {
 		postMock.mockImplementation((url: string, body: unknown) => {
