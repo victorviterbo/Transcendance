@@ -1,12 +1,21 @@
 import type { IErrorReturn } from "../../types/error";
-import type { IFriendReqSend, IFriendRequests } from "../../types/friends";
+import type { IFriendInfo, IFriendReqSend, IFriendRequests, TFriendStatus } from "../../types/friends";
 import type { IExtUserInfo, IExtUserList } from "../../types/user";
 import { mockProfilesPics } from "../rcs/profilepics";
 
 //--------------------------------------------------
 //                    LOCAL DB
 //--------------------------------------------------
-export let mockSocialDB: IExtUserInfo[] = [];
+export interface mockISocialDB {
+	users: IExtUserInfo[];
+	friends: IFriendInfo[];
+}
+
+export const mockSocialDB: mockISocialDB = 
+{
+	users: [],
+	friends: []
+};
 
 const socialDBUsernames = [
 	"Sarah is the best",
@@ -20,37 +29,95 @@ const socialDBUsernames = [
 	"John74",
 	"John99",
 	"SdS",
+	"nagini",
+	"S74",
+	"Emma",
+	"Liam",
+	"Noah",
+	"Chloe",
+	"Mia_22",
+	"Ethan",
+	"Lucas",
+	"Sophia",
+	"Isabella",
+	"Mason",
+	"Harper",
+	"Yuki",
+	"Ren",
+	"Takashi",
+	"Alex87",
+	"PixelFox",
+	"NightOwl",
+	"さくら",
+	"たけし",
+	"ゆうき",
+	"みか",
+	"かずま",
+	"Akira",
+	"Hikari",
+	"Kitsune",
+	"NekoShadow",
+	"Ryu_88",
 ];
 
 const badges = ["The mask singer", "Pro gesser", "Diva", "DJ", "casual gamer", "Guess master"];
+const status: TFriendStatus[] = ["busy", "online", "offline"];
+const nbFriends = 5;
+const nbSent = 3;
+const nbRecieved = 4
 
 export function mockSocialSetDB() {
-	if (mockSocialDB.length > 0) return;
+	if (mockSocialDB.users.length > 0) return;
 	for (let i = 0; i < socialDBUsernames.length; i++) {
-		mockSocialDB.push({
+		mockSocialDB.users.push({
 			uid: crypto.randomUUID(),
 			username: socialDBUsernames[i],
 			image: mockProfilesPics[i % mockProfilesPics.length],
 			badges: badges[i % badges.length],
-			relation: i == 0 || i == 2 ? "incoming" : i == 1 ? "outgoing" : "not-friends",
+			relation: "not-friends",
 		});
+	}
+
+	const stopValue = mockSocialDB.users.length - nbFriends - 1;
+	for(let i = mockSocialDB.users.length -1; i > stopValue; i--){
+		mockSocialDB.friends.push({
+			uid: mockSocialDB.users[i].uid,
+			username: mockSocialDB.users[i].username,
+			image: mockSocialDB.users[i].image,
+		
+			exp_points: Math.round(Math.random() * 1000),
+			badges: mockSocialDB.users[i].badges,
+		
+			created_at: (new Date).toLocaleDateString(),
+			status: status[Math.floor(Math.random() * status.length)]
+		})
+		mockSocialDB.users.pop();
+	}
+
+	for(let i = mockSocialDB.users.length -1; i > mockSocialDB.users.length - nbSent - 1; i--){
+		mockSocialDB.users[i].relation = "outgoing";
+	}
+
+	for(let i = mockSocialDB.users.length - nbSent - 1; i > mockSocialDB.users.length - nbSent - nbRecieved - 1; i--){
+		mockSocialDB.users[i].relation = "incoming";
 	}
 }
 
 export function mockSocialResetDB() {
-	mockSocialDB = [];
+	mockSocialDB.friends= [];
+	mockSocialDB.users = [];
 	mockSocialSetDB();
 }
 
 //====================== GETTERS ======================
 export function mockGetExtUser(index: number): IExtUserInfo {
 	mockSocialSetDB();
-	return mockSocialDB[index];
+	return mockSocialDB.users[index];
 }
 export function mockGetExtUsers(searchFilter: string): IExtUserList {
 	mockSocialSetDB();
 	const list: IExtUserList = { users: [] };
-	mockSocialDB.forEach((info: IExtUserInfo) => {
+	mockSocialDB.users.forEach((info: IExtUserInfo) => {
 		if (
 			searchFilter !== "" &&
 			!info.username.toLocaleLowerCase().includes(searchFilter.toLocaleLowerCase())
@@ -69,7 +136,7 @@ export function mockGetRequests(): IFriendRequests {
 		outgoing: [],
 	};
 
-	mockSocialDB.forEach((value: IExtUserInfo) => {
+	mockSocialDB.users.forEach((value: IExtUserInfo) => {
 		if (value.relation == "incoming") data.incoming.push(value);
 		else if (value.relation == "outgoing") data.outgoing.push(value);
 	});
@@ -79,7 +146,7 @@ export function mockGetRequests(): IFriendRequests {
 
 export function mockGetMaxUsers(): number {
 	mockSocialSetDB();
-	return mockSocialDB.length;
+	return mockSocialDB.users.length;
 }
 
 //====================== MANAGE ======================
@@ -100,7 +167,7 @@ export function mockOnAddRequestSend(data: IFriendReqSend): IExtUserInfo | IErro
 			},
 		};
 
-	const user = mockSocialDB.find((user: IExtUserInfo) => {
+	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
 		return user.uid == data["target-uid"];
 	});
 	if (!user)
