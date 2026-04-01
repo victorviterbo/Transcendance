@@ -136,6 +136,32 @@ class UserAccountTests(APITestCase):
         self.assertNotIn('username', response.data)
         self.assertEqual('TOKEN_NOT_VALID', response.data['error']['cookie'])
 
+    def test_update_password(self) -> None:
+        """Test success and failure of access token regeneration operation."""
+        login_url = '/api/auth/login/'
+        update_password_url = '/api/auth/password/'
+        
+        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+                                                      'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        response = self.client.post(update_password_url, data={'old_password': 'Password123+',
+                                                    'new_password': 'should_fail'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post(update_password_url, data={'old_password': 'Password123+',
+                                                    'new_password': 'AnotherBadPassword111'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post(update_password_url, data={'old_password': 'Password123+',
+                                                    'new_password': 'FinallyAGood1+'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+                                                      'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
+        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+                                                      'password': 'FinallyAGood1+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+
     def test_user_validation(self) -> None:
         """Test success and failure of user validation."""
         raw_data = {

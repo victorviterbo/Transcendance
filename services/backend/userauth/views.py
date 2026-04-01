@@ -4,6 +4,7 @@ from typing import Any
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as coreValidationError
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -204,14 +205,15 @@ class UpdatePasswordView(APIView):
         if request.data.get('new_password') is None:
             return Response({'error': {'new_password': 'MISSING_FIELD'}},
                             status=status.HTTP_400_BAD_REQUEST)
-        if not self.user.check_password(request.data['password']):
-            return Response({'error': {'password': 'INVALID_PASSWORD'}},
+        if not self.request.user.check_password(request.data['old_password']):
+            return Response({'error': {'old_password': 'INVALID_PASSWORD'}},
                             status=status.HTTP_400_BAD_REQUEST)
         try:
             validate_password(request.data['new_password'], user=self.request.user)
             self.request.user.set_password(request.data['new_password'])
             self.request.user.save()
             return Response('PASSWORD_UPDATED', status=status.HTTP_200_OK)
-        except serializers.ValidationError as e:
-            return Response({'error': {'password': 'INVALID_PASSWORD'}})
-
+        except coreValidationError:
+            return Response({'error': {'password': 'INVALID_PASSWORD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
