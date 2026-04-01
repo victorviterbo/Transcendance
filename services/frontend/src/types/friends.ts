@@ -29,10 +29,16 @@ export interface IFriendRequests {
 
 export interface IFriendReqSend {
 	"target-username": string;
+
 	"target-uid": string;
 }
+export interface IFriendReqRes {
+	"target-username": string;
+	"target-uid": string;
+	"new-status": "accept" | "refuse";
+}
 
-export interface IFriendReqSendResponse {
+export interface IFriendReqResponse {
 	description: string;
 	"target-username": string;
 	"target-uid": string;
