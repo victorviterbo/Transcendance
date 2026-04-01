@@ -1,5 +1,11 @@
 import type { IErrorReturn } from "../../types/error";
-import type { IFriendInfo, IFriendReqSend, IFriendRequests, TFriendStatus } from "../../types/friends";
+import type {
+	IFriendInfo,
+	IFriendReqRes,
+	IFriendReqSend,
+	IFriendRequests,
+	TFriendStatus,
+} from "../../types/friends";
 import type { IExtUserInfo, IExtUserList } from "../../types/user";
 import { mockProfilesPics } from "../rcs/profilepics";
 
@@ -11,10 +17,9 @@ export interface mockISocialDB {
 	friends: IFriendInfo[];
 }
 
-export const mockSocialDB: mockISocialDB = 
-{
+export const mockSocialDB: mockISocialDB = {
 	users: [],
-	friends: []
+	friends: [],
 };
 
 const socialDBUsernames = [
@@ -64,7 +69,7 @@ const badges = ["The mask singer", "Pro gesser", "Diva", "DJ", "casual gamer", "
 const status: TFriendStatus[] = ["busy", "online", "offline"];
 const nbFriends = 5;
 const nbSent = 3;
-const nbRecieved = 4
+const nbRecieved = 4;
 
 export function mockSocialSetDB() {
 	if (mockSocialDB.users.length > 0) return;
@@ -79,32 +84,36 @@ export function mockSocialSetDB() {
 	}
 
 	const stopValue = mockSocialDB.users.length - nbFriends - 1;
-	for(let i = mockSocialDB.users.length -1; i > stopValue; i--){
+	for (let i = mockSocialDB.users.length - 1; i > stopValue; i--) {
 		mockSocialDB.friends.push({
 			uid: mockSocialDB.users[i].uid,
 			username: mockSocialDB.users[i].username,
 			image: mockSocialDB.users[i].image,
-		
+
 			exp_points: Math.round(Math.random() * 1000),
 			badges: mockSocialDB.users[i].badges,
-		
-			created_at: (new Date).toLocaleDateString(),
-			status: status[Math.floor(Math.random() * status.length)]
-		})
+
+			created_at: new Date().toLocaleDateString(),
+			status: status[Math.floor(Math.random() * status.length)],
+		});
 		mockSocialDB.users.pop();
 	}
 
-	for(let i = mockSocialDB.users.length -1; i > mockSocialDB.users.length - nbSent - 1; i--){
+	for (let i = mockSocialDB.users.length - 1; i > mockSocialDB.users.length - nbSent - 1; i--) {
 		mockSocialDB.users[i].relation = "outgoing";
 	}
 
-	for(let i = mockSocialDB.users.length - nbSent - 1; i > mockSocialDB.users.length - nbSent - nbRecieved - 1; i--){
+	for (
+		let i = mockSocialDB.users.length - nbSent - 1;
+		i > mockSocialDB.users.length - nbSent - nbRecieved - 1;
+		i--
+	) {
 		mockSocialDB.users[i].relation = "incoming";
 	}
 }
 
 export function mockSocialResetDB() {
-	mockSocialDB.friends= [];
+	mockSocialDB.friends = [];
 	mockSocialDB.users = [];
 	mockSocialSetDB();
 }
@@ -177,4 +186,54 @@ export function mockOnAddRequestSend(data: IFriendReqSend): IExtUserInfo | IErro
 		};
 	user.relation = "outgoing";
 	return user;
+}
+
+export function mockSocialOnResponse(
+	data: IFriendReqRes,
+): IExtUserInfo | IFriendInfo | IErrorReturn {
+	if (!data["target-username"])
+		return {
+			error: {
+				"target-username": [
+					{ message: "'target-username' is missing", code: "MISSING_FIELD" },
+				],
+			},
+		};
+
+	if (!data["target-uid"])
+		return {
+			error: {
+				"target-uid": [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
+			},
+		};
+
+	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
+		return user.uid == data["target-uid"];
+	});
+	const userPos: number = mockSocialDB.users.findIndex((user: IExtUserInfo) => {
+		return user.uid == data["target-uid"];
+	});
+	if (!user)
+		return {
+			error: { notfound: [{ message: "target not found", code: "NOT_FOUND" }] },
+			status: 404,
+		};
+
+	if (data["new-status"] == "refuse") {
+		user.relation = "not-friends";
+		return user;
+	}
+	mockSocialDB.friends.push({
+		uid: mockSocialDB.users[userPos].uid,
+		username: mockSocialDB.users[userPos].username,
+		image: mockSocialDB.users[userPos].image,
+
+		exp_points: Math.round(Math.random() * 1000),
+		badges: mockSocialDB.users[userPos].badges,
+
+		created_at: new Date().toLocaleDateString(),
+		status: status[Math.floor(Math.random() * status.length)],
+	});
+	mockSocialDB.users.splice(userPos, 1);
+	return mockSocialDB.friends[mockSocialDB.friends.length - 1];
 }
