@@ -16,49 +16,55 @@ function PFriendReq() {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localId = useId();
 
-	useEffect(() => {
-		async function getFriends(): Promise<void> {
-			try {
-				const res: AxiosResponse<IFriendRequests> = await api.get(
-					API_SOCIAL_FRIENDS_REQUEST,
-				);
+	async function getUsers(): Promise<void> {
+		try {
+			const res: AxiosResponse<IFriendRequests> = await api.get(API_SOCIAL_FRIENDS_REQUEST);
 
-				if (!res) throw {};
-				if (res.data.error) throw res.data.error;
-				if (typeof res.data != "object" || !res.data.incoming || !res.data.outgoing)
-					throw {};
+			if (!res) throw {};
+			if (res.data.error) throw res.data.error;
+			if (typeof res.data != "object" || !res.data.incoming || !res.data.outgoing) throw {};
 
-				res.data.incoming.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
-					if (friend1.username.toLocaleLowerCase() > friend2.username.toLocaleLowerCase())
-						return 1;
-					if (friend1.username.toLocaleLowerCase() < friend2.username.toLocaleLowerCase())
-						return -1;
-					return 0;
-				});
-				res.data.outgoing.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
-					if (friend1.username.toLocaleLowerCase() > friend2.username.toLocaleLowerCase())
-						return 1;
-					if (friend1.username.toLocaleLowerCase() < friend2.username.toLocaleLowerCase())
-						return -1;
-					return 0;
-				});
-				setIncoming(res.data.incoming);
-				setOutgoing(res.data.outgoing);
-			} catch (error) {
-				setError(getErrorNode(error, "SOCIAL_REQUESTS_ERROR"));
-				setIncoming([]);
-				setOutgoing([]);
-			}
+			res.data.incoming.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
+				if (friend1.username.toLocaleLowerCase() > friend2.username.toLocaleLowerCase())
+					return 1;
+				if (friend1.username.toLocaleLowerCase() < friend2.username.toLocaleLowerCase())
+					return -1;
+				return 0;
+			});
+			res.data.outgoing.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
+				if (friend1.username.toLocaleLowerCase() > friend2.username.toLocaleLowerCase())
+					return 1;
+				if (friend1.username.toLocaleLowerCase() < friend2.username.toLocaleLowerCase())
+					return -1;
+				return 0;
+			});
+			setIncoming(res.data.incoming);
+			setOutgoing(res.data.outgoing);
+		} catch (error) {
+			setError(getErrorNode(error, "SOCIAL_REQUESTS_ERROR"));
+			setIncoming([]);
+			setOutgoing([]);
 		}
-		getFriends();
-	}, [setIncoming, setOutgoing, setError]);
+	}
+	useEffect(() => {
+		getUsers();
+	}, []);
 
 	function getIncoming(): ReactNode | ReactNode[] {
 		if (error) return error;
 
 		if (incoming.length == 0) return <CText align="center">SOCIAL_NO_INCOMING</CText>;
 		return incoming.map((value: IExtUserInfo, index: number) => {
-			return <PFriendNode type="user" user={value} key={localId + index}></PFriendNode>;
+			return (
+				<PFriendNode
+					type="user"
+					user={value}
+					key={localId + index}
+					onStateChanged={() => {
+						getUsers();
+					}}
+				></PFriendNode>
+			);
 		});
 	}
 

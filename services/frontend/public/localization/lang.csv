@@ -74,3 +74,4 @@ SOCIAL_NO_INCOMING,No incoming requests,,,Displayed when there is no incoming fr
 SOCIAL_REQUESTS_ERROR,Couldn't load requests,,,Displayed or error  when trying to load friends requests
 SOCIAL_REQUESTS_OUTGOING,Sent,,,Displayed when waiting for the other personne to answer
 SOCIAL_ADD_FRIEND_FAILED,Failed to send friend requests,,,Error message used when user sent friend requests and failed
+SOCIAL_RESPOND_FRIEND_FAILED,Failed to send response,,,Error message used when user try to respond to a friend request but fail
