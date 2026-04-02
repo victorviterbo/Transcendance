@@ -178,7 +178,7 @@ class ProfileTests(TransactionTestCase):
     def test_profile_delete(self) -> None:
         """Test profile deletion operation."""
         login_url = '/api/auth/login/'
-        profile_url = '/api/profile/'
+        account_delete_url = '/api/auth/delete/'
 
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
@@ -186,7 +186,7 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
-        response = self.client.delete(profile_url, data={'password': 'Password123+'})
+        response = self.client.post(account_delete_url, data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})

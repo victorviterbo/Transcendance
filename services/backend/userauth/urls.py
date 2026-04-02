@@ -3,6 +3,7 @@
 from django.urls import path
 
 from .views import (
+    DeleteAccountView,
     LoginView,
     LogoutView,
     RefreshTokenView,
@@ -16,4 +17,5 @@ urlpatterns = [
     path('logout/', LogoutView.as_view()),
     path('refresh/', RefreshTokenView.as_view()),
     path('password/', UpdatePasswordView.as_view()),
+    path('delete/', DeleteAccountView.as_view()),
 ]
