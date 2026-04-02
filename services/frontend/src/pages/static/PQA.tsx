@@ -34,8 +34,12 @@ const faqItems = [
 		answer: "QA_MATCH_RULES_ANSWER",
 	},
 	{
-		question: "QA_RANKING_QUESTION",
-		answer: "QA_RANKING_ANSWER",
+		question: "QA_GAME_CONFIGURATION_QUESTION",
+		answer: "QA_GAME_CONFIGURATION_ANSWER",
+	},
+	{
+		question: "QA_GAME_ACCESSIBILITY_QUESTION",
+		answer: "QA_GAME_ACCESSIBILITY_ANSWER",
 	},
 ];
 
@@ -46,8 +50,8 @@ const PQA = () => {
 				QA_INTRO
 			</CText>
 			<Stack spacing={2}>
-				{faqItems.map((item, index) => (
-					<Accordion key={item.question} defaultExpanded={index === 0} disableGutters>
+				{faqItems.map((item, _) => (
+					<Accordion key={item.question} disableGutters>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<CTitle size="sm">{item.question}</CTitle>
 						</AccordionSummary>

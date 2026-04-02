@@ -16,6 +16,8 @@ describe("Q&A page", () => {
 		expect(screen.getByText("QA_PROFILE_PICTURE_QUESTION")).toBeInTheDocument();
 		expect(screen.getByText("QA_ACCOUNT_INFO_QUESTION")).toBeInTheDocument();
 		expect(screen.getByText("QA_MATCH_RULES_QUESTION")).toBeInTheDocument();
+		expect(screen.getByText("QA_GAME_CONFIGURATION_QUESTION")).toBeInTheDocument();
+		expect(screen.getByText("QA_GAME_ACCESSIBILITY_QUESTION")).toBeInTheDocument();
 		expect(screen.getByText("QA_PROFILE_PICTURE_ANSWER")).toBeInTheDocument();
 		expect(screen.queryByText("Q&A page")).not.toBeInTheDocument();
 	});
