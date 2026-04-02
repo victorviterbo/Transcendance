@@ -2,6 +2,7 @@ import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from "@mu
 import { useId } from "react";
 import type { GCompProps } from "../../common/GProps";
 import type { TOption } from "../../../types/data";
+import { CRadioGroupRadioStyle } from "../../../styles/components/inputs/CRadioGroup";
 
 export interface CRadioGroupProps extends GCompProps {
 	label?: string;
@@ -30,7 +31,7 @@ function CRadioGroup({ label, options, defaultValue, onChange }: CRadioGroupProp
 					return (
 						<FormControlLabel
 							value={item.value}
-							control={<Radio />}
+							control={<Radio sx={CRadioGroupRadioStyle} />}
 							label={item.label}
 							key={item.value}
 						/>

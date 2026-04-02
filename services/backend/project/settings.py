@@ -12,6 +12,10 @@ from dotenv import load_dotenv
 # Use the .env to load env variables in Django
 load_dotenv()
 
+# Music provider settings, used for the music module
+MUSIC_PROVIDER = os.getenv("MUSIC_PROVIDER", "itunes")
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -44,12 +48,15 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
 
+    'music.apps.MusicConfig',
     'chat.apps.ChatConfig',
     'userauth',
     'userprofile',
+    'friends',
     'stats',
+    'chat',
 
-    'django_cleanup.apps.CleanupConfig'
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 # Definition of the middlewares (Layers between the backend and the WebServer)

@@ -1,4 +1,4 @@
-import { AppBar, Box, IconButton, Menu, MenuItem, Stack, Toolbar } from "@mui/material";
+import { AppBar, Box, IconButton, Stack, Toolbar } from "@mui/material";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -13,10 +13,15 @@ import CTitle from "../text/CTitle.tsx";
 import CNavbarLink from "./CNavbarLink.tsx";
 import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
-import CText from "../text/CText.tsx";
-import CNavbarStyle from "../../styles/components/navigation/CNavbarStyle.ts";
+import { CNavbarStyle } from "../../styles/components/navigation/CNavbarStyle.ts";
+import CMenu from "./CMenu.tsx";
+import type { GCompProps } from "../common/GProps.ts";
 
-function CNavbar() {
+interface CNavbarProps extends GCompProps {
+	onOpenFiend: () => void;
+}
+
+function CNavbar({ onOpenFiend }: CNavbarProps) {
 	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -60,7 +65,7 @@ function CNavbar() {
 			kind: "action",
 			icon: <PeopleIcon />,
 			aria: "Friends",
-			onClick: () => alert("Coming soon"),
+			onClick: onOpenFiend,
 		},
 		{
 			kind: "action",
@@ -116,14 +121,15 @@ function CNavbar() {
 					})}
 				</Stack>
 			</Toolbar>
-			<Menu anchorEl={profileAnchor} open={isProfileMenuOpen} onClose={handleProfileClose}>
-				<MenuItem onClick={handleProfileNavigate}>
-					<CText size="sm">MY_PROFILE</CText>
-				</MenuItem>
-				<MenuItem onClick={handleLogout}>
-					<CText size="sm">LOGOUT</CText>
-				</MenuItem>
-			</Menu>
+			<CMenu
+				anchorEl={profileAnchor}
+				open={isProfileMenuOpen}
+				onClose={handleProfileClose}
+				options={[
+					{ label: "MY_PROFILE", action: handleProfileNavigate },
+					{ label: "LOGOUT", action: handleLogout },
+				]}
+			></CMenu>
 		</AppBar>
 	);
 }

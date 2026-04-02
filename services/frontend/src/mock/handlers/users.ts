@@ -1,10 +1,14 @@
 import { http, HttpResponse } from "msw";
-import { db, normalizeUsername } from "../db";
+import { checkEmailValid, checkPasswordValid, checkUsernameValid } from "../../utils/enforcement";
+import { db, normalizeEmail, normalizeUsername } from "../db";
 import { API_PROFILE, API_PROFILE_SEARCH } from "../../constants";
 
 type ProfilePayload = {
 	username?: unknown;
+	email?: unknown;
 	image?: unknown;
+	currentPassword?: unknown;
+	newPassword?: unknown;
 };
 
 const unauthorized = () => HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,28 +68,77 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 	const payload = (await readProfilePayload(request)) as ProfilePayload;
 	const updates: {
 		username?: string;
+		email?: string;
 		image?: string | null;
 	} = {};
 	const errors: Record<string, string> = {};
+	let nextPassword: string | null = null;
 
 	if (typeof payload.username === "string") {
 		const username = payload.username.trim();
 		if (username.length === 0) {
 			errors.username = "MISSING_FIELD";
-		} else if (
-			username.includes("..") ||
-			username.includes("/") ||
-			username.includes("\\") ||
-			username.includes("~")
-		) {
-			errors.username = "INVALID_USERNAME";
 		} else {
-			updates.username = normalizeUsername(username);
+			const usernameErrors = checkUsernameValid(username);
+			if (usernameErrors.length > 0) {
+				errors.username = usernameErrors[0];
+			} else {
+				const normalizedUsername = normalizeUsername(username);
+				const existingUser = db.findUserByUsername(normalizedUsername);
+				if (existingUser && existingUser.username !== sessionUser.username) {
+					errors.username = "USERNAME_TAKEN";
+				} else {
+					updates.username = normalizedUsername;
+				}
+			}
+		}
+	}
+
+	if (typeof payload.email === "string") {
+		const email = payload.email.trim();
+		if (email.length === 0) {
+			errors.email = "MISSING_FIELD";
+		} else {
+			const emailErrors = checkEmailValid(email);
+			if (emailErrors.length > 0) {
+				errors.email = emailErrors[0] === "EMAIL_VALID" ? "INVALID_EMAIL" : emailErrors[0];
+			} else {
+				const normalizedEmail = normalizeEmail(email);
+				const existingUser = db.findUserByEmail(normalizedEmail);
+				if (existingUser && existingUser.username !== sessionUser.username) {
+					errors.email = "EMAIL_TAKEN";
+				} else {
+					updates.email = normalizedEmail;
+				}
+			}
 		}
 	}
 
 	if (typeof payload.image === "string") {
 		updates.image = payload.image.trim().length > 0 ? payload.image.trim() : null;
+	}
+
+	if (typeof payload.currentPassword === "string" || typeof payload.newPassword === "string") {
+		const currentPassword =
+			typeof payload.currentPassword === "string" ? payload.currentPassword : "";
+		const newPassword = typeof payload.newPassword === "string" ? payload.newPassword : "";
+
+		if (currentPassword.length === 0) {
+			errors.currentPassword = "MISSING_FIELD";
+		} else if (sessionUser.password !== currentPassword) {
+			errors.currentPassword = "INVALID_PASSWORD";
+		}
+
+		if (newPassword.length === 0) {
+			errors.newPassword = "MISSING_FIELD";
+		} else {
+			const passwordErrors = checkPasswordValid(newPassword);
+			if (passwordErrors.length > 0) {
+				errors.newPassword = passwordErrors[0];
+			} else {
+				nextPassword = newPassword;
+			}
+		}
 	}
 
 	if (Object.keys(errors).length > 0) {
@@ -94,7 +147,21 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 
 	const updated = db.updateUser(sessionUser.username, updates);
 	if (!updated) {
-		return HttpResponse.json({ errror: "Unauthorized: profile unavailable" }, { status: 401 });
+		return HttpResponse.json({ error: "Unauthorized: profile unavailable" }, { status: 401 });
+	}
+
+	if (nextPassword) {
+		const passwordUpdated = db.updatePassword(
+			updated.username,
+			sessionUser.password,
+			nextPassword,
+		);
+		if (!passwordUpdated) {
+			return HttpResponse.json(
+				{ error: { currentPassword: "INVALID_PASSWORD" } },
+				{ status: 400 },
+			);
+		}
 	}
 
 	return HttpResponse.json({ description: "Updated Profile successfully" }, { status: 200 });

@@ -1,5 +1,5 @@
 import { Grid } from "@mui/material";
-import CHomePaper from "../../components/surfaces/CHomePaper";
+import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import { type IRoomList, type IRoomInfo } from "../../types/room";
 import CButtonRoom from "../../components/inputs/buttons/CButtonRoom";
 import { useEffect, useId, useState } from "react";
@@ -32,7 +32,7 @@ function PRooms({ isPublic }: PRoomsProps) {
 	}, [setRooms, isPublic]);
 
 	return (
-		<CHomePaper
+		<CTitlePaper
 			title={isPublic ? "PUBLIC_ROOM" : "FRIEND_ROOM"}
 			sx={{ m: 0, height: "100%", width: "100%" }}
 			data-testid={isPublic ? "public_room_testid" : "private_room_testid"}
@@ -46,7 +46,7 @@ function PRooms({ isPublic }: PRoomsProps) {
 					);
 				})}
 			</Grid>
-		</CHomePaper>
+		</CTitlePaper>
 	);
 }
 

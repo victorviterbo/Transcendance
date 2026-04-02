@@ -8,6 +8,12 @@ export type TDropShadow = {
 	color: string;
 };
 
+export type TMargin = {
+	top?: number | string;
+	right?: number | string;
+	bottom?: number | string;
+	left?: number | string;
+};
 //--------------------------------------------------
 //                    COLORING
 //--------------------------------------------------
@@ -33,7 +39,7 @@ export type TColor = {
 	saturation: number;
 	brightness: number;
 };
-export type TColorAlteration = "shift-saturation" | "shift-brightness";
+export type TColorAlteration = "shift-saturation" | "shift-brightness" | "shift-hue";
 
 //--------------------------------------------------
 //                   THEME
@@ -47,6 +53,8 @@ export interface IThemeColor {
 	quinary: string[];
 	quaternary: string[];
 	greys: string[];
+	cancel: string[];
+	validate: string[];
 	text: IThemeTextColor;
 }
 
@@ -56,17 +64,68 @@ export interface IThemeTextColor {
 }
 
 //====================== PSOITIONS ======================
+export interface IThemeSize {
+	buttons: {
+		home: number | string;
+		nav: number | string;
+	};
+
+	friends: number | string;
+
+	header: number | number;
+	footer: number | string;
+}
 export interface IThemePosition {
 	mainSpacing: number;
+
+	socialMargin: TMargin;
+
+	sizes: IThemeSize;
 }
 
 //====================== SHARED ======================
 export interface IThemeBGs {
 	paper: string;
+	header?: string;
+	feedback: string;
+	menu: string;
+	drawer: string;
 }
 
 export interface IThemeShared {
 	bg: IThemeBGs;
+	radius: number;
+}
+
+//====================== ANIMATIONS ======================
+export interface IThemeBGAnim {
+	active: boolean;
+	size?: string | number;
+	speed?: number;
+	duration?: number;
+}
+
+export interface IThemeBGAnimList {
+	buttonHover?: IThemeBGAnim;
+}
+
+export interface IThemeEasing {
+	easeInOut: string;
+	easeOut: string;
+	easeIn: string;
+	sharp: string;
+}
+export interface IThemeTiming {
+	fast: number;
+	medium_fast: number;
+	medium_slow: number;
+	enteringScreen: number;
+	leavingScreen: number;
+}
+export interface IThemeAnimations {
+	timing: IThemeTiming;
+	easing: IThemeEasing;
+	bg: IThemeBGAnimList;
 }
 
 //====================== BG ======================

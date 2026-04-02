@@ -6,10 +6,11 @@ import { checkEmailValid, checkPasswordValid, checkUsernameValid } from "../../u
 import CForm from "../../components/layout/CForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
-import api from "../../api";
-import { getErrorMessage } from "../../utils/error";
+import api, { getAccessToken } from "../../api";
+import { getErrorMessage } from "../../utils/error.tsx";
 import { API_PROFILE } from "../../constants";
 import CTitle from "../../components/text/CTitle";
+import { useAuth } from "../../components/auth/CAuthProvider";
 
 export interface ProfileSettingsPanelProps extends GPageProps {
 	username: string | undefined;
@@ -17,6 +18,7 @@ export interface ProfileSettingsPanelProps extends GPageProps {
 
 const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 	const [expanded, setExpanded] = useState<string | false>("username");
+	const { setAuth, user } = useAuth();
 	const usernameFields = useMemo<TFormFieldConfig[]>(
 		() => [
 			{
@@ -86,6 +88,13 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 			await api.post<{ access?: string; username?: string }>(`${API_PROFILE}?q=${username}`, {
 				username: values.username,
 			});
+			const accessToken = getAccessToken();
+			if (accessToken) {
+				setAuth(accessToken, {
+					username: values.username.trim(),
+					email: user?.email,
+				});
+			}
 			return { valid: true };
 		} catch (error) {
 			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
@@ -97,6 +106,13 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 			await api.post<{ access?: string; email?: string }>(`${API_PROFILE}?q=${username}`, {
 				email: values.email,
 			});
+			const accessToken = getAccessToken();
+			if (accessToken) {
+				setAuth(accessToken, {
+					username: user?.username ?? username ?? "",
+					email: values.email.trim(),
+				});
+			}
 			return { valid: true };
 		} catch (error) {
 			return { valid: false, msg: getErrorMessage(error, "Change failed.") };

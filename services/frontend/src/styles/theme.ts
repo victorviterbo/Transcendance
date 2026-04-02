@@ -1,6 +1,12 @@
 import { createTheme, type ThemeOptions } from "@mui/material";
 import { colorAlterColor, colorGetBackground } from "../utils/styles";
-import type { IThemeBG, IThemeColor, IThemePosition, IThemeShared } from "../types/styles";
+import type {
+	IThemeAnimations,
+	IThemeBG,
+	IThemeColor,
+	IThemePosition,
+	IThemeShared,
+} from "../types/styles";
 
 //--------------------------------------------------
 //                                    NAME
@@ -28,6 +34,9 @@ export const appColors: IThemeColor = {
 	quaternary: ["#414DFA", "#5560D6", "#6168B3", "#62688F", "#585B6B", "#41434A"],
 	quinary: ["#8A41FA", "#7D55D6", "#715FB3", "#665F8F", "#57566B", "#44424A"],
 
+	cancel: ["#FA4141", "#D65555", "#B36161", "#8F6262", "#6B5858", "#4A4141"],
+	validate: ["#41FA6A", "#55D676", "#61B37A", "#628F75", "#586B5E", "#414A43"],
+
 	greys: [
 		"#E1E1E1",
 		"#CBCBCB",
@@ -49,6 +58,18 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	socialMargin: { top: 15, right: 20, bottom: 50 },
+	sizes: {
+		buttons: {
+			home: "40px",
+			nav: "35px",
+		},
+
+		friends: "25%",
+
+		header: 68,
+		footer: 50,
+	},
 };
 
 export const appSharedStyle: IThemeShared = {
@@ -59,6 +80,50 @@ export const appSharedStyle: IThemeShared = {
 			"radial",
 			135 + 180,
 		),
+		feedback: colorGetBackground(
+			[appColors.primary[1], appColors.quinary[1]],
+			[0, 100],
+			"linear",
+			225,
+		),
+		menu: colorGetBackground(
+			[appColors.primary[1], appColors.quinary[1]],
+			[0, 100],
+			"linear",
+			225,
+		),
+		drawer: colorGetBackground(
+			[appColors.greys[9], appColors.greys[8]],
+			undefined,
+			"radial",
+			135 + 180,
+		),
+	},
+
+	radius: 30,
+};
+
+export const appAnimation: IThemeAnimations = {
+	timing: {
+		fast: 100,
+		medium_fast: 150,
+		medium_slow: 500,
+		enteringScreen: 225,
+		leavingScreen: 195,
+	},
+	easing: {
+		easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+		easeOut: "cubic-bezier(0.0, 0, 0.2, 1)",
+		easeIn: "cubic-bezier(0.4, 0, 1, 1)",
+		sharp: "cubic-bezier(0.4, 0, 0.6, 1)",
+	},
+	bg: {
+		buttonHover: {
+			active: true,
+			size: "400%",
+			speed: 1750,
+			duration: 180,
+		},
 	},
 };
 
@@ -156,7 +221,7 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	shape: {
-		borderRadius: 30,
+		borderRadius: appSharedStyle.radius,
 	},
 
 	components: {

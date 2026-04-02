@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Container } from "@mui/material";
 import PLoginForm from "./PLoginForm";
 import PRegisterForm from "./PRegisterForm";
-import CTitle from "../../components/text/CTitle";
-import CBasePaper from "../../components/surfaces/CBasePaper";
+import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import CTabs from "../../components/navigation/CTabs";
 import type { IAuthUser } from "../../types/user";
 import PWelcomLogin from "./PWelcomLogin";
@@ -15,12 +14,8 @@ const PAuthPage = () => {
 
 	return (
 		<GPageBase>
-			<Container maxWidth="sm">
-				<CBasePaper>
-					<CTitle size="md" align="center">
-						WELCOME
-					</CTitle>
-
+			<Container sx={{ mt: "5%" }} maxWidth="sm">
+				<CTitlePaper title="WELCOME" titleType="title" titleSize="md">
 					{!user ? (
 						<CTabs tabs={["LOGIN", "SIGNUP"]}>
 							<PLoginForm
@@ -45,7 +40,7 @@ const PAuthPage = () => {
 							}}
 						></PWelcomLogin>
 					)}
-				</CBasePaper>
+				</CTitlePaper>
 			</Container>
 		</GPageBase>
 	);

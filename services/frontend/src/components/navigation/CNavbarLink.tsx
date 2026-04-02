@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import CTitle from "../text/CTitle";
 import { type CTitleProps } from "../text/CTitle";
+import { CNavbarLinkStyle } from "../../styles/components/navigation/CNavbarStyle";
+import CText from "../text/CText";
 
 export interface CNavbarLinkProps extends CTitleProps {
 	to: string;
@@ -11,32 +12,17 @@ export interface CNavbarLinkProps extends CTitleProps {
 }
 
 //TODO change style
-function CNavbarLink({ to, label, icon, active = false }: CNavbarLinkProps) {
+function CNavbarLink({ to, sx, label, icon, active = false }: CNavbarLinkProps) {
 	return (
 		<Link to={to} style={{ textDecoration: "none", color: "inherit" }}>
-			<CTitle
-				size="sm"
-				sx={{
-					textDecoration: "none",
-					color: "inherit",
-					display: "inline-flex",
-					alignItems: "center",
-					gap: 1,
-					px: 1.5,
-					py: 0.5,
-					borderRadius: 1,
-					border: "2px",
-					backgroundColor: active ? "rgba(255,255,255,0.15)" : "transparent",
-					"&:hover": {
-						backgroundColor: active
-							? "rgba(255,255,255,0.2)"
-							: "rgba(255,255,255,0.12)",
-					},
-				}}
+			<CText
+				size="lg"
+				span={true}
+				sx={[CNavbarLinkStyle(active), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			>
 				{icon}
 				{label}
-			</CTitle>
+			</CText>
 		</Link>
 	);
 }
