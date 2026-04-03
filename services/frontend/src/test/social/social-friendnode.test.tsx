@@ -3,7 +3,11 @@ import { render, screen, within } from "@testing-library/react";
 import type { IFriendInfo, TFriendRelation } from "../../types/friends";
 import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo } from "../../types/user";
-import { mockGetExtUser, mockSocialDB, mockSocialResetDB } from "../../mock/dbs/social_dbs";
+import {
+	mockGetExtUser,
+	mockSocialDB,
+	mockSocialResetDB,
+} from "../../mock/handlers/social/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();

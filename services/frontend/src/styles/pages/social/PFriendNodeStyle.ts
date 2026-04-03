@@ -10,12 +10,12 @@ export function PFriendNodeStyle(theme: Theme, props: PFriendNodeProps) {
 	if (props.type == "friend") {
 		if ((props.user as IFriendInfo).status == "online")
 			bgColors = [appColors.primary[0], appColors.quinary[0]];
-		if ((props.user as IFriendInfo).status == "busy")
+		else if ((props.user as IFriendInfo).status == "busy")
 			bgColors = [
 				appColors.secondary[0],
 				colorAlterColor(appColors.secondary[0], "shift-hue", -30),
 			];
-		if ((props.user as IFriendInfo).status == "offline")
+		else if ((props.user as IFriendInfo).status == "offline")
 			bgColors = [appColors.greys[3], appColors.greys[5]];
 	} else bgColors = [appColors.primary[0], appColors.quinary[0]];
 

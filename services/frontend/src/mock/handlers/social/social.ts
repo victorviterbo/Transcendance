@@ -5,22 +5,22 @@ import {
 	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
 	API_SOCIAL_FRIENDS_REQUEST_SEND,
 	API_SOCIAL_FRIENDS_SEARCH,
-} from "../../constants";
+} from "../../../constants";
 import type {
 	IFriendInfo,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
-} from "../../types/friends";
-import type { IExtUserInfo, IExtUserSearch } from "../../types/user";
+} from "../../../types/friends";
+import type { IExtUserInfo, IExtUserSearch } from "../../../types/user";
 import {
 	mockGetExtUsers,
 	mockOnAddRequestSend,
 	mockSocialOnResponse,
 	mockSocialDB,
 	mockSocialSetDB,
-} from "../dbs/social_dbs";
-import type { IErrorReturn } from "../../types/error";
+} from "./social_dbs";
+import type { IErrorReturn } from "../../../types/error";
 
 // const friends = ws.link("ws://localhost:5173/");
 

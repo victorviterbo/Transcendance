@@ -3,7 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import { API_SOCIAL_FRIENDS_REQUEST, API_SOCIAL_FRIENDS_SEARCH } from "../../constants";
 import type { IFriendRequests } from "../../types/friends";
 import PFriendReq from "../../pages/PSocial/PFriendReq";
-import { mockGetExtUser } from "../../mock/dbs/social_dbs";
+import { mockGetExtUser } from "../../mock/handlers/social/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();

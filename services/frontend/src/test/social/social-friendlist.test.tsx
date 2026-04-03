@@ -4,8 +4,7 @@ import { API_SOCIAL_FRIENDS } from "../../constants";
 import userEvent from "@testing-library/user-event";
 import type { IFriendsList } from "../../types/friends";
 import PFriendList from "../../pages/PSocial/PFriendList";
-import { mockSocialDB, mockSocialResetDB } from "../../mock/dbs/social_dbs";
-
+import { mockSocialDB, mockSocialResetDB } from "../../mock/handlers/social/social_dbs";
 const getMock = vi.fn();
 const postMock = vi.fn();
 let accessToken: string | null = null;
@@ -53,7 +52,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList />);
+		render(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getByText("FRIEND_EMPTY")).toBeInTheDocument();
@@ -65,7 +64,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList />);
+		render(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getByText("FRIEND_ERROR")).toBeInTheDocument();
@@ -80,7 +79,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList />);
+		render(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
@@ -95,7 +94,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList />);
+		render(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getAllByTestId("PFriendNode_MessageButton").length).toEqual(5);
@@ -112,7 +111,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList />);
+		render(<PFriendList onMessaging={() => {}} />);
 		await waitFor(() => {
 			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
 		});

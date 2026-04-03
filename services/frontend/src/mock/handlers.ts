@@ -13,7 +13,8 @@ import {
 	friendsRequestsResponseHandler,
 	friendsRequestsSendHandler,
 	friendsSearchHandler,
-} from "./handlers/social";
+} from "./handlers/social/social";
+import { friendMessageHandler } from "./handlers/social/socialChat";
 
 export const handlers = [
 	LoginHandler,
@@ -33,4 +34,5 @@ export const handlers = [
 	friendsRequestsHandler,
 	friendsRequestsSendHandler,
 	friendsRequestsResponseHandler,
+	friendMessageHandler,
 ];

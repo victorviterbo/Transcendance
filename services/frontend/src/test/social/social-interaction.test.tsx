@@ -24,7 +24,7 @@ import {
 	mockSocialDB,
 	mockSocialOnResponse,
 	mockSocialResetDB,
-} from "../../mock/dbs/social_dbs";
+} from "../../mock/handlers/social/social_dbs";
 import type { IErrorReturn } from "../../types/error";
 import PSocial from "../../pages/PSocial";
 

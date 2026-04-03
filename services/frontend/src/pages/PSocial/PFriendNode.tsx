@@ -39,9 +39,10 @@ export interface PFriendNodeProps extends GPageProps {
 	hidden?: boolean;
 
 	onStateChanged?: () => void;
+	onMessaging?: (Friend: IFriendInfo) => void;
 }
 
-function PFriendNode({ user, type, hidden, onStateChanged }: PFriendNodeProps) {
+function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFriendNodeProps) {
 	const [error, setError] = useState<ReactNode | undefined>();
 	const [relation, setRelation] = useState<TFriendRelation>(
 		type == "friend" ? "friends" : (user as IExtUserInfo).relation,
@@ -114,6 +115,10 @@ function PFriendNode({ user, type, hidden, onStateChanged }: PFriendNodeProps) {
 							<CIconButton
 								sx={PFriendNodeMessageStyle}
 								data-testid="PFriendNode_MessageButton"
+								onClick={() => {
+									if (onMessaging && type == "friend" && "created_at" in user)
+										onMessaging(user);
+								}}
 							>
 								<MessageIcon />
 							</CIconButton>

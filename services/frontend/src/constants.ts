@@ -15,8 +15,9 @@ export const API_PUBLIC_ROOMS = "/api/public/rooms";
 export const API_PRIVATE_ROOMS = "/api/private/rooms";
 
 //SOCIAL
-export const API_SOCIAL_FRIENDS = "/api/auth/friends";
-export const API_SOCIAL_FRIENDS_SEARCH = "/api/auth/friends-search";
-export const API_SOCIAL_FRIENDS_REQUEST = "/api/auth/friends-request";
-export const API_SOCIAL_FRIENDS_REQUEST_SEND = "/api/auth/friend-request/send";
-export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "api/auth/friend-request/respond";
+export const API_SOCIAL_FRIENDS = "/api/social/friends";
+export const API_SOCIAL_FRIENDS_SEARCH = "/api/social/friends-search";
+export const API_SOCIAL_FRIENDS_REQUEST = "/api/social/friends-request";
+export const API_SOCIAL_FRIENDS_REQUEST_SEND = "/api/social/friend-request/send";
+export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "api/social/friend-request/respond";
+export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "api/social/message";

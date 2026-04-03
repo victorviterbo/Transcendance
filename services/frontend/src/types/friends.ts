@@ -3,6 +3,7 @@ import type { IExtUserInfo } from "./user";
 
 export type TFriendStatus = "offline" | "busy" | "online";
 export type TFriendRelation = "not-friends" | "friends" | "incoming" | "outgoing";
+export type TMessageStatus = "not-sent" | "sent" | "recieved" | "read";
 
 export interface IFriendsList {
 	friends: IFriendInfo[];
@@ -42,5 +43,24 @@ export interface IFriendReqResponse {
 	description: string;
 	"target-username": string;
 	"target-uid": string;
+	error?: IErrorStruct;
+}
+
+//====================== MESSAGES ======================
+export interface IFriendMessageReq {
+	username: string;
+	uid: string;
+}
+
+export interface IFriendMessage {
+	message: string;
+	date: Date | string;
+	status: TMessageStatus;
+	fromid: string;
+	from: string;
+}
+
+export interface IFriendFeed {
+	feed: IFriendMessage[];
 	error?: IErrorStruct;
 }
