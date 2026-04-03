@@ -9,7 +9,7 @@ import {
 	CTitlePaperTitleStyle,
 } from "../../styles/components/surfaces/CTitlePaper";
 
-import type { TOverflow, TSize } from "../../types/string";
+import type { TOverflow, TPosition, TSize } from "../../types/string";
 import CTitle from "../text/CTitle";
 
 export interface CTitlePaperProps extends GCompProps, CBasePaperProps {
@@ -20,6 +20,7 @@ export interface CTitlePaperProps extends GCompProps, CBasePaperProps {
 	contentFlex?: number;
 	isFlex?: boolean;
 	overflow?: TOverflow;
+	position?: TPosition;
 }
 
 function CTitlePaper({
@@ -31,6 +32,7 @@ function CTitlePaper({
 	contentFlex,
 	isFlex,
 	overflow,
+	position,
 
 	sx,
 	...other
@@ -62,6 +64,7 @@ function CTitlePaper({
 				</Box>
 				<Box
 					sx={[
+						position ? { position: position } : {},
 						isFlex ? { display: "flex", flexDirection: "column" } : {},
 						{ overflow: overflow, flex: contentFlex },
 						...(Array.isArray(CTitlePaperContentBox)
@@ -70,6 +73,7 @@ function CTitlePaper({
 								? [CTitlePaperContentBox]
 								: []),
 					]}
+					data-testid="hello"
 				>
 					{children}
 				</Box>
