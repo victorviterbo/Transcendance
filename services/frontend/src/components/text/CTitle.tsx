@@ -1,6 +1,7 @@
 import { type TypographyVariant } from "@mui/material";
 import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
+import { appTexts } from "../../styles/theme.ts";
 
 export interface CTitleProps extends CTextBaseProps {}
 
@@ -18,12 +19,19 @@ function CTitle({ size, children, sx, ...other }: CTitleProps) {
 		return "h6";
 	};
 
+	function getSize(): number {
+		if (!size) return appTexts.title.sizes.md;
+		if (!(size in appTexts.title.sizes)) return appTexts.title.sizes.md;
+		return appTexts.title.sizes[size];
+	}
+
 	return (
 		<CTextBase
 			getVariant={getVariant}
+			getSize={getSize}
 			sx={[
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
-				(Theme) => ({ fontFamily: "Knewave, " + Theme.typography.fontFamily }),
+				(_) => ({ fontFamily: appTexts.title.mainFamily }),
 			]}
 			{...other}
 		>

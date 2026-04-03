@@ -63,6 +63,29 @@ export interface IThemeTextColor {
 	light: string;
 }
 
+//====================== TEXT ======================
+export interface IThemeTextSize {
+	"2xl": number;
+	xl: number;
+	lg: number;
+	md: number;
+	sm: number;
+	xs: number;
+	"2xs": number;
+}
+
+export interface IThemeText {
+	sizes: IThemeTextSize;
+
+	mainFamily: string;
+	secondaryFamily?: string;
+}
+
+export interface IThemeTexts {
+	text: IThemeText;
+	title: IThemeText;
+}
+
 //====================== PSOITIONS ======================
 export interface IThemeSize {
 	buttons: {

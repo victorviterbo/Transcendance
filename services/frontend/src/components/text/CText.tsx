@@ -1,25 +1,40 @@
 import { type TypographyVariant } from "@mui/material";
 import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
+import { appTexts } from "../../styles/theme.ts";
 
 interface CTextProps extends CTextBaseProps {}
 
-function CText({ size, children, ...other }: CTextProps) {
+function CText({ size, sx, children, ...other }: CTextProps) {
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
 		switch (size) {
 			case "sm":
-				return "body2";
+				return "body1";
 			case "md":
 				return "body1";
 			case "lg":
-				return "h6";
+				return "body1";
 		}
-		return "h6";
+		return "body1";
 	};
 
+	function getSize(): number {
+		if (!size) return appTexts.text.sizes.md;
+		if (!(size in appTexts.text.sizes)) return appTexts.text.sizes.md;
+		return appTexts.text.sizes[size];
+	}
+
 	return (
-		<CTextBase getVariant={getVariant} {...other}>
+		<CTextBase
+			sx={[
+				{ fontFamily: appTexts.text.mainFamily },
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+			]}
+			getVariant={getVariant}
+			getSize={getSize}
+			{...other}
+		>
 			{children}
 		</CTextBase>
 	);
