@@ -1,25 +1,35 @@
 import type { GCompProps } from "../common/GProps";
-import type { TAlign, TSize } from "../../types/string.ts";
+import type { TAlign, TSize, TVAlign } from "../../types/string.ts";
 import { Typography, type TypographyOwnProps, type TypographyVariant } from "@mui/material";
 import { ttr } from "../../localization/localization.ts";
 import { Children } from "react";
 
 export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	align?: TAlign;
+	vAlign?: TVAlign;
+
 	size?: TSize;
+	weight?: number;
+
 	color?: string;
+	family?: string;
 
 	span?: boolean;
 
 	getVariant?: () => TypographyVariant;
+	getSize?: () => number;
 }
 
 function CTextBase({
 	align,
-	span,
+	vAlign,
+	weight,
 	children,
 	color,
+	family,
+	span,
 	getVariant,
+	getSize,
 	sx,
 	testid,
 	...other
@@ -46,7 +56,16 @@ function CTextBase({
 			variant={getVariant ? getVariant() : "body1"}
 			align={align}
 			gutterBottom
-			sx={[...(Array.isArray(sx) ? sx : sx ? [sx] : []), { color: color }]}
+			sx={[
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+				{
+					fontFamily: family,
+					verticalAlign: vAlign,
+					color: color,
+					fontSize: getSize ? getSize() + "px" : undefined,
+					fontWeight: weight,
+				},
+			]}
 			{...other}
 			data-testid={testid ? testid : "CTextBase"}
 		>

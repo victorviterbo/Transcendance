@@ -6,6 +6,7 @@ import type {
 	IThemeColor,
 	IThemePosition,
 	IThemeShared,
+	IThemeTexts,
 } from "../types/styles";
 
 //--------------------------------------------------
@@ -101,6 +102,37 @@ export const appSharedStyle: IThemeShared = {
 	},
 
 	radius: 30,
+};
+
+export const appTexts: IThemeTexts = {
+	text: {
+		sizes: {
+			"2xs": 10,
+			xs: 12,
+			sm: 14,
+			md: 16,
+			lg: 20,
+			xl: 22,
+			"2xl": 24,
+		},
+
+		mainFamily: "MochiyPop, roboto, arial",
+		secondaryFamily: "MPlus, Arial",
+	},
+
+	title: {
+		sizes: {
+			"2xs": 16,
+			xs: 20,
+			sm: 24,
+			md: 34,
+			lg: 44,
+			xl: 54,
+			"2xl": 64,
+		},
+
+		mainFamily: "Knewave, MochiyPop, roboto, arial",
+	},
 };
 
 export const appAnimation: IThemeAnimations = {
@@ -217,7 +249,7 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	typography: {
-		fontFamily: "MochiyPop, roboto, arial",
+		fontFamily: appTexts.text.mainFamily,
 	},
 
 	shape: {
