@@ -35,14 +35,16 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
                     self.assertIn('error', response.data)
                     self.assertIn('auth', response.data['error'])
-                    self.assertEqual(response.data['error']['auth'], 'INVALID_CREDENTIALS')
+                    self.assertEqual(response.data['error']['auth'],
+                                     'INVALID_CREDENTIALS')
 
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""
         url = '/api/auth/register/'
         for email in ['test@mail.com', '', 'test', 'newuser@mail.com']:
             for username in ['testuser', '', 'newuser']:
-                for password in ['AnewPassword1+', '', 'shortpw', 'anewpassword1+', 'AnewPassword+', 'ANEWPASSWORD1+']:
+                for password in ['AnewPassword1+', '', 'shortpw', 'anewpassword1+',
+                                 'AnewPassword+', 'ANEWPASSWORD1+']:
                     data = {'email': email,
                             'username': username,
                             'password': password}
@@ -58,17 +60,20 @@ class UserAccountTests(APITestCase):
                            and password != 'AnewPassword1+')):
                         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
                     else:
-                        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                        self.assertEqual(response.status_code,
+                                         status.HTTP_400_BAD_REQUEST)
                     if email == 'test@mail.com':
                         self.assertEqual('EMAIL_TAKEN',
                                          response.data['error']['email'])
                     if username == 'testuser':
                         self.assertEqual('USERNAME_TAKEN',
                                          response.data['error']['username'])
-                    if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+', 'anewpassword1', 'anewpassword1']:
+                    if password in ['', 'test', 'AnewPassword+', 'ANEWPASSWORD1+',
+                                    'anewpassword1', 'anewpassword1']:
                         self.assertEqual('INVALID_PASSWORD',
                                          response.data['error']['password'])
-                    self.assertTrue(('refresh-token' in self.client.cookies) or ('sessionid' in self.client.cookies))
+                    self.assertTrue(('refresh-token' in self.client.cookies)
+                                    or ('sessionid' in self.client.cookies))
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""
@@ -130,6 +135,32 @@ class UserAccountTests(APITestCase):
         self.assertNotIn('access', response.data)
         self.assertNotIn('username', response.data)
         self.assertEqual('TOKEN_NOT_VALID', response.data['error']['cookie'])
+
+    def test_update_password(self) -> None:
+        """Test success and failure of access token regeneration operation."""
+        login_url = '/api/auth/login/'
+        update_password_url = '/api/auth/password/'
+        
+        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+                                                      'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+                                                    'newPassword': 'should_fail'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+                                                    'newPassword': 'AnotherBadPassword111'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+                                                    'newPassword': 'FinallyAGood1+'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+                                                      'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
+        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+                                                      'password': 'FinallyAGood1+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 
     def test_user_validation(self) -> None:
         """Test success and failure of user validation."""

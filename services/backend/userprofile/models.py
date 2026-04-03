@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 import uuid
 
 from django.db import models
@@ -9,9 +10,13 @@ from project.defaults import badges_strings
 from userauth.models import SiteUser
 
 
-def profile_pic_path(instance: Profile, filename: str) -> str:
+def avatar_path(instance: Profile, filename: str) -> str:
     """Construct the path at wich the profile picture will be stored."""
     return f'profile_pics/user_{instance.pk}_profile.png'
+
+def pick_random_avatar() -> str:
+    """Pick a random avatar as the default."""
+    return f'default_avatars/default_avatar_{random.randrange(0, 18)}.png'
 
 class Profile(models.Model):
     """Define the structure of the Profile, based on a generic model."""
@@ -25,8 +30,8 @@ class Profile(models.Model):
                                 unique=True,
                                 null=False)
     
-    avatar = models.ImageField(default='default_pp.jpg',
-                              upload_to=profile_pic_path)
+    avatar = models.ImageField(default=pick_random_avatar,
+                              upload_to=avatar_path)
     
     exp_points = models.IntegerField(default=0)
 

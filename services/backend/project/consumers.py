@@ -1,5 +1,7 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
+import uuid
+
 from channels.db import database_sync_to_async
 from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
@@ -15,7 +17,8 @@ from userprofile.models import Profile
 class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: tuple, **kwargs: dict) -> None:
+        """Define initialisation of consumer class."""
         super().__init__(*args, **kwargs)
         
         self.room = None
@@ -25,6 +28,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.chat_group_name = f"chat_{self.room_name}"
     
     async def connect(self) -> None:
+        """Define process upon client connection to websocket."""
         self.profile = await self._get_profile_from_scope()
         if not self.profile:
             await self.close(code=4401)
@@ -36,14 +40,15 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
         return
 
-    async def disconnect(self, close_code) -> None:
+    async def disconnect(self, close_code: int) -> None:
         """Remove the socket from its channel-layer group when disconnecting."""
         for layer in self.active_layers:
             await self.channel_layer.group_discard(layer, self.channel_name)
         await self._update_online_status(False)
         return
     
-    async def receive_json(self, content) -> None:
+    async def receive_json(self, content: dict) -> None:
+        """Receive websocket framework and reroute it to the appropriate module."""
         module = content.get("module")
         if module == "chat":
             await self.chat_subroutine(content)
@@ -54,14 +59,17 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return
     
     async def add_to_layer(self, group_name: str) -> None:
+        """Add layer to subscribed channels."""
         await self.channel_layer.group_add(group_name, self.channel_name)
         self.active_layers.add(group_name)
 
     async def remove_from_layer(self, group_name: str) -> None:
+        """Remove layer from subscribed channels."""
         await self.channel_layer.group_discard(group_name, self.channel_name)
         self.active_layers.remove(group_name)
 
     async def group_send(self, group_name: str, message: dict) -> None:
+        """Send a message to the specified channel."""
         await self.channel_layer.group_send(group_name, message)
 
     @database_sync_to_async
@@ -82,9 +90,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             return Profile.objects.filter(id=guest_id, is_guest=True).first()
         return Profile.objects.create() # TODO: remove in prod: Should not happen: it would mean we have websocket connection before http connection
     
-    async def chat_subroutine(self, content, **kwargs):
+    async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
         """Process incoming message, delivered, and read actions from the client."""
-        action = content.get('action', None)
+        action = content.get('action')
 
         if action == 'chat-message':
             body = str(content.get('message', '')).strip()
@@ -131,7 +139,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         elif action in ('delivered', 'read'):
             message_id = content.get('message_id')
             if not message_id:
-                await self.send_json({'type': 'error', 'message': 'message_id is required'})
+                await self.send_json({'type': 'error',
+                                      'message': 'message_id is required'})
                 return
 
             if action == 'delivered':
@@ -209,13 +218,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                                'message': 'User not found'}
             if not (Friendship.objects.filter(from_user__in=[target_user, self.user],
-                                              to_user__in=[self.user, target_user]).exists()):
+                                              to_user__in=[self.user, target_user],
+                                              status='accepted'
+                                              ).exists()):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             target_profile = target_user.profile
             id_a, id_b = self.profile.uid, target_profile.uid
             min_uid, max_uid = (id_a, id_b) if id_a < id_b else (id_b, id_a)
-            room, created = Room.objects.get_or_create(name=f'user_{min_uid}_user_{max_uid}')
+            room, created = Room.objects.get_or_create(
+                name=f'user_{min_uid}_user_{max_uid}')
             if created:
                 room.participants.add(self.profile)
                 room.participants.add(target_profile)
@@ -257,7 +269,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return True
 
     @database_sync_to_async
-    def _mark_seen(self, message_uid) -> bool:
+    def _mark_seen(self, message_uid: uuid.UUID) -> bool:
         """Mark a room message as seen and delivered if it exists."""
         message = Message.objects.filter(uid=message_uid, room=self.room).first()
         if not message:

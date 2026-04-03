@@ -13,8 +13,8 @@ from .models import Friendship
 class FriendshipSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""
     
-    from_user = UsersSerializer(read_only=True)
-    to_user = UsersSerializer(read_only=True)
+    from_user = UsersSerializer(source='from_user.profile', read_only=True)
+    to_user = UsersSerializer(source='to_user.profile', read_only=True)
     class Meta:
         """Defines the metaclass for the Profile serializer.
         

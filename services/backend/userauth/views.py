@@ -3,8 +3,10 @@
 from typing import Any
 
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as coreValidationError
 from rest_framework import serializers, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -41,7 +43,7 @@ class RegisterView(APIView):
                                                              'is_creation': True}
             )
             if serializer.is_valid(raise_exception=True):
-                user = serializer.save(profile_username=request.data.get('username'))
+                serializer.save(profile_username=request.data.get('username'))
                 token = RefreshToken.for_user(serializer.instance)
                 response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},
@@ -151,8 +153,7 @@ class LogoutView(APIView):
             path='/api/auth/'
         )
         return response
-    
-    
+
 class RefreshTokenView(TokenRefreshView):
     """Define generation of new access token operation view."""
     permission_classes = [AllowAny]
@@ -183,3 +184,53 @@ class RefreshTokenView(TokenRefreshView):
                                 status=status.HTTP_401_UNAUTHORIZED)
         return Response({'error': {'cookie': 'MISSING_FIELD'}},
                         status=status.HTTP_401_UNAUTHORIZED)
+
+class UpdatePasswordView(APIView):
+    """Define updating of password."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Define updating of password."""
+        if (request.data.get('currentPassword') is None and
+            request.data.get('newPassword') is None):
+            return Response({'error': {'currentPassword': 'MISSING_FIELD',
+                                       'newPassword': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get('currentPassword') is None:
+            return Response({'error': {'currentPassword': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get('newPassword') is None:
+            return Response({'error': {'newPassword': 'MISSING_FIELD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not self.request.user.check_password(request.data['currentPassword']):
+            return Response({'error': {'currentPassword': 'INVALID_PASSWORD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            validate_password(request.data['newPassword'], user=self.request.user)
+            self.request.user.set_password(request.data['newPassword'])
+            self.request.user.save()
+            return Response('PASSWORD_UPDATED', status=status.HTTP_200_OK)
+        except coreValidationError:
+            return Response({'error': {'password': 'INVALID_PASSWORD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+class DeleteAccountView(APIView):
+    """Define deletion of account."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Handles deletion of user profile."""
+        user = self.request.user
+        print(request.data)
+        if request.data.get('password') is None:
+            return Response({'error': {'password': 'MISSING_FIELD'}, 'incomming': request.data},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not self.request.user.check_password(request.data['password']):
+            return Response({'error': {'password': 'INVALID_PASSWORD'}},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if user:
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({'error': {'profile': 'USER_DELETE_FAIL'}},
+                            status=status.HTTP_400_BAD_REQUEST)

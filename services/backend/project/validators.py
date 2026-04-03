@@ -1,11 +1,12 @@
-
+"""Define validators that are used in multiple modules."""
 
 import re
-from userauth.models import SiteUser
-from userprofile.models import Profile
 
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+from userauth.models import SiteUser
+from userprofile.models import Profile
+
 
 def gmail_specific_normalize(email: str) -> str:
     """Normalizes a Gmail address.

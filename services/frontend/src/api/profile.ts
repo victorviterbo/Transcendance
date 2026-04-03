@@ -1,5 +1,5 @@
 import api from "./client";
-import { API_PROFILE, API_PROFILE_PASSWORD } from "../constants";
+import { API_PROFILE, API_PROFILE_PASSWORD, API_ACCOUNT_DELETE } from "../constants";
 import { type IProfileData } from "../types/profile";
 
 export interface ProfileLevelProgressState {
@@ -46,9 +46,7 @@ export const changeProfilePassword = async (
 };
 
 export const deleteProfile = async (password: string): Promise<void> => {
-	await api.delete(API_PROFILE, {
-		data: { password },
-	});
+	await api.post<{ description: string }>(API_ACCOUNT_DELETE, { password });
 };
 
 export const resolveProfileImage = (image?: string | null): string | undefined => {
