@@ -1,13 +1,13 @@
-import type { IErrorReturn } from "../../types/error";
+import type { IErrorReturn } from "../../../types/error";
 import type {
 	IFriendInfo,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
 	TFriendStatus,
-} from "../../types/friends";
-import type { IExtUserInfo, IExtUserList } from "../../types/user";
-import { mockProfilesPics } from "../rcs/profilepics";
+} from "../../../types/friends";
+import type { IExtUserInfo, IExtUserList } from "../../../types/user";
+import { mockProfilesPics } from "../../rcs/profilepics";
 
 //--------------------------------------------------
 //                    LOCAL DB

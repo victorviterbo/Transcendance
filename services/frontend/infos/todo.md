@@ -1,3 +1,3 @@
 #KRIS
 
-TODO: Work on localisation NOW
+Check friends requests

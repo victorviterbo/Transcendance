@@ -8,8 +8,13 @@ import api from "../../api";
 import { API_SOCIAL_FRIENDS } from "../../constants";
 import CText from "../../components/text/CText";
 import { getErrorNode } from "../../utils/error";
+import type { GPageProps } from "../common/GPageBases";
 
-function PFriendList() {
+interface PFriendListProps extends GPageProps {
+	onMessaging: (Friend: IFriendInfo) => void;
+}
+
+function PFriendList({ onMessaging }: PFriendListProps) {
 	const [friends, setFriends] = useState<IFriendInfo[]>([]);
 	const [friendsFilter, setFriendsFilter] = useState<string>("");
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
@@ -67,6 +72,7 @@ function PFriendList() {
 							.toLocaleLowerCase()
 							.includes(friendsFilter.toLocaleLowerCase())
 					}
+					onMessaging={onMessaging}
 				></PFriendNode>
 			);
 		});

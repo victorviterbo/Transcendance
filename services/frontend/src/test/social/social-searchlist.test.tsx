@@ -4,7 +4,7 @@ import { API_SOCIAL_FRIENDS_SEARCH } from "../../constants";
 import type { IExtUserList, IExtUserSearch } from "../../types/user";
 import PFriendAdd from "../../pages/PSocial/PFriendAdd";
 import userEvent from "@testing-library/user-event";
-import { mockGetExtUsers } from "../../mock/dbs/social_dbs";
+import { mockGetExtUsers } from "../../mock/handlers/social/social_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
