@@ -46,6 +46,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 						message.date = new Date(message.date.toString());
 				});
 				setFeed(res.data);
+				setError(undefined);
 			} catch (error) {
 				setError(getErrorNode(error, "SOCIAL_MESSAGE_ERROR"));
 				setFeed(undefined);

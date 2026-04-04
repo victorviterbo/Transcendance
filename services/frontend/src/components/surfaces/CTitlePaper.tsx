@@ -1,84 +1,44 @@
-import { Box, Stack } from "@mui/material";
 import type { GCompProps } from "../common/GProps";
-import CBasePaper, { type CBasePaperProps } from "./CBasePaper";
 import CText from "../text/CText";
-import {
-	CTitlePaperContentBox,
-	CTitlePaperStyle,
-	CTitlePaperTitleBoxStyle,
-	CTitlePaperTitleStyle,
-} from "../../styles/components/surfaces/CTitlePaper";
+import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
 
-import type { TOverflow, TPosition, TSize } from "../../types/string";
+import type { TSize } from "../../types/string";
 import CTitle from "../text/CTitle";
+import type { CTitleBasePaperProps } from "./CTitleBasePaper";
+import CTitleBasePaper from "./CTitleBasePaper";
 
-export interface CTitlePaperProps extends GCompProps, CBasePaperProps {
+export interface CTitlePaperProps extends GCompProps, Omit<CTitleBasePaperProps, "titleNode"> {
 	title: string;
 	titleType?: "text" | "title";
 	titleSize?: TSize;
-
-	contentFlex?: number;
-	isFlex?: boolean;
-	overflow?: TOverflow;
-	position?: TPosition;
 }
 
-function CTitlePaper({
-	title,
-	titleType,
-	titleSize,
-	children,
-
-	contentFlex,
-	isFlex,
-	overflow,
-	position,
-
-	sx,
-	...other
-}: CTitlePaperProps) {
+function CTitlePaper({ title, titleType, titleSize, children, ...other }: CTitlePaperProps) {
 	return (
-		<CBasePaper
-			sx={[CTitlePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+		<CTitleBasePaper
+			titleNode={
+				titleType == undefined || titleType == "text" ? (
+					<CText
+						sx={CTitlePaperTitleStyle}
+						size={titleSize == undefined ? "lg" : titleSize}
+						textAlign="center"
+					>
+						{title}
+					</CText>
+				) : (
+					<CTitle
+						sx={CTitlePaperTitleStyle}
+						size={titleSize == undefined ? "lg" : titleSize}
+						textAlign="center"
+					>
+						{title}
+					</CTitle>
+				)
+			}
 			{...other}
 		>
-			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
-				<Box sx={CTitlePaperTitleBoxStyle}>
-					{titleType == undefined || titleType == "text" ? (
-						<CText
-							sx={CTitlePaperTitleStyle}
-							size={titleSize == undefined ? "lg" : titleSize}
-							textAlign="center"
-						>
-							{title}
-						</CText>
-					) : (
-						<CTitle
-							sx={CTitlePaperTitleStyle}
-							size={titleSize == undefined ? "lg" : titleSize}
-							textAlign="center"
-						>
-							{title}
-						</CTitle>
-					)}
-				</Box>
-				<Box
-					sx={[
-						position ? { position: position } : {},
-						isFlex ? { display: "flex", flexDirection: "column" } : {},
-						{ overflow: overflow, flex: contentFlex },
-						...(Array.isArray(CTitlePaperContentBox)
-							? CTitlePaperContentBox
-							: CTitlePaperContentBox
-								? [CTitlePaperContentBox]
-								: []),
-					]}
-					data-testid="hello"
-				>
-					{children}
-				</Box>
-			</Stack>
-		</CBasePaper>
+			{children}
+		</CTitleBasePaper>
 	);
 }
 

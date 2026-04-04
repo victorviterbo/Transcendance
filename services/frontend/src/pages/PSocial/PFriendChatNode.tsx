@@ -40,11 +40,13 @@ function PFriendChatNode({ message, targetFriend }: PFriendChatNodeProps) {
 					{isUser && message.status == "not-sent" && (
 						<AccessTimeIcon
 							sx={(theme) => PFriendChatNodeStatusStyle(theme, message.status)}
+							fontSize="small"
 						/>
 					)}
 					{isUser && message.status == "sent" && (
 						<CheckIcon
 							sx={(theme) => PFriendChatNodeStatusStyle(theme, message.status)}
+							fontSize="small"
 						/>
 					)}
 					{isUser && (message.status == "recieved" || message.status == "read") && (
