@@ -28,5 +28,5 @@ class ProfileMiddleware:
             request.session.modified = True
         return self.get_response(request)
     
-    request.profile (real profile associated with user or guest profile)
-    request.user (AnonymousUser object (create by django), or SiteUser if logged in)
+    # request.profile (real profile associated with user or guest profile)
+    # request.user (AnonymousUser object (create by django), or SiteUser if logged in)

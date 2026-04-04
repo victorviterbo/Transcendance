@@ -1,16 +1,17 @@
 """Channels WebSocket routes for room and global chat endpoints."""
 
-#from re import re_path
-
 from django.urls import path, re_path
 
 from .consumers import GlobalConsumer, NotFoundConsumer
+from .presence_consumers import PresenceConsumer
 
 # websocket URL routes used by Channels' URLRouter.
-# - ws/chat/<room_name>/  -> room-specific chat
-# - ws/global/           -> Home/global chat (all connected Home clients)
+# - ws/presence/         -> presence tracking (online/offline status)
+# - ws/global/           -> global chat (all connected clients)
+# - ws/*                 -> 404 for unrecognized endpoints
 
 websocket_urlpatterns = [
-    path("ws/global/", GlobalConsumer.as_asgi()), # one and only websocket endpoint
+    path("ws/presence/", PresenceConsumer.as_asgi()),
+    path("ws/global/", GlobalConsumer.as_asgi()),
     re_path(r'^.*$', NotFoundConsumer.as_asgi()), # 404
 ]
