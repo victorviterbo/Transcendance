@@ -154,6 +154,19 @@ function CNavbar({
 							);
 						}
 
+						else if (item.kind === "toggle") {
+							return (
+								<CNavbarToggle
+									key={`${item.aria}-${idx}`}
+									aria={item.aria}
+									icon={item.icon}
+									onClick={item.onClick}
+									disabled={item.disabled}
+									active={item.active}
+								/>
+							);
+						}
+
 						return (
 							<CNavbarIcon
 								key={`${item.aria}-${idx}`}
