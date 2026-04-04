@@ -4,6 +4,7 @@ from django.urls import path, re_path
 
 from chat.presence_consumers import PresenceConsumer
 from .consumers import GlobalConsumer, NotFoundConsumer
+from .presence_consumers import PresenceConsumer
 
 # websocket URL routes used by Channels' URLRouter.
 # - ws/presence/         -> presence tracking (online/offline status)
