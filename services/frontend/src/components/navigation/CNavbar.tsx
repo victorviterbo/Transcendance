@@ -23,7 +23,7 @@ interface CNavbarProps extends GCompProps {
 	isFriendActive: boolean;
 }
 
-function CNavbar({isFriendActive, onToggleFriend }: CNavbarProps) {
+function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -135,9 +135,7 @@ function CNavbar({isFriendActive, onToggleFriend }: CNavbarProps) {
 									active={isActive}
 								/>
 							);
-						}
-
-						else if (item.kind === "toggle") {
+						} else if (item.kind === "toggle") {
 							return (
 								<CNavbarToggle
 									key={`${item.aria}-${idx}`}

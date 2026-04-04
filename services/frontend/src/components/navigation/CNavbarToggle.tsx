@@ -2,14 +2,16 @@ import type { ReactNode } from "react";
 import { appPositions } from "../../styles/theme";
 import CButtonToggle, { type CButtonToggleProps } from "../inputs/buttons/CButtonToggle";
 
-export interface CNavbarToggleProps extends Omit<CButtonToggleProps, "children" | "aria-label" | "value"> {
+export interface CNavbarToggleProps extends Omit<
+	CButtonToggleProps,
+	"children" | "aria-label" | "value"
+> {
 	icon: ReactNode;
 	aria: string;
 	active: boolean;
 }
 
 function CNavbarToggle({ icon, aria, active, sx, ...other }: CNavbarToggleProps) {
-
 	console.log(active);
 
 	return (
