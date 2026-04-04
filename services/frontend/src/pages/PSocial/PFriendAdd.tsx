@@ -35,6 +35,7 @@ function PFriendAdd() {
 				throw { error: { default: [{ message: "Invalid object", code: "INVALID" }] } };
 			setUsers(res.data.users);
 			setSearch(value);
+			setError(undefined);
 		} catch (error) {
 			setError(getErrorNode(error, "USERS_ADD_EROOR"));
 			setUsers([]);
