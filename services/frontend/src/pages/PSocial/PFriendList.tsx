@@ -48,6 +48,7 @@ function PFriendList({ onMessaging }: PFriendListProps) {
 					return 0;
 				});
 				setFriends(res.data.friends);
+				setError(undefined);
 			} catch (error) {
 				setError(getErrorNode(error, "FRIEND_ERROR"));
 				setFriends([]);

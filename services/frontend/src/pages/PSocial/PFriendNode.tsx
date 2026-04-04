@@ -79,6 +79,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 			if (!res) throw {};
 			if (res.data.error) throw res.data.error;
 			if (onStateChanged) onStateChanged();
+			setError(undefined);
 		} catch (error) {
 			setError(getErrorNode(error, "SOCIAL_RESPOND_FRIEND_FAILED", { size: "sm" }));
 		}

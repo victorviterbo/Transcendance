@@ -40,6 +40,7 @@ function PFriendReq() {
 			});
 			setIncoming(res.data.incoming);
 			setOutgoing(res.data.outgoing);
+			setError(undefined);
 		} catch (error) {
 			setError(getErrorNode(error, "SOCIAL_REQUESTS_ERROR"));
 			setIncoming([]);
