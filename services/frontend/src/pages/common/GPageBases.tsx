@@ -36,7 +36,7 @@ function GPageBase({ children }: GPageProps) {
 						alignItems: "stretch",
 					}}
 				>
-					<CNavbar onOpenFiend={handleOpenFriend} />
+					<CNavbar onToggleFriend={handleOpenFriend} isFriendActive={friendOpen} />
 					<Stack sx={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
 						<Box
 							sx={(Theme) => ({
