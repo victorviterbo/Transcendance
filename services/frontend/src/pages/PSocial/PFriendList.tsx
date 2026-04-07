@@ -9,6 +9,8 @@ import { API_SOCIAL_FRIENDS } from "../../constants";
 import CText from "../../components/text/CText";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
+import { useWS } from "../../components/websocket/CWebsocket";
+import type { IWSContextModule } from "../../types/websocket";
 
 interface PFriendListProps extends GPageProps {
 	onMessaging: (Friend: IFriendInfo) => void;
@@ -19,6 +21,11 @@ function PFriendList({ onMessaging }: PFriendListProps) {
 	const [friendsFilter, setFriendsFilter] = useState<string>("");
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localId = useId();
+
+	const wsContext: IWSContextModule = useWS("list");
+	wsContext.onUpdate = () => {
+		while (wsContext.count > 0) console.log(wsContext.getLast());
+	};
 
 	useEffect(() => {
 		async function getFriends(): Promise<void> {

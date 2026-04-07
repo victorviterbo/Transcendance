@@ -14,7 +14,9 @@ const startApp = () => {
 			<CAuthProvider>
 				<CLanguageLayout>
 					<BrowserRouter>
-						<App />
+						<CWebsocket>
+							<App />
+						</CWebsocket>
 					</BrowserRouter>
 				</CLanguageLayout>
 			</CAuthProvider>
