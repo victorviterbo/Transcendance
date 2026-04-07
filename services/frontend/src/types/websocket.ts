@@ -1,23 +1,34 @@
-export type IWSModuleName = "chat" | "list";
+import type { RefObject } from "react";
+import type { SendMessage } from "react-use-websocket";
+
+export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
+
+export type TWSModuleName = "test_counter_event" | "test_counter" | "test_info";
 
 export interface IWSContext {
-	modules: IWSContextModule[];
+	modules: RefObject<IWSContextModule[]>;
+	sendMessage: SendMessage;
 }
 
 export interface IWSContextModule {
 	target: string;
-	messages: TWebsocketRcv[];
+	messages: TWSRcv[];
 	count: number;
-	getLast(this: IWSContextModule): TWebsocketRcv | undefined;
+	getLast(this: IWSContextModule): TWSRcv | undefined;
+	setOnUpdate(func: () => void): void;
 	onUpdate?: () => void;
+	sendMessage: SendMessage;
 }
 
-export type TWebsocketRcv =
+export type TWSRcv =
 	| {
-			target: Extract<IWSModuleName, "chat">;
+			target: Extract<TWSModuleName, "test_counter_event">;
+	  }
+	| {
+			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
 	  }
 	| {
-			target: Extract<IWSModuleName, "list">;
+			target: Extract<TWSModuleName, "test_info">;
 			info: string;
 	  };

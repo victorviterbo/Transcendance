@@ -17,8 +17,6 @@ import PFriendChatNode from "./PFriendChatNode";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
-import { useWS } from "../../components/websocket/CWebsocket";
-import type { IWSContextModule } from "../../types/websocket";
 
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
@@ -29,13 +27,15 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localID = useId();
 
-	const wsContext: IWSContextModule = useWS("chat");
-	wsContext.onUpdate = () => {
-		while (wsContext.count > 0) console.log(wsContext.getLast());
-	};
+	//WS
+	// const wsContext: IWSContextModule = useWS("chat");
+	// wsContext.onUpdate = () => {
+	// 	while (wsContext.count > 0) console.log(wsContext.getLast());
+	// };
 
+	//LIST
 	useEffect(() => {
-		async function getFriends(): Promise<void> {
+		async function getChat(): Promise<void> {
 			try {
 				const res: AxiosResponse<IFriendFeed> = await api.post(
 					API_SOCIAL_FRIENDS_MESSAGE_FEED,
@@ -61,7 +61,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		}
 
 		if (!targetFriend) setFeed(undefined);
-		else getFriends();
+		else getChat();
 	}, [targetFriend]);
 
 	function getList(): ReactNode | ReactNode[] {
