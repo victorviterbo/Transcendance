@@ -23,6 +23,3 @@ export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "api/social/friend-request/res
 export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "api/social/message";
 export const API_SOCIAL_NOTIFS = "api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "api/social/notifs_read";
-
-//WS
-export const WS_ADRESS = "ws://localhost:5173/";
