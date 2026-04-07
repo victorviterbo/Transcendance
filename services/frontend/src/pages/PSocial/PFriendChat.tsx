@@ -60,6 +60,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		});
 	}, [wsContext, feed, targetFriend]);
 
+	//LIST
 	useEffect(() => {
 		async function getChat(): Promise<void> {
 			try {
