@@ -9,7 +9,6 @@ import {
 	friendsSearchHandler,
 } from "./handlers/social/social";
 import { friendMessageHandler } from "./handlers/social/socialChat";
-import { socketConnHandler } from "./handlers/ws/websocket";
 
 export const handlers = [
 	LoginHandler,
@@ -21,13 +20,11 @@ export const handlers = [
 	ProfileSearchHandler,
 	FetchPrivateRoom,
 	FetchPublicRoom,
-
+	// friendConnHandler,
 	friendsListHandler,
 	friendsSearchHandler,
 	friendsRequestsHandler,
 	friendsRequestsSendHandler,
 	friendsRequestsResponseHandler,
 	friendMessageHandler,
-
-	socketConnHandler,
 ];
