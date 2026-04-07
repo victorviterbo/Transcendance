@@ -135,6 +135,14 @@ class UserAccountTests(APITestCase):
         self.assertNotIn('access', response.data)
         self.assertNotIn('username', response.data)
         self.assertEqual('TOKEN_NOT_VALID', response.data['error']['cookie'])
+        
+        self.client.cookies.clear()
+        response = self.client.post(refresh_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn('error', response.data)
+        self.assertNotIn('access', response.data)
+        self.assertNotIn('username', response.data)
+        self.assertEqual('MISSING_FIELD', response.data['error']['cookie'])
 
     def test_update_password(self) -> None:
         """Test success and failure of access token regeneration operation."""

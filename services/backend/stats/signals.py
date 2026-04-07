@@ -7,12 +7,12 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from project.defaults import get_badge
 
-from .models import GameStats, UserRoundStats
+from .models import GameRoundStats, UserRoundStats
 
 
-@receiver(post_save, sender=GameStats)
-def save_profile(sender: type[GameStats],
-                 instance: GameStats,
+@receiver(post_save, sender=GameRoundStats)
+def save_profile(sender: type[GameRoundStats],
+                 instance: GameRoundStats,
                  **kwargs: Any) -> None:
     """Trigger updating of profile after updating a user."""
     if instance.is_terminated:
