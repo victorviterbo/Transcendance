@@ -12,8 +12,6 @@ export interface CNavbarToggleProps extends Omit<
 }
 
 function CNavbarToggle({ icon, aria, active, sx, ...other }: CNavbarToggleProps) {
-	console.log(active);
-
 	return (
 		<CButtonToggle
 			value={aria}
