@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
 from project.validators import validate_email, validate_username
 from rest_framework import serializers
+
 from .models import Profile
 
 

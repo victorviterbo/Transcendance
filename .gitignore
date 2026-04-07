@@ -55,3 +55,4 @@ lerna-debug.log*
 # Front end
 # =========================
 services/frontend/public/imgs/albums/*
+.aider*
