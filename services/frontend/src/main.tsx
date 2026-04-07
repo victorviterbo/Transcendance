@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
 import { startLocalization } from "./localization/localization.ts";
 import CLanguageLayout from "./components/layout/CLanguageLayout.tsx";
+import CWebsocket from "./components/websocket/CWebsocket.tsx";
 
 const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
@@ -13,7 +14,9 @@ const startApp = () => {
 			<CAuthProvider>
 				<CLanguageLayout>
 					<BrowserRouter>
-						<App />
+						<CWebsocket>
+							<App />
+						</CWebsocket>
 					</BrowserRouter>
 				</CLanguageLayout>
 			</CAuthProvider>
