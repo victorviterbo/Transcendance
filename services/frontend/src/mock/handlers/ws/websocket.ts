@@ -1,27 +1,28 @@
 import { ws } from "msw";
 import { WS_ADRESS } from "../../../constants";
-import type { TWebsocketRcv } from "../../../types/websocket";
+import type { TWSRcv } from "../../../types/websocket";
 
+//--------------------------------------------------
+//                                    NAME
+//--------------------------------------------------
 const socket = ws.link(WS_ADRESS);
 
 export const socketConnHandler = socket.addEventListener("connection", ({ client }) => {
-	let count = 1;
+	//====================== DATA ======================
+	let counter = 0;
 
-	setInterval(() => {
-		count++;
+	//====================== EXEC ======================
+	console.log("[MOCK] Client connected: " + client.id);
 
-		if (Math.round(Math.random()) == 0) {
-			const sendback: TWebsocketRcv = {
-				target: "chat",
-				count: count,
-			};
-			client.send(JSON.stringify(sendback));
-		} else {
-			const sendbackList: TWebsocketRcv = {
-				target: "list",
-				info: "hello",
+	client.addEventListener("message", (event) => {
+		const dataRcv: TWSRcv = typeof event.data == "string" ? JSON.parse(event.data) : event.data;
+		if (dataRcv.target == "test_counter_event") {
+			counter++;
+			const sendbackList: TWSRcv = {
+				target: "test_counter",
+				count: counter,
 			};
 			client.send(JSON.stringify(sendbackList));
 		}
-	}, 2000);
+	});
 });

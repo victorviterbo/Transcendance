@@ -1,19 +1,7 @@
-import {
-	useContext,
-	useEffect,
-	type ReactNode,
-	createContext,
-	type Context,
-	useState,
-} from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
+import { useContext, useEffect, type ReactNode, createContext, type Context, useRef } from "react";
+import useWebSocket, { ReadyState, type SendMessage } from "react-use-websocket";
 import { WS_ADRESS } from "../../constants";
-import type {
-	IWSContext,
-	IWSContextModule,
-	IWSModuleName,
-	TWebsocketRcv,
-} from "../../types/websocket";
+import type { IWSContext, IWSContextModule, TWSModuleName, TWSRcv } from "../../types/websocket";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -35,38 +23,55 @@ export const wsConnectionStatusColor: Record<number, string> = {
 export let wsStatus: number = -1;
 
 //--------------------------------------------------
-//                      HOOKS
+//                      FUNCTIONS
 //--------------------------------------------------
-
-const wsContext: Context<IWSContext> = createContext({
-	modules: [],
-} as IWSContext);
-
-function wsGetModule(moduleTarget: string, context: IWSContext): IWSContextModule {
-	const module: IWSContextModule | undefined = context.modules.find((value: IWSContextModule) => {
+function wsGetModule(
+	moduleTarget: string,
+	modules: IWSContextModule[],
+	sendMessage?: SendMessage,
+): IWSContextModule {
+	const module: IWSContextModule | undefined = modules.find((value: IWSContextModule) => {
 		return value.target == moduleTarget;
 	});
 	if (!module) {
-		context.modules.push({
+		modules.push({
 			target: moduleTarget,
 			messages: [],
 			count: 0,
 			getLast() {
 				if (this.messages.length == 0) return undefined;
-				const retValue: TWebsocketRcv = this.messages.splice(0, 1)[0];
+				const retValue: TWSRcv = this.messages.splice(0, 1)[0];
 				this.count = this.messages.length;
 				return retValue;
 			},
+			setOnUpdate(func: () => void) {
+				this.onUpdate = func;
+			},
+			sendMessage: sendMessage
+				? sendMessage
+				: () => {
+						console.error("Invalid send message function");
+					},
 			onUpdate: undefined,
 		});
-		return wsGetModule(moduleTarget, context);
+		return modules[modules.length - 1];
 	}
 	return module;
 }
 
-export const useWS = (moduleTarget: IWSModuleName) => {
-	const context: IWSContext = useContext(wsContext);
-	const module: IWSContextModule = wsGetModule(moduleTarget, context);
+//--------------------------------------------------
+//                        HOOKS
+//--------------------------------------------------
+const wsContext: Context<IWSContext | null> = createContext<IWSContext | null>(null);
+
+export const useWS = (moduleTarget: TWSModuleName): IWSContextModule => {
+	const context: IWSContext | null = useContext(wsContext);
+	if (!context) throw "WS: Ixvalid wsContext";
+	const module: IWSContextModule = wsGetModule(
+		moduleTarget,
+		context.modules.current,
+		context.sendMessage,
+	);
 	return module;
 };
 
@@ -78,10 +83,10 @@ interface AppWebsocketProps {
 }
 
 function CWebsocket({ children }: AppWebsocketProps) {
-	const { lastMessage, readyState } = useWebSocket(WS_ADRESS, {
+	const { sendMessage, lastMessage, readyState } = useWebSocket(WS_ADRESS, {
 		skipAssert: true,
 	});
-	const [modules] = useState<IWSContextModule[]>([]);
+	const modules = useRef<IWSContextModule[]>([]);
 
 	useEffect(() => {
 		wsStatus = readyState;
@@ -94,17 +99,22 @@ function CWebsocket({ children }: AppWebsocketProps) {
 	useEffect(() => {
 		if (!lastMessage?.data) return;
 
-		const currentData: TWebsocketRcv =
+		const currentData: TWSRcv =
 			typeof lastMessage.data == "string"
-				? (JSON.parse(lastMessage.data) as TWebsocketRcv)
-				: (lastMessage.data as TWebsocketRcv);
-		const targetModule = wsGetModule(currentData.target, { modules });
+				? (JSON.parse(lastMessage.data) as TWSRcv)
+				: (lastMessage.data as TWSRcv);
+		const targetModule = wsGetModule(currentData.target, modules.current);
+
 		targetModule.messages.push(currentData);
 		targetModule.count = targetModule.messages.length;
 		if (targetModule.onUpdate) targetModule.onUpdate();
 	}, [lastMessage, modules]);
 
-	return <wsContext.Provider value={{ modules }}>{children}</wsContext.Provider>;
+	return (
+		<wsContext.Provider value={{ modules: modules, sendMessage }}>
+			{children}
+		</wsContext.Provider>
+	);
 }
 
 export default CWebsocket;
