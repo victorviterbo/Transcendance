@@ -6,7 +6,6 @@ import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
 import { startLocalization } from "./localization/localization.ts";
 import CLanguageLayout from "./components/layout/CLanguageLayout.tsx";
-//import { startWS } from "./system/websocket.ts";
 import CWebsocket from "./components/websocket/CWebsocket.tsx";
 
 const startApp = () => {
