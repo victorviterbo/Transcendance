@@ -21,6 +21,3 @@ export const API_SOCIAL_FRIENDS_REQUEST = "/api/social/friends-request";
 export const API_SOCIAL_FRIENDS_REQUEST_SEND = "/api/social/friend-request/send";
 export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "api/social/friend-request/respond";
 export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "api/social/message";
-
-//WS
-export const WS_ADRESS = "ws://localhost:5173/";

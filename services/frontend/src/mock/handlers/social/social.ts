@@ -22,9 +22,15 @@ import {
 } from "./social_dbs";
 import type { IErrorReturn } from "../../../types/error";
 
+// const friends = ws.link("ws://localhost:5173/");
+
 //--------------------------------------------------
 //                   HANDLERS
 //--------------------------------------------------
+// export const friendConnHandler = friends.addEventListener("connection", () => {
+// 	console.log("try to connect....");
+// });
+
 export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
 	mockSocialSetDB();
 	const isError = 0;
