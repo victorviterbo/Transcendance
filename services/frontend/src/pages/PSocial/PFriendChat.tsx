@@ -17,6 +17,8 @@ import PFriendChatNode from "./PFriendChatNode";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
+import { useWS } from "../../components/websocket/CWebsocket";
+import type { IWSContextModule } from "../../types/websocket";
 
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
@@ -26,6 +28,11 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [feed, setFeed] = useState<IFriendFeed | undefined>(undefined);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localID = useId();
+
+	const wsContext: IWSContextModule = useWS("chat");
+	wsContext.onUpdate = () => {
+		while (wsContext.count > 0) console.log(wsContext.getLast());
+	};
 
 	useEffect(() => {
 		async function getFriends(): Promise<void> {
