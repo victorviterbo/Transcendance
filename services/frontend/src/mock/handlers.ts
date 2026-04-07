@@ -18,7 +18,6 @@ import {
 	notifRequestHandlerRead,
 } from "./handlers/social/social";
 import { friendMessageHandler } from "./handlers/social/socialChat";
-import { socketConnHandler } from "./handlers/ws/websocket";
 
 export const handlers = [
 	LoginHandler,
@@ -35,7 +34,7 @@ export const handlers = [
 	StatsHistoryHandler,
 	FetchPrivateRoom,
 	FetchPublicRoom,
-
+	// friendConnHandler,
 	friendsListHandler,
 	friendsSearchHandler,
 	friendsRequestsHandler,
