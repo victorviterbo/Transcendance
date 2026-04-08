@@ -46,7 +46,8 @@ export function mockSetMessageDB(): void {
 					date: new Date(Date.now() - 1000 * 60 * 50),
 					status: "read",
 					fromid: mockSocialDB.friends[0].uid,
-					from: mockSocialDB.friends[0].username,
+					from: mockSocialDB.friends[0].username,	
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "yeah I am here",
@@ -54,6 +55,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Want to play a match?",
@@ -61,6 +63,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[0].uid,
 					from: mockSocialDB.friends[0].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "sure give me 5 minutes",
@@ -68,6 +71,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Alright, I will wait",
@@ -75,6 +79,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[0].uid,
 					from: mockSocialDB.friends[0].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "I am ready now",
@@ -82,6 +87,7 @@ export function mockSetMessageDB(): void {
 					status: "recieved",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "nice invite me",
@@ -89,6 +95,7 @@ export function mockSetMessageDB(): void {
 					status: "sent",
 					fromid: mockSocialDB.friends[0].uid,
 					from: mockSocialDB.friends[0].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "done",
@@ -96,6 +103,7 @@ export function mockSetMessageDB(): void {
 					status: "not-sent",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 			],
 		},
@@ -110,6 +118,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Yeah",
@@ -117,6 +126,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "I started with the message list first",
@@ -124,6 +134,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message:
@@ -132,6 +143,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Good",
@@ -139,6 +151,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Because that is exactly the kind of detail people notice immediately",
@@ -146,6 +159,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message:
@@ -154,6 +168,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Exactly",
@@ -161,6 +176,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message:
@@ -169,6 +185,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message:
@@ -177,6 +194,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Are you also testing status changes?",
@@ -184,6 +202,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Yeah I need not-sent sent recieved and read",
@@ -191,6 +210,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message:
@@ -199,6 +219,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "That makes sense",
@@ -206,6 +227,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Also try a case where the last outgoing message is not sent yet",
@@ -213,6 +235,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "And maybe one just before it is marked as recieved",
@@ -220,6 +243,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[1].uid,
 					from: mockSocialDB.friends[1].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Yep",
@@ -227,6 +251,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "I am preparing exactly that now",
@@ -234,6 +259,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "This one should stay as read because it is older",
@@ -241,6 +267,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "This one should be sent",
@@ -248,6 +275,7 @@ export function mockSetMessageDB(): void {
 					status: "sent",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message:
@@ -256,6 +284,7 @@ export function mockSetMessageDB(): void {
 					status: "not-sent",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 			],
 		},
@@ -270,6 +299,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "You there?",
@@ -277,6 +307,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "yeah",
@@ -284,6 +315,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "what's up",
@@ -291,6 +323,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Need help testing chat again",
@@ -298,6 +331,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "sure",
@@ -305,6 +339,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "send cases",
@@ -312,6 +347,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "I need many short messages",
@@ -319,6 +355,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "with grouped bubbles",
@@ -326,6 +363,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "left and right",
@@ -333,6 +371,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "ok",
@@ -340,6 +379,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "I can do that",
@@ -347,6 +387,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Need status variety too?",
@@ -354,6 +395,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "yes",
@@ -361,6 +403,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "but only at the end",
@@ -368,6 +411,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "fine",
@@ -375,6 +419,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "let me spam a bit",
@@ -382,6 +427,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "msg 1",
@@ -389,6 +435,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "msg 2",
@@ -396,6 +443,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "msg 3",
@@ -403,6 +451,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "nice",
@@ -410,6 +459,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "now my turn",
@@ -417,6 +467,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "reply 1",
@@ -424,6 +475,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "reply 2",
@@ -431,6 +483,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "reply 3",
@@ -438,6 +491,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "good",
@@ -445,6 +499,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "keep going",
@@ -452,6 +507,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "more left",
@@ -459,6 +515,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "more left 2",
@@ -466,6 +523,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "more left 3",
@@ -473,6 +531,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "more left 4",
@@ -480,6 +539,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "and right again",
@@ -487,6 +547,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "right 2",
@@ -494,6 +555,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "right 3",
@@ -501,6 +563,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "right 4",
@@ -508,6 +571,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "right 5",
@@ -515,6 +579,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Looks good already",
@@ -522,6 +587,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "Need end states now",
@@ -529,6 +595,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "ok",
@@ -536,6 +603,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "this one is sent",
@@ -543,6 +611,7 @@ export function mockSetMessageDB(): void {
 					status: "sent",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "this one is not sent",
@@ -550,6 +619,7 @@ export function mockSetMessageDB(): void {
 					status: "not-sent",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "and this arrived",
@@ -557,6 +627,7 @@ export function mockSetMessageDB(): void {
 					status: "recieved",
 					fromid: mockSocialDB.friends[2].uid,
 					from: mockSocialDB.friends[2].username,
+					uid: crypto.randomUUID(),
 				},
 				{
 					message: "seen",
@@ -564,6 +635,7 @@ export function mockSetMessageDB(): void {
 					status: "read",
 					fromid: "0000000",
 					from: "john",
+					uid: crypto.randomUUID(),
 				},
 			],
 		},

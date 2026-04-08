@@ -20,6 +20,13 @@ interface PFriendChatNodeProps extends GPageProps {
 function PFriendChatNode({ message, targetFriend }: PFriendChatNodeProps) {
 	const isUser: boolean = message.fromid != targetFriend.uid;
 
+	function getDate(): string {
+		let currentDate: Date | string = message.date
+		if (typeof currentDate == "string")
+			currentDate= new Date(message.date.toString());
+		return currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+	}
+
 	return (
 		<Box sx={(theme) => PFriendChatNodeStyle(theme, isUser)}>
 			<Stack direction={"column"}>
@@ -33,9 +40,7 @@ function PFriendChatNode({ message, targetFriend }: PFriendChatNodeProps) {
 						size="2xs"
 						fontWeight={400}
 					>
-						{(message.date as Date).toLocaleDateString() +
-							" " +
-							(message.date as Date).toLocaleTimeString()}
+						{getDate()}
 					</CText>
 					{isUser && message.status == "not-sent" && (
 						<AccessTimeIcon
@@ -60,5 +65,7 @@ function PFriendChatNode({ message, targetFriend }: PFriendChatNodeProps) {
 		</Box>
 	);
 }
+
+
 
 export default PFriendChatNode;
