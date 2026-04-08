@@ -20,11 +20,6 @@ function PFriendList({ onMessaging }: PFriendListProps) {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localId = useId();
 
-	// const wsContext: IWSContextModule = useWS("list");
-	// wsContext.onUpdate = () => {
-	// 	while (wsContext.count > 0) console.log(wsContext.getLast());
-	// };
-
 	useEffect(() => {
 		async function getFriends(): Promise<void> {
 			try {
