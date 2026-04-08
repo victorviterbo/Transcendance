@@ -58,6 +58,9 @@ export interface IFriendMessage {
 	status: TMessageStatus;
 	fromid: string;
 	from: string;
+	toid: string;
+	to: string;
+	uid: string;
 }
 
 export interface IFriendFeed {
