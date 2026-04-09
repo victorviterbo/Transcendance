@@ -27,6 +27,7 @@ import {
 } from "../../mock/handlers/social/social_dbs";
 import type { IErrorReturn } from "../../types/error";
 import PSocial from "../../pages/PSocial";
+import CWebsocket from "../../components/websocket/CWebsocket";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -317,7 +318,11 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(<PSocial />);
+			render(
+				<CWebsocket>
+					<PSocial />
+				</CWebsocket>,
+			);
 
 			//BUTTONS
 			const listButton = screen.getByTestId("PSocialTab0");
@@ -445,7 +450,11 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(<PSocial />);
+			render(
+				<CWebsocket>
+					<PSocial />
+				</CWebsocket>,
+			);
 
 			//BUTTONS
 			const listButton = screen.getByTestId("PSocialTab0");
@@ -570,7 +579,11 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(<PSocial />);
+			render(
+				<CWebsocket>
+					<PSocial />
+				</CWebsocket>,
+			);
 
 			//BUTTONS
 			const listButton = screen.getByTestId("PSocialTab0");

@@ -17,13 +17,12 @@ interface PFriendChatNodeProps extends GPageProps {
 	targetFriend: IFriendInfo;
 }
 
-function PFriendChatNode({ message, targetFriend }: PFriendChatNodeProps) {
-	const isUser: boolean = message.fromid != targetFriend.uid;
+function PFriendChatNode({ message }: PFriendChatNodeProps) {
+	const isUser: boolean = message.direction == "outgoing";
 
 	function getDate(): string {
-		let currentDate: Date | string = message.date
-		if (typeof currentDate == "string")
-			currentDate= new Date(message.date.toString());
+		let currentDate: Date | string = message.date;
+		if (typeof currentDate == "string") currentDate = new Date(message.date.toString());
 		return currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
 	}
 
@@ -42,30 +41,45 @@ function PFriendChatNode({ message, targetFriend }: PFriendChatNodeProps) {
 					>
 						{getDate()}
 					</CText>
-					{isUser && message.status == "not-sent" && (
+					{isUser && message.status && message.status == "not-sent" && (
 						<AccessTimeIcon
-							sx={(theme) => PFriendChatNodeStatusStyle(theme, message.status)}
+							sx={(theme) =>
+								PFriendChatNodeStatusStyle(
+									theme,
+									message.status ? message.status : "not-sent",
+								)
+							}
 							fontSize="small"
 						/>
 					)}
-					{isUser && message.status == "sent" && (
+					{isUser && message.status && message.status == "sent" && (
 						<CheckIcon
-							sx={(theme) => PFriendChatNodeStatusStyle(theme, message.status)}
+							sx={(theme) =>
+								PFriendChatNodeStatusStyle(
+									theme,
+									message.status ? message.status : "not-sent",
+								)
+							}
 							fontSize="small"
 						/>
 					)}
-					{isUser && (message.status == "recieved" || message.status == "read") && (
-						<DoneAllIcon
-							sx={(theme) => PFriendChatNodeStatusStyle(theme, message.status)}
-							fontSize="small"
-						/>
-					)}
+					{isUser &&
+						message.status &&
+						(message.status == "recieved" || message.status == "read") && (
+							<DoneAllIcon
+								sx={(theme) =>
+									PFriendChatNodeStatusStyle(
+										theme,
+										message.status ? message.status : "not-sent",
+									)
+								}
+								fontSize="small"
+							/>
+						)}
 				</Stack>
 			</Stack>
 		</Box>
 	);
 }
-
-
 
 export default PFriendChatNode;

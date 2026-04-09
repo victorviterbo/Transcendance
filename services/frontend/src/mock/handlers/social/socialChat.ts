@@ -4,7 +4,7 @@ import type { IFriendFeed, IFriendMessage, IFriendMessageReq } from "../../../ty
 import { mockGetMessageDB, type IMockMessageDBUser } from "./socialChat_dbs";
 import { mockSocialDB } from "./social_dbs";
 import type { TWSRcv } from "../../../types/websocket";
-import { WebSocketClientConnectionProtocol} from '@mswjs/interceptors/WebSocket';
+import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 
 //--------------------------------------------------
 //                  STD PROTOCOLES
@@ -39,90 +39,74 @@ export const friendMessageHandler = http.post(
 	},
 );
 
-
 //--------------------------------------------------
-//                    
+//
 //--------------------------------------------------
 export function mockMessagesFriend1Update(client: WebSocketClientConnectionProtocol) {
-	
 	const targetFeed: IFriendFeed | undefined = mockGetMessageDB().data.find(
-			(user: IMockMessageDBUser) => {
-				return user.friend.uid == mockSocialDB.friends[1].uid;
-			},
-		)?.messages
+		(user: IMockMessageDBUser) => {
+			return user.friend.uid == mockSocialDB.friends[1].uid;
+		},
+	)?.messages;
 
-	if(!targetFeed)
-		return;
-	
+	if (!targetFeed) return;
+
 	setTimeout(() => {
 		targetFeed.feed.forEach((message: IFriendMessage) => {
-			if(message.from == "john" && message.status == "not-sent")
-			{
+			if (message.direction == "outgoing" && message.status == "not-sent") {
 				message.status = "sent";
 				const sendbackList: TWSRcv = {
 					target: "friend-chat",
 					event: "update_status",
-					message: message
+					message: message,
 				};
 				client.send(JSON.stringify(sendbackList));
 			}
 		});
 
-
 		setTimeout(() => {
 			targetFeed.feed.forEach((message: IFriendMessage) => {
-				if(message.from == "john" && message.status == "sent")
-				{
+				if (message.direction == "outgoing" && message.status == "sent") {
 					message.status = "recieved";
 					const sendbackList: TWSRcv = {
 						target: "friend-chat",
 						event: "update_status",
-						message: message
+						message: message,
 					};
 					client.send(JSON.stringify(sendbackList));
 				}
 			});
 
-			
-
-
 			setTimeout(() => {
 				targetFeed.feed.forEach((message: IFriendMessage) => {
-					if(message.from == "john" && message.status == "recieved")
-					{
+					if (message.direction == "outgoing" && message.status == "recieved") {
 						message.status = "read";
 						const sendbackList: TWSRcv = {
 							target: "friend-chat",
 							event: "update_status",
-							message: message
+							message: message,
 						};
 						client.send(JSON.stringify(sendbackList));
 					}
 				});
 
-				
-
-
 				setTimeout(() => {
-						const sendbackList: TWSRcv = {
-							target: "friend-chat",
-							event: "new",
-							message: 
-							{
-								message: "Yeah that's damm big",
-								date: new Date(),
-								status: "read",
-								fromid: mockSocialDB.friends[1].uid,
-								from: mockSocialDB.friends[1].username,	
-								toid: "0000000",
-								to: "john",	
-								uid: crypto.randomUUID(),
-							},
-						};
-						targetFeed.feed.push(sendbackList.message);
-						client.send(JSON.stringify(sendbackList));
-				}, 2000)
-			}, 2000)
-		}, 2000)
-	}, 5000)
+					const sendbackList: TWSRcv = {
+						target: "friend-chat",
+						event: "new",
+						message: {
+							message: "Yeah that's damm big",
+							date: new Date(),
+							direction: "incoming",
+							"target-id": mockSocialDB.friends[1].uid,
+							target: mockSocialDB.friends[1].username,
+							uid: crypto.randomUUID(),
+						},
+					};
+					targetFeed.feed.push(sendbackList.message);
+					client.send(JSON.stringify(sendbackList));
+				}, 2000);
+			}, 2000);
+		}, 2000);
+	}, 5000);
 }

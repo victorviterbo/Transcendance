@@ -21,7 +21,6 @@ import type { IWSContextModule, TWSRcv } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { useAuth } from "../../components/auth/CAuthProvider";
 
-
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
 }
@@ -40,23 +39,22 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
-				if (last?.target == "friend-chat")
-				{
-					if(last.event == "update_status")
-					{
-						if(!feed || !last.message)
-							return;
+				if (last?.target == "friend-chat") {
+					if (last.event == "update_status") {
+						if (!feed || !last.message) return;
 						const index = feed.feed.findIndex((message: IFriendMessage) => {
 							return message.uid == last.message.uid;
-						})
-						if(index  == -1)
-							return;
+						});
+						if (index == -1) return;
 						feed.feed[index].status = last.message.status;
 						setFeed(structuredClone(feed));
 					}
-					if(last.event == "new")
-					{
-						if(!feed || !last.message || last.message.fromid != targetFriend?.uid)
+					if (last.event == "new") {
+						if (
+							!feed ||
+							!last.message ||
+							last.message["target-id"] != targetFriend?.uid
+						)
 							return;
 						feed.feed.splice(0, 0, last.message);
 						setFeed(structuredClone(feed));
@@ -66,7 +64,6 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		});
 	}, [wsContext, feed, targetFriend]);
 
-	
 	useEffect(() => {
 		async function getChat(): Promise<void> {
 			try {
@@ -99,8 +96,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 
 	//====================== OUTGOING ======================
 	function handleSendMessage() {
-
-		console.log(user.user?.id, user.user?.username)
+		console.log(user.user?.id, user.user?.username);
 
 		// const nMessage: IFriendMessage = {
 		// 	message: messageField,
@@ -112,9 +108,11 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		// 	uid: "TEMP_ID",
 		// }
 
-		wsContext.sendMessage(JSON.stringify({
-			target: "friend-chat"
-		} as TWSRcv))
+		wsContext.sendMessage(
+			JSON.stringify({
+				target: "friend-chat",
+			} as TWSRcv),
+		);
 	}
 
 	//====================== FUNCTIONS ======================
@@ -145,7 +143,9 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 					fontFamily={appTexts.text.secondaryFamily}
 					fontSize={appTexts.text.sizes.sm}
 					value={messageField}
-					onChange={(event) => {setMessageField(event.target.value)}}
+					onChange={(event) => {
+						setMessageField(event.target.value);
+					}}
 				></CTextField>
 				<CIconButton onClick={handleSendMessage} sx={{ my: "auto", ml: "10px" }}>
 					<SendIcon />
