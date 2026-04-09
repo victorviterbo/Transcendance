@@ -20,7 +20,6 @@ import { appTexts } from "../../styles/theme";
 import type { IWSContextModule, TWSRcv } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 
-
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
 }
