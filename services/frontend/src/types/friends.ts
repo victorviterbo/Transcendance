@@ -4,6 +4,7 @@ import type { IExtUserInfo } from "./user";
 export type TFriendStatus = "offline" | "busy" | "online";
 export type TFriendRelation = "not-friends" | "friends" | "incoming" | "outgoing";
 export type TMessageStatus = "not-sent" | "sent" | "recieved" | "read";
+export type TMessageDirection = "outgoing" | "incoming";
 
 export interface IFriendsList {
 	friends: IFriendInfo[];
@@ -55,11 +56,10 @@ export interface IFriendMessageReq {
 export interface IFriendMessage {
 	message: string;
 	date: Date | string;
-	status: TMessageStatus;
-	fromid: string;
-	from: string;
-	toid: string;
-	to: string;
+	direction: TMessageDirection;
+	status?: TMessageStatus;
+	"target-id": string;
+	target: string;
 	uid: string;
 }
 

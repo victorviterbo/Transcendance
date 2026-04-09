@@ -20,7 +20,6 @@ import { appTexts } from "../../styles/theme";
 import type { IWSContextModule, TWSRcv } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 
-
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
 }
@@ -74,15 +73,17 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 							return;
 						const index = feed.feed.findIndex((message: IFriendMessage) => {
 							return message.uid == last.message.uid;
-						})
-						if(index  == -1)
-							return;
+						});
+						if (index == -1) return;
 						feed.feed[index].status = last.message.status;
 						setFeed(structuredClone(feed));
 					}
-					if(last.event == "new")
-					{
-						if(!feed || !last.message || last.message.fromid != targetFriend?.uid)
+					if (last.event == "new") {
+						if (
+							!feed ||
+							!last.message ||
+							last.message["target-id"] != targetFriend?.uid
+						)
 							return;
 						feed.feed.splice(0, 0, last.message);
 						setFeed(structuredClone(feed));
@@ -92,7 +93,6 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		});
 	}, [wsContext, feed, targetFriend]);
 
-	
 	useEffect(() => {
 		async function getChat(): Promise<void> {
 			try {
