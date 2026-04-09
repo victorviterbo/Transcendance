@@ -27,5 +27,5 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 		}
 	});
 
-	mockMessagesFriend1Update(client)
+	mockMessagesFriend1Update(client);
 });
