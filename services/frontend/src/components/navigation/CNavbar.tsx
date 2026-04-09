@@ -15,8 +15,15 @@ import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
 import { CNavbarStyle } from "../../styles/components/navigation/CNavbarStyle.ts";
 import CMenu from "./CMenu.tsx";
+import type { GCompProps } from "../common/GProps.ts";
+import CNavbarToggle from "./CNavbarToggle.tsx";
 
-function CNavbar() {
+interface CNavbarProps extends GCompProps {
+	onToggleFriend: () => void;
+	isFriendActive: boolean;
+}
+
+function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -57,10 +64,11 @@ function CNavbar() {
 			onClick: () => alert("Coming soon"),
 		},
 		{
-			kind: "action",
+			kind: "toggle",
 			icon: <PeopleIcon />,
 			aria: "Friends",
-			onClick: () => alert("Coming soon"),
+			onClick: onToggleFriend,
+			active: isFriendActive,
 		},
 		{
 			kind: "action",
@@ -119,6 +127,17 @@ function CNavbar() {
 									label={item.label}
 									icon={item.icon}
 									active={isActive}
+								/>
+							);
+						} else if (item.kind === "toggle") {
+							return (
+								<CNavbarToggle
+									key={`${item.aria}-${idx}`}
+									aria={item.aria}
+									icon={item.icon}
+									onClick={item.onClick}
+									disabled={item.disabled}
+									active={item.active}
 								/>
 							);
 						}

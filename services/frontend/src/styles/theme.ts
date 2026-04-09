@@ -6,6 +6,7 @@ import type {
 	IThemeColor,
 	IThemePosition,
 	IThemeShared,
+	IThemeTexts,
 } from "../types/styles";
 
 //--------------------------------------------------
@@ -34,6 +35,9 @@ export const appColors: IThemeColor = {
 	quaternary: ["#414DFA", "#5560D6", "#6168B3", "#62688F", "#585B6B", "#41434A"],
 	quinary: ["#8A41FA", "#7D55D6", "#715FB3", "#665F8F", "#57566B", "#44424A"],
 
+	cancel: ["#FA4141", "#D65555", "#B36161", "#8F6262", "#6B5858", "#4A4141"],
+	validate: ["#41FA6A", "#55D676", "#61B37A", "#628F75", "#586B5E", "#414A43"],
+
 	greys: [
 		"#E1E1E1",
 		"#CBCBCB",
@@ -55,12 +59,16 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	socialMargin: { top: 15, right: 20, bottom: 50 },
 	sizes: {
 		buttons: {
 			home: "40px",
 			nav: "35px",
 		},
 
+		friends: "25%",
+
+		header: 68,
 		footer: 50,
 	},
 };
@@ -85,15 +93,55 @@ export const appSharedStyle: IThemeShared = {
 			"linear",
 			225,
 		),
+		drawer: colorGetBackground(
+			[appColors.greys[9], appColors.greys[8]],
+			undefined,
+			"radial",
+			135 + 180,
+		),
 	},
 
 	radius: 30,
+};
+
+export const appTexts: IThemeTexts = {
+	text: {
+		sizes: {
+			"2xs": 10,
+			xs: 12,
+			sm: 14,
+			md: 16,
+			lg: 20,
+			xl: 22,
+			"2xl": 24,
+		},
+
+		mainFamily: "MochiyPop, roboto, arial",
+		secondaryFamily: "MPlus, Arial",
+	},
+
+	title: {
+		sizes: {
+			"2xs": 16,
+			xs: 20,
+			sm: 24,
+			md: 34,
+			lg: 44,
+			xl: 54,
+			"2xl": 64,
+		},
+
+		mainFamily: "Knewave, MochiyPop, roboto, arial",
+	},
 };
 
 export const appAnimation: IThemeAnimations = {
 	timing: {
 		fast: 100,
 		medium_fast: 150,
+		medium_slow: 500,
+		enteringScreen: 225,
+		leavingScreen: 195,
 	},
 	easing: {
 		easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
@@ -201,7 +249,7 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	typography: {
-		fontFamily: "MochiyPop, roboto, arial",
+		fontFamily: appTexts.text.mainFamily,
 	},
 
 	shape: {

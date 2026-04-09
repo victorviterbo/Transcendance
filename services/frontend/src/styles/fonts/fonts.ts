@@ -6,6 +6,15 @@ import DynaPuffRegular from "./DynaPuff-Regular.ttf";
 import DynaPuffMedium from "./DynaPuff-Medium.ttf";
 import DynaPuffSemiBold from "./DynaPuff-SemiBold.ttf";
 import DynaPuffBold from "./DynaPuff-Bold.ttf";
+import MPlusThin from "./MPLUS1-Thin.ttf";
+import MPlusExLight from "./MPLUS1-ExtraLight.ttf";
+import MPlusLight from "./MPLUS1-Light.ttf";
+import MPlusRegular from "./MPLUS1-Regular.ttf";
+import MPlusMedium from "./MPLUS1-Medium.ttf";
+import MPlusSemiBold from "./MPLUS1-SemiBold.ttf";
+import MPlusBold from "./MPLUS1-Bold.ttf";
+import MPlusExtraBold from "./MPLUS1-ExtraBold.ttf";
+import MPlusExtraBlack from "./MPLUS1-Black.ttf";
 
 function makeFontFace(name: string, target: string, weight: number, style: string): CSSObject {
 	return {
@@ -44,6 +53,24 @@ export function getFontRegistry(): CSSObject[] {
 			"DynaPuff",
 			[DynaPuffRegular, DynaPuffMedium, DynaPuffSemiBold, DynaPuffBold],
 			[400, 500, 600, 700],
+			"normal",
+		),
+	);
+	fonts.push(
+		...makeFontFaceMW(
+			"MPlus",
+			[
+				MPlusThin,
+				MPlusExLight,
+				MPlusLight,
+				MPlusRegular,
+				MPlusMedium,
+				MPlusSemiBold,
+				MPlusBold,
+				MPlusExtraBold,
+				MPlusExtraBlack,
+			],
+			[100, 200, 300, 400, 500, 600, 700, 800, 900],
 			"normal",
 		),
 	);
