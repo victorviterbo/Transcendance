@@ -5,12 +5,17 @@ import type { IEventStatus } from "../../types/events";
 import { checkEmailValid, checkPasswordValid, checkUsernameValid } from "../../utils/enforcement";
 import CForm from "../../components/layout/CForm";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, DialogActions, Stack } from "@mui/material";
 import api, { getAccessToken } from "../../api";
 import { getErrorMessage } from "../../utils/error.tsx";
 import { API_PROFILE } from "../../constants";
 import CTitle from "../../components/text/CTitle";
 import { useAuth } from "../../components/auth/CAuthProvider";
+import { changeProfilePassword, deleteProfile } from "../../api/profile";
+import CDialog from "../../components/feedback/dialogs/CDialog";
+import CDialogTitle from "../../components/feedback/dialogs/CDialogTitle";
+import CButtonText from "../../components/inputs/buttons/CButtonText";
+import CText from "../../components/text/CText";
 
 export interface ProfileSettingsPanelProps extends GPageProps {
 	username: string | undefined;
@@ -18,7 +23,11 @@ export interface ProfileSettingsPanelProps extends GPageProps {
 
 const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 	const [expanded, setExpanded] = useState<string | false>("username");
-	const { setAuth, user } = useAuth();
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [pendingDeletePassword, setPendingDeletePassword] = useState<string | null>(null);
+	const [deleteConfirmError, setDeleteConfirmError] = useState<string | null>(null);
+	const [isDeletingProfile, setIsDeletingProfile] = useState(false);
+	const { setAuth, user, logout } = useAuth();
 	const usernameFields = useMemo<TFormFieldConfig[]>(
 		() => [
 			{
@@ -83,6 +92,14 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 		[],
 	);
 
+	const getFieldErrors = (error: unknown): Record<string, string> | null => {
+		const maybe = error as {
+			response?: { data?: { error?: Record<string, string> } };
+		};
+		const payload = maybe.response?.data?.error;
+		return payload && typeof payload === "object" ? payload : null;
+	};
+
 	async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
 		try {
 			await api.post<{ access?: string; username?: string }>(`${API_PROFILE}?q=${username}`, {
@@ -95,9 +112,11 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					email: user?.email,
 				});
 			}
-			return { valid: true };
+			return { valid: true, msg: "CHANGE_SUCCESS", resetOnSuccess: true };
 		} catch (error) {
-			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
+			return { valid: false, msg: getErrorMessage(error, "CHANGE_FAILED") };
 		}
 	}
 
@@ -113,27 +132,67 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					email: values.email.trim(),
 				});
 			}
-			return { valid: true };
+			return { valid: true, msg: "CHANGE_SUCCESS", resetOnSuccess: true };
 		} catch (error) {
-			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
+			return { valid: false, msg: getErrorMessage(error, "CHANGE_FAILED") };
 		}
 	}
 
 	async function handleChangePassword(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			await api.post<{ description?: string }>(`${API_PROFILE}?q=${username}`, {
-				currentPassword: values.currentPassword,
-				newPassword: values.newPassword,
-			});
-			return { valid: true };
+			const response = await changeProfilePassword(
+				values.currentPassword,
+				values.newPassword,
+			);
+			return {
+				valid: true,
+				msg:
+					response.description && response.description !== "PASSWORD_UPDATED"
+						? response.description
+						: "CHANGE_SUCCESS",
+				resetOnSuccess: true,
+			};
 		} catch (error) {
-			return { valid: false, msg: getErrorMessage(error, "Change failed.") };
+			const fieldErrors = getFieldErrors(error);
+			if (fieldErrors) return { valid: false, fieldErrors };
+			return { valid: false, msg: getErrorMessage(error, "CHANGE_FAILED") };
 		}
 	}
 
-	async function handleDeleteAccount(_: Record<string, string>): Promise<IEventStatus> {
-		alert("Coming soon");
+	async function handleDeleteAccount(values: Record<string, string>): Promise<IEventStatus> {
+		setPendingDeletePassword(values.password);
+		setDeleteConfirmError(null);
+		setDeleteConfirmOpen(true);
 		return { valid: true };
+	}
+
+	function handleCloseDeleteConfirm() {
+		if (isDeletingProfile) return;
+		setDeleteConfirmOpen(false);
+		setDeleteConfirmError(null);
+	}
+
+	async function handleConfirmDelete() {
+		if (!pendingDeletePassword) {
+			setDeleteConfirmError("DELETE_FAILED");
+			return;
+		}
+
+		setIsDeletingProfile(true);
+		setDeleteConfirmError(null);
+
+		try {
+			await deleteProfile(pendingDeletePassword);
+			await logout();
+			setDeleteConfirmOpen(false);
+			setPendingDeletePassword(null);
+		} catch (error) {
+			setDeleteConfirmError(getErrorMessage(error, "DELETE_FAILED"));
+		} finally {
+			setIsDeletingProfile(false);
+		}
 	}
 
 	const handlePanel = (panel: string) => (_: SyntheticEvent, isExpanded: boolean) => {
@@ -194,6 +253,29 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 					/>
 				</AccordionDetails>
 			</Accordion>
+
+			<CDialog open={deleteConfirmOpen} onClose={handleCloseDeleteConfirm}>
+				<Stack spacing={2} alignItems="center" sx={{ pt: 1, minWidth: { xs: 0, sm: 360 } }}>
+					<CDialogTitle>DELETE_ACCOUNT</CDialogTitle>
+					<CText align="center">DELETE_ACCOUNT_CONFIRMATION</CText>
+					{deleteConfirmError ? (
+						<CText color="error.main" size="sm" align="center">
+							{deleteConfirmError}
+						</CText>
+					) : null}
+					<DialogActions sx={{ px: 0, pb: 0, pt: 1 }}>
+						<CButtonText
+							onClick={handleCloseDeleteConfirm}
+							disabled={isDeletingProfile}
+						>
+							CANCEL
+						</CButtonText>
+						<CButtonText onClick={handleConfirmDelete} disabled={isDeletingProfile}>
+							{isDeletingProfile ? "DELETING" : "DELETE"}
+						</CButtonText>
+					</DialogActions>
+				</Stack>
+			</CDialog>
 		</div>
 	);
 };

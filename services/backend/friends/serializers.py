@@ -5,6 +5,7 @@ to JSON and vice-versa, namely:
     - Friendship
 """
 from rest_framework import serializers
+from userprofile.serializers import UsersSerializer
 
 from .models import Friendship
 
@@ -12,8 +13,8 @@ from .models import Friendship
 class FriendshipSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""
     
-    from_user = serializers.ReadOnlyField(source='from_user.profile.username')
-    to_user = serializers.ReadOnlyField(source='to_user.profile.username')
+    from_user = UsersSerializer(read_only=True)
+    to_user = UsersSerializer(read_only=True)
     class Meta:
         """Defines the metaclass for the Profile serializer.
         
@@ -21,4 +22,5 @@ class FriendshipSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Friendship
-        fields = ['from_user', 'to_user', 'status', 'created_at']
+        fields = ['from_user', 'to_user', 'status', 'created_at', 'uid']
+    

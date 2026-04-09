@@ -23,7 +23,7 @@ function GPageBase({ children }: GPageProps) {
 
 	return (
 		<>
-			<Box sx={{ position: "fixed", width: "100%", height: "100%" }}>
+			<Box sx={{ position: "fixed", inset: 0 }}>
 				<GBackground />
 				<Stack
 					sx={{

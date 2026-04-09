@@ -4,10 +4,30 @@ export interface MockUser {
 	password: string;
 	image: string | null;
 	expPoints: number;
-	badges: string;
 	isGuest?: boolean;
 	sessionKey?: string | null;
 }
+
+export const mockBadgeStrings = [
+	"Deaf Octopus",
+	"Dazed Jellyfish",
+	"Distracted Pigeon",
+	"Curious Cat",
+	"Attentive Owl",
+	"Rhythmic Raptor",
+	"Sonic Shark",
+	"Echolocating Bat",
+] as const;
+
+const mockBadgeBreakpoints = [100, 200, 500, 1000, 2000, 5000, 10000] as const;
+
+export const getBadgeForXp = (xp: number) => {
+	const safeXp = Math.max(0, Math.floor(xp));
+	const badgeIndex = mockBadgeBreakpoints.findIndex((breakpoint) => safeXp < breakpoint);
+	return badgeIndex === -1
+		? mockBadgeStrings[mockBadgeStrings.length - 1]
+		: mockBadgeStrings[badgeIndex];
+};
 
 const defaultUser: MockUser = {
 	username: "john",
@@ -15,7 +35,6 @@ const defaultUser: MockUser = {
 	password: "secret",
 	image: null,
 	expPoints: 120,
-	badges: "Rookie",
 	isGuest: false,
 	sessionKey: null,
 };
@@ -79,7 +98,6 @@ export const createUser = (username: string, email: string, password: string) =>
 		password,
 		image: null,
 		expPoints: 0,
-		badges: "Rookie",
 		isGuest: false,
 		sessionKey: null,
 	};

@@ -80,7 +80,10 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 		errors: initialErrors,
 	}));
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-	const [formError, setFormError] = useState<string | null>(null);
+	const [formMessage, setFormMessage] = useState<{
+		text: string;
+		tone: "error" | "success";
+	} | null>(null);
 
 	//====================== FUNCTIONS ======================
 	const runValidate = (spec: IFieldSpec, value: string, values: Record<string, string>) => {
@@ -95,6 +98,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 	};
 
 	const setField = (name: string, value: string) => {
+		setFormMessage(null);
 		setFormState((prev) => {
 			const nextValues = { ...prev.values, [name]: value };
 			const nextErrors = { ...prev.errors };
@@ -159,7 +163,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 	function handleSubmit(e: FormEvent) {
 		e.preventDefault();
 		setIsSubmitting(true);
-		setFormError(null);
+		setFormMessage(null);
 		if (onSubmit) {
 			const valid = validateAll();
 			if (!valid) {
@@ -170,11 +174,21 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				.then((retStatus) => {
 					if (!retStatus) return;
 					if (retStatus.valid) {
-						setFormError(null);
+						if (retStatus.resetOnSuccess) {
+							setFormState({
+								values: initialValues,
+								errors: initialErrors,
+							});
+						}
+						if (retStatus.msg) {
+							setFormMessage({ text: retStatus.msg, tone: "success" });
+						}
 						return;
 					}
 					if (retStatus.fieldErrors) setBackendErrors(retStatus.fieldErrors);
-					setFormError(retStatus.msg ?? null);
+					if (retStatus.msg) {
+						setFormMessage({ text: retStatus.msg, tone: "error" });
+					}
 				})
 				.finally(() => {
 					setIsSubmitting(false);
@@ -211,9 +225,13 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 				);
 			})}
 
-			{formError && (
-				<CText color="error" size="sm" sx={{ mt: 1 }}>
-					{formError}
+			{formMessage && (
+				<CText
+					color={formMessage.tone === "success" ? "primary.main" : "error.main"}
+					size="sm"
+					sx={{ mt: 1 }}
+				>
+					{formMessage.text}
 				</CText>
 			)}
 

@@ -1,11 +1,3 @@
-User:
-  type: object
-  description: Basic user profile data.
-  properties:
-    id: { type: integer }
-    username: { type: string }
-    email: { type: string }
-
 Profile:
   type: object
   description: Full user profile data.
@@ -71,3 +63,27 @@ TokenResponse:
     access: { type: string }
     username: { type: string }
   required: [access, username]
+
+DescriptionResponse:
+  type: object
+  description: Generic success response with a localized or human-readable message.
+  properties:
+    description: { type: string }
+  required: [description]
+
+ProfileDeleteRequest:
+  type: object
+  description: Password confirmation payload required to permanently delete the current profile.
+  properties:
+    password: { type: string, format: password }
+  required: [password]
+
+ProfilePasswordChangeRequest:
+  type: object
+  description: Payload used to change the authenticated user's password.
+  properties:
+    currentPassword:
+      { type: string, format: password, description: Current (old) password. }
+    newPassword:
+      { type: string, format: password, description: Replacement password. }
+  required: [currentPassword, newPassword]
