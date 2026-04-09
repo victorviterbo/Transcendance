@@ -100,7 +100,7 @@ describe("profile settings panel", () => {
 
 		const passwordSummary = screen.getByRole("button", { name: /change_password/i });
 		await user.click(passwordSummary);
-		const passwordPanel = passwordSummary.closest(".MuiAccordion-root");
+		const passwordPanel = passwordSummary.closest<HTMLElement>(".MuiAccordion-root");
 		expect(passwordPanel).not.toBeNull();
 		if (!passwordPanel) throw new Error("Password panel not found");
 
