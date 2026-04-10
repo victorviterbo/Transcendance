@@ -1,9 +1,12 @@
 Profile:
   type: object
-  description: Full user profile data.
+  description: Full profile payload returned by the public exact-lookup endpoint.
   properties:
     username: { type: string }
-    avatar: { type: string, format: uri }
+    avatar:
+      type: string
+      format: uri-reference
+      description: Usually a relative `/DB/media/...` path.
     exp_points: { type: integer }
     badges: { type: string }
     created_at: { type: string, format: date-time }
@@ -11,23 +14,47 @@ Profile:
       type: string
       description: Only present for profiles linked to a registered user.
 
+OwnProfile:
+  type: object
+  description: Profile payload returned by authenticated profile updates and embedded friendship serializers.
+  properties:
+    email: { type: string }
+    username: { type: string }
+    avatar:
+      type: string
+      format: uri-reference
+      description: Usually a relative `/DB/media/...` path.
+    exp_points: { type: integer }
+    badges: { type: string }
+    created_at: { type: string, format: date-time }
+    is_guest: { type: boolean }
+    uid: { type: string, format: uuid }
+
 LightProfile:
   type: object
-  description: Minimal profile data (guests and search results).
+  description: Minimal profile payload returned by search, guest, and friends list endpoints.
   properties:
     username: { type: string }
-    avatar: { type: string, format: uri }
+    avatar:
+      type: string
+      format: uri-reference
+      description: Usually a relative `/DB/media/...` path.
     is_guest: { type: boolean }
-    session_key: { type: string }
+    session_key:
+      type: string
+      nullable: true
 
 Friendship:
   type: object
   description: A friendship or pending friend request between two users.
   properties:
-    from_user: { type: string, description: Username of the request sender. }
-    to_user: { type: string, description: Username of the request recipient. }
+    from_user:
+      $ref: '#/OwnProfile'
+    to_user:
+      $ref: '#/OwnProfile'
     status: { type: string, enum: [pending, accepted] }
     created_at: { type: string, format: date-time }
+    uid: { type: string, format: uuid }
 
 ValidationError:
   type: object
@@ -64,12 +91,30 @@ TokenResponse:
     username: { type: string }
   required: [access, username]
 
+PasswordChangeResponse:
+  type: object
+  description: Password change success payload including fresh credentials.
+  properties:
+    description: { type: string }
+    access: { type: string }
+    username: { type: string }
+  required: [description, access, username]
+
 DescriptionResponse:
   type: object
   description: Generic success response with a localized or human-readable message.
   properties:
     description: { type: string }
   required: [description]
+
+SerializerErrorResponse:
+  type: object
+  description: 'Raw DRF serializer errors returned without the project''s `{ error: ... }` wrapper.'
+  additionalProperties:
+    oneOf:
+      - type: string
+      - type: array
+        items: { type: string }
 
 ProfileDeleteRequest:
   type: object

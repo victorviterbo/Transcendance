@@ -22,7 +22,7 @@ profile:
                 value:
                   username: "marc"
                   email: "marc@example.com"
-                  avatar: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  avatar: "/DB/media/profile_pics/user_1_profile.png"
                   exp_points: 420
                   badges: "Curious Cat"
                   created_at: "2025-06-01T12:00:00Z"
@@ -37,14 +37,10 @@ profile:
                 value:
                   error:
                     query: "MISSING_FIELD"
-              empty-query:
-                value:
-                  error:
-                    query: "EMPTY_FIELD"
               not-found:
                 value:
                   error:
-                    query: "NOT_FOUND"
+                    query: "USER_NOT_FOUND"
 
   post:
     summary: Update own profile
@@ -54,14 +50,21 @@ profile:
     security:
       - bearerAuth: []
     requestBody:
-      description: Fields to update. Avatar upload requires multipart/form-data.
+      description: Fields to update. Avatar uploads use the `avatar` field.
       required: true
       content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username: { type: string }
+              email: { type: string }
         multipart/form-data:
           schema:
             type: object
             properties:
               username: { type: string }
+              email: { type: string }
               avatar: { type: string, format: binary }
     responses:
       "200":
@@ -69,15 +72,18 @@ profile:
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/Profile
+              $ref: ../openapi.yaml#/components/schemas/OwnProfile
             examples:
               update-ok:
                 value:
+                  email: "marc@example.com"
                   username: "marc"
-                  avatar: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  avatar: "/DB/media/profile_pics/user_1_profile.png"
                   exp_points: 420
                   badges: "Curious Cat"
                   created_at: "2025-06-01T12:00:00Z"
+                  is_guest: false
+                  uid: "53a94d8d-3b4f-4dc8-a2e6-80b71f5b454f"
       "400":
         description: Field validation error.
         content:
@@ -85,10 +91,18 @@ profile:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ValidationError
             examples:
-              invalid-field:
+              invalid-username:
                 value:
                   error:
-                    username: "INVALID"
+                    username: "INVALID_USERNAME"
+              invalid-email:
+                value:
+                  error:
+                    email: "INVALID_EMAIL"
+              invalid-avatar:
+                value:
+                  error:
+                    avatar: "INVALID_IMAGE"
       "409":
         description: Username already taken.
         content:
@@ -99,108 +113,7 @@ profile:
               username-taken:
                 value:
                   error:
-                    username: "ALREADY_TAKEN"
-      "401":
-        description: Not authenticated.
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
-
-  delete:
-    summary: Delete own profile
-    description: Permanently delete the authenticated user's account and profile after password confirmation.
-    operationId: deleteProfile
-    tags: [profile]
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: ../openapi.yaml#/components/schemas/ProfileDeleteRequest
-          examples:
-            confirm-delete:
-              value:
-                password: "Password123+"
-    responses:
-      "204":
-        description: Profile deleted successfully.
-      "400":
-        description: Validation error.
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/ValidationError
-            examples:
-              missing-password:
-                value:
-                  error:
-                    password: "MISSING_FIELD"
-              invalid-password:
-                value:
-                  error:
-                    password: "INVALID_PASSWORD"
-      "401":
-        description: Not authenticated.
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/AuthError
-
-password:
-  post:
-    summary: Change password
-    description: |
-      Update the authenticated user's password using the current password and a new password.
-      The new password must be different from the current password.
-    operationId: changeProfilePassword
-    tags: [profile]
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: ../openapi.yaml#/components/schemas/ProfilePasswordChangeRequest
-          examples:
-            change-password:
-              value:
-                currentPassword: "Password123+"
-                newPassword: "NewPassword123+"
-    responses:
-      "200":
-        description: Password changed successfully.
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/DescriptionResponse
-            examples:
-              password-updated:
-                value:
-                  description: "Updated password successfully"
-      "400":
-        description: Validation error.
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/ValidationError
-            examples:
-              missing-fields:
-                value:
-                  error:
-                    currentPassword: "MISSING_FIELD"
-                    newPassword: "MISSING_FIELD"
-              invalid-current-password:
-                value:
-                  error:
-                    currentPassword: "INVALID_PASSWORD"
-              unchanged-password:
-                value:
-                  error:
-                    newPassword: "PASSWORD_UNCHANGED"
+                    username: "USERNAME_TAKEN"
       "401":
         description: Not authenticated.
         content:
@@ -211,7 +124,7 @@ password:
 search:
   get:
     summary: Search profiles
-    description: Search for profiles matching the given username.
+    description: Return profiles whose username exactly matches the given query string.
     operationId: searchProfiles
     tags: [profile]
     parameters:
@@ -229,6 +142,15 @@ search:
               type: array
               items:
                 $ref: ../openapi.yaml#/components/schemas/LightProfile
+            examples:
+              match:
+                value:
+                  - username: "marc"
+                    avatar: "/DB/media/default_avatars/default_avatar_1.png"
+                    is_guest: false
+                    session_key: null
+              no-match:
+                value: []
       "400":
         description: Query parameter missing or empty.
         content:
@@ -256,6 +178,11 @@ guest-create:
     requestBody:
       required: true
       content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username: { type: string }
         multipart/form-data:
           schema:
             type: object
@@ -270,18 +197,37 @@ guest-create:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/LightProfile
+            examples:
+              guest-created:
+                value:
+                  username: "guest42"
+                  avatar: "/DB/media/default_avatars/default_avatar_1.png"
+                  is_guest: true
+                  session_key: "x4y6z8example"
       "200":
         description: Existing guest profile updated
         content:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/LightProfile
+            examples:
+              guest-updated:
+                value:
+                  username: "guest42"
+                  avatar: "/DB/media/profile_pics/user_3_profile.png"
+                  is_guest: true
+                  session_key: "x4y6z8example"
       "400":
-        description: Validation error
+        description: Raw serializer validation errors
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/ValidationError
+              $ref: ../openapi.yaml#/components/schemas/SerializerErrorResponse
+            examples:
+              username-taken:
+                value:
+                  username:
+                    - "Username already taken"
 
 guest-delete:
   post:

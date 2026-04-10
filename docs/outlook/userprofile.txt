@@ -1,58 +1,46 @@
 userprofile:
     path: /api/profile/
         /:
-            post: [IsAuthenticated]
-                success: 
-                    - HTTP_200_OK {'username': 'avatar', 'exp_points', 'basged', 'created_at'}
-                        the user was successfully created
-                failure: 
-                    - HTTP_409_CONFLICT {'error': {['<field>': 'ALREADY_TAKEN']}}
-                        one or more of the field is already taken by another user
-                    - HTTP_400_BAD_REQUEST {'error': {['username': 'INVALID'], ['email': 'INVALID']}}
-                        one or more field is either invalid, or empty
-        login/:
-            post: [AllowAny]
-                success: 
-                    - HTTP_200_OK {'username', 'access'}
-                        credentials generated and cookie set
+            get: [AllowAny]
+                success:
+                    - HTTP_200_OK {'username', 'avatar', 'exp_points', 'badges', 'created_at', ['email']}
+                        exact username lookup
                 failure:
-                    - HTTP_401_UNAUTHORIZED {'error': {'auth': 'INVALID_CREDENTIALS'}}
-                        we want to be vague for security reasons
-        logout/:
+                    - HTTP_400_BAD_REQUEST {'error': {'query': 'MISSING_FIELD'}}
+                        query parameter `q` missing
+                    - HTTP_400_BAD_REQUEST {'error': {'query': 'USER_NOT_FOUND'}}
+                        profile does not exist
+            post: [IsAuthenticated]
+                success:
+                    - HTTP_200_OK {'email', 'username', 'avatar', 'exp_points', 'badges', 'created_at', 'is_guest', 'uid'}
+                        the authenticated profile was updated
+                failure:
+                    - HTTP_409_CONFLICT {'error': {'username': 'USERNAME_TAKEN'}}
+                        username is already taken
+                    - HTTP_400_BAD_REQUEST {'error': {'username': 'INVALID_USERNAME' | 'email': 'INVALID_EMAIL' | 'avatar': 'INVALID_IMAGE'}}
+                        one or more submitted fields are invalid
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid
+        search/:
+            get: [AllowAny]
+                success:
+                    - HTTP_200_OK [LightProfile]
+                        exact username match search, possibly empty
+                failure:
+                    - HTTP_400_BAD_REQUEST {'error': {'query': 'MISSING_FIELD' | 'EMPTY_FIELD'}}
+                        query parameter invalid
+        guest-create/:
+            post: [AllowAny]
+                success:
+                    - HTTP_201_CREATED LightProfile
+                        a guest profile was created for the current session
+                    - HTTP_200_OK LightProfile
+                        an existing guest profile for the session was updated
+                failure:
+                    - HTTP_400_BAD_REQUEST raw serializer errors
+                        validation is returned directly by DRF, not wrapped in {'error': ...}
+        guest-delete/:
             post: [AllowAny]
                 success:
                     - HTTP_204_NO_CONTENT
-                        credentials are blacklisted and cookies removed
-                failure:
-                    - HTTP_401_UNAUTHORIZED {'error': {'auth': 'INVALID_CREDENTIALS'}}
-                        the user was not logged in in the first place
-        refresh/:
-            post: [AllowAny]
-                success: 
-                    - HTTP_200_OK {'username', 'access'}
-                        old credentials are blacklisted and new one generated and returned
-                failure:
-                    - HTTP_401_UNAUTHORIZED {'error': {'cookie': 'MISSING_FIELD'}}
-                        refresh token is not in cookies
-                    - HTTP_401_UNAUTHORIZED {'error': {'cookie': 'INVALID'}}
-                        refresh token is not valid or blacklisted
-        friend-request/send/: 
-        friend-request/respond/: 
-            post: [IsAuthenticated]
-                success: 
-                    - HTTP_201_CREATED {'description': FRIENDSHIP_REQUEST_SENT, 'target-username'}
-                        the user successfully sent a friend request to the target user
-                    - HTTP_200_OK {'description': FRIENDSHIP_REQUEST_ACCEPTED, 'target-username'}
-                        the user successfully accepted a friend request from the target user
-                failure:
-                    - HTTP_400_BAD_REQUEST {'error': {'target-username': 'MISSING_FIELD'}}
-                        target user was not specified
-                    - HTTP_400_BAD_REQUEST {'error': {'target-username': 'NOT_FOUND'}}
-                        target user was not found
-                    - HTTP_400_BAD_REQUEST {'error': {'friendship': 'ALREADY_EXISTS'}, 'request_status'}
-                        friend request already exists
-                    - HTTP_400_BAD_REQUEST {'error': {'frienship': REALLY_SAD}}
-                        sender and receiver of friendrequest are the same
-            get:
-                success:
-                    - HTTP_200_OK {'incomming': [], 'outgoing': []}
+                        guest profile removed if it existed
