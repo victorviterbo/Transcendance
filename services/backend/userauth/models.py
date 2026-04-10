@@ -86,6 +86,7 @@ class SiteUser(AbstractUser):
     email = models.EmailField('email', unique=True, null=False, blank=False)
     friends = models.ManyToManyField("self",
                                      through='friends.Friendship',
+                                     through_fields=('from_user', 'to_user'),
                                      blank=True,
                                      symmetrical=False
                                     )
