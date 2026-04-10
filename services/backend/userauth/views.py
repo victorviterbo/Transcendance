@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
@@ -161,29 +162,40 @@ class RefreshTokenView(TokenRefreshView):
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handles display of user profile."""
         refresh_token = request.COOKIES.get('refresh-token')
-        if refresh_token:
-            request.data['refresh'] = refresh_token
-            try:
-                response = super().post(request, *args, **kwargs)
-                if response.status_code == status.HTTP_200_OK:
-                    new_refresh = response.data.pop('refresh')
-                    token = RefreshToken(new_refresh)
-                    user = SiteUser.objects.get(id=token['user_id'])
-                    response.data['username'] = user.profile.username
-                    response.set_cookie(
-                        key='refresh-token',
-                        value=new_refresh,
-                        httponly=True, secure=True, samesite='Lax',
-                        path='/api/auth/'
-                    )
-                    return response
-                else:
-                    return response
-            except Exception as e:
-                return Response({'error': {'cookie': e.detail['code'].upper()}}, # TODO test
-                                status=status.HTTP_401_UNAUTHORIZED)
-        return Response({'error': {'cookie': 'MISSING_FIELD'}},
-                        status=status.HTTP_401_UNAUTHORIZED)
+        if not refresh_token:
+            return Response({'error': {'cookie': 'MISSING_FIELD'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except (InvalidToken, TokenError):
+            return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        except Exception:
+            return Response({'error': {'cookie': 'INVALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        response_data = serializer.validated_data.copy()
+        new_refresh = response_data.pop('refresh', None)
+
+        try:
+            token = RefreshToken(new_refresh or refresh_token)
+            user = SiteUser.objects.get(id=token['user_id'])
+            response_data['username'] = user.profile.username
+        except (KeyError, SiteUser.DoesNotExist, TokenError):
+            return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        response = Response(response_data, status=status.HTTP_200_OK)
+        if new_refresh:
+            response.set_cookie(
+                key='refresh-token',
+                value=new_refresh,
+                httponly=True, secure=True, samesite='Lax',
+                path='/api/auth/'
+            )
+        return response
 
 class UpdatePasswordView(APIView):
     """Define updating of password."""
@@ -209,7 +221,19 @@ class UpdatePasswordView(APIView):
             validate_password(request.data['newPassword'], user=self.request.user)
             self.request.user.set_password(request.data['newPassword'])
             self.request.user.save()
-            return Response('PASSWORD_UPDATED', status=status.HTTP_200_OK)
+            token = RefreshToken.for_user(self.request.user)
+            response = Response({
+                'description': 'PASSWORD_UPDATED',
+                'access': str(token.access_token),
+                'username': self.request.user.profile.username,
+            }, status=status.HTTP_200_OK)
+            response.set_cookie(
+                key='refresh-token',
+                value=str(token),
+                httponly=True, secure=True, samesite='Lax',
+                path='/api/auth/'
+            )
+            return response
         except coreValidationError:
             return Response({'error': {'password': 'INVALID_PASSWORD'}},
                             status=status.HTTP_400_BAD_REQUEST)
