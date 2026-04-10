@@ -13,8 +13,32 @@ describe("profile mock endpoints", () => {
 
 		expect(response.status).toBe(200);
 		expect(response.data.username).toBe("marc");
+		expect(response.data.avatar).toBe("/DB/media/default_pp.jpg");
 		expect(db.findUserByExactUsername("marc")).not.toBeNull();
 		expect(db.getSessionUser()?.username).toBe("marc");
+	});
+
+	it("returns avatar in the profile response shape", async () => {
+		db.setSessionUser("john");
+
+		const response = await api.get(`${API_PROFILE}?q=john`);
+
+		expect(response.status).toBe(200);
+		expect(response.data.avatar).toBe("/DB/media/default_pp.jpg");
+		expect(response.data.image).toBeUndefined();
+	});
+
+	it("accepts avatar uploads through the profile endpoint", async () => {
+		db.setSessionUser("john");
+		const formData = new FormData();
+		const avatar = new File(["avatar"], "avatar.png", { type: "image/png" });
+		formData.append("avatar", avatar);
+
+		const response = await api.post(API_PROFILE, formData);
+
+		expect(response.status).toBe(200);
+		expect(response.data.avatar).toBe("/DB/media/default_pp.jpg");
+		expect(db.getSessionUser()?.avatar).toBe("/DB/media/default_pp.jpg");
 	});
 
 	it("rejects a username already taken", async () => {
