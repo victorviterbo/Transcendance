@@ -208,7 +208,7 @@ friends:
                 value:
                   friends:
                     - username: "alice"
-                      image: "http://localhost:8000/media/profile_pics/user_2_profile.png"
+                      avatar: "http://localhost:8000/media/profile_pics/user_2_profile.png"
                       exp_points: 150
                       badges: "Curious Cat"
                       created_at: "2025-06-01T12:00:00Z"

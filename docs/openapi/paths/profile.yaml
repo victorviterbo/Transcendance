@@ -22,7 +22,7 @@ profile:
                 value:
                   username: "marc"
                   email: "marc@example.com"
-                  image: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  avatar: "http://localhost:8000/media/profile_pics/user_1_profile.png"
                   exp_points: 420
                   badges: "Curious Cat"
                   created_at: "2025-06-01T12:00:00Z"
@@ -54,7 +54,7 @@ profile:
     security:
       - bearerAuth: []
     requestBody:
-      description: Fields to update. Image upload requires multipart/form-data.
+      description: Fields to update. Avatar upload requires multipart/form-data.
       required: true
       content:
         multipart/form-data:
@@ -62,7 +62,7 @@ profile:
             type: object
             properties:
               username: { type: string }
-              image: { type: string, format: binary }
+              avatar: { type: string, format: binary }
     responses:
       "200":
         description: Profile updated. Returns the updated profile data.
@@ -74,7 +74,7 @@ profile:
               update-ok:
                 value:
                   username: "marc"
-                  image: "http://localhost:8000/media/profile_pics/user_1_profile.png"
+                  avatar: "http://localhost:8000/media/profile_pics/user_1_profile.png"
                   exp_points: 420
                   badges: "Curious Cat"
                   created_at: "2025-06-01T12:00:00Z"
@@ -261,7 +261,7 @@ guest-create:
             type: object
             properties:
               username: { type: string }
-              image: { type: string, format: binary }
+              avatar: { type: string, format: binary }
             required: [username]
     responses:
       "201":

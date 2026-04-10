@@ -3,7 +3,7 @@ Profile:
   description: Full user profile data.
   properties:
     username: { type: string }
-    image: { type: string, format: uri }
+    avatar: { type: string, format: uri }
     exp_points: { type: integer }
     badges: { type: string }
     created_at: { type: string, format: date-time }
@@ -16,7 +16,7 @@ LightProfile:
   description: Minimal profile data (guests and search results).
   properties:
     username: { type: string }
-    image: { type: string, format: uri }
+    avatar: { type: string, format: uri }
     is_guest: { type: boolean }
     session_key: { type: string }
 

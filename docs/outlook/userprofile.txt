@@ -3,7 +3,7 @@ userprofile:
         /:
             post: [IsAuthenticated]
                 success: 
-                    - HTTP_200_OK {'username': 'image', 'exp_points', 'basged', 'created_at'}
+                    - HTTP_200_OK {'username': 'avatar', 'exp_points', 'basged', 'created_at'}
                         the user was successfully created
                 failure: 
                     - HTTP_409_CONFLICT {'error': {['<field>': 'ALREADY_TAKEN']}}
