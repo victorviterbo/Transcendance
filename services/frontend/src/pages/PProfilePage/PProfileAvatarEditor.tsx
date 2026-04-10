@@ -12,7 +12,7 @@ import { validateImageFile } from "../../utils/image";
 
 interface ProfileAvatarEditorProps {
 	username: string;
-	image?: string | null;
+	avatar?: string | null;
 	onUploaded: (profile: IProfileData) => void;
 }
 
@@ -22,7 +22,7 @@ const normalizeUploadError = (uploadError: unknown) => {
 	return message;
 };
 
-function PProfileAvatarEditor({ username, image, onUploaded }: ProfileAvatarEditorProps) {
+function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEditorProps) {
 	const [open, setOpen] = useState(false);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [isUploading, setIsUploading] = useState(false);
@@ -80,13 +80,13 @@ function PProfileAvatarEditor({ username, image, onUploaded }: ProfileAvatarEdit
 		}
 	};
 
-	const avatarSrc = previewUrl ?? resolveProfileImage(image);
+	const avatarSrc = previewUrl ?? resolveProfileImage(avatar);
 
 	return (
 		<>
 			<Box sx={{ position: "relative", width: 88, height: 88 }}>
 				<Avatar
-					src={resolveProfileImage(image)}
+					src={resolveProfileImage(avatar)}
 					sx={{
 						width: 88,
 						height: 88,

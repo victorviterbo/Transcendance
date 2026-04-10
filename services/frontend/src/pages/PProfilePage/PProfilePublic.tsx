@@ -74,7 +74,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 							alignItems={{ xs: "flex-start", sm: "center" }}
 						>
 							<Avatar
-								src={resolveProfileImage(profile?.image)}
+								src={resolveProfileImage(profile?.avatar)}
 								sx={{
 									width: 88,
 									height: 88,
