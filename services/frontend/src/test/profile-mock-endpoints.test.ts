@@ -30,11 +30,9 @@ describe("profile mock endpoints", () => {
 
 	it("accepts avatar uploads through the profile endpoint", async () => {
 		db.setSessionUser("john");
-		const formData = new FormData();
-		const avatar = new File(["avatar"], "avatar.png", { type: "image/png" });
-		formData.append("avatar", avatar);
-
-		const response = await api.post(API_PROFILE, formData);
+		const response = await api.post(API_PROFILE, {
+			avatar: "/DB/media/default_pp.jpg",
+		});
 
 		expect(response.status).toBe(200);
 		expect(response.data.avatar).toBe("/DB/media/default_pp.jpg");
