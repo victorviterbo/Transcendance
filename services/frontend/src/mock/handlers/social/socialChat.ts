@@ -110,3 +110,80 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 		}, 2000);
 	}, 5000);
 }
+
+
+export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionProtocol)
+{
+	if(data.target != "friend-chat")
+		return;
+	if(data.event != "send")
+		return;
+
+	const messageUser: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
+		(user: IMockMessageDBUser) => {
+			return user.friend.uid == data.message["target-id"];
+		},
+	);
+
+	if(!messageUser)
+		return;
+
+	let targetFeed: IFriendFeed = messageUser.messages
+
+	targetFeed.feed.push(data.message);
+	data.message.status = "sent";
+	data.message.uid = crypto.randomUUID();
+
+	const sendbackList: TWSRcv = {
+		target: "friend-chat",
+		event: "new",
+		message: data.message,
+	};
+	client.send(JSON.stringify(sendbackList));
+
+	setTimeout(() => {
+		targetFeed.feed.forEach((message: IFriendMessage) => {
+			if (message.direction == "outgoing" && (message.status == "not-sent" || message.status == "sent")) {
+				message.status = "recieved";
+				const sendbackList: TWSRcv = {
+					target: "friend-chat",
+					event: "update_status",
+					message: message,
+				};
+				client.send(JSON.stringify(sendbackList));
+			}
+		});
+
+		setTimeout(() => {
+			targetFeed.feed.forEach((message: IFriendMessage) => {
+				if (message.direction == "outgoing" && (message.status == "recieved")) {
+					message.status = "read";
+					const sendbackList: TWSRcv = {
+						target: "friend-chat",
+						event: "update_status",
+						message: message,
+					};
+					client.send(JSON.stringify(sendbackList));
+				}
+			});
+
+
+			setTimeout(() => {
+				const sendbackList: TWSRcv = {
+					target: "friend-chat",
+					event: "new",
+					message: {
+						message: "hey, how you doing ?",
+						date: new Date(),
+						direction: "incoming",
+						"target-id": messageUser.friend.uid,
+						target: messageUser.friend.username,
+						uid: crypto.randomUUID(),
+					},
+				};
+				targetFeed.feed.push(sendbackList.message);
+				client.send(JSON.stringify(sendbackList));
+			}, 2000);
+		}, 1000);
+	}, 1000);
+}

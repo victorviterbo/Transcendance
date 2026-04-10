@@ -663,6 +663,7 @@ export function mockSetMessageDB(): void {
 				{
 					message: "and this arrived",
 					date: new Date(Date.now() - 1000 * 60 * 4),
+					status: "read",
 					direction: "outgoing",
 					"target-id": mockSocialDB.friends[2].uid,
 					target: mockSocialDB.friends[2].username,

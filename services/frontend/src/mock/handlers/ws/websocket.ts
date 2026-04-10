@@ -1,7 +1,7 @@
 import { ws } from "msw";
 import { WS_ADRESS } from "../../../constants";
 import type { TWSRcv } from "../../../types/websocket";
-import { mockMessagesFriend1Update } from "../social/socialChat";
+import { mockMessagesFriend1Update, onMessageSent } from "../social/socialChat";
 
 //--------------------------------------------------
 //                                    NAME
@@ -25,6 +25,9 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 			};
 			client.send(JSON.stringify(sendbackList));
 		}
+		else if(dataRcv.target == "friend-chat")
+			if(dataRcv.event == "send")
+				onMessageSent(dataRcv, client);
 	});
 
 	mockMessagesFriend1Update(client);

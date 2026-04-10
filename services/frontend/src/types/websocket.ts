@@ -24,7 +24,7 @@ export interface IWSContextModule {
 export type TWSRcv =
 	| {
 			target: Extract<TWSModuleName, "friend-chat">;
-			event: "update_status" | "new";
+			event: "update_status" | "new" | "send";
 			message: IFriendMessage;
 	  }
 	| {

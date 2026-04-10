@@ -19,7 +19,6 @@ import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
 import type { IWSContextModule, TWSRcv } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
-import { useAuth } from "../../components/auth/CAuthProvider";
 
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
@@ -30,7 +29,6 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [messageField, setMessageField] = useState<string>("");
 	const localID = useId();
-	const user = useAuth();
 
 	const wsContext: IWSContextModule = useWS("friend-chat");
 
@@ -96,23 +94,30 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 
 	//====================== OUTGOING ======================
 	function handleSendMessage() {
-		console.log(user.user?.id, user.user?.username);
+		if(!messageField || messageField.length == 0)
+			return;
+		if(!targetFriend)
+			return;
 
-		// const nMessage: IFriendMessage = {
-		// 	message: messageField,
-		// 	date: new Date(),
-		// 	status: "not-sent",
-		// 	fromid: user.user?.id?.toString(), //TODO: ADD UI
-		// 	from: user.user?.username,
-		// 	toid: user.
-		// 	uid: "TEMP_ID",
-		// }
+		const nMessage: IFriendMessage = {
+			message: messageField,
+			date: new Date(),
+			status: "not-sent",
+			"target-id": targetFriend.uid,
+			target: targetFriend.username,
+			direction: "outgoing",
+			uid: "TEMP_ID",
+		}
 
 		wsContext.sendMessage(
 			JSON.stringify({
 				target: "friend-chat",
+				event: "send",
+				message: nMessage
 			} as TWSRcv),
 		);
+		
+		setMessageField("");
 	}
 
 	//====================== FUNCTIONS ======================
@@ -145,6 +150,10 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 					value={messageField}
 					onChange={(event) => {
 						setMessageField(event.target.value);
+					}}
+					onKeyUp={(event) => {
+						if(event.code == "Enter")
+							handleSendMessage();
 					}}
 				></CTextField>
 				<CIconButton onClick={handleSendMessage} sx={{ my: "auto", ml: "10px" }}>
