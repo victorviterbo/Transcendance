@@ -18,6 +18,10 @@ lerna-debug.log*
 # =========================
 # Python / Backend
 # =========================
+.venv/
+venv/
+env/
+ENV/
 **/__pycache__/*
 *.py[cod]
 **/.pytest_cache/

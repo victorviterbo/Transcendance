@@ -1,16 +1,16 @@
-import { Tabs, Tab } from "@mui/material";
+import { Tabs, Tab, type TabsProps } from "@mui/material";
 import { useState, type SyntheticEvent, type ReactNode, Children } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import { ttr } from "../../localization/localization.ts";
 import { CTabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 
-interface CTabsProps extends GCompProps {
+interface CTabsProps extends GCompProps, TabsProps {
 	tabs: string[];
 	children: ReactNode;
 }
 
 //TODO: Replace sx
-function CTabs({ tabs, children }: CTabsProps) {
+function CTabs({ tabs, testid, children }: CTabsProps) {
 	//====================== STATS ======================
 	const [tab, setTab] = useState<number>(0);
 
@@ -25,9 +25,15 @@ function CTabs({ tabs, children }: CTabsProps) {
 				onChange={(_: SyntheticEvent, newValue: number) => setTab(newValue)}
 				centered
 				sx={{ mb: 3 }}
+				data-testid={testid ? testid : null}
 			>
 				{tabs.map((item, index) => (
-					<Tab sx={CTabStyle} key={index} label={ttr(item)} />
+					<Tab
+						sx={CTabStyle}
+						key={index}
+						label={ttr(item)}
+						data-testid={testid ? testid + index : null}
+					/>
 				))}
 			</Tabs>
 			{childList[tab]}

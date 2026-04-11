@@ -8,6 +8,12 @@ export type TDropShadow = {
 	color: string;
 };
 
+export type TMargin = {
+	top?: number | string;
+	right?: number | string;
+	bottom?: number | string;
+	left?: number | string;
+};
 //--------------------------------------------------
 //                    COLORING
 //--------------------------------------------------
@@ -47,12 +53,37 @@ export interface IThemeColor {
 	quinary: string[];
 	quaternary: string[];
 	greys: string[];
+	cancel: string[];
+	validate: string[];
 	text: IThemeTextColor;
 }
 
 export interface IThemeTextColor {
 	dark: string;
 	light: string;
+}
+
+//====================== TEXT ======================
+export interface IThemeTextSize {
+	"2xl": number;
+	xl: number;
+	lg: number;
+	md: number;
+	sm: number;
+	xs: number;
+	"2xs": number;
+}
+
+export interface IThemeText {
+	sizes: IThemeTextSize;
+
+	mainFamily: string;
+	secondaryFamily?: string;
+}
+
+export interface IThemeTexts {
+	text: IThemeText;
+	title: IThemeText;
 }
 
 //====================== PSOITIONS ======================
@@ -62,10 +93,15 @@ export interface IThemeSize {
 		nav: number | string;
 	};
 
+	friends: number | string;
+
+	header: number | number;
 	footer: number | string;
 }
 export interface IThemePosition {
 	mainSpacing: number;
+
+	socialMargin: TMargin;
 
 	sizes: IThemeSize;
 }
@@ -76,6 +112,7 @@ export interface IThemeBGs {
 	header?: string;
 	feedback: string;
 	menu: string;
+	drawer: string;
 }
 
 export interface IThemeShared {
@@ -104,6 +141,9 @@ export interface IThemeEasing {
 export interface IThemeTiming {
 	fast: number;
 	medium_fast: number;
+	medium_slow: number;
+	enteringScreen: number;
+	leavingScreen: number;
 }
 export interface IThemeAnimations {
 	timing: IThemeTiming;

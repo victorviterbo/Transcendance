@@ -15,8 +15,15 @@ import CNavbarIcon from "./CNavbarIcon.tsx";
 import CDialogLanguage from "../feedback/dialogs/CDialogLanguage.tsx";
 import { CNavbarStyle } from "../../styles/components/navigation/CNavbarStyle.ts";
 import CMenu from "./CMenu.tsx";
+import type { GCompProps } from "../common/GProps.ts";
+import CNavbarToggle from "./CNavbarToggle.tsx";
 
-function CNavbar() {
+interface CNavbarProps extends GCompProps {
+	onToggleFriend: () => void;
+	isFriendActive: boolean;
+}
+
+function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -57,10 +64,11 @@ function CNavbar() {
 			onClick: () => alert("Coming soon"),
 		},
 		{
-			kind: "action",
+			kind: "toggle",
 			icon: <PeopleIcon />,
 			aria: "Friends",
-			onClick: () => alert("Coming soon"),
+			onClick: onToggleFriend,
+			active: isFriendActive,
 		},
 		{
 			kind: "action",
@@ -70,12 +78,6 @@ function CNavbar() {
 		},
 	];
 	const items = status === "authed" ? authedItems : guestItems;
-	const linkItems = items.filter(
-		(item): item is Extract<TNavItem, { kind: "link" }> => item.kind === "link",
-	);
-	const actionItems = items.filter(
-		(item): item is Extract<TNavItem, { kind: "action" }> => item.kind === "action",
-	);
 
 	return (
 		<AppBar position="static" sx={CNavbarStyle}>
@@ -113,29 +115,43 @@ function CNavbar() {
 					Guess Tunes
 				</CTitle>
 				<Stack direction="row" spacing={2} alignItems="center">
-					{linkItems.map((item, idx) => {
-						const isActive =
-							item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+					<CDialogLanguage open={false} />
+					{items.map((item, idx) => {
+						if (item.kind === "link") {
+							const isActive =
+								item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+							return (
+								<CNavbarLink
+									key={`${item.label}-${idx}`}
+									to={item.to}
+									label={item.label}
+									icon={item.icon}
+									active={isActive}
+								/>
+							);
+						} else if (item.kind === "toggle") {
+							return (
+								<CNavbarToggle
+									key={`${item.aria}-${idx}`}
+									aria={item.aria}
+									icon={item.icon}
+									onClick={item.onClick}
+									disabled={item.disabled}
+									active={item.active}
+								/>
+							);
+						}
+
 						return (
-							<CNavbarLink
-								key={`${item.label}-${idx}`}
-								to={item.to}
-								label={item.label}
+							<CNavbarIcon
+								key={`${item.aria}-${idx}`}
+								aria={item.aria}
 								icon={item.icon}
-								active={isActive}
+								onClick={item.onClick}
+								disabled={item.disabled}
 							/>
 						);
 					})}
-					<CDialogLanguage open={false} />
-					{actionItems.map((item, idx) => (
-						<CNavbarIcon
-							key={`${item.aria}-${idx}`}
-							aria={item.aria}
-							icon={item.icon}
-							onClick={item.onClick}
-							disabled={item.disabled}
-						/>
-					))}
 				</Stack>
 			</Toolbar>
 			<CMenu

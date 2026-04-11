@@ -139,12 +139,23 @@ CORS_ALLOWED_ORIGINS = [
 # Added for Channels: point ASGI application to channels routing(for chatroom)
 ASGI_APPLICATION = 'project.asgi.application'
 
-# Channels layer config (uses in-memory channel layer for development)(for chatroom)
+# Channels layer config (uses Redis for production, in-memory for dev without Redis)
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
     },
 }
+
+# Fallback to in-memory if Redis is not available (development only)
+# To use this, comment out the Redis config above and uncomment below:
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#     },
+# }
 
 # Database definition
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

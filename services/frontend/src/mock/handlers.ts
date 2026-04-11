@@ -7,6 +7,15 @@ import {
 	ProfileSearchHandler,
 } from "./handlers/users";
 import { FetchPrivateRoom, FetchPublicRoom } from "./handlers/home";
+import {
+	friendsListHandler,
+	friendsRequestsHandler,
+	friendsRequestsResponseHandler,
+	friendsRequestsSendHandler,
+	friendsSearchHandler,
+} from "./handlers/social/social";
+import { friendMessageHandler } from "./handlers/social/socialChat";
+import { socketConnHandler } from "./handlers/ws/websocket";
 
 export const handlers = [
 	LoginHandler,
@@ -20,4 +29,13 @@ export const handlers = [
 	ProfileSearchHandler,
 	FetchPrivateRoom,
 	FetchPublicRoom,
+
+	friendsListHandler,
+	friendsSearchHandler,
+	friendsRequestsHandler,
+	friendsRequestsSendHandler,
+	friendsRequestsResponseHandler,
+	friendMessageHandler,
+
+	socketConnHandler,
 ];

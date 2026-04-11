@@ -7,7 +7,7 @@ import { checkUsernameValid, checkEmailValid, checkPasswordValid } from "../../u
 import { API_AUTH_REGISTER } from "../../constants";
 import api from "../../api";
 import { useAuth } from "../../components/auth/CAuthProvider";
-import { getErrorMessage } from "../../utils/error";
+import { getErrorMessage } from "../../utils/error.tsx";
 import type { TFormFieldConfig } from "../../types/form";
 
 //--------------------------------------------------

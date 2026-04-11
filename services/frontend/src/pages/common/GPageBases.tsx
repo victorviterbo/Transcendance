@@ -1,15 +1,27 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { GProps } from "../../components/common/GProps";
 import { Box, Stack } from "@mui/material";
 import GBackground from "./GBackground";
 import CNavbar from "../../components/navigation/CNavbar";
+import { appAnimation, appPositions } from "../../styles/theme";
+import CDrawer from "../../components/navigation/CDrawer";
+import { useAuth } from "../../components/auth/CAuthProvider";
 import CFooter from "../../components/navigation/CFooter";
+import { cssAddSizes, sizeMakeString } from "../../utils/styles";
+import PSocial from "../PSocial";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
 }
 
 function GPageBase({ children }: GPageProps) {
+	const { user } = useAuth();
+	const [friendOpen, setFriendOpen] = useState<boolean>(false);
+
+	const handleOpenFriend = () => {
+		setFriendOpen(!friendOpen);
+	};
+
 	return (
 		<>
 			<Box sx={{ position: "fixed", inset: 0 }}>
@@ -25,11 +37,44 @@ function GPageBase({ children }: GPageProps) {
 						alignItems: "stretch",
 					}}
 				>
-					<CNavbar />
+					<CNavbar onToggleFriend={handleOpenFriend} isFriendActive={friendOpen} />
 					<Stack sx={{ flex: 1, overflowY: "auto", overflowX: "hidden" }}>
-						<Box sx={{ flex: 1 }}>{children}</Box>
+						<Box
+							sx={(Theme) => ({
+								transition: Theme.transitions.create(["width"], {
+									easing: appAnimation.easing.easeOut,
+									duration: appAnimation.timing.enteringScreen,
+								}),
+								flex: 1,
+								width: friendOpen
+									? "calc( 100% - " +
+										sizeMakeString(appPositions.sizes.friends) +
+										")"
+									: "100%",
+							})}
+						>
+							{children}
+						</Box>
 						<CFooter />
 					</Stack>
+					{user && (
+						<CDrawer
+							width={appPositions.sizes.friends}
+							margin={{
+								top: cssAddSizes(
+									appPositions.sizes.header,
+									appPositions.socialMargin?.top,
+								),
+								right: appPositions.socialMargin?.right,
+								bottom: appPositions.socialMargin?.bottom,
+								left: appPositions.socialMargin?.left,
+							}}
+							open={friendOpen}
+							data-testid="PSocialDrawer"
+						>
+							<PSocial></PSocial>
+						</CDrawer>
+					)}
 				</Stack>
 			</Box>
 		</>

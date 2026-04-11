@@ -12,8 +12,14 @@ describe("Contact page", () => {
 		);
 
 		expect(screen.getByRole("heading", { name: "CONTACT" })).toBeInTheDocument();
-		expect(screen.getByAltText("fmixtur portrait")).toHaveAttribute("src", "/imgs/pp/fmixtur.jpg");
-		expect(screen.getByAltText("hcavet portrait")).toHaveAttribute("src", "/imgs/pp/hcavet.jpg");
+		expect(screen.getByAltText("fmixtur portrait")).toHaveAttribute(
+			"src",
+			"/imgs/pp/fmixtur.jpg",
+		);
+		expect(screen.getByAltText("hcavet portrait")).toHaveAttribute(
+			"src",
+			"/imgs/pp/hcavet.jpg",
+		);
 		expect(screen.getByAltText("kgauthie portrait")).toHaveAttribute(
 			"src",
 			"/imgs/pp/kgauthie.jpg",
