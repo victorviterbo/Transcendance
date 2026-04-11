@@ -208,6 +208,42 @@ describe("Websocket - data recieve", () => {
 		},
 	);
 
+	it("Chat: Trying to chat (FAIL)", { timeout: 30000 }, async () => {
+		const messageDB = mockGetMessageDB();
+		const targetFriend = messageDB.data.find((value: IMockMessageDBUser) => {
+			return value.friend.username == "Hikari";
+		});
+		expect(targetFriend).toBeDefined();
+		if (!targetFriend) return;
+		render(
+			<CWebsocket>
+				<PFriendChat targetFriend={targetFriend.friend}></PFriendChat>
+			</CWebsocket>,
+		);
+
+		const searchField = screen.getByTestId("PFriendChat_NewMessage");
+		const sendButton = screen.getByTestId("PFriendChat_SendButton");
+		expect(searchField).toBeInTheDocument();
+		const input = within(searchField).getByRole("textbox");
+
+		await userEvent.type(input, "Hello my friend");
+		await userEvent.click(sendButton);
+		await waitFor(() => {
+			expect((input as HTMLInputElement).value).toEqual("");
+
+			const allChatNodes = screen.getAllByTestId("PFriendChatNode");
+			expect(allChatNodes.length).greaterThan(0);
+
+			const foundChat = allChatNodes.find((El: HTMLElement) => {
+				return within(El).getByText("Hello my friend");
+			});
+			expect(foundChat).toBeInTheDocument();
+			if (!foundChat) return;
+			expect(within(foundChat).getByTestId("ErrorIcon")).toBeInTheDocument();
+			expect(within(foundChat).getByText("MESSAGE_SENT_FAILED")).toBeInTheDocument();
+		});
+	});
+
 	it("Chat: Trying to chat", { timeout: 30000 }, async () => {
 		const messageDB = mockGetMessageDB();
 		const targetFriend = messageDB.data.find((value: IMockMessageDBUser) => {
