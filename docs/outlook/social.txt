@@ -1,0 +1,44 @@
+social:
+    path: /api/social/
+        friends/list/:
+            get: [IsAuthenticated]
+                success:
+                    - HTTP_200_OK {'friends': [LightProfile]}
+                        accepted friends of the authenticated user
+                failure:
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid
+        request/pend/:
+            get: [IsAuthenticated]
+                success:
+                    - HTTP_200_OK {'incomming': [Friendship], 'outgoing': [Friendship]}
+                        pending incoming and outgoing friend requests
+                failure:
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid
+        request/send/:
+            post: [IsAuthenticated]
+                success:
+                    - HTTP_201_CREATED {'description': 'FRIENDSHIP_REQUEST_SENT', 'user-uid'}
+                        friend request created
+                failure:
+                    - HTTP_400_BAD_REQUEST {'error': {'user_uid': 'MISSING_FIELD' | 'USER_NOT_FOUND'}}
+                        target user uid missing or unknown
+                    - HTTP_400_BAD_REQUEST {'error': {'friendship': 'FRIENDSHIP_ALREADY_EXISTS'}, 'request_status'}
+                        friendship already exists
+                    - HTTP_400_BAD_REQUEST {'error': {'friendship': 'REALLY_SAD'}}
+                        sender tried to target themself
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid
+        request/respond/:
+            post: [IsAuthenticated]
+                success:
+                    - HTTP_200_OK {'description': 'FRIENDSHIP_REQUEST_ACCEPTED' | 'FRIENDSHIP_REQUEST_REJECTED', 'user_uid'}
+                        incoming friend request accepted or rejected
+                failure:
+                    - HTTP_400_BAD_REQUEST {'error': {'user_uid': 'MISSING_FIELD' | 'USER_NOT_FOUND'}}
+                        target user uid missing or unknown
+                    - HTTP_400_BAD_REQUEST {'error': {'friendship': 'FRIENDSHIP_NOT_FOUND'}}
+                        there is no pending request to act on
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid

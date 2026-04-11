@@ -1,11 +1,17 @@
-conda env create --file /backend/build/environment.yml
+#!/bin/sh
 
-if [ ! -d "/backend/DB/website" ]; then
-    mkdir "/backend/DB/website"
+set -eu
+
+if conda env list | grep -q '^backend '; then
+    conda env update --name backend --file /backend/build/environment.yml --prune
+else
+    conda env create --file /backend/build/environment.yml
 fi
 
-# rm /backend/DB/website/db.sqlite3
-find . -path "*/migrations/0*" -delete
+mkdir -p /backend/DB/website
+
+rm -f /backend/DB/website/db.sqlite3
+find /backend -path "*/migrations/0*" -delete
 
 conda run -n backend python /backend/manage.py makemigrations
 conda run -n backend python /backend/manage.py migrate

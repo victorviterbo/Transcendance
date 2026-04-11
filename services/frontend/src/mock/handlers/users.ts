@@ -6,7 +6,7 @@ import { API_PROFILE, API_PROFILE_PASSWORD, API_PROFILE_SEARCH } from "../../con
 type ProfilePayload = {
 	username?: unknown;
 	email?: unknown;
-	image?: unknown;
+	avatar?: unknown;
 	password?: unknown;
 };
 
@@ -16,11 +16,11 @@ type PasswordPayload = {
 };
 
 const unauthorized = () => HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
-const DEFAULT_PROFILE_IMAGE = "/DB/media/default_pp.jpg";
+const DEFAULT_PROFILE_AVATAR = "/DB/media/default_pp.jpg";
 
 const toProfileResponse = (user: MockUser) => ({
 	username: user.username,
-	image: DEFAULT_PROFILE_IMAGE,
+	avatar: user.avatar ?? DEFAULT_PROFILE_AVATAR,
 	exp_points: user.expPoints,
 	badges: getBadgeForXp(user.expPoints),
 	created_at: new Date().toISOString(),
@@ -73,7 +73,7 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 	const updates: {
 		username?: string;
 		email?: string;
-		image?: string | null;
+		avatar?: string | null;
 	} = {};
 	const errors: Record<string, string> = {};
 
@@ -115,6 +115,13 @@ export const PatchMeHandler = http.post(API_PROFILE, async ({ request }) => {
 				}
 			}
 		}
+	}
+
+	if (payload.avatar instanceof File) {
+		updates.avatar = DEFAULT_PROFILE_AVATAR;
+	} else if (typeof payload.avatar === "string") {
+		const avatar = payload.avatar.trim();
+		updates.avatar = avatar.length > 0 ? avatar : null;
 	}
 
 	if (Object.keys(errors).length > 0) {
@@ -208,7 +215,7 @@ export const ProfileSearchHandler = http.get(API_PROFILE_SEARCH, ({ request }) =
 		[
 			{
 				username: user.username,
-				image: DEFAULT_PROFILE_IMAGE,
+				avatar: user.avatar ?? DEFAULT_PROFILE_AVATAR,
 				is_guest: user.isGuest ?? false,
 				session_key: user.sessionKey ?? null,
 			},

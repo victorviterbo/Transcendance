@@ -2,18 +2,18 @@ userauth:
     path: /api/auth/
         register/:
             post: [AllowAny]
-                success: 
-                    - HTTP_200_OK {'username', 'access'}
+                success:
+                    - HTTP_201_CREATED {'username', 'access'} and refresh-token cookie
                         the user was successfully created
-                failure: 
-                    - HTTP_409_CONFLICT {'error': {['<field>': 'ALREADY_TAKEN']}}
-                        one or more of the field is already taken by another user
-                    - HTTP_400_BAD_REQUEST {'error': {['<field>': 'ALREADY_TAKEN']}}
-                        one or more field is either invalid, or empty
+                failure:
+                    - HTTP_409_CONFLICT {'error': {'username': 'USERNAME_TAKEN'}} or {'error': {'email': 'EMAIL_TAKEN'}}
+                        one or more unique fields are already used
+                    - HTTP_400_BAD_REQUEST {'error': {'username': 'INVALID_USERNAME' | 'email': 'INVALID_EMAIL' | 'password': 'INVALID_PASSWORD'}}
+                        one or more fields are invalid
         login/:
             post: [AllowAny]
-                success: 
-                    - HTTP_200_OK {'username', 'access'}
+                success:
+                    - HTTP_200_OK {'username', 'access'} and refresh-token cookie
                         credentials generated and cookie set
                 failure:
                     - HTTP_401_UNAUTHORIZED {'error': {'auth': 'INVALID_CREDENTIALS'}}
@@ -28,30 +28,35 @@ userauth:
                         the user was not logged in in the first place
         refresh/:
             post: [AllowAny]
-                success: 
+                success:
                     - HTTP_200_OK {'username', 'access'}
-                        old credentials are blacklisted and new one generated and returned
+                        a new access token is returned and the refresh-token cookie may be rotated
                 failure:
                     - HTTP_401_UNAUTHORIZED {'error': {'cookie': 'MISSING_FIELD'}}
                         refresh token is not in cookies
-                    - HTTP_401_UNAUTHORIZED {'error': {'cookie': 'INVALID'}}
-                        refresh token is not valid or blacklisted
-        friend-request/: 
+                    - HTTP_401_UNAUTHORIZED {'error': {'cookie': 'TOKEN_NOT_VALID' | 'INVALID'}}
+                        refresh token is invalid, malformed, or blacklisted
+        password/:
             post: [IsAuthenticated]
-                success: 
-                    - HTTP_201_CREATED {'description': FRIENDSHIP_REQUEST_SENT, 'target-username'}
-                        the user successfully sent a friend request to the target user
-                    - HTTP_200_OK {'description': FRIENDSHIP_REQUEST_ACCEPTED, 'target-username'}
-                        the user successfully accepted a friend request from the target user
-                failure:
-                    - HTTP_400_BAD_REQUEST {'error': {'target-username': 'MISSING_FIELD'}}
-                        target user was not specified
-                    - HTTP_400_BAD_REQUEST {'error': {'target-username': 'NOT_FOUND'}}
-                        target user was not found
-                    - HTTP_400_BAD_REQUEST {'error': {'friendship': 'ALREADY_EXISTS'}, 'request_status'}
-                        friend request already exists
-                    - HTTP_400_BAD_REQUEST {'error': {'frienship': REALLY_SAD}}
-                        sender and receiver of friendrequest are the same
-            get:
                 success:
-                    - HTTP_200_OK {'incomming': [], 'outgoing': []}
+                    - HTTP_200_OK {'description': 'PASSWORD_UPDATED', 'username', 'access'} and refresh-token cookie
+                        password updated and fresh credentials issued
+                failure:
+                    - HTTP_400_BAD_REQUEST {'error': {'currentPassword': 'MISSING_FIELD', 'newPassword': 'MISSING_FIELD'}}
+                        one or both password fields are missing
+                    - HTTP_400_BAD_REQUEST {'error': {'currentPassword': 'INVALID_PASSWORD'}}
+                        current password is wrong
+                    - HTTP_400_BAD_REQUEST {'error': {'password': 'INVALID_PASSWORD'}}
+                        new password does not satisfy backend validators
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid
+        delete/:
+            post: [IsAuthenticated]
+                success:
+                    - HTTP_204_NO_CONTENT
+                        account and related profile deleted
+                failure:
+                    - HTTP_400_BAD_REQUEST {'error': {'password': 'MISSING_FIELD' | 'INVALID_PASSWORD'}}
+                        password confirmation failed
+                    - HTTP_401_UNAUTHORIZED
+                        access token missing or invalid

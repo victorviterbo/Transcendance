@@ -17,13 +17,14 @@ class GameRoundStats(models.Model):
                              on_delete=models.CASCADE)
     winner = models.ForeignKey('userprofile.Profile',
                                on_delete=models.SET_NULL,
-                               null=True)
+                               null=True,
+                               related_name='won_rounds')
     track = models.ForeignKey(Track,
                               on_delete=models.SET_NULL,
                               null=True)
     player = models.ManyToManyField('userprofile.Profile',
-                               on_delete=models.CASCADE,
-                               through='UserRoundStats')
+                               through='UserRoundStats',
+                               related_name='played_rounds')
     class Meta:
         """Define the ordering of the game round statistics in the DB."""
         ordering = ['round_number']
@@ -48,6 +49,9 @@ class UserRoundStats(models.Model):
 class UserGameStats(models.Model):
     """Define the model for a single player for a single game."""
 
+    game = models.ForeignKey(Game,
+                             on_delete=models.CASCADE,
+                             related_name='player_stats')
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE,
                                related_name='games_played')

@@ -43,7 +43,7 @@ const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfo
 			>
 				<PProfileAvatarEditor
 					username={displayUsername}
-					image={profile?.image}
+					avatar={profile?.avatar}
 					onUploaded={onAvatarUploaded}
 				/>
 				<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>

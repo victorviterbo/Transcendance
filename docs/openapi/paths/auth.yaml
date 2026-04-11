@@ -42,20 +42,15 @@ register:
               invalid-email:
                 value:
                   error:
-                    email: "INVALID"
+                    email: "INVALID_EMAIL"
               invalid-username:
                 value:
                   error:
-                    username: "INVALID"
-              weak-password:
+                    username: "INVALID_USERNAME"
+              invalid-password:
                 value:
                   error:
-                    password: "PASSWORD_MIN"
-              password-complexity:
-                description: "Other codes: PASSWORD_NUMBER, PASSWORD_LOWERCASE, PASSWORD_UPPERCASE, PASSWORD_SPECIAL"
-                value:
-                  error:
-                    password: "PASSWORD_NUMBER"
+                    password: "INVALID_PASSWORD"
       "409":
         description: Username or email already taken.
         content:
@@ -66,16 +61,16 @@ register:
               username-taken:
                 value:
                   error:
-                    username: "ALREADY_TAKEN"
+                    username: "USERNAME_TAKEN"
               email-taken:
                 value:
                   error:
-                    email: "ALREADY_TAKEN"
+                    email: "EMAIL_TAKEN"
               both-taken:
                 value:
                   error:
-                    username: "ALREADY_TAKEN"
-                    email: "ALREADY_TAKEN"
+                    username: "USERNAME_TAKEN"
+                    email: "EMAIL_TAKEN"
 
 login:
   post:
@@ -148,15 +143,17 @@ logout:
 refresh:
   post:
     summary: Refresh access token
-    description: Issue a new access and refresh token pair using the refresh-token cookie.
+    description: |
+      Issue a new access token using the `refresh-token` cookie.
+      If refresh rotation is enabled, the response also replaces the cookie.
     operationId: refreshToken
     tags: [auth]
     responses:
       "200":
-        description: New tokens issued. Sets a new refresh-token cookie.
+        description: New access token issued. May also set a rotated refresh-token cookie.
         headers:
           Set-Cookie:
-            description: "refresh-token (httponly, secure, samesite=Lax, path=/api/auth/)"
+            description: "refresh-token (httponly, secure, samesite=Lax, path=/api/auth/) when rotation returns a new refresh token"
             schema: { type: string }
         content:
           application/json:
@@ -178,80 +175,22 @@ refresh:
                 value:
                   error:
                     cookie: "MISSING_FIELD"
+              token-not-valid:
+                value:
+                  error:
+                    cookie: "TOKEN_NOT_VALID"
               invalid-cookie:
                 value:
                   error:
                     cookie: "INVALID"
 
-friends:
-  get:
-    summary: List friends
-    description: Returns the profiles of all accepted friends for the authenticated user.
-    operationId: listFriends
-    tags: [auth]
-    security:
-      - bearerAuth: []
-    responses:
-      "200":
-        description: Friend list.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                friends:
-                  type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/Profile
-            examples:
-              friends-ok:
-                value:
-                  friends:
-                    - username: "alice"
-                      image: "http://localhost:8000/media/profile_pics/user_2_profile.png"
-                      exp_points: 150
-                      badges: "Curious Cat"
-                      created_at: "2025-06-01T12:00:00Z"
-
-friend-request:
-  get:
-    summary: List pending friend requests
-    description: Returns incoming and outgoing pending friend requests for the authenticated user.
-    operationId: listFriendRequests
-    tags: [auth]
-    security:
-      - bearerAuth: []
-    responses:
-      "200":
-        description: Pending friend requests.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                incomming:
-                  type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/Friendship
-                outgoing:
-                  type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/Friendship
-            examples:
-              requests-ok:
-                value:
-                  incomming:
-                    - from_user: "alice"
-                      to_user: "marc"
-                      status: "pending"
-                      created_at: "2025-06-01T12:00:00Z"
-                  outgoing: []
-
-friend-request-send:
+password:
   post:
-    summary: Send a friend request
-    description: Send a friend request to the specified user.
-    operationId: sendFriendRequest
+    summary: Change password
+    description: |
+      Update the authenticated user's password using the current password and a new password.
+      On success, the backend issues a fresh access token and rotates the refresh cookie.
+    operationId: changePassword
     tags: [auth]
     security:
       - bearerAuth: []
@@ -260,56 +199,69 @@ friend-request-send:
       content:
         application/json:
           schema:
-            type: object
-            required: [target-username]
-            properties:
-              target-username: { type: string }
+            $ref: ../openapi.yaml#/components/schemas/ProfilePasswordChangeRequest
+          examples:
+            change-password:
+              value:
+                currentPassword: "Password123+"
+                newPassword: "NewPassword123+"
     responses:
-      "201":
-        description: Friend request sent successfully.
+      "200":
+        description: Password changed successfully. Sets a new refresh-token cookie.
+        headers:
+          Set-Cookie:
+            description: "refresh-token (httponly, secure, samesite=Lax, path=/api/auth/)"
+            schema: { type: string }
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                description: { type: string }
-                target-username: { type: string }
+              $ref: ../openapi.yaml#/components/schemas/PasswordChangeResponse
             examples:
-              request-sent:
+              password-updated:
                 value:
-                  description: "FRIENDSHIP_REQUEST_SENT"
-                  target-username: "alice"
+                  description: "PASSWORD_UPDATED"
+                  username: "marc"
+                  access: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       "400":
-        description: Request could not be sent.
+        description: Validation error.
         content:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ValidationError
             examples:
-              missing-target:
+              missing-both:
                 value:
                   error:
-                    target-username: "MISSING_FIELD"
-              target-not-found:
+                    currentPassword: "MISSING_FIELD"
+                    newPassword: "MISSING_FIELD"
+              missing-current-password:
                 value:
                   error:
-                    target-username: "NOT_FOUND"
-                  requested: "alice"
-              already-exists:
+                    currentPassword: "MISSING_FIELD"
+              missing-new-password:
                 value:
                   error:
-                    friendship: "ALREADY_EXISTS"
-                  request_status: "pending"
-              self-request:
+                    newPassword: "MISSING_FIELD"
+              invalid-current-password:
                 value:
                   error:
-                    friendship: "REALLY_SAD"
+                    currentPassword: "INVALID_PASSWORD"
+              invalid-new-password:
+                value:
+                  error:
+                    password: "INVALID_PASSWORD"
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
 
-friend-request-respond:
+delete:
   post:
-    summary: Respond to a friend request
-    description: Accept or reject an incoming friend request.
-    operationId: respondFriendRequest
+    summary: Delete account
+    description: Permanently delete the authenticated user after password confirmation.
+    operationId: deleteAccount
     tags: [auth]
     security:
       - bearerAuth: []
@@ -318,49 +270,36 @@ friend-request-respond:
       content:
         application/json:
           schema:
-            type: object
-            required: [target-username, new-status]
-            properties:
-              target-username: { type: string }
-              new-status:
-                type: string
-                enum: [accept, reject]
+            $ref: ../openapi.yaml#/components/schemas/ProfileDeleteRequest
+          examples:
+            confirm-delete:
+              value:
+                password: "Password123+"
     responses:
-      "200":
-        description: Friend request accepted or rejected.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                description: { type: string }
-                target-username: { type: string }
-            examples:
-              accepted:
-                value:
-                  description: "REQUEST_ACCEPTED"
-                  target-username: "alice"
-              rejected:
-                value:
-                  description: "REQUEST_REJECTED"
-                  target-username: "alice"
+      "204":
+        description: Account deleted successfully.
       "400":
-        description: Response could not be processed.
+        description: Validation error.
         content:
           application/json:
             schema:
               $ref: ../openapi.yaml#/components/schemas/ValidationError
             examples:
-              missing-target:
+              missing-password:
                 value:
                   error:
-                    target-username: "MISSING_FIELD"
-              target-not-found:
+                    password: "MISSING_FIELD"
+              invalid-password:
                 value:
                   error:
-                    target-username: "NOT_FOUND"
-                  requested: "alice"
-              friendship-not-found:
+                    password: "INVALID_PASSWORD"
+              delete-failed:
                 value:
                   error:
-                    friendship: "NOT_FOUND"
+                    profile: "USER_DELETE_FAIL"
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
