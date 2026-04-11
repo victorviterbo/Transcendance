@@ -8,6 +8,7 @@ import type {
 } from "../../../types/friends";
 import type { IExtUserInfo, IExtUserList } from "../../../types/user";
 import { mockProfilesPics } from "../../rcs/profilepics";
+import { mockGetMessageDB } from "./socialChat_dbs";
 
 //--------------------------------------------------
 //                    LOCAL DB
@@ -234,6 +235,14 @@ export function mockSocialOnResponse(
 		created_at: new Date().toLocaleDateString(),
 		status: status[Math.floor(Math.random() * status.length)],
 	});
+
 	mockSocialDB.users.splice(userPos, 1);
-	return mockSocialDB.friends[mockSocialDB.friends.length - 1];
+	const currentFriend: IFriendInfo = mockSocialDB.friends[mockSocialDB.friends.length - 1];
+	mockGetMessageDB().data.push({
+		friend: currentFriend,
+		messages: {
+			feed: [],
+		},
+	});
+	return currentFriend;
 }

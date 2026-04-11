@@ -11,6 +11,7 @@ import {
 	PFriendChatNodeStyle,
 } from "../../styles/pages/social/PFriendChatNodeStyle";
 import { appTexts } from "../../styles/theme";
+import { memo } from "react";
 
 interface PFriendChatNodeProps extends GPageProps {
 	message: IFriendMessage;
@@ -27,7 +28,7 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 	}
 
 	return (
-		<Box sx={(theme) => PFriendChatNodeStyle(theme, isUser)}>
+		<Box sx={(theme) => PFriendChatNodeStyle(theme, isUser)} data-testid="PFriendChatNode">
 			<Stack direction={"column"}>
 				<CText family={appTexts.text.secondaryFamily} fontWeight={600} size="md">
 					{message.message}
@@ -82,4 +83,4 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 	);
 }
 
-export default PFriendChatNode;
+export default memo(PFriendChatNode);

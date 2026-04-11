@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import type {
 	IFriendInfo,
+	IFriendMessageReq,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
@@ -10,6 +11,7 @@ import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo, IExtUserList, IExtUserSearch } from "../../types/user";
 import {
 	API_SOCIAL_FRIENDS,
+	API_SOCIAL_FRIENDS_MESSAGE_FEED,
 	API_SOCIAL_FRIENDS_REQUEST,
 	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
 	API_SOCIAL_FRIENDS_REQUEST_SEND,
@@ -28,6 +30,10 @@ import {
 import type { IErrorReturn } from "../../types/error";
 import PSocial from "../../pages/PSocial";
 import CWebsocket from "../../components/websocket/CWebsocket";
+import {
+	mockGetMessageDB,
+	type IMockMessageDBUser,
+} from "../../mock/handlers/social/socialChat_dbs";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -400,7 +406,7 @@ describe("Socials - Interactions", () => {
 
 	//FULL ACCEPTED
 	it.each([["PixelFox"], ["NightOwl"], ["たけし"], ["さくら"]])(
-		"Checking Firends accept globally (Traget: %s)",
+		"Checking Friends accept globally (Traget: %s)",
 		async (target: string) => {
 			const user: IExtUserInfo = mockGetExtUser(4);
 			user.image = "";
@@ -529,7 +535,7 @@ describe("Socials - Interactions", () => {
 		["たけし", "し", 1],
 		["NightOwl", "o", 9],
 	])(
-		"Checking Firends refuse globally (Traget: %s, Search: %s (%d))",
+		"Checking Friends refuse globally (Traget: %s, Search: %s (%d))",
 		async (target: string, search: string, count: number) => {
 			const user: IExtUserInfo = mockGetExtUser(4);
 			user.image = "";
@@ -666,6 +672,233 @@ describe("Socials - Interactions", () => {
 				if (!targetNode) throw "Error";
 				expect(within(targetNode).getByTestId("PFriendNode_AddButton")).toBeInTheDocument();
 			});
+		},
+	);
+
+	//FULL MESSAGE SEND
+	it.each([["PixelFox"], ["NightOwl"], ["たけし"], ["さくら"]])(
+		"Checking Friends accept globally and send a message (Traget: %s)",
+		{ timeout: 15000 },
+		async (target: string) => {
+			const user: IExtUserInfo = mockGetExtUser(4);
+			user.image = "";
+
+			postMock.mockImplementation((url: string, body) => {
+				if (url === API_SOCIAL_FRIENDS_SEARCH) {
+					const input: IExtUserSearch = typeof body == "string" ? JSON.parse(body) : body;
+					const data: IExtUserList = mockGetExtUsers(input.search);
+					return Promise.resolve({
+						data,
+					});
+				} else if (url == API_SOCIAL_FRIENDS_REQUEST_RESPOND) {
+					const data: IFriendReqRes = typeof body == "string" ? JSON.parse(body) : body;
+					const out: IExtUserInfo | IFriendInfo | IErrorReturn =
+						mockSocialOnResponse(data);
+					if ("error" in out) return Promise.reject(new Error(`unexpected call: ${url}`));
+					if ("created_at" in out) {
+						const user: IFriendInfo = out as IFriendInfo;
+						return Promise.resolve({
+							data: {
+								"target-username": user.username,
+								"target-uid": user.uid,
+								description: "FRIENDSHIP_REQUEST_SENT",
+							},
+						});
+					}
+					const user: IExtUserInfo = out as IExtUserInfo;
+					return Promise.resolve({
+						data: {
+							"target-username": user.username,
+							"target-uid": user.uid,
+							description: "FRIENDSHIP_REQUEST_SENT",
+						},
+					});
+				} else if (url == API_SOCIAL_FRIENDS_MESSAGE_FEED) {
+					const data: IFriendMessageReq =
+						typeof body == "string" ? JSON.parse(body) : body;
+					const friendFeed: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
+						(user: IMockMessageDBUser) => {
+							return user.friend.uid == data.uid;
+						},
+					);
+					if (!friendFeed) return Promise.reject(new Error(`unexpected call: ${url}`));
+					return Promise.resolve({
+						data: friendFeed.messages,
+					});
+				}
+				return Promise.reject(new Error(`unexpected call: ${url}`));
+			});
+
+			getMock.mockImplementation((url: string) => {
+				if (url == API_SOCIAL_FRIENDS_REQUEST) {
+					const data: IFriendRequests = mockGetRequests();
+					return Promise.resolve({ data });
+				}
+				if (url == API_SOCIAL_FRIENDS) {
+					return Promise.resolve({ data: { friends: mockSocialDB.friends } });
+				}
+				return Promise.reject(new Error(`unexpected call: ${url}`));
+			});
+
+			render(
+				<CWebsocket>
+					<PSocial />
+				</CWebsocket>,
+			);
+
+			const paperTitle = screen.getByTestId("CTitleBasePaper_Title");
+			expect(paperTitle).toBeInTheDocument();
+			expect(within(paperTitle).getByText("FRIEND_TITLE")).toBeInTheDocument();
+
+			//BUTTONS
+			const listButton = screen.getByTestId("PSocialTab0");
+			const addButton = screen.getByTestId("PSocialTab1");
+			const reqButton = screen.getByTestId("PSocialTab2");
+			expect(listButton).toBeInTheDocument();
+			expect(addButton).toBeInTheDocument();
+			expect(reqButton).toBeInTheDocument();
+
+			//OPEN REQ
+			await userEvent.click(reqButton);
+
+			await waitFor(() => {
+				expect(screen.queryByTestId("PFriendList")).not.toBeInTheDocument();
+				expect(screen.queryByTestId("PFriendAdd")).not.toBeInTheDocument();
+				expect(screen.queryByTestId("PFriendReq")).toBeInTheDocument();
+			});
+
+			//CHECKING REQ AND FINDING TARGETS
+			const incomingStack = screen.getByTestId("PFriendReq_incoming");
+			const outgoingStack = screen.getByTestId("PFriendReq_outgoing");
+			expect(incomingStack).toBeInTheDocument();
+			expect(outgoingStack).toBeInTheDocument();
+
+			expect(within(incomingStack).getAllByTestId("PFriendNode").length).toEqual(4);
+			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(3);
+
+			let targetNode: HTMLElement | null = null;
+			within(incomingStack)
+				.getAllByTestId("PFriendNode")
+				.forEach((el) => {
+					if (within(el).queryByText(target)) targetNode = el;
+				});
+			expect(targetNode).toBeInTheDocument();
+			if (!targetNode) throw "error";
+
+			//VALIDATING
+			const validButton = within(targetNode).getByTestId("PFriendNode_ValidButton");
+			expect(validButton).toBeInTheDocument();
+
+			await userEvent.click(validButton);
+
+			//CHECKING TARGET IS NOT ANYMORE IN REQUESTS
+			await waitFor(() => {
+				let targetNode: HTMLElement | null = null;
+				within(incomingStack)
+					.getAllByTestId("PFriendNode")
+					.forEach((el) => {
+						if (within(el).queryByText(target)) targetNode = el;
+					});
+				expect(targetNode).not.toBeInTheDocument();
+			});
+
+			//CHECKING TARGET IS NOW IN FRIENDS LIST
+			await userEvent.click(listButton);
+
+			await waitFor(() => {
+				expect(screen.queryByTestId("PFriendList")).toBeInTheDocument();
+				expect(screen.queryByTestId("PFriendAdd")).not.toBeInTheDocument();
+				expect(screen.queryByTestId("PFriendReq")).not.toBeInTheDocument();
+			});
+
+			expect(screen.getAllByTestId("PFriendNode").length).toEqual(6);
+			expect(screen.getByText(target)).toBeInTheDocument();
+
+			//GETTING TARGET FIREND NODE
+			const allFriends = screen.getAllByTestId("PFriendNode");
+			expect(allFriends.length).toBeGreaterThan(0);
+
+			const targetedFriend = allFriends.find((El: HTMLElement) => {
+				return within(El).queryByText(target) ? true : false;
+			});
+			expect(targetedFriend).toBeInTheDocument();
+			if (!targetedFriend) return;
+
+			const messageButton = within(targetedFriend).getByTestId("PFriendNode_MessageButton");
+			expect(messageButton).toBeInTheDocument();
+			await userEvent.click(messageButton);
+
+			await waitFor(() => {
+				expect(screen.getByText("SOCIAL_NO_MESSAGE")).toBeInTheDocument();
+				expect(within(paperTitle).getByText(target)).toBeInTheDocument();
+				expect(within(paperTitle).getByAltText(target + "'s picture")).toBeInTheDocument();
+			});
+
+			const searchField = screen.getByTestId("PFriendChat_NewMessage");
+			const sendButton = screen.getByTestId("PFriendChat_SendButton");
+			expect(searchField).toBeInTheDocument();
+			const input = within(searchField).getByRole("textbox");
+
+			await userEvent.type(input, "Hello my friend");
+			await userEvent.click(sendButton);
+			await waitFor(() => {
+				expect((input as HTMLInputElement).value).toEqual("");
+
+				const allChatNodes = screen.getAllByTestId("PFriendChatNode");
+				expect(allChatNodes.length).greaterThan(0);
+
+				const foundChat = allChatNodes.find((El: HTMLElement) => {
+					return within(El).getByText("Hello my friend");
+				});
+				expect(foundChat).toBeInTheDocument();
+				if (!foundChat) return;
+				expect(screen.getByTestId("CheckIcon")).toBeInTheDocument();
+			});
+
+			await waitFor(
+				() => {
+					const allChatNodes = screen.getAllByTestId("PFriendChatNode");
+					const foundChat = allChatNodes.find((El: HTMLElement) => {
+						return within(El).getByText("Hello my friend");
+					});
+					expect(foundChat).toBeInTheDocument();
+					if (!foundChat) return;
+					const icon = within(foundChat).getByTestId("DoneAllIcon");
+					expect(icon).toBeInTheDocument();
+					expect(window.getComputedStyle(icon).color == "rgb(0, 0, 0)");
+				},
+				{ timeout: 3000 },
+			);
+
+			await waitFor(
+				() => {
+					const allChatNodes = screen.getAllByTestId("PFriendChatNode");
+					const foundChat = allChatNodes.find((El: HTMLElement) => {
+						return within(El).getByText("Hello my friend");
+					});
+					expect(foundChat).toBeInTheDocument();
+					if (!foundChat) return;
+					const icon = within(foundChat).getByTestId("DoneAllIcon");
+					expect(icon).toBeInTheDocument();
+					expect(window.getComputedStyle(icon).color != "rgb(0, 0, 0)");
+				},
+				{ timeout: 3000 },
+			);
+
+			await waitFor(
+				() => {
+					const allChatNodes = screen.getAllByTestId("PFriendChatNode");
+					const foundChat = allChatNodes.find((El: HTMLElement) => {
+						return within(El).queryByText("hey, how you doing ?");
+					});
+					expect(foundChat).toBeInTheDocument();
+					if (!foundChat) return;
+					expect(
+						within(foundChat).queryByTestId(/AccessTimeIcon|CheckIcon|DoneAllIcon/),
+					).not.toBeInTheDocument();
+				},
+				{ timeout: 3000 },
+			);
 		},
 	);
 });
