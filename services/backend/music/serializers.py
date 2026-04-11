@@ -2,6 +2,14 @@ from rest_framework import serializers
 
 from .models import Playlist, Track
 
+class BlindSerializer(serializers.ModelSerializer):
+	"""Serialize a track without any identifying information."""
+
+	class Meta:
+		model = Track
+		fields = [
+			'preview_url',
+		]
 
 class TrackSerializer(serializers.ModelSerializer):
 	"""Serialize a single music track."""
