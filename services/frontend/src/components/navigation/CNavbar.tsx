@@ -78,12 +78,6 @@ function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 		},
 	];
 	const items = status === "authed" ? authedItems : guestItems;
-	const linkItems = items.filter(
-		(item): item is Extract<TNavItem, { kind: "link" }> => item.kind === "link",
-	);
-	const actionItems = items.filter(
-		(item): item is Extract<TNavItem, { kind: "action" }> => item.kind === "action",
-	);
 
 	return (
 		<AppBar position="static" sx={CNavbarStyle}>
@@ -149,25 +143,15 @@ function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 						}
 
 						return (
-							<CNavbarLink
-								key={`${item.label}-${idx}`}
-								to={item.to}
-								label={item.label}
+							<CNavbarIcon
+								key={`${item.aria}-${idx}`}
+								aria={item.aria}
 								icon={item.icon}
-								active={isActive}
+								onClick={item.onClick}
+								disabled={item.disabled}
 							/>
 						);
 					})}
-					<CDialogLanguage open={false} />
-					{actionItems.map((item, idx) => (
-						<CNavbarIcon
-							key={`${item.aria}-${idx}`}
-							aria={item.aria}
-							icon={item.icon}
-							onClick={item.onClick}
-							disabled={item.disabled}
-						/>
-					))}
 				</Stack>
 			</Toolbar>
 			<CMenu
