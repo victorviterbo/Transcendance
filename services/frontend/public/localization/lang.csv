@@ -189,3 +189,4 @@ PRODUCT_OWNER,Product Owner,Product Owner,プロダクトオーナー,Role label
 TECH_LEAD,Tech Lead,Responsable technique,テックリード,Role label shown on the contact page
 DEVELOPER,Developer,Développeur,開発者,Role label shown on the contact page
 NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
+MESSAGE_SENT_FAILED,Failed to send message,,,Sent back when message has failed to be sent
