@@ -35,11 +35,16 @@ export type TWSRcv =
 			count: number;
 	  };
 
-export type TWSSend = {
-	target: Extract<TWSModuleName, "friend-chat">;
-	event: "new";
-	message: string;
-	date: string;
-	to: string;
-	toUid: string;
-};
+export type TWSSend =
+	| {
+			target: Extract<TWSModuleName, "friend-chat">;
+			event: "new";
+			message: string;
+			date: string;
+			to: string;
+			toUid: string;
+	  }
+	| {
+			target: "room-guess";
+			guess: string;
+	  };
