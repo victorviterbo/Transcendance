@@ -3,7 +3,7 @@ import type { IExtUserInfo } from "./user";
 
 export type TFriendStatus = "offline" | "busy" | "online";
 export type TFriendRelation = "not-friends" | "friends" | "incoming" | "outgoing";
-export type TMessageStatus = "not-sent" | "sent" | "recieved" | "read";
+export type TMessageStatus = "not-sent" | "sent" | "recieved" | "read" | "error";
 export type TMessageDirection = "outgoing" | "incoming";
 
 export interface IFriendsList {

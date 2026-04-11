@@ -5,8 +5,10 @@ import CText from "../../components/text/CText";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckIcon from "@mui/icons-material/Check";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import ErrorIcon from "@mui/icons-material/Error";
 import {
 	PFriendChatNodeDateStyle,
+	PFriendChatNodeErrorStyle,
 	PFriendChatNodeStatusStyle,
 	PFriendChatNodeStyle,
 } from "../../styles/pages/social/PFriendChatNodeStyle";
@@ -22,6 +24,7 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 	const isUser: boolean = message.direction == "outgoing";
 
 	function getDate(): string {
+		if (isUser && message.status && message.status == "error") return "";
 		let currentDate: Date | string = message.date;
 		if (typeof currentDate == "string") currentDate = new Date(message.date.toString());
 		return currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
@@ -42,6 +45,16 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 					>
 						{getDate()}
 					</CText>
+					{isUser && message.status && message.status == "error" && (
+						<CText
+							sx={(theme) => PFriendChatNodeErrorStyle(theme)}
+							family={appTexts.text.secondaryFamily}
+							size="xs"
+							fontWeight={900}
+						>
+							MESSAGE_SENT_FAILED
+						</CText>
+					)}
 					{isUser && message.status && message.status == "not-sent" && (
 						<AccessTimeIcon
 							sx={(theme) =>
@@ -77,6 +90,17 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 								fontSize="small"
 							/>
 						)}
+					{isUser && message.status && message.status == "error" && (
+						<ErrorIcon
+							sx={(theme) =>
+								PFriendChatNodeStatusStyle(
+									theme,
+									message.status ? message.status : "not-sent",
+								)
+							}
+							fontSize="small"
+						/>
+					)}
 				</Stack>
 			</Stack>
 		</Box>
