@@ -111,13 +111,9 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 	}, 5000);
 }
 
-
-export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionProtocol)
-{
-	if(data.target != "friend-chat")
-		return;
-	if(data.event != "send")
-		return;
+export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionProtocol) {
+	if (data.target != "friend-chat") return;
+	if (data.event != "send") return;
 
 	const messageUser: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
 		(user: IMockMessageDBUser) => {
@@ -125,10 +121,9 @@ export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionPro
 		},
 	);
 
-	if(!messageUser)
-		return;
+	if (!messageUser) return;
 
-	let targetFeed: IFriendFeed = messageUser.messages
+	const targetFeed: IFriendFeed = messageUser.messages;
 
 	targetFeed.feed.push(data.message);
 	data.message.status = "sent";
@@ -143,7 +138,10 @@ export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionPro
 
 	setTimeout(() => {
 		targetFeed.feed.forEach((message: IFriendMessage) => {
-			if (message.direction == "outgoing" && (message.status == "not-sent" || message.status == "sent")) {
+			if (
+				message.direction == "outgoing" &&
+				(message.status == "not-sent" || message.status == "sent")
+			) {
 				message.status = "recieved";
 				const sendbackList: TWSRcv = {
 					target: "friend-chat",
@@ -156,7 +154,7 @@ export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionPro
 
 		setTimeout(() => {
 			targetFeed.feed.forEach((message: IFriendMessage) => {
-				if (message.direction == "outgoing" && (message.status == "recieved")) {
+				if (message.direction == "outgoing" && message.status == "recieved") {
 					message.status = "read";
 					const sendbackList: TWSRcv = {
 						target: "friend-chat",
@@ -166,7 +164,6 @@ export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionPro
 					client.send(JSON.stringify(sendbackList));
 				}
 			});
-
 
 			setTimeout(() => {
 				const sendbackList: TWSRcv = {

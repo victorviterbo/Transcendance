@@ -24,10 +24,8 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 				count: counter,
 			};
 			client.send(JSON.stringify(sendbackList));
-		}
-		else if(dataRcv.target == "friend-chat")
-			if(dataRcv.event == "send")
-				onMessageSent(dataRcv, client);
+		} else if (dataRcv.target == "friend-chat")
+			if (dataRcv.event == "send") onMessageSent(dataRcv, client);
 	});
 
 	mockMessagesFriend1Update(client);

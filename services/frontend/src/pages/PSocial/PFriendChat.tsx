@@ -94,10 +94,8 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 
 	//====================== OUTGOING ======================
 	function handleSendMessage() {
-		if(!messageField || messageField.length == 0)
-			return;
-		if(!targetFriend)
-			return;
+		if (!messageField || messageField.length == 0) return;
+		if (!targetFriend) return;
 
 		const nMessage: IFriendMessage = {
 			message: messageField,
@@ -107,16 +105,16 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 			target: targetFriend.username,
 			direction: "outgoing",
 			uid: "TEMP_ID",
-		}
+		};
 
 		wsContext.sendMessage(
 			JSON.stringify({
 				target: "friend-chat",
 				event: "send",
-				message: nMessage
+				message: nMessage,
 			} as TWSRcv),
 		);
-		
+
 		setMessageField("");
 	}
 
@@ -152,8 +150,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 						setMessageField(event.target.value);
 					}}
 					onKeyUp={(event) => {
-						if(event.code == "Enter")
-							handleSendMessage();
+						if (event.code == "Enter") handleSendMessage();
 					}}
 				></CTextField>
 				<CIconButton onClick={handleSendMessage} sx={{ my: "auto", ml: "10px" }}>
