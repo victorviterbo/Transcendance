@@ -14,7 +14,6 @@ export const friendMessageHandler = http.post(
 	async ({ request }) => {
 		const isError: boolean = false;
 		const data: IFriendMessageReq = (await request.json()) as IFriendMessageReq;
-		console.error("EHHHEELPOWDz");
 
 		const friendFeed: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
 			(user: IMockMessageDBUser) => {
@@ -129,6 +128,17 @@ export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionPro
 	targetFeed.feed.push(data.message);
 	data.message.status = "sent";
 	data.message.uid = crypto.randomUUID();
+
+	if (messageUser.friend.username == "Hikari") {
+		data.message.status = "error";
+		const sendbackList: TWSRcv = {
+			target: "friend-chat",
+			event: "new",
+			message: data.message,
+		};
+		client.send(JSON.stringify(sendbackList));
+		return;
+	}
 
 	const sendbackList: TWSRcv = {
 		target: "friend-chat",
