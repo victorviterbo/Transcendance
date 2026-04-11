@@ -37,7 +37,9 @@ function CTitleBasePaper({
 			{...other}
 		>
 			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
-				<Box sx={CTitlePaperTitleBoxStyle}>{titleNode}</Box>
+				<Box sx={CTitlePaperTitleBoxStyle} data-testid="CTitleBasePaper_Title">
+					{titleNode}
+				</Box>
 				<Box
 					sx={[
 						position ? { position: position } : {},

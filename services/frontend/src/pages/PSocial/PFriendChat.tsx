@@ -9,7 +9,7 @@ import type {
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../constants";
 import api from "../../api";
 import type { AxiosResponse } from "axios";
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
 import CText from "../../components/text/CText";
@@ -28,8 +28,6 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [feed, setFeed] = useState<IFriendFeed | undefined>(undefined);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [messageField, setMessageField] = useState<string>("");
-	const localID = useId();
-
 	const wsContext: IWSContextModule = useWS("friend-chat");
 
 	//====================== INCOMINGS ======================
@@ -119,20 +117,20 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	}
 
 	//====================== FUNCTIONS ======================
-	function getList(): ReactNode | ReactNode[] {
+	const getList = useCallback((): ReactNode | ReactNode[] => {
 		if (error) return error;
 		if (!feed || feed.feed.length == 0 || !targetFriend)
 			return <CText align="center">SOCIAL_NO_MESSAGE</CText>;
-		return feed.feed.map((Message: IFriendMessage, index: number) => {
+		return feed.feed.map((Message: IFriendMessage) => {
 			return (
 				<PFriendChatNode
 					message={Message}
 					targetFriend={targetFriend}
-					key={localID + "_" + index}
+					key={Message.uid}
 				></PFriendChatNode>
 			);
 		});
-	}
+	}, [feed, error, targetFriend]);
 
 	return (
 		<Stack sx={{ flex: 1, overflow: "hidden" }} direction="column">
@@ -152,8 +150,13 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 					onKeyUp={(event) => {
 						if (event.code == "Enter") handleSendMessage();
 					}}
+					data-testid="PFriendChat_NewMessage"
 				></CTextField>
-				<CIconButton onClick={handleSendMessage} sx={{ my: "auto", ml: "10px" }}>
+				<CIconButton
+					onClick={handleSendMessage}
+					sx={{ my: "auto", ml: "10px" }}
+					data-testid="PFriendChat_SendButton"
+				>
 					<SendIcon />
 				</CIconButton>
 			</Stack>

@@ -14,6 +14,7 @@ export const friendMessageHandler = http.post(
 	async ({ request }) => {
 		const isError: boolean = false;
 		const data: IFriendMessageReq = (await request.json()) as IFriendMessageReq;
+		console.error("EHHHEELPOWDz");
 
 		const friendFeed: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
 			(user: IMockMessageDBUser) => {

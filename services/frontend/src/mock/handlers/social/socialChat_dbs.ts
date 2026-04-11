@@ -22,7 +22,7 @@ export function mockGetMessageDB(): IMockMessageDB {
 	return mockMessagesDB;
 }
 
-export function mockResetResetDB() {
+export function mockResetMessageDB() {
 	mockMessagesDB = {
 		data: [],
 	};
