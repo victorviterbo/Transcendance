@@ -7,7 +7,7 @@ import CProtectedRoute from "./components/auth/CProtectedRoute";
 import { CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
 import appTheme from "./styles/theme";
 import { getFontRegistry } from "./styles/fonts/fonts";
-import { PContact, PNotFound, PPrivacyPolicy, PQA, PTermsOfService } from "./pages/static";
+import { PContact, PPageNotFound, PPrivacyPolicy, PQA, PTermsOfService } from "./pages/static";
 
 function App() {
 	return (
@@ -26,7 +26,7 @@ function App() {
 					<Route path="/users/:username" element={<PProfilePage />} />
 					<Route path="/leaderboard" element={<PLeaderboardPage />} />
 				</Route>
-				<Route path="*" element={<PNotFound />} />
+				<Route path="*" element={<PPageNotFound />} />
 			</Routes>
 		</ThemeProvider>
 	);
