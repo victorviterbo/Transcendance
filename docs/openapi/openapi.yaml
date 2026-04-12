@@ -38,6 +38,12 @@ paths:
     $ref: ./paths/profile.yaml#/guest-create
   /api/profile/guest-delete:
     $ref: ./paths/profile.yaml#/guest-delete
+  /api/stats/global:
+    $ref: ./paths/stats.yaml#/global
+  /api/stats/leaderboard:
+    $ref: ./paths/stats.yaml#/leaderboard
+  /api/stats/history:
+    $ref: ./paths/stats.yaml#/history
 
 components:
   schemas:
@@ -84,3 +90,5 @@ tags:
     description: Friend list and friend request endpoints.
   - name: profile
     description: User profile and account management endpoints.
+  - name: stats
+    description: User statistics
