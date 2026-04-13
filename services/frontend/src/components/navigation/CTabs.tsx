@@ -4,15 +4,16 @@ import type { GCompProps } from "../../components/common/GProps.tsx";
 import { ttr } from "../../localization/localization.ts";
 import { CTabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 
-interface CTabsProps extends GCompProps, TabsProps {
+export interface CTabsProps extends GCompProps, TabsProps {
 	tabs: string[];
+	defaultTab?: number;
 	children: ReactNode;
 }
 
 //TODO: Replace sx
-function CTabs({ tabs, testid, children }: CTabsProps) {
+function CTabs({ tabs, defaultTab, testid, children }: CTabsProps) {
 	//====================== STATS ======================
-	const [tab, setTab] = useState<number>(0);
+	const [tab, setTab] = useState<number>(defaultTab == undefined ? 0 : defaultTab);
 
 	//====================== DATA ======================
 	const childList = Children.toArray(children);
