@@ -195,3 +195,11 @@ USER_NOT_FOUND,Looks like this user does not exist,On dirait bien que cet utilis
 
 NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
 MESSAGE_SENT_FAILED,Failed to send message,,,Sent back when message has failed to be sent
+NOTIF_TITLE,Notifications,,,Notifications drawer title
+NOTIF_EMPTY,You currently have no notifications,,,Displayed when no notifications are found
+NOTIF_FRIEND_REQ,Friend requests from: ,,,Displayed when user have a new friend request - IMPORTANT: friend name will be display just after this message make sure it match Language structure
+NOTIF_AGO_DAYS,{COUNT} day(s) ago,,,Display how many days since notifications has been triggered
+NOTIF_AGO_HOURS,{COUNT} hour(s) ago,,,Display how many hours since notifications has been triggered
+NOTIF_AGO_MINUTES,{COUNT} minutes(s) ago,,,Display how many minutes since notifications has been triggered
+NOTIF_AGO_LESS,Less than a minute ago,,,Display when notific just been triggered (less than a minute ago)
+NOTIF_FAILED,Couldn't load notifications,,,Display when notification failed to load.
