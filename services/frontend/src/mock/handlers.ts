@@ -13,6 +13,8 @@ import {
 	friendsRequestsResponseHandler,
 	friendsRequestsSendHandler,
 	friendsSearchHandler,
+	notifRequestHandler,
+	notifRequestHandlerRead,
 } from "./handlers/social/social";
 import { friendMessageHandler } from "./handlers/social/socialChat";
 import { socketConnHandler } from "./handlers/ws/websocket";
@@ -36,6 +38,8 @@ export const handlers = [
 	friendsRequestsSendHandler,
 	friendsRequestsResponseHandler,
 	friendMessageHandler,
+	notifRequestHandler,
+	notifRequestHandlerRead,
 
 	socketConnHandler,
 ];

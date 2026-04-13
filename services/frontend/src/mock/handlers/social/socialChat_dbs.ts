@@ -1,4 +1,4 @@
-import type { IFriendFeed, IFriendInfo } from "../../../types/friends";
+import type { IFriendFeed, IFriendInfo } from "../../../types/socials";
 import { mockSocialDB, mockSocialSetDB } from "./social_dbs";
 
 //====================== LOCAL TYPES ======================
