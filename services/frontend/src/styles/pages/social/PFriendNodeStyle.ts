@@ -2,7 +2,7 @@ import type { SxProps, Theme } from "@mui/material";
 import { colorAlterColor, colorGetBackground } from "../../../utils/styles";
 import { appAnimation, appColors, appSharedStyle } from "../../theme";
 import type { PFriendNodeProps } from "../../../pages/PSocial/PFriendNode";
-import type { IFriendInfo } from "../../../types/friends";
+import type { IFriendInfo } from "../../../types/socials";
 
 export function PFriendNodeStyle(theme: Theme, props: PFriendNodeProps) {
 	let bgColors: string[] = [];

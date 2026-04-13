@@ -1,7 +1,7 @@
 import type { Theme } from "@mui/material";
 import { colorAlterColor, colorGetBackground } from "../../../utils/styles";
 import { appColors, appSharedStyle } from "../../theme";
-import type { TMessageStatus } from "../../../types/friends";
+import type { TMessageStatus } from "../../../types/socials";
 
 export function PFriendChatNodeStyle(_: Theme, isUser: boolean) {
 	let bgColors: string[] = [];

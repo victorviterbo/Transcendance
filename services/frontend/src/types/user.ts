@@ -1,5 +1,5 @@
 import type { IErrorStruct } from "./error";
-import type { TFriendRelation } from "./friends";
+import type { TFriendRelation } from "./socials";
 
 export interface IAuthUser {
 	username: string;
