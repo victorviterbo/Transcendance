@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout 
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -106,6 +106,7 @@ class LoginView(APIView):
         if user is not None:
             try:
                 token = RefreshToken.for_user(user)
+                login(request, user) #YiShan added check later
                 response = Response({'username': user.profile.username,
                                      'access': str(token.access_token)},
                                     status=status.HTTP_200_OK)
@@ -144,6 +145,7 @@ class LogoutView(APIView):
             except Exception:
                 return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                                 status=status.HTTP_401_UNAUTHORIZED)
+        logout(request) #YiShan added check later
         response = Response(status=status.HTTP_204_NO_CONTENT)
         response.delete_cookie(
             'refresh-token',
