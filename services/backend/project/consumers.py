@@ -8,11 +8,11 @@ from channels.generic.websocket import (
     AsyncWebsocketConsumer,
 )
 from chat.models import Message, Room
-from friends.models import Friendship
 from game.models import Game
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
+from chat.chat_utils import accepted_friendship_exists, get_or_create_direct_room
 from .consumers_utils import ConsumerScopeUtils
 
 
@@ -96,7 +96,7 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
 
             await self.group_send(f'user_{self.profile.id}', {
                 'type': 'chat.message',
-                'message_uid': message.uid,
+                'message_uid': str(message.uid),
                 'message': message.body,
                 'sender': self._sender_name(),
                 'created': message.created.isoformat(),
@@ -121,7 +121,7 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
                                       'message': 'Target user not found'})
                 return
 
-            await self.group_send(f'user_{recipient_profile.id}', {
+            event_payload = {
                 'type': 'chat.message',
                 'message_id': message.id,
                 'message': message.body,
@@ -129,7 +129,9 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
                 'created': message.created.isoformat(),
                 'delivered': message.delivered,
                 'seen': message.seen,
-            })
+            }
+            await self.group_send(f'user_{recipient_profile.id}', event_payload)
+            await self.group_send(f'user_{self.profile.id}', event_payload)
             return
         elif action in ('delivered', 'read'):
             message_id = content.get('message_id')
@@ -224,17 +226,11 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
             if target_user is None:
                 return False, {'type': 'error',
                                'message': 'User not found'}
-            if not (Friendship.objects.filter(from_user__in=[target_user, self.user],
-                                              to_user__in=[self.user, target_user],
-                                              status='accepted'
-                                              ).exists()):
+            if not accepted_friendship_exists(self.profile, target_user.profile):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             target_profile = target_user.profile
-            id_a, id_b = self.profile.uid, target_profile.uid
-            min_uid, max_uid = (id_a, id_b) if id_a < id_b else (id_b, id_a)
-            room, created = Room.objects.get_or_create(
-                name=f'user_{min_uid}_user_{max_uid}')
+            room, created = get_or_create_direct_room(self.profile, target_profile)
             if created:
                 room.participants.add(self.profile)
                 room.participants.add(target_profile)
