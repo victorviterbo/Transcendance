@@ -49,9 +49,9 @@ Friendship:
   description: A friendship or pending friend request between two users.
   properties:
     from_user:
-      $ref: '#/OwnProfile'
+      $ref: "#/OwnProfile"
     to_user:
-      $ref: '#/OwnProfile'
+      $ref: "#/OwnProfile"
     status: { type: string, enum: [pending, accepted] }
     created_at: { type: string, format: date-time }
     uid: { type: string, format: uuid }
@@ -109,7 +109,7 @@ DescriptionResponse:
 
 SerializerErrorResponse:
   type: object
-  description: 'Raw DRF serializer errors returned without the project''s `{ error: ... }` wrapper.'
+  description: "Raw DRF serializer errors returned without the project's `{ error: ... }` wrapper."
   additionalProperties:
     oneOf:
       - type: string
@@ -143,7 +143,8 @@ GlobalStatsResponse:
       description: Average score across matches.
     xp: { type: integer, description: Total experience points. }
     ranking: { type: integer, description: Current player ranking. }
-    totalPlayers: { type: integer, description: Total number of ranked players. }
+    totalPlayers:
+      { type: integer, description: Total number of ranked players. }
     averageTime:
       type: number
       format: float
@@ -201,6 +202,9 @@ LeaderboardResponse:
     leaderboardCount:
       type: integer
       description: Number of entries returned in the leaderboard.
+    ranking:
+      type: integer
+      description: Ranking of the current user.
     totalNumberPlayer:
       type: integer
       description: Total number of players eligible for ranking.

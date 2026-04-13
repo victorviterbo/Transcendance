@@ -71,8 +71,15 @@ leaderboard:
                       badges: "BADGE_DAZED_JELLYFISH"
                       ranking: 1
                       isCurrentUser: false
+                  ranking: 1
                   leaderboardCount: 1
                   totalNumberPlayer: 1
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
 
 history:
   get:
