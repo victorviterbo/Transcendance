@@ -143,8 +143,7 @@ GlobalStatsResponse:
       description: Average score across matches.
     xp: { type: integer, description: Total experience points. }
     ranking: { type: integer, description: Current player ranking. }
-    totalPlayers:
-      { type: integer, description: Total number of ranked players. }
+    totalPlayers: { type: integer, description: Total number of ranked players. }
     averageTime:
       type: number
       format: float
@@ -202,13 +201,10 @@ LeaderboardResponse:
     leaderboardCount:
       type: integer
       description: Number of entries returned in the leaderboard.
-    ranking:
-      type: integer
-      description: Ranking of the current user.
     totalNumberPlayer:
       type: integer
       description: Total number of players eligible for ranking.
-  required: [leaderboard, leaderboardCount, ranking, totalNumberPlayer]
+  required: [leaderboard, leaderboardCount, totalNumberPlayer]
 
 LeaderboardEntry:
   type: object
