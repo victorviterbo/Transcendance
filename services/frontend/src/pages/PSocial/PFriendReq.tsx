@@ -1,5 +1,5 @@
 import { Stack } from "@mui/material";
-import type { IFriendRequests } from "../../types/friends";
+import type { IFriendRequests } from "../../types/socials";
 import { API_SOCIAL_FRIENDS_REQUEST } from "../../constants";
 import api from "../../api";
 import type { AxiosResponse } from "axios";
