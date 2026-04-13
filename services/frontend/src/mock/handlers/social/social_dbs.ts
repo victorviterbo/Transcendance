@@ -5,7 +5,7 @@ import type {
 	IFriendReqSend,
 	IFriendRequests,
 	TFriendStatus,
-} from "../../../types/friends";
+} from "../../../types/socials";
 import type { IExtUserInfo, IExtUserList } from "../../../types/user";
 import { mockProfilesPics } from "../../rcs/profilepics";
 import { mockGetMessageDB } from "./socialChat_dbs";

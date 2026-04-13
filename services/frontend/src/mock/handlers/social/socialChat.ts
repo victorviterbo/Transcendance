@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../../constants";
-import type { IFriendFeed, IFriendMessage, IFriendMessageReq } from "../../../types/friends";
+import type { IFriendFeed, IFriendMessage, IFriendMessageReq } from "../../../types/socials";
 import { mockGetMessageDB, type IMockMessageDBUser } from "./socialChat_dbs";
 import { mockSocialDB } from "./social_dbs";
 import type { TWSRcv } from "../../../types/websocket";
