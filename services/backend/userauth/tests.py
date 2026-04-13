@@ -163,6 +163,14 @@ class UserAccountTests(APITestCase):
         response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
                                                     'newPassword': 'FinallyAGood1+'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['description'], 'PASSWORD_UPDATED')
+        self.assertIn('access', response.data)
+        self.assertIn('username', response.data)
+        self.assertEqual(response.data['username'], 'testuser')
+        self.assertIn('refresh-token', response.cookies)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + response.data['access'])
+        profile_response = self.client.post('/api/profile/', data={'username': 'still_authed'})
+        self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
         login_res = self.client.post(login_url, data={'email': 'test@mail.com',
                                                       'password': 'Password123+'})
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -208,4 +216,3 @@ class UserAccountTests(APITestCase):
                 "password": "securePassword123+"
             }
             serializer = RegisterSerializer(data=raw_data)
-

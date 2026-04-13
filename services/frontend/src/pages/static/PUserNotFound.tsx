@@ -1,14 +1,14 @@
 import CText from "../../components/text/CText";
 import PStaticPageShell from "./PStaticPageShell";
 
-const PNotFound = () => {
+const PUserNotFound = () => {
 	return (
 		<PStaticPageShell title="404" titleSize="lg" maxWidth="sm">
 			<CText align="center" size="md" sx={{ mb: 0 }}>
-				NOT_FOUND
+				USER_NOT_FOUND
 			</CText>
 		</PStaticPageShell>
 	);
 };
 
-export default PNotFound;
+export default PUserNotFound;

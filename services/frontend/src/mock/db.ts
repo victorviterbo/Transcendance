@@ -2,7 +2,7 @@ export interface MockUser {
 	username: string;
 	email: string;
 	password: string;
-	image: string | null;
+	avatar: string | null;
 	expPoints: number;
 	isGuest?: boolean;
 	sessionKey?: string | null;
@@ -33,7 +33,7 @@ const defaultUser: MockUser = {
 	username: "john",
 	email: "john@42.fr",
 	password: "secret",
-	image: null,
+	avatar: null,
 	expPoints: 120,
 	isGuest: false,
 	sessionKey: null,
@@ -96,7 +96,7 @@ export const createUser = (username: string, email: string, password: string) =>
 		username: normalizeUsername(username),
 		email: normalizeEmail(email),
 		password,
-		image: null,
+		avatar: null,
 		expPoints: 0,
 		isGuest: false,
 		sessionKey: null,
@@ -146,7 +146,7 @@ export const clearSessionUser = () => {
  */
 export const updateUser = (
 	username: string,
-	updates: Partial<Pick<MockUser, "username" | "email" | "image">>,
+	updates: Partial<Pick<MockUser, "username" | "email" | "avatar">>,
 ) => {
 	const normalizedTarget = normalizeUsername(username);
 	const index = users.findIndex((user) => normalizeUsername(user.username) === normalizedTarget);
@@ -161,7 +161,7 @@ export const updateUser = (
 		next.username = normalizeUsername(updates.username);
 	}
 	if (updates.email) next.email = normalizeEmail(updates.email);
-	if (typeof updates.image !== "undefined") next.image = updates.image;
+	if (typeof updates.avatar !== "undefined") next.avatar = updates.avatar;
 
 	users[index] = next;
 

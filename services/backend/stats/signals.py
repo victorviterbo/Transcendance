@@ -15,15 +15,14 @@ def save_profile(sender: type[GameRoundStats],
                  instance: GameRoundStats,
                  **kwargs: Any) -> None:
     """Trigger updating of profile after updating a user."""
-    if instance.is_terminated:
-        players = instance.players.all()
+    if instance.game.is_over:
+        players = instance.player.all()
         for player in players:
             total_game_xp = UserRoundStats.objects.filter(
                 player=player,
-                round__game=instance # See the use of __ for join queries
+                round__game=instance.game # See the use of __ for join queries
             ).aggregate(total=Sum('xp_earned'))['total'] or 0
-            user_profile = player.profile
             if total_game_xp > 0:
-                user_profile.exp_points += total_game_xp
-                user_profile.badges = get_badge(player.profile.exp_points)
-                user_profile.save(update_fields=['exp_points', 'badges'])
+                player.exp_points += total_game_xp
+                player.badges = get_badge(player.exp_points)
+                player.save(update_fields=['exp_points', 'badges'])

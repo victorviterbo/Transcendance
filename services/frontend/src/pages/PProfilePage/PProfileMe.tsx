@@ -1,7 +1,6 @@
 import { Container, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
-import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
 import GPageBase from "../common/GPageBases";
 import CTabs from "../../components/navigation/CTabs";
@@ -12,26 +11,28 @@ import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
 import { getErrorMessage } from "../../utils/error";
 import PProfileAvatarEditor from "./PProfileAvatarEditor";
 import CLevelProgress from "../../components/feedback/CLevelProgress";
+import CProfileRequestState from "../../components/feedback/CProfileRequestState";
 import { fetchProfile, getProfileLevelProgress } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
 
+type ProfileStatus = "idle" | "loading" | "ready" | "error";
+
 interface ProfileState {
 	username: string;
+	status: ProfileStatus;
 	profile: IProfileData | null;
 	error: string | null;
 }
 
 interface ProfileInfoProps {
-	username: string;
-	profile: IProfileData | null;
-	error: string | null;
+	profile: IProfileData;
 	onAvatarUploaded: (nextProfile: IProfileData) => void;
 }
 
-const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfoProps) => {
-	const displayUsername = profile?.username ?? username;
-	const xp = profile?.exp_points ?? 0;
-	const badge = profile?.badges ?? "Unknown";
+const ProfileInfo = ({ profile, onAvatarUploaded }: ProfileInfoProps) => {
+	const displayUsername = profile.username;
+	const xp = profile.exp_points ?? 0;
+	const badge = profile.badges;
 	const levelProgress = getProfileLevelProgress(xp);
 
 	return (
@@ -43,7 +44,7 @@ const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfo
 			>
 				<PProfileAvatarEditor
 					username={displayUsername}
-					image={profile?.image}
+					avatar={profile.avatar}
 					onUploaded={onAvatarUploaded}
 				/>
 				<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
@@ -53,11 +54,6 @@ const ProfileInfo = ({ username, profile, error, onAvatarUploaded }: ProfileInfo
 						progressPercent={levelProgress.progressPercent}
 						title={badge}
 					/>
-					{error && (
-						<CText size="sm" color="error.main">
-							{error}
-						</CText>
-					)}
 				</Stack>
 			</Stack>
 		</CBasePaper>
@@ -68,12 +64,15 @@ const PProfileMe = () => {
 	const { user } = useAuth();
 	const [profileState, setProfileState] = useState<ProfileState>({
 		username: "",
+		status: "idle",
 		profile: null,
 		error: null,
 	});
 	const username = user?.username ?? "";
-	const profile = profileState.username === username ? profileState.profile : null;
-	const error = profileState.username === username ? profileState.error : null;
+	const isCurrentUsername = profileState.username === username;
+	const profile = isCurrentUsername ? profileState.profile : null;
+	const error = isCurrentUsername ? profileState.error : null;
+	const status = !username ? "loading" : isCurrentUsername ? profileState.status : "loading";
 
 	useEffect(() => {
 		if (!username) return;
@@ -84,6 +83,7 @@ const PProfileMe = () => {
 				if (ignore) return;
 				setProfileState({
 					username,
+					status: "ready",
 					profile: nextProfile,
 					error: null,
 				});
@@ -92,8 +92,9 @@ const PProfileMe = () => {
 				if (ignore) return;
 				setProfileState({
 					username,
+					status: "error",
 					profile: null,
-					error: getErrorMessage(profileError, "Failed to load profile."),
+					error: getErrorMessage(profileError, "PROFILE_LOAD_FAILED"),
 				});
 			});
 
@@ -102,17 +103,27 @@ const PProfileMe = () => {
 		};
 	}, [username]);
 
+	if (status !== "ready" || profile === null) {
+		return (
+			<GPageBase>
+				<CProfileRequestState
+					status={status === "error" ? "error" : "loading"}
+					error={error}
+				/>
+			</GPageBase>
+		);
+	}
+
 	return (
 		<GPageBase>
 			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3}>
 					<ProfileInfo
-						username={username || "Unknown"}
 						profile={profile}
-						error={error}
 						onAvatarUploaded={(nextProfile) => {
 							setProfileState({
 								username: nextProfile.username,
+								status: "ready",
 								profile: nextProfile,
 								error: null,
 							});

@@ -30,7 +30,7 @@ WSReponse:
               status:
                 type: string
                 enum: ["offline", "busy", "online"]
-              image: { type: uri }
+              avatar: { type: uri }
               roomid: {type: string | null | undefined, description: "Room ID when friend is in game to offer the join button"}
               unread: {type: integer, description: "Number of un read messages for this user"}
 

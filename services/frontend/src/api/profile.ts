@@ -29,7 +29,7 @@ export const fetchProfile = async (username: string): Promise<IProfileData> => {
 
 export const uploadProfileImage = async (file: File): Promise<IProfileData> => {
 	const formData = new FormData();
-	formData.append("image", file);
+	formData.append("avatar", file);
 	const response = await api.post<IProfileData>(API_PROFILE, formData);
 	return response.data;
 };
@@ -37,11 +37,14 @@ export const uploadProfileImage = async (file: File): Promise<IProfileData> => {
 export const changeProfilePassword = async (
 	currentPassword: string,
 	newPassword: string,
-): Promise<{ description: string }> => {
-	const response = await api.post<{ description: string }>(API_PROFILE_PASSWORD, {
+): Promise<{ description: string; access?: string; username?: string }> => {
+	const response = await api.post<{ description: string; access?: string; username?: string }>(
+		API_PROFILE_PASSWORD,
+		{
 		currentPassword,
 		newPassword,
-	});
+		},
+	);
 	return response.data;
 };
 
@@ -49,11 +52,11 @@ export const deleteProfile = async (password: string): Promise<void> => {
 	await api.post<{ description: string }>(API_ACCOUNT_DELETE, { password });
 };
 
-export const resolveProfileImage = (image?: string | null): string | undefined => {
-	if (!image) return undefined;
-	if (image.startsWith("http://") || image.startsWith("https://")) return image;
-	if (image.startsWith("/")) {
-		return new URL(image, window.location.origin).toString();
+export const resolveProfileImage = (avatar?: string | null): string | undefined => {
+	if (!avatar) return undefined;
+	if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
+	if (avatar.startsWith("/")) {
+		return new URL(avatar, window.location.origin).toString();
 	}
-	return new URL(`/${image}`, window.location.origin).toString();
+	return new URL(`/${avatar}`, window.location.origin).toString();
 };

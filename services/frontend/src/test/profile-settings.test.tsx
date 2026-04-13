@@ -117,6 +117,41 @@ describe("profile settings panel", () => {
 		expect(screen.getByText("PASSWORD_UNCHANGED")).toBeInTheDocument();
 	});
 
+	it("replaces auth state with the fresh token after a password change", async () => {
+		const user = userEvent.setup();
+		changeProfilePasswordMock.mockResolvedValue({
+			description: "PASSWORD_UPDATED",
+			access: "fresh-token",
+			username: "john",
+		});
+
+		render(<PProfileSettingsPanel username="john" />);
+
+		const passwordSummary = screen.getByRole("button", { name: /change_password/i });
+		await user.click(passwordSummary);
+		const passwordPanel = passwordSummary.closest(".MuiAccordion-root");
+		expect(passwordPanel).toBeInstanceOf(HTMLElement);
+		if (!(passwordPanel instanceof HTMLElement)) {
+			throw new Error("Password panel not found");
+		}
+
+		await user.type(within(passwordPanel).getByLabelText(/current_password/i), "Secret1!");
+		await user.type(within(passwordPanel).getByLabelText(/^new_password$/i), "NewSecret123+");
+		await user.type(
+			within(passwordPanel).getByLabelText(/confirm_new_password/i),
+			"NewSecret123+",
+		);
+		await user.click(within(passwordPanel).getByRole("button", { name: /^change$/i }));
+
+		await waitFor(() =>
+			expect(setAuthMock).toHaveBeenCalledWith("fresh-token", {
+				username: "john",
+				email: "john@42.fr",
+			}),
+		);
+		expect(screen.getByText("CHANGE_SUCCESS")).toBeInTheDocument();
+	});
+
 	it("opens a confirmation dialog before deleting the profile", async () => {
 		const user = userEvent.setup();
 

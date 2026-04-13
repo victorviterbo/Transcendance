@@ -146,6 +146,12 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 				values.currentPassword,
 				values.newPassword,
 			);
+			if (response.access) {
+				setAuth(response.access, {
+					username: response.username ?? user?.username ?? username ?? "",
+					email: user?.email,
+				});
+			}
 			return {
 				valid: true,
 				msg:

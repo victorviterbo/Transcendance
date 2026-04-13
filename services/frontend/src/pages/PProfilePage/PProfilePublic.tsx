@@ -2,18 +2,22 @@ import { Avatar, Container, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTabs from "../../components/navigation/CTabs";
-import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
 import GPageBase from "../common/GPageBases";
 import ProfileMatchHistoryPanel from "./PProfileMatchHistoryPanel";
 import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
 import { getErrorMessage } from "../../utils/error";
 import CLevelProgress from "../../components/feedback/CLevelProgress";
+import CProfileRequestState from "../../components/feedback/CProfileRequestState";
 import { fetchProfile, getProfileLevelProgress, resolveProfileImage } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
+import PUserNotFound from "../static/PUserNotFound";
+
+type ProfileStatus = "idle" | "loading" | "ready" | "notFound" | "error";
 
 interface ProfileState {
 	username: string;
+	status: ProfileStatus;
 	profile: IProfileData | null;
 	error: string | null;
 }
@@ -22,34 +26,65 @@ interface PProfilePublicProps {
 	username: string;
 }
 
+const isProfileNotFoundError = (error: unknown): boolean => {
+	if (typeof error !== "object" || error === null) return false;
+
+	const maybe = error as {
+		response?: {
+			status?: number;
+			data?: { error?: string | Record<string, string> };
+		};
+	};
+	const status = maybe.response?.status;
+	const payload = maybe.response?.data?.error;
+
+	if (status === 404) return true;
+	return status === 400 && payload === "No profile with this username";
+};
+
 function PProfilePublic({ username }: PProfilePublicProps) {
 	const [profileState, setProfileState] = useState<ProfileState>({
 		username: "",
+		status: "idle",
 		profile: null,
 		error: null,
 	});
-	const profile = profileState.username === username ? profileState.profile : null;
-	const error = profileState.username === username ? profileState.error : null;
+	const isCurrentUsername = profileState.username === username;
+	const profile = isCurrentUsername ? profileState.profile : null;
+	const error = isCurrentUsername ? profileState.error : null;
+	const status = !username ? "idle" : isCurrentUsername ? profileState.status : "loading";
 
 	useEffect(() => {
-		let ignore = false;
 		if (!username) return;
+
+		let ignore = false;
 
 		void fetchProfile(username)
 			.then((nextProfile) => {
 				if (ignore) return;
 				setProfileState({
 					username,
+					status: "ready",
 					profile: nextProfile,
 					error: null,
 				});
 			})
 			.catch((profileError) => {
 				if (ignore) return;
+				if (isProfileNotFoundError(profileError)) {
+					setProfileState({
+						username,
+						status: "notFound",
+						profile: null,
+						error: null,
+					});
+					return;
+				}
 				setProfileState({
 					username,
+					status: "error",
 					profile: null,
-					error: getErrorMessage(profileError, "Failed to load profile."),
+					error: getErrorMessage(profileError, "PROFILE_LOAD_FAILED"),
 				});
 			});
 
@@ -58,9 +93,22 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 		};
 	}, [username]);
 
-	const displayUsername = profile?.username ?? username;
-	const displayBadge = profile?.badges ?? "Unknown";
-	const displayXp = profile?.exp_points ?? 0;
+	if (status === "notFound") return <PUserNotFound />;
+
+	if (status !== "ready" || profile === null) {
+		return (
+			<GPageBase>
+				<CProfileRequestState
+					status={status === "error" ? "error" : "loading"}
+					error={error}
+				/>
+			</GPageBase>
+		);
+	}
+
+	const displayUsername = profile.username;
+	const displayBadge = profile.badges;
+	const displayXp = profile.exp_points ?? 0;
 	const levelProgress = getProfileLevelProgress(displayXp);
 
 	return (
@@ -74,7 +122,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 							alignItems={{ xs: "flex-start", sm: "center" }}
 						>
 							<Avatar
-								src={resolveProfileImage(profile?.image)}
+								src={resolveProfileImage(profile.avatar)}
 								sx={{
 									width: 88,
 									height: 88,
@@ -92,17 +140,12 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 									progressPercent={levelProgress.progressPercent}
 									title={displayBadge}
 								/>
-								{error && (
-									<CText size="sm" color="error.main">
-										{error}
-									</CText>
-								)}
 							</Stack>
 						</Stack>
 					</CBasePaper>
 
 					<CBasePaper>
-						<CTabs tabs={["Statistics", "Match history"]}>
+						<CTabs tabs={["STATISTICS", "MATCH_HISTORY"]}>
 							<ProfileStatisticsPanel scope="public" />
 							<ProfileMatchHistoryPanel scope="public" />
 						</CTabs>
