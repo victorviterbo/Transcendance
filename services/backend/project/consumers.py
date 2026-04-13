@@ -13,9 +13,13 @@ from game.models import Game
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
+from .consumers_utils import ConsumerScopeUtils
 
-class GlobalConsumer(AsyncJsonWebsocketConsumer):
+
+class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
+
+    create_profile_if_missing = True
     
     def __init__(self, *args: tuple, **kwargs: dict) -> None:
         """Define initialisation of consumer class."""
@@ -23,6 +27,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         
         self.room = None
         self.profile = None
+        self.active_layers = set()
         self.room_name = "default_room"
         self.group_name = None
         self.chat_group_name = f"chat_{self.room_name}"
@@ -33,18 +38,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if not self.profile:
             await self.close(code=4401)
             return
-        self.active_layers = set()
         self.group_name = f"user_{self.profile.id}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
+        await self.mark_user_online()
         await self.accept()
         return
 
     async def disconnect(self, close_code: int) -> None:
         """Remove the socket from its channel-layer group when disconnecting."""
-        for layer in self.active_layers:
+        for layer in getattr(self, "active_layers", set()):
             await self.channel_layer.group_discard(layer, self.channel_name)
-        await self._update_online_status(False)
+        if getattr(self, "profile", None):
+            await self._update_online_status(False)
+            await self.mark_user_offline()
         return
     
     async def receive_json(self, content: dict) -> None:
@@ -71,24 +78,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def group_send(self, group_name: str, message: dict) -> None:
         """Send a message to the specified channel."""
         await self.channel_layer.group_send(group_name, message)
-
-    @database_sync_to_async
-    def _get_profile_from_scope(self) -> Profile:
-        """Custom helper to find the Profile identity for a WebSocket connection."""
-        self.user = self.scope.get('user')
-        if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
-            try:
-                return self.user.profile
-            except Profile.DoesNotExist:
-                return None
-        profile = self.scope.get('profile')
-        if isinstance(profile, Profile):
-            return profile
-        session = self.scope.get('session', {})
-        guest_id = session.get('guest_profile_id')
-        if guest_id:
-            return Profile.objects.filter(id=guest_id, is_guest=True).first()
-        return Profile.objects.create() # TODO: remove in prod: Should not happen: it would mean we have websocket connection before http connection
     
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
         """Process incoming message, delivered, and read actions from the client."""
@@ -126,7 +115,13 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 await self.send_json(message)
                 return
 
-            await self.group_send(f'user_{self.profile.id}', {
+            recipient_profile = await self._get_direct_recipient_profile(message)
+            if recipient_profile is None:
+                await self.send_json({'type': 'error',
+                                      'message': 'Target user not found'})
+                return
+
+            await self.group_send(f'user_{recipient_profile.id}', {
                 'type': 'chat.message',
                 'message_id': message.id,
                 'message': message.body,
@@ -188,6 +183,18 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'message_id': event['message_id'],
             'action': event['action'],
             'username': event['username'],
+        })
+
+    async def send_notification(self, event: dict) -> None:
+        """Forward social notifications to the connected client."""
+        await self.send_json({
+            'type': 'social_notification',
+            'module': event.get('module', 'social'),
+            'event': event.get('message'),
+            'from_user': event.get('from_user'),
+            'from_user_uid': event.get('from_user_uid'),
+            'to_user_uid': event.get('to_user_uid'),
+            'friendship_uid': event.get('friendship_uid'),
         })
 
     def _sender_name(self) -> str:
@@ -284,6 +291,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if changed:
             message.save(update_fields=['delivered', 'seen'])
         return True
+
+    @database_sync_to_async
+    def _get_direct_recipient_profile(self, message: Message) -> Profile | None:
+        """Return the other participant profile for a direct-message room."""
+        return message.room.participants.exclude(id=self.profile.id).first()
 
 class NotFoundConsumer(AsyncWebsocketConsumer):
     """Handle non-existant endpoint communication."""
