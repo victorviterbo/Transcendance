@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { API_SOCIAL_FRIENDS_REQUEST, API_SOCIAL_FRIENDS_SEARCH } from "../../constants";
-import type { IFriendRequests } from "../../types/friends";
+import type { IFriendRequests } from "../../types/socials";
 import PFriendReq from "../../pages/PSocial/PFriendReq";
 import { mockGetExtUser } from "../../mock/handlers/social/social_dbs";
 
