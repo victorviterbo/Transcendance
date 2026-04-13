@@ -1,9 +1,8 @@
 import { useState } from "react";
-import CTabs from "../../components/navigation/CTabs";
 import PFriendAdd from "./PFriendAdd";
 import PFriendList from "./PFriendList";
 import PFriendReq from "./PFriendReq";
-import type { IFriendInfo } from "../../types/friends";
+import type { IFriendInfo } from "../../types/socials";
 import { Box, Slide, Stack } from "@mui/material";
 import PFriendChat from "./PFriendChat";
 import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
@@ -12,8 +11,15 @@ import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePa
 import CAvatar from "../../components/images/CAvatar";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import type { GPageProps } from "../common/GPageBases";
+import CCtrlTabs from "../../components/navigation/CCtrlTabs";
 
-function PSocial() {
+interface PSocialProps extends GPageProps {
+	activeTab: number;
+	onTabChanged: (Value: number) => void;
+}
+
+function PSocial({ onTabChanged, activeTab }: PSocialProps) {
 	const [messaging, setMessaging] = useState<IFriendInfo | undefined>(undefined);
 
 	function getTitle() {
@@ -128,9 +134,11 @@ function PSocial() {
 						overflow: "hidden",
 					}}
 				>
-					<CTabs
+					<CCtrlTabs
 						tabs={["FRIEND_LISTS", "FRIENDS_ADD", "FRIEND_REQUESTS"]}
 						testid="PSocialTab"
+						activeTab={activeTab}
+						onTabChanged={onTabChanged}
 					>
 						<PFriendList
 							onMessaging={(Friend: IFriendInfo) => {
@@ -139,7 +147,7 @@ function PSocial() {
 						></PFriendList>
 						<PFriendAdd></PFriendAdd>
 						<PFriendReq></PFriendReq>
-					</CTabs>
+					</CCtrlTabs>
 				</Box>
 			</Slide>
 			<Slide direction="left" in={messaging ? true : false}>

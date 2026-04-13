@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import type { GPageProps } from "../common/GPageBases";
-import type { IFriendInfo, IFriendMessage } from "../../types/friends";
+import type { IFriendInfo, IFriendMessage } from "../../types/socials";
 import CText from "../../components/text/CText";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckIcon from "@mui/icons-material/Check";
