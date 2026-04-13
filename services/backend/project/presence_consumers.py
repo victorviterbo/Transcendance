@@ -1,15 +1,11 @@
 """WebSocket consumer logic for user presence (online/offline)."""
 
-from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from userauth.models import SiteUser
-from userprofile.models import Profile
-
-from .redis_utils import RedisManager
+from .consumers_utils import ConsumerScopeUtils
 
 
-class PresenceConsumer(AsyncJsonWebsocketConsumer):
+class PresenceConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
     """Track user online/offline state and broadcast status changes.
 
     Flow summary:
@@ -92,40 +88,3 @@ class PresenceConsumer(AsyncJsonWebsocketConsumer):
                 "user_id": event["user_id"],
             }
         )
-
-    @database_sync_to_async
-    def _get_profile_from_scope(self) -> Profile | None:
-        """Resolve profile from socket scope.
-
-        Priority:
-        1) Authenticated SiteUser.profile
-        2) Middleware-injected Profile in scope
-        3) guest_profile_id from session
-        """
-        user = self.scope.get("user")
-        if user and isinstance(user, SiteUser) and user.is_authenticated:
-            try:
-                return user.profile
-            except Profile.DoesNotExist:
-                return None
-
-        # Optional profile attached by middleware.
-        profile = self.scope.get("profile")
-        if isinstance(profile, Profile):
-            return profile
-
-        # Guest fallback from session key.
-        session = self.scope.get("session", {})
-        guest_uid = session.get("guest_profile_uid")
-        if guest_uid:
-            return Profile.objects.filter(uid=guest_uid, is_guest=True).first()
-
-        return None
-
-    async def mark_user_online(self) -> None:
-        """Store online marker in Redis with short TTL for auto-expiry."""
-        await RedisManager.set_user_online(self.profile.id, ttl=60)
-
-    async def mark_user_offline(self) -> None:
-        """Remove online marker in Redis when connection ends."""
-        await RedisManager.set_user_offline(self.profile.id)
