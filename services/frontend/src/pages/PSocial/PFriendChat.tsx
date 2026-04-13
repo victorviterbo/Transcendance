@@ -5,7 +5,7 @@ import type {
 	IFriendInfo,
 	IFriendMessage,
 	IFriendMessageReq,
-} from "../../types/friends";
+} from "../../types/socials";
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../constants";
 import api from "../../api";
 import type { AxiosResponse } from "axios";
