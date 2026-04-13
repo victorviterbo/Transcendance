@@ -67,3 +67,16 @@ export interface IFriendFeed {
 	feed: IFriendMessage[];
 	error?: IErrorStruct;
 }
+
+//====================== NOTIFICATION ======================
+export interface INotifList {
+	notifs: TNotif[];
+	error?: IErrorStruct;
+}
+
+export type TNotif = {
+	kind: "friend-request";
+	from: IExtUserInfo;
+	date: Date | string;
+	read: boolean;
+};

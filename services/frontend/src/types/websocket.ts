@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
-import type { IFriendMessage } from "./friends";
+import type { IFriendMessage } from "./socials";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 

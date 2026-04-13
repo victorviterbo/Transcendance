@@ -71,3 +71,15 @@ export const CToggleButtonStyle: SxProps<Theme> = (_) => ({
 		});
 	},
 });
+
+export const CToggleButtonNotif: SxProps<Theme> = (_) => ({
+	position: "absolute",
+	zIndex: 1,
+	right: "-5px",
+	top: "-5px",
+	borderRadius: "100px",
+	px: "5px",
+	aspectRatio: "1/1",
+	backgroundColor: appColors.primary[0],
+	pointerEvents: "none",
+});
