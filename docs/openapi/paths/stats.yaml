@@ -1,35 +1,37 @@
 global:
   get:
-    summary: Get a user stats
-    description: Retrieve a full profile statistics by exact username lookup.
+    summary: Get user stats
+    description: Retrieve aggregated statistics for a user by exact username lookup.
     operationId: getProfileStats
     tags: [stats]
     parameters:
       - in: query
         name: q
         required: true
-        schema: { type: string }
         description: Exact username to look up.
+        schema:
+          type: string
     responses:
       "200":
-        description: Profile found
+        description: User stats found.
         content:
           application/json:
             schema:
-              $ref: ../openapi.yaml#/components/schemas/Profile
+              $ref: ../openapi.yaml#/components/schemas/GlobalStatsResponse
             examples:
-              profile-ok:
+              stats-ok:
                 value:
-                  average_score: 48
+                  averageScore: 48
                   xp: 654
                   ranking: 3
-                  total_players: 1687
-                  average_time: 3.2
-                  success_rate_artist: 23.6
-                  success_rate_song: 39.7
-                  success_rate_complete: 45.7
-                  success_rates_complete_by_tag:
-                    { "TAG_POP": 12.5, "TAG_ROCK": 65.3 }
+                  totalPlayers: 1687
+                  averageTime: 3.2
+                  successRateArtist: 23.6
+                  successRateSong: 39.7
+                  successRateComplete: 45.7
+                  successRatesCompleteByTag:
+                    TAG_POP: 12.5
+                    TAG_ROCK: 65.3
       "400":
         description: Invalid or missing query.
         content:
@@ -41,83 +43,81 @@ global:
                 value:
                   error:
                     query: "MISSING_FIELD"
-              not-found:
+              user-not-found:
                 value:
                   error:
                     query: "USER_NOT_FOUND"
+
 leaderboard:
   get:
     summary: Leaderboard
-    description: Return 10 best players and their info.
+    description: Return the 10 best players and their info.
     operationId: leaderboard
     tags: [stats]
     responses:
       "200":
-        description: List of 10 best players
+        description: List of the top 10 players.
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: ../openapi.yaml#/components/schemas/LightProfile
+              $ref: ../openapi.yaml#/components/schemas/LeaderboardResponse
             examples:
-              match:
+              leaderboard-ok:
                 value:
-                  "leaderboard":
-                    "username": "jeanmichelblindtest"
-                    "avatar": "url"
-                    "xp": 135
-                    "badges": "BADGE_DAZED_JELLYFISH"
-                    "ranking": 1
-                    "is_current_user": False
-                  "leaderboard_count": 1
-                  "total_number_player": 1
+                  leaderboard:
+                    - username: "jeanmichelblindtest"
+                      avatar: "https://example.com/avatar.png"
+                      xp: 135
+                      badges: "BADGE_DAZED_JELLYFISH"
+                      ranking: 1
+                      isCurrentUser: false
+                  leaderboardCount: 1
+                  totalNumberPlayer: 1
 
 history:
   get:
     summary: Match history
-    description: Return the 10 last games played
+    description: Return the 10 last games played by the authenticated user.
     operationId: history
     tags: [stats]
+    security:
+      - bearerAuth: []
     responses:
       "200":
-        description: Last 10 matches and their content
+        description: Last 10 matches and their content.
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: ../openapi.yaml#/components/schemas/LightProfile
+              $ref: ../openapi.yaml#/components/schemas/HistoryResponse
             examples:
-              match:
+              history-ok:
                 value:
-                  "leaderboard":
-                    "played_at": "MM-DD-YYYY"
-                    "xp_earned": 34
-                    "ranking": 3
-                    "room_title": "Kristopher's Room"
-                    "tags": ["TAG_POP", "TAG_ROCK"]
-                    "players":
-                    [
-                      {
-                        "username": "jeanmichelblindtest",
-                        "avatar": "default_pic",
-                        "ranking": 5
-                      }
-                    ]
-                    "rounds":
-                      [
-                        {
-                          "track_name": "The Chain",
-                          "track_artist": "Fleetwood Mac",
-                          "song_found": False,
-                          "artist_found": True,
-                          "time": 0,
-                          "ranking": 12,
-                          "preview_url": "https://mescouillessurtonfront",
-                          "artwork_url": "https://mescouillessurlacommode",
-                          "round_number": 1,
-                        },
-                        {},
-                      ]
-                  "history_count": 1
+                  history:
+                    - playedAt: "2026-04-10T20:15:00Z"
+                      xpEarned: 34
+                      ranking: 3
+                      roomTitle: "Kristopher's Room"
+                      tags:
+                        - "TAG_POP"
+                        - "TAG_ROCK"
+                      players:
+                        - username: "jeanmichelblindtest"
+                          avatar: "default_pic"
+                          ranking: 5
+                      rounds:
+                        - trackName: "The Chain"
+                          trackArtist: "Fleetwood Mac"
+                          songFound: false
+                          artistFound: true
+                          time: 0
+                          ranking: 12
+                          previewUrl: "https://example.com/audio-preview"
+                          artworkUrl: "https://example.com/artwork"
+                          roundNumber: 1
+                  historyCount: 1
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError

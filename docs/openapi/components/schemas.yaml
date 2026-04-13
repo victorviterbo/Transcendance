@@ -132,3 +132,161 @@ ProfilePasswordChangeRequest:
     newPassword:
       { type: string, format: password, description: Replacement password. }
   required: [currentPassword, newPassword]
+
+GlobalStatsResponse:
+  type: object
+  description: Aggregated profile statistics for a single user.
+  properties:
+    averageScore:
+      type: number
+      format: float
+      description: Average score across matches.
+    xp: { type: integer, description: Total experience points. }
+    ranking: { type: integer, description: Current player ranking. }
+    totalPlayers: { type: integer, description: Total number of ranked players. }
+    averageTime:
+      type: number
+      format: float
+      description: Average answer time in seconds.
+    successRateArtist:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 100
+      description: Artist answer success rate as a percentage in the 0 to 100 range.
+    successRateSong:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 100
+      description: Song answer success rate as a percentage in the 0 to 100 range.
+    successRateComplete:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 100
+      description: Full answer success rate as a percentage in the 0 to 100 range.
+    successRatesCompleteByTag:
+      $ref: "#/TagSuccessRateMap"
+  required:
+    [
+      averageScore,
+      xp,
+      ranking,
+      totalPlayers,
+      averageTime,
+      successRateArtist,
+      successRateSong,
+      successRateComplete,
+      successRatesCompleteByTag,
+    ]
+
+TagSuccessRateMap:
+  type: object
+  description: Full answer success rates indexed by tag code, expressed as percentages in the 0 to 100 range.
+  additionalProperties:
+    type: number
+    format: float
+    minimum: 0
+    maximum: 100
+
+LeaderboardResponse:
+  type: object
+  description: Leaderboard payload and associated counters.
+  properties:
+    leaderboard:
+      type: array
+      description: Top-ranked players.
+      items: { $ref: "#/LeaderboardEntry" }
+    leaderboardCount:
+      type: integer
+      description: Number of entries returned in the leaderboard.
+    totalNumberPlayer:
+      type: integer
+      description: Total number of players eligible for ranking.
+  required: [leaderboard, leaderboardCount, totalNumberPlayer]
+
+LeaderboardEntry:
+  type: object
+  description: Summary information for a leaderboard player.
+  properties:
+    username: { type: string }
+    avatar: { type: string, description: Avatar URL or asset path. }
+    xp: { type: integer }
+    badges: { type: string }
+    ranking: { type: integer }
+    isCurrentUser: { type: boolean }
+  required: [username, avatar, xp, badges, ranking, isCurrentUser]
+
+HistoryResponse:
+  type: object
+  description: Recent match history payload and associated counter.
+  properties:
+    history:
+      type: array
+      description: Recent matches returned for the authenticated user.
+      items: { $ref: "#/HistoryEntry" }
+    historyCount:
+      type: integer
+      description: Number of matches returned in the response.
+  required: [history, historyCount]
+
+HistoryEntry:
+  type: object
+  description: Summary and round details for a previously played match.
+  properties:
+    playedAt:
+      type: string
+      format: date-time
+      description: Timestamp indicating when the match was played.
+    xpEarned: { type: integer }
+    ranking: { type: integer }
+    roomTitle: { type: string }
+    tags:
+      type: array
+      items: { type: string }
+    players:
+      type: array
+      items: { $ref: "#/HistoryPlayer" }
+    rounds:
+      type: array
+      items: { $ref: "#/HistoryRound" }
+  required: [playedAt, xpEarned, ranking, roomTitle, tags, players, rounds]
+
+HistoryPlayer:
+  type: object
+  description: Player summary included in a match history entry.
+  properties:
+    username: { type: string }
+    avatar: { type: string, description: Avatar URL or asset path. }
+    ranking: { type: integer }
+  required: [username, avatar, ranking]
+
+HistoryRound:
+  type: object
+  description: Per-round result information for a match history entry.
+  properties:
+    trackName: { type: string }
+    trackArtist: { type: string }
+    songFound: { type: boolean }
+    artistFound: { type: boolean }
+    time:
+      type: number
+      format: float
+      description: Time taken to answer during the round, in seconds.
+    ranking: { type: integer }
+    previewUrl: { type: string, format: uri }
+    artworkUrl: { type: string, format: uri }
+    roundNumber: { type: integer }
+  required:
+    [
+      trackName,
+      trackArtist,
+      songFound,
+      artistFound,
+      time,
+      ranking,
+      previewUrl,
+      artworkUrl,
+      roundNumber,
+    ]

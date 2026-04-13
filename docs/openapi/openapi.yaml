@@ -73,6 +73,12 @@ components:
       $ref: ./components/schemas.yaml#/ProfileDeleteRequest
     ProfilePasswordChangeRequest:
       $ref: ./components/schemas.yaml#/ProfilePasswordChangeRequest
+    GlobalStatsResponse:
+      $ref: ./components/schemas.yaml#/GlobalStatsResponse
+    LeaderboardResponse:
+      $ref: ./components/schemas.yaml#/LeaderboardResponse
+    HistoryResponse:
+      $ref: ./components/schemas.yaml#/HistoryResponse
     WS Reponse:
       $ref: ./components/schemas_ws.yaml#/WSReponse
     WS Requests:
