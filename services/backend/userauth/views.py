@@ -120,9 +120,11 @@ class LoginView(APIView):
                 )
                 guest_id = request.session.get('guest_profile_id')
                 if guest_id:
-                    Profile.objects.filter(id=guest_id, is_guest=True).delete()
-                    request.profile = user.profile
-                    request.session.pop('guest_profile_id', None)
+                    profile = Profile.objects.filter(id=guest_id, is_guest=True)
+                    if profile.exists():
+                        profile.delete()
+                        request.profile = user.profile
+                        request.session.pop('guest_profile_id', None)
                 return response
             except ValueError:
                 return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},

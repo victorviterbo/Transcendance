@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import random
 import uuid
+from pathlib import Path
 
 from django.db import models
+from project import settings
 from project.defaults import badges_strings
 from userauth.models import SiteUser
 
 
 def avatar_path(instance: Profile, filename: str) -> str:
     """Construct the path at wich the profile picture will be stored."""
-    return f'profile_pics/user_{instance.pk}_profile.png'
+    return f'avatars/user_{instance.pk}_profile.png'
 
 def pick_random_avatar() -> str:
     """Pick a random avatar as the default."""
@@ -66,3 +68,8 @@ class Profile(models.Model):
         """Define how to output the object as string."""
         return f'{self.username} Profile'
     
+    def delete(self, *args: tuple, **kwargs: dict) -> None:
+        """Define how to delete a profile."""
+        if self.avatar.name not in Path(settings.MEDIA_ROOT / 'default_avatars').iterdir():
+            self.avatar.delete(save=False)
+        super().delete(*args, **kwargs)
