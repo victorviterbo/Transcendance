@@ -29,15 +29,143 @@ export const getBadgeForXp = (xp: number) => {
 		: mockBadgeStrings[badgeIndex];
 };
 
-const defaultUser: MockUser = {
-	username: "john",
-	email: "john@42.fr",
-	password: "secret",
-	avatar: null,
-	expPoints: 120,
-	isGuest: false,
-	sessionKey: null,
-};
+const defaultUsers: MockUser[] = [
+	{
+		username: "john",
+		email: "john@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 120,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "luna",
+		email: "luna@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 980,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "orion",
+		email: "orion@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 860,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "nina",
+		email: "nina@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 740,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "soren",
+		email: "soren@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 690,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "iris",
+		email: "iris@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 640,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "diego",
+		email: "diego@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 590,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "mika",
+		email: "mika@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 520,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "zoya",
+		email: "zoya@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 460,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "kai",
+		email: "kai@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 390,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "theo",
+		email: "theo@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 310,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "ines",
+		email: "ines@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 260,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "yara",
+		email: "yara@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 210,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "pavel",
+		email: "pavel@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 170,
+		isGuest: false,
+		sessionKey: null,
+	},
+	{
+		username: "enzo",
+		email: "enzo@42.fr",
+		password: "secret",
+		avatar: null,
+		expPoints: 95,
+		isGuest: false,
+		sessionKey: null,
+	},
+];
 
 let users: MockUser[] = [];
 let sessionUser: string | null = null;
@@ -61,7 +189,7 @@ export const normalizeUsername = (value: string) => value.trim();
  * @returns void
  */
 export const resetMockDb = () => {
-	users = [{ ...defaultUser }];
+	users = defaultUsers.map((user) => ({ ...user }));
 	sessionUser = null;
 };
 
@@ -104,6 +232,8 @@ export const createUser = (username: string, email: string, password: string) =>
 	users.push(newUser);
 	return newUser;
 };
+
+export const listUsers = () => users.map((user) => ({ ...user }));
 
 /**
  * @brief Validate credentials against the mock database.
@@ -191,6 +321,18 @@ export const updatePassword = (username: string, currentPassword: string, newPas
 	return users[index];
 };
 
+export const setUserExpPoints = (username: string, expPoints: number) => {
+	const normalizedTarget = normalizeUsername(username);
+	const index = users.findIndex((user) => normalizeUsername(user.username) === normalizedTarget);
+	if (index < 0) return null;
+
+	users[index] = {
+		...users[index],
+		expPoints: Math.max(0, Math.floor(expPoints)),
+	};
+	return users[index];
+};
+
 /**
  * @brief Delete user profile and reset session when needed.
  * @param username User identifier.
@@ -212,11 +354,13 @@ export const db = {
 	findUserByUsername,
 	findUserByExactUsername,
 	createUser,
+	listUsers,
 	authenticate,
 	getSessionUser,
 	setSessionUser,
 	clearSessionUser,
 	updateUser,
 	updatePassword,
+	setUserExpPoints,
 	deleteUser,
 };
