@@ -47,6 +47,11 @@ class RedisManager:
             return False
         finally:
             await redis.close()
+
+    @classmethod
+    async def set_online(cls, user_id: int, ttl: int = 60) -> bool:
+        """Alias for setting a user online in Redis."""
+        return await cls.set_user_online(user_id, ttl=ttl)
     
     @classmethod
     async def set_user_offline(cls, user_id: int) -> bool:
@@ -71,6 +76,11 @@ class RedisManager:
             return False
         finally:
             await redis.close()
+
+    @classmethod
+    async def set_offline(cls, user_id: int) -> bool:
+        """Alias for setting a user offline in Redis."""
+        return await cls.set_user_offline(user_id)
     
     @classmethod
     async def is_user_online(cls, user_id: int) -> bool:
@@ -132,3 +142,8 @@ class RedisManager:
             True if successful, False otherwise
         """
         return await cls.set_user_online(user_id, ttl)
+
+    @classmethod
+    async def refresh_presence(cls, user_id: int, ttl: int = 60) -> bool:
+        """Alias for refreshing a user's presence TTL."""
+        return await cls.refresh_user_session(user_id, ttl=ttl)
