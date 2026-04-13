@@ -10,6 +10,7 @@ from channels.generic.websocket import (
 from chat.models import Message, Room
 from friends.models import Friendship
 from game.models import Game
+from game.ws_handlers import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -53,7 +54,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if module == "chat":
             await self.chat_subroutine(content)
         elif module == "game":
-            await self.game_subroutine(content)
+            await handle_game_action(self, content)
         else:
             await self.close(code=4405)
         return
@@ -88,7 +89,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         guest_id = session.get('guest_profile_id')
         if guest_id:
             return Profile.objects.filter(id=guest_id, is_guest=True).first()
-        return Profile.objects.create() # TODO: remove in prod: Should not happen: it would mean we have websocket connection before http connection
+        # Create unique guest profile
+        import uuid
+        guest_username = f"guest_{uuid.uuid4().hex[:8]}"
+        return Profile.objects.create(username=guest_username, is_guest=True)
     
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
         """Process incoming message, delivered, and read actions from the client."""
@@ -188,6 +192,55 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'message_id': event['message_id'],
             'action': event['action'],
             'username': event['username'],
+        })
+
+    # Game event handlers
+    async def game_player_joined(self, event: dict) -> None:
+        """Notify of a player joining the game room."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'player_joined',
+            'player_name': event['player_name'],
+            'player_id': event['player_id'],
+        })
+
+    async def game_game_started(self, event: dict) -> None:
+        """Notify that the game has started."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'game_started',
+            'started_by': event['started_by'],
+            'room_id': event.get('room_id'),
+        })
+
+    async def game_track_revealed(self, event: dict) -> None:
+        """Notify of a track being revealed."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'track_revealed',
+            'track': event['track'],
+            'room_id': event.get('room_id'),
+        })
+
+    async def game_answer_submitted(self, event: dict) -> None:
+        """Notify of an answer submission."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'answer_submitted',
+            'player_name': event['player_name'],
+            'player_id': event['player_id'],
+            'answer': event['answer'],
+            'is_correct': event['is_correct'],
+        })
+
+    async def game_player_left(self, event: dict) -> None:
+        """Notify of a player leaving the game room."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'player_left',
+            'player_name': event['player_name'],
+            'player_id': event['player_id'],
+            'room_id': event.get('room_id'),
         })
 
     def _sender_name(self) -> str:
