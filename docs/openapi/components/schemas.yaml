@@ -208,7 +208,7 @@ LeaderboardResponse:
     totalNumberPlayer:
       type: integer
       description: Total number of players eligible for ranking.
-  required: [leaderboard, leaderboardCount, totalNumberPlayer]
+  required: [leaderboard, leaderboardCount, ranking, totalNumberPlayer]
 
 LeaderboardEntry:
   type: object

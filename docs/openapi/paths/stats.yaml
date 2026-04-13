@@ -4,6 +4,8 @@ global:
     description: Retrieve aggregated statistics for a user by exact username lookup.
     operationId: getProfileStats
     tags: [stats]
+    security:
+      - bearerAuth: []
     parameters:
       - in: query
         name: q
@@ -54,6 +56,8 @@ leaderboard:
     description: Return the 10 best players and their info.
     operationId: leaderboard
     tags: [stats]
+    security:
+      - bearerAuth: []
     responses:
       "200":
         description: List of the top 10 players.
