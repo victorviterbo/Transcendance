@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import type { IFriendInfo, TFriendRelation } from "../../types/friends";
+import type { IFriendInfo, TFriendRelation } from "../../types/socials";
 import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo } from "../../types/user";
 import {

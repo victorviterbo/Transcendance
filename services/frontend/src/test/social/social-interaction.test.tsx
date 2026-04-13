@@ -6,7 +6,7 @@ import type {
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
-} from "../../types/friends";
+} from "../../types/socials";
 import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo, IExtUserList, IExtUserSearch } from "../../types/user";
 import {
