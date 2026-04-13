@@ -5,13 +5,16 @@ import {
 	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
 	API_SOCIAL_FRIENDS_REQUEST_SEND,
 	API_SOCIAL_FRIENDS_SEARCH,
+	API_SOCIAL_NOTIFS,
+	API_SOCIAL_NOTIFS_READ,
 } from "../../../constants";
 import type {
 	IFriendInfo,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
-} from "../../../types/friends";
+	INotifList,
+} from "../../../types/socials";
 import type { IExtUserInfo, IExtUserSearch } from "../../../types/user";
 import {
 	mockGetExtUsers,
@@ -20,7 +23,7 @@ import {
 	mockSocialDB,
 	mockSocialSetDB,
 } from "./social_dbs";
-import type { IErrorReturn } from "../../../types/error";
+import type { IErrorReturn, IErrorStruct } from "../../../types/error";
 
 //--------------------------------------------------
 //                   HANDLERS
@@ -149,3 +152,44 @@ export const friendsRequestsResponseHandler = http.post(
 		);
 	},
 );
+
+export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {
+	mockSocialSetDB();
+
+	const isError: boolean = false;
+	const res: INotifList = {
+		notifs: [],
+	};
+
+	let count = 0;
+	mockSocialDB.users.forEach((value: IExtUserInfo) => {
+		if (value.relation == "incoming") {
+			let date: Date = new Date();
+			if (count == 1) date = new Date(Date.now() - 1000 * 60 * 5);
+			else if (count == 2) date = new Date(Date.now() - 1000 * 60 * 60 * 2);
+			else if (count == 3) date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 12);
+
+			res.notifs.push({ kind: "friend-request", from: value, date: date, read: count > 1 });
+			count++;
+		}
+	});
+
+	if (isError) {
+		res.error = {
+			default: [{ message: "Notifaction disable", code: "Can't look up for notifications" }],
+		};
+	}
+	return HttpResponse.json(res, { status: isError ? 400 : 200 });
+});
+
+export const notifRequestHandlerRead = http.post(API_SOCIAL_NOTIFS_READ, async () => {
+	const res: { error?: IErrorStruct } = {};
+
+	const isError: boolean = false;
+	if (isError) {
+		res.error = {
+			default: [{ message: "Notifaction disable", code: "Can't look up for notifications" }],
+		};
+	}
+	return HttpResponse.json(res, { status: isError ? 400 : 200 });
+});
