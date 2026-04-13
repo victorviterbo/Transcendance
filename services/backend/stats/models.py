@@ -53,7 +53,7 @@ class UserRoundStats(models.Model):
         return self.round.game
 
 class UserGameStats(models.Model):
-    """Define the model for a single player for a single game."""
+    """Define the model for a single player in a single game."""
 
     game = models.ForeignKey(Game,
                              on_delete=models.CASCADE,
@@ -63,6 +63,8 @@ class UserGameStats(models.Model):
                                related_name='round_played')
     is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-played_at']
+        unique_together = ('game', 'player')

@@ -10,6 +10,7 @@ from channels.generic.websocket import (
 from django.core.cache import cache
 from chat.models import Message, Room
 from game.models import Game
+from game.ws_handlers import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -130,7 +131,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if module == "chat":
             await self.chat_subroutine(content)
         elif module == "game":
-            await self.game_subroutine(content)
+            await handle_game_action(self, content)
         else:
             logger.warning('ws.receive.unsupported_module profile_id=%s module=%s',
                            getattr(getattr(self, 'profile', None), 'id', None),
@@ -353,6 +354,55 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'from_user_uid': event.get('from_user_uid'),
             'to_user_uid': event.get('to_user_uid'),
             'friendship_uid': event.get('friendship_uid'),
+        })
+
+    # Game event handlers
+    async def game_player_joined(self, event: dict) -> None:
+        """Notify of a player joining the game room."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'player_joined',
+            'player_name': event['player_name'],
+            'player_id': event['player_id'],
+        })
+
+    async def game_game_started(self, event: dict) -> None:
+        """Notify that the game has started."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'game_started',
+            'started_by': event['started_by'],
+            'room_id': event.get('room_id'),
+        })
+
+    async def game_track_revealed(self, event: dict) -> None:
+        """Notify of a track being revealed."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'track_revealed',
+            'track': event['track'],
+            'room_id': event.get('room_id'),
+        })
+
+    async def game_answer_submitted(self, event: dict) -> None:
+        """Notify of an answer submission."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'answer_submitted',
+            'player_name': event['player_name'],
+            'player_id': event['player_id'],
+            'answer': event['answer'],
+            'is_correct': event['is_correct'],
+        })
+
+    async def game_player_left(self, event: dict) -> None:
+        """Notify of a player leaving the game room."""
+        await self.send_json({
+            'type': 'game_event',
+            'event': 'player_left',
+            'player_name': event['player_name'],
+            'player_id': event['player_id'],
+            'room_id': event.get('room_id'),
         })
 
     def _sender_name(self) -> str:
