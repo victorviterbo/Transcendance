@@ -9,9 +9,10 @@ export interface CNavbarToggleProps extends Omit<
 	icon: ReactNode;
 	aria: string;
 	active: boolean;
+	notifCount?: number;
 }
 
-function CNavbarToggle({ icon, aria, active, sx, ...other }: CNavbarToggleProps) {
+function CNavbarToggle({ icon, aria, active, notifCount, sx, ...other }: CNavbarToggleProps) {
 	return (
 		<CButtonToggle
 			value={aria}
@@ -22,6 +23,7 @@ function CNavbarToggle({ icon, aria, active, sx, ...other }: CNavbarToggleProps)
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
 			]}
 			data-testid={aria + "_CIconButton"}
+			notifCount={notifCount}
 			{...other}
 		>
 			{icon}
