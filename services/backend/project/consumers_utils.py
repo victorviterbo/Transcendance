@@ -2,10 +2,9 @@
 
 from channels.db import database_sync_to_async
 
+from chat.redis_utils import RedisManager
 from userauth.models import SiteUser
 from userprofile.models import Profile
-
-from .redis_utils import RedisManager
 
 
 class ConsumerScopeUtils:
