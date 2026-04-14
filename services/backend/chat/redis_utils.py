@@ -1,15 +1,16 @@
 """Redis utility functions for presence tracking and caching."""
 
-import redis.asyncio as redis_async
 from typing import Optional
+
+import redis.asyncio as redis_async
 
 
 class RedisManager:
     """Manage Redis connections and operations for presence tracking."""
-    
+
     REDIS_URL = "redis://localhost"
     PRESENCE_KEY_PREFIX = "presence:user:"
-    
+
     @classmethod
     async def get_connection(cls) -> Optional[redis_async.Redis]:
         """Get a Redis connection."""
@@ -18,28 +19,19 @@ class RedisManager:
         except Exception as e:
             print(f"Failed to connect to Redis: {e}")
             return None
-    
+
     @classmethod
     async def set_user_online(cls, user_id: int, ttl: int = 60) -> bool:
-        """
-        Mark user as online in Redis with TTL.
-        
-        Args:
-            user_id: User ID to mark online
-            ttl: Time-to-live in seconds (default: 60s)
-        
-        Returns:
-            True if successful, False otherwise
-        """
+        """Mark user as online in Redis with TTL."""
         redis = await cls.get_connection()
         if not redis:
             return False
-        
+
         try:
             await redis.set(
                 f"{cls.PRESENCE_KEY_PREFIX}{user_id}",
                 "online",
-                ex=ttl
+                ex=ttl,
             )
             return True
         except Exception as e:
@@ -52,22 +44,14 @@ class RedisManager:
     async def set_online(cls, user_id: int, ttl: int = 60) -> bool:
         """Alias for setting a user online in Redis."""
         return await cls.set_user_online(user_id, ttl=ttl)
-    
+
     @classmethod
     async def set_user_offline(cls, user_id: int) -> bool:
-        """
-        Mark user as offline by removing from Redis.
-        
-        Args:
-            user_id: User ID to mark offline
-        
-        Returns:
-            True if successful, False otherwise
-        """
+        """Mark user as offline by removing from Redis."""
         redis = await cls.get_connection()
         if not redis:
             return False
-        
+
         try:
             await redis.delete(f"{cls.PRESENCE_KEY_PREFIX}{user_id}")
             return True
@@ -81,22 +65,14 @@ class RedisManager:
     async def set_offline(cls, user_id: int) -> bool:
         """Alias for setting a user offline in Redis."""
         return await cls.set_user_offline(user_id)
-    
+
     @classmethod
     async def is_user_online(cls, user_id: int) -> bool:
-        """
-        Check if user is currently online.
-        
-        Args:
-            user_id: User ID to check
-        
-        Returns:
-            True if user is online, False otherwise
-        """
+        """Check if user is currently online."""
         redis = await cls.get_connection()
         if not redis:
             return False
-        
+
         try:
             result = await redis.get(f"{cls.PRESENCE_KEY_PREFIX}{user_id}")
             return result is not None
@@ -105,22 +81,16 @@ class RedisManager:
             return False
         finally:
             await redis.close()
-    
+
     @classmethod
     async def get_all_online_users(cls) -> list:
-        """
-        Get list of all online user IDs.
-        
-        Returns:
-            List of online user IDs
-        """
+        """Get list of all online user IDs."""
         redis = await cls.get_connection()
         if not redis:
             return []
-        
+
         try:
             keys = await redis.keys(f"{cls.PRESENCE_KEY_PREFIX}*")
-            # Extract user IDs from keys
             user_ids = [int(key.split(":")[-1]) for key in keys]
             return user_ids
         except Exception as e:
@@ -128,19 +98,10 @@ class RedisManager:
             return []
         finally:
             await redis.close()
-    
+
     @classmethod
     async def refresh_user_session(cls, user_id: int, ttl: int = 60) -> bool:
-        """
-        Refresh user's online TTL (extend session).
-        
-        Args:
-            user_id: User ID
-            ttl: New TTL in seconds
-        
-        Returns:
-            True if successful, False otherwise
-        """
+        """Refresh user's online TTL (extend session)."""
         return await cls.set_user_online(user_id, ttl)
 
     @classmethod
