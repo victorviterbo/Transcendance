@@ -92,7 +92,7 @@ class ProfileTests(TransactionTestCase):
             if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertStartsWith(response.data['avatar'],
-                                      '/DB/static/default_avatars/default_avatar_')
+                                      'static/default_avatars/default_avatar_')
                 self.assertIn('username', response.data)
                 self.assertIn('exp_points', response.data)
                 self.assertIn('badges', response.data)
@@ -173,8 +173,8 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
         self.assertEqual(response.data['badges'], 'Deaf Octopus')
-        self.assertTrue(Path(MEDIA_ROOT / response.data['avatar'].removeprefix('/DB/static/')).is_file())
-    
+        self.assertTrue(Path(str(MEDIA_ROOT) + response.data['avatar'].removeprefix('/media')).is_file())
+
     def test_profile_delete(self) -> None:
         """Test profile deletion operation."""
         login_url = '/api/auth/login/'
@@ -224,7 +224,6 @@ class ProfileTests(TransactionTestCase):
 
         new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response = self.client.post(account_delete_url, data={'password': 'Password123+'})
@@ -236,9 +235,8 @@ class ProfileTests(TransactionTestCase):
         self.assertFalse(Profile.objects.filter(username='user1').exists())
         self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
 
-        file_path = Path("./" + image)
+        file_path = Path("./DB/" + image)
         self.assertTrue(file_path.exists(), f"File not found at {file_path}")
-
 
     def test_guest_profile(self) -> None:
         """Test creation updating and deleting guests users."""
@@ -264,7 +262,7 @@ class ProfileTests(TransactionTestCase):
         new_data['avatar'].seek(0)
         response = self.client.post(guest_create_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        original_img_path = Path(MEDIA_ROOT / response.data['avatar'].removeprefix('/DB/static/'))
+        original_img_path = Path(str(MEDIA_ROOT) + response.data['avatar'].removeprefix('/media'))
         self.assertTrue(original_img_path.is_file())
         self.assertNotIn('exp_points', response.data)
 

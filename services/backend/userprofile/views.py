@@ -37,7 +37,6 @@ class ProfileView(APIView):
     
     def get(self, request: Request) -> Response:
         """Handles display of user profile."""
-        print("here it is")
         query = self.request.query_params.get('q')
         if query is None:
             return (Response({'error': {'query': 'MISSING_FIELD'}},

@@ -58,12 +58,9 @@ class LightProfileSerializer(serializers.ModelSerializer):
         """Define how the Profile is exported to json."""
         ret = super().to_representation(instance)
         if instance.avatar and hasattr(instance.avatar, 'url'):
-            print("is not none")
-            print(ret['avatar'])
             ret['avatar'] = instance.avatar.url
         else:
             ret['avatar'] = settings.STATIC_URL + f"default_avatars/default_avatar_{instance.pk % 18}.png"
-        print(ret['avatar'])
         return ret
 
 class UsersSerializer(LightProfileSerializer):
