@@ -10,6 +10,7 @@ services:
     env_file: ./backend/.env
     environment:
       - APP_MODE=${MODE:-run}
+      - PYTHONUNBUFFERED=1
 
   nginx:
     container_name: nginx

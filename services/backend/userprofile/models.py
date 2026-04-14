@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import shutil
 import uuid
 from pathlib import Path
 
@@ -64,12 +65,28 @@ class Profile(models.Model):
             )
         ]
     
+    def save(self, *args, **kwargs) -> None:
+        """Override save to give each new profile its own copy of the default avatar.
+
+        django-cleanup deletes the old file whenever the avatar field changes.
+        Default avatars are shared files, so without this override every upload
+        would delete a shared file and break other profiles using it.
+        By copying the default to a personal path on creation, only the user's
+        own file is ever deleted on subsequent updates.
+        """
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new and self.avatar and 'default_avatars/' in str(self.avatar):
+            src = Path(settings.MEDIA_ROOT) / str(self.avatar)
+            dst_name = f'avatars/user_{self.pk}_profile.png'
+            dst = Path(settings.MEDIA_ROOT) / dst_name
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if src.exists():
+                shutil.copy2(src, dst)
+            Profile.objects.filter(pk=self.pk).update(avatar=dst_name)
+            self.avatar.name = dst_name
+
     def __str__(self) -> str:
         """Define how to output the object as string."""
         return f'{self.username} Profile'
     
-    def delete(self, *args: tuple, **kwargs: dict) -> None:
-        """Define how to delete a profile."""
-        if self.avatar.name not in Path(settings.MEDIA_ROOT / 'default_avatars').iterdir():
-            self.avatar.delete(save=False)
-        super().delete(*args, **kwargs)

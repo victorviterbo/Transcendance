@@ -173,8 +173,6 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
         self.assertEqual(response.data['badges'], 'Deaf Octopus')
-        print(response.data['avatar'])
-        print(str(Path(MEDIA_ROOT / response.data['avatar'].removeprefix('/DB/static/'))))
         self.assertTrue(Path(MEDIA_ROOT / response.data['avatar'].removeprefix('/DB/static/')).is_file())
     
     def test_profile_delete(self) -> None:
@@ -224,6 +222,11 @@ class ProfileTests(TransactionTestCase):
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+        new_data['avatar'].seek(0)
+        response = self.client.post(profile_url, data=new_data, format='multipart')
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response = self.client.post(account_delete_url, data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
@@ -234,8 +237,6 @@ class ProfileTests(TransactionTestCase):
         self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
 
         file_path = Path("./" + image)
-        print(file_path)
-        print(os.listdir(file_path.parent))
         self.assertTrue(file_path.exists(), f"File not found at {file_path}")
 
 

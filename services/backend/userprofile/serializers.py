@@ -36,9 +36,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
     def validate_avatar(self, data: Any) -> ContentFile:
         """Convert to PNG and resize avatar."""
         if self.instance and data == self.instance.avatar:
-            print(data)
             return data
-        print(data)
         if not data:
             return data
         try:
