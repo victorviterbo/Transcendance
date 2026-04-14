@@ -4,10 +4,11 @@ from io import BytesIO
 from typing import Any
 
 from django.core.files.base import ContentFile
+from django.templatetags.static import static
 from PIL import Image, UnidentifiedImageError
 from project.validators import validate_email, validate_username
 from rest_framework import serializers
-
+from project import settings
 from .models import Profile
 
 
@@ -56,9 +57,13 @@ class LightProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: Profile) -> dict:
         """Define how the Profile is exported to json."""
         ret = super().to_representation(instance)
-        request = self.context.get('request')
-        if instance.avatar and request:
-            ret['avatar'] = request.build_absolute_uri(instance.avatar.url)
+        if instance.avatar and hasattr(instance.avatar, 'url'):
+            print("is not none")
+            print(ret['avatar'])
+            ret['avatar'] = instance.avatar.url
+        else:
+            ret['avatar'] = settings.STATIC_URL + f"default_avatars/default_avatar_{instance.pk % 18}.png"
+        print(ret['avatar'])
         return ret
 
 class UsersSerializer(LightProfileSerializer):

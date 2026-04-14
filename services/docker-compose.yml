@@ -21,6 +21,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./backend/DB/static:/backend-media:ro
+      - ./backend/DB/media:/backend-media:ro
+      - ./backend/DB/static:/backend-static:ro
     depends_on:
       - backend

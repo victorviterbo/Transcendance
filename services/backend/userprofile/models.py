@@ -17,9 +17,9 @@ def avatar_path(instance: Profile, filename: str) -> str:
     """Construct the path at wich the profile picture will be stored."""
     return f'avatars/user_{instance.pk}_profile.png'
 
-def pick_random_avatar() -> str:
+def pick_random_avatar(instance: Profile) -> str:
     """Pick a random avatar as the default."""
-    return f'default_avatars/default_avatar_{random.randrange(0, 18)}.png'
+    return f'default_avatars/default_avatar_{instance.pk % 19}.png'
 
 class Profile(models.Model):
     """Define the structure of the Profile, based on a generic model."""
@@ -33,8 +33,9 @@ class Profile(models.Model):
                                 unique=True,
                                 null=False)
     
-    avatar = models.ImageField(default=pick_random_avatar,
-                              upload_to=avatar_path)
+    avatar = models.ImageField(null=True,
+                               blank=True,
+                               upload_to=avatar_path)
     
     exp_points = models.IntegerField(default=0)
 
@@ -64,27 +65,6 @@ class Profile(models.Model):
                 condition=~models.Q(username='Anonymous') 
             )
         ]
-    
-    def save(self, *args, **kwargs) -> None:
-        """Override save to give each new profile its own copy of the default avatar.
-
-        django-cleanup deletes the old file whenever the avatar field changes.
-        Default avatars are shared files, so without this override every upload
-        would delete a shared file and break other profiles using it.
-        By copying the default to a personal path on creation, only the user's
-        own file is ever deleted on subsequent updates.
-        """
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-        if is_new and self.avatar and 'default_avatars/' in str(self.avatar):
-            src = Path(settings.MEDIA_ROOT) / str(self.avatar)
-            dst_name = f'avatars/user_{self.pk}_profile.png'
-            dst = Path(settings.MEDIA_ROOT) / dst_name
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            if src.exists():
-                shutil.copy2(src, dst)
-            Profile.objects.filter(pk=self.pk).update(avatar=dst_name)
-            self.avatar.name = dst_name
 
     def __str__(self) -> str:
         """Define how to output the object as string."""
