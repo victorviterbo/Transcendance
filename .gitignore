@@ -60,3 +60,4 @@ ENV/
 # =========================
 services/frontend/public/imgs/albums/*
 .aider*
+GAME_IMPLEMENTATION_GUIDE.md

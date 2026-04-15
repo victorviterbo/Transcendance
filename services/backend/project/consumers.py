@@ -50,10 +50,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     
     async def receive_json(self, content: dict) -> None:
         """Receive websocket framework and reroute it to the appropriate module."""
-        module = content.get("module")
-        if module == "chat":
+        target = content.get("target")
+        if target == "friend-chat":
             await self.chat_subroutine(content)
-        elif module == "game":
+        elif target == "game":
             await handle_game_action(self, content)
         else:
             await self.close(code=4405)
@@ -198,7 +198,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def game_player_joined(self, event: dict) -> None:
         """Notify of a player joining the game room."""
         await self.send_json({
-            'type': 'game_event',
+            'target': 'game',
             'event': 'player_joined',
             'player_name': event['player_name'],
             'player_id': event['player_id'],
@@ -207,7 +207,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def game_game_started(self, event: dict) -> None:
         """Notify that the game has started."""
         await self.send_json({
-            'type': 'game_event',
+            'target': 'game',
             'event': 'game_started',
             'started_by': event['started_by'],
             'room_id': event.get('room_id'),
@@ -216,7 +216,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def game_track_revealed(self, event: dict) -> None:
         """Notify of a track being revealed."""
         await self.send_json({
-            'type': 'game_event',
+            'target': 'game',
             'event': 'track_revealed',
             'track': event['track'],
             'room_id': event.get('room_id'),
@@ -225,7 +225,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def game_answer_submitted(self, event: dict) -> None:
         """Notify of an answer submission."""
         await self.send_json({
-            'type': 'game_event',
+            'target': 'game',
             'event': 'answer_submitted',
             'player_name': event['player_name'],
             'player_id': event['player_id'],
@@ -236,7 +236,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def game_player_left(self, event: dict) -> None:
         """Notify of a player leaving the game room."""
         await self.send_json({
-            'type': 'game_event',
+            'target': 'game',
             'event': 'player_left',
             'player_name': event['player_name'],
             'player_id': event['player_id'],
