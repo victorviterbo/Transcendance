@@ -2,6 +2,7 @@
 
 from django.urls import path, re_path
 
+from chat.presence_consumers import PresenceConsumer
 from .consumers import GlobalConsumer, NotFoundConsumer
 from .presence_consumers import PresenceConsumer
 
