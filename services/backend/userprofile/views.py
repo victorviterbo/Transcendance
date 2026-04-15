@@ -59,9 +59,9 @@ class ProfileView(APIView):
         """Handles update of user profile."""
         try:
             serializer = UsersSerializer(instance=request.profile,
-                                                   data=request.data,
-                                                   partial=True,
-                                                   many=False)
+                                         data=request.data,
+                                         partial=True,
+                                         many=False)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data,

@@ -22,46 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # During dev, used to store user's media
 MEDIA_ROOT = BASE_DIR / 'DB' / 'media'
 
-MEDIA_URL = '/DB/media/'
+MEDIA_URL = 'media/'
+
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'DB' / 'static'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
-
-"""LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'django.db.backends': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
-    },
-}"""
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend']
 
@@ -187,7 +157,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = 'static/'
 
 # File where are defined which url leads to which view
 # https://docs.djangoproject.com/en/6.0/topics/http/urls/#:~:text=root%20URLconf%20module%20to%20use.%20Ordinarily%2C%20this%20is%20the

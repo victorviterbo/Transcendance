@@ -18,4 +18,5 @@ class GameHistory(serializers.ModelSerializer):
     class Meta:
         """Defines the game match history serializer."""
         model = UserRoundStats
-        fields = ['track', 'round_number', 'track', 'is_won', 'time', 'xp_earned', 'played-at']
+        fields = ['track', 'round_number', 'track', 'is_won',
+                  'time', 'xp_earned', 'played-at']

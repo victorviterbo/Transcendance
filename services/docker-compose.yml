@@ -10,6 +10,7 @@ services:
     env_file: ./backend/.env
     environment:
       - APP_MODE=${MODE:-run}
+      - PYTHONUNBUFFERED=1
 
   nginx:
     container_name: nginx
@@ -21,8 +22,6 @@ services:
       - "80:80"
     volumes:
       - ./backend/DB/media:/backend-media:ro
+      - ./backend/DB/static:/backend-static:ro
     depends_on:
       - backend
-
-volumes:
-  backend-db:

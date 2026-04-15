@@ -39,7 +39,7 @@ def image_generator(image_type: str) -> SimpleUploadedFile:
                                 content_type='image/png'
                                 )
 
-MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp'
+MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class ProfileTests(TransactionTestCase):
@@ -92,7 +92,7 @@ class ProfileTests(TransactionTestCase):
             if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertStartsWith(response.data['avatar'],
-                                      '/DB/media/default_avatars/default_avatar_')
+                                      'static/default_avatars/default_avatar_')
                 self.assertIn('username', response.data)
                 self.assertIn('exp_points', response.data)
                 self.assertIn('badges', response.data)
@@ -173,8 +173,8 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
         self.assertEqual(response.data['badges'], 'Deaf Octopus')
-        self.assertTrue(Path(MEDIA_ROOT / response.data['avatar'].lstrip('/DB/media/')).is_file())
-    
+        self.assertTrue(Path(str(MEDIA_ROOT) + response.data['avatar'].removeprefix('/media')).is_file())
+
     def test_profile_delete(self) -> None:
         """Test profile deletion operation."""
         login_url = '/api/auth/login/'
@@ -194,6 +194,49 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertFalse(Profile.objects.filter(username='user1').exists())
         self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
+
+    def test_profile_create_update_delete(self) -> None:
+        """Test all profile operation."""
+        login_url = '/api/auth/login/'
+        profile_url = '/api/profile/'
+        account_delete_url = '/api/auth/delete/'
+
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+                                                 'password': 'Password123+'})
+        
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        username = login_res.data.get('username')
+        profile_res = self.client.get(profile_url+'?q='+username)
+        image = profile_res.data.get('avatar')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        self.assertIn('refresh-token', self.client.cookies)
+        new_data = {
+            'username': 'a_new_user',
+            'email': 'anewemail@mail.com',
+            'avatar': image_generator('valid'),
+            'exp_points': 5001,
+            'badge': 'Sonic Shark'
+        }
+        new_data['avatar'].seek(0)
+        response = self.client.post(profile_url, data=new_data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_data['avatar'].seek(0)
+        response = self.client.post(profile_url, data=new_data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(account_delete_url, data={'password': 'Password123+'})
+        self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+                                                 'password': 'Password123+'})
+        
+        self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(Profile.objects.filter(username='user1').exists())
+        self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
+
+        file_path = Path("./DB/" + image)
+        self.assertTrue(file_path.exists(), f"File not found at {file_path}")
 
     def test_guest_profile(self) -> None:
         """Test creation updating and deleting guests users."""
@@ -219,7 +262,7 @@ class ProfileTests(TransactionTestCase):
         new_data['avatar'].seek(0)
         response = self.client.post(guest_create_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        original_img_path = Path(MEDIA_ROOT / response.data['avatar'].lstrip('/DB/media/'))
+        original_img_path = Path(str(MEDIA_ROOT) + response.data['avatar'].removeprefix('/media'))
         self.assertTrue(original_img_path.is_file())
         self.assertNotIn('exp_points', response.data)
 

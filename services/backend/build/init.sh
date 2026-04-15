@@ -15,6 +15,7 @@ find /backend -path "*/migrations/0*" -delete
 
 conda run -n backend python /backend/manage.py makemigrations
 conda run -n backend python /backend/manage.py migrate
+conda run -n backend python /backend/manage.py collectstatic --noinput
 
 if [ "$APP_MODE" = "run" ]; then
     echo "Starting Production Server..."
