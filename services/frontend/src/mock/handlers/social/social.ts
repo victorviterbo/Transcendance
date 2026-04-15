@@ -14,6 +14,7 @@ import type {
 	IFriendReqSend,
 	IFriendRequests,
 	INotifList,
+	TNotif,
 } from "../../../types/socials";
 import type { IExtUserInfo, IExtUserSearch } from "../../../types/user";
 import {
@@ -24,10 +25,13 @@ import {
 	mockSocialSetDB,
 } from "./social_dbs";
 import type { IErrorReturn, IErrorStruct } from "../../../types/error";
+import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
+import type { TWSRcv } from "../../../types/websocket";
 
 //--------------------------------------------------
 //                   HANDLERS
 //--------------------------------------------------
+//====================== FIREND ======================
 export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
 	mockSocialSetDB();
 	const isError = 0;
@@ -153,6 +157,7 @@ export const friendsRequestsResponseHandler = http.post(
 	},
 );
 
+//====================== NOTIF ======================
 export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {
 	mockSocialSetDB();
 
@@ -193,3 +198,37 @@ export const notifRequestHandlerRead = http.post(API_SOCIAL_NOTIFS_READ, async (
 	}
 	return HttpResponse.json(res, { status: isError ? 400 : 200 });
 });
+
+export const mockNewIncomingRequests = (client: WebSocketClientConnectionProtocol) => {
+	mockSocialSetDB();
+
+	setTimeout(() => {
+		const user: IExtUserInfo | undefined = mockSocialDB.users.find((value: IExtUserInfo) => {
+			return value.username == "Isabella";
+		});
+		if (!user) return;
+		user.relation = "incoming";
+		const notif: TNotif = {
+			kind: "friend-request",
+			from: user,
+			date: new Date(),
+			read: false,
+		};
+
+		client.send(
+			JSON.stringify({
+				target: "notif",
+				event: "new",
+				notif: notif,
+			} as TWSRcv),
+		);
+
+		client.send(
+			JSON.stringify({
+				target: "friend-request",
+				event: "new-incoming",
+				user: user,
+			} as TWSRcv),
+		);
+	}, 5000);
+};
