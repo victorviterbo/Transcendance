@@ -28,12 +28,12 @@ async def handle_game_action(consumer: Any, content: dict) -> None:
 
 async def _join_game_room(consumer: Any, content: dict) -> None:
 	"""Join a game room group."""
-	room_id = content.get('room_id')
-	if not room_id:
-		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'room_id required'})
+	game_id = content.get('game_id')
+	if not game_id:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
-	group_name = f'game_room_{room_id}'
+	group_name = f'game_{game_id}'
 	await consumer.add_to_layer(group_name)
 	
 	await consumer.group_send(group_name, {
@@ -45,23 +45,23 @@ async def _join_game_room(consumer: Any, content: dict) -> None:
 	await consumer.send_json({
 		'target': 'game',
 		'event': 'joined_room',
-		'room_id': room_id,
+		'game_id': game_id,
 	})
 
 
 async def _start_game(consumer: Any, content: dict) -> None:
 	"""Start a game session."""
-	room_id = content.get('room_id')
-	if not room_id:
-		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'room_id required'})
+	game_id = content.get('game_id')
+	if not game_id:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
-	group_name = f'game_room_{room_id}'
+	group_name = f'game_{game_id}'
 	
 	await consumer.group_send(group_name, {
 		'type': 'game.game_started',
 		'started_by': consumer._sender_name(),
-		'room_id': room_id,
+		'game_id': game_id,
 	})
 	
 	await consumer.send_json({
@@ -72,15 +72,15 @@ async def _start_game(consumer: Any, content: dict) -> None:
 
 async def _reveal_track(consumer: Any, content: dict) -> None:
 	"""Reveal the track for the current round with full details."""
-	room_id = content.get('room_id')
-	if not room_id:
-		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'room_id required'})
+	game_id = content.get('game_id')
+	if not game_id:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
-	group_name = f'game_room_{room_id}'
+	group_name = f'game_{game_id}'
 	
 	# Get real track data from database
-	track_data = await get_track_reveal_data(room_id)
+	track_data = await get_track_reveal_data(game_id)
 	
 	if not track_data:
 		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'No track available'})
@@ -89,26 +89,26 @@ async def _reveal_track(consumer: Any, content: dict) -> None:
 	await consumer.group_send(group_name, {
 		'type': 'game.track_revealed',
 		'track': track_data,
-		'room_id': room_id,
+		'game_id': game_id,
 	})
 
 
 async def _submit_answer(consumer: Any, content: dict) -> None:
 	"""Submit an answer to current game question."""
-	room_id = content.get('room_id')
+	game_id = content.get('game_id')
 	answer = content.get('answer')
 	
-	if not room_id or answer is None:
-		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'room_id and answer required'})
+	if not game_id or answer is None:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id and answer required'})
 		return
 
-	group_name = f'game_room_{room_id}'
+	group_name = f'game_{game_id}'
 	
 	# Validate answer against actual track
-	is_correct, points_earned = await validate_answer(room_id, answer)
+	is_correct, points_earned = await validate_answer(game_id, answer)
 	
 	# Save player answer to database
-	saved = await save_player_answer(room_id, consumer.profile.id, points_earned, is_correct)
+	saved = await save_player_answer(game_id, consumer.profile.id, points_earned, is_correct)
 	if not saved:
 		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Failed to save answer'})
 		return
@@ -124,51 +124,51 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 	})
 	
 	# Auto-reveal track so players see the correct answer
-	track_data = await get_track_reveal_data(room_id)
+	track_data = await get_track_reveal_data(game_id)
 	if track_data:
 		await consumer.group_send(group_name, {
 			'type': 'game.track_revealed',
 			'track': track_data,
-			'room_id': room_id,
+			'game_id': game_id,
 		})
 
 
 async def _leave_game_room(consumer: Any, content: dict) -> None:
 	"""Leave a game room group."""
-	room_id = content.get('room_id')
-	if not room_id:
-		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'room_id required'})
+	game_id = content.get('game_id')
+	if not game_id:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
-	group_name = f'game_room_{room_id}'
+	group_name = f'game_{game_id}'
 	await consumer.remove_from_layer(group_name)
 	
 	await consumer.group_send(group_name, {
 		'type': 'game.player_left',
 		'player_name': consumer._sender_name(),
 		'player_id': consumer.profile.id,
-		'room_id': room_id,
+		'game_id': game_id,
 	})
 	
 	await consumer.send_json({
 		'target': 'game',
 		'event': 'left_room',
-		'room_id': room_id,
+		'game_id': game_id,
 	})
 
 
 @database_sync_to_async
-def get_track_reveal_data(room_id: int) -> dict | None:
+def get_track_reveal_data(game_id: str) -> dict | None:
 	"""Get full track data for revealing to players.
 	
 	Args:
-		room_id: ID of the game room
+		game_id: UUID of the game
 	
 	Returns:
 		dict with track details (title, artist, preview_url, artwork_url) or None
 	"""
 	try:
-		game = Game.objects.get(room_id=room_id)
+		game = Game.objects.get(uid=game_id)
 		if not game.current_track:
 			return None
 		
@@ -180,18 +180,18 @@ def get_track_reveal_data(room_id: int) -> dict | None:
 
 
 @database_sync_to_async
-def validate_answer(room_id: int, answer: str) -> tuple[bool, int]:
+def validate_answer(game_id: str, answer: str) -> tuple[bool, int]:
 	"""Validate answer against current track and return correctness + points.
 	
 	Args:
-		room_id: ID of the game room
+		game_id: UUID of the game
 		answer: Player's answer (song title or artist name)
 	
 	Returns:
 		tuple: (is_correct: bool, points_earned: int)
 	"""
 	try:
-		game = Game.objects.get(room_id=room_id)
+		game = Game.objects.get(uid=game_id)
 		if not game.current_track:
 			return False, 0
 		
@@ -218,11 +218,11 @@ def validate_answer(room_id: int, answer: str) -> tuple[bool, int]:
 
 
 @database_sync_to_async
-def save_player_answer(room_id: int, player_id: int, points_earned: int, is_correct: bool) -> bool:
+def save_player_answer(game_id: str, player_id: int, points_earned: int, is_correct: bool) -> bool:
 	"""Save player's answer stats to database.
 	
 	Args:
-		room_id: ID of the game room
+		game_id: UUID of the game
 		player_id: ID of the player profile
 		points_earned: Points for this answer
 		is_correct: Whether answer was correct
@@ -234,7 +234,7 @@ def save_player_answer(room_id: int, player_id: int, points_earned: int, is_corr
 	from userprofile.models import Profile
 	
 	try:
-		game = Game.objects.get(room_id=room_id)
+		game = Game.objects.get(uid=game_id)
 		player = Profile.objects.get(id=player_id)
 		
 		# Get or create game stats for this player
