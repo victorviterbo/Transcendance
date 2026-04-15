@@ -6,11 +6,13 @@ import type { AxiosResponse } from "axios";
 import { type TNotif, type INotifList } from "../../types/socials";
 import api from "../../api";
 import { API_SOCIAL_NOTIFS, API_SOCIAL_NOTIFS_READ } from "../../constants";
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import PNotifNode from "./PNotifNode";
 import type { GPageProps } from "../common/GPageBases";
 import type { IErrorStruct } from "../../types/error";
+import type { IWSContextModule, TWSRcv } from "../../types/websocket";
+import { useWS } from "../../components/websocket/CWebsocket";
 
 interface PNotifProps extends GPageProps {
 	onSeeFriendsReq: () => void;
@@ -23,7 +25,10 @@ function PNotif({ onSeeFriendsReq, onNotifCount, isOpen }: PNotifProps) {
 	const [unread, setUnread] = useState<number>(0);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localId = useId();
+	const wsContext: IWSContextModule = useWS("notif");
+	const readTimeout: React.RefObject<number> = useRef(-1);
 
+	//====================== GETTERS ======================
 	function getTitle() {
 		return (
 			<Box
@@ -54,49 +59,6 @@ function PNotif({ onSeeFriendsReq, onNotifCount, isOpen }: PNotifProps) {
 		);
 	}
 
-	useEffect(() => {
-		const getNotifs = async (): Promise<void> => {
-			try {
-				const res: AxiosResponse<INotifList> = await api.get(API_SOCIAL_NOTIFS);
-				if (!res) throw {};
-				if (res.data.error) throw res.data.error;
-				if (typeof res.data != "object" || !res.data.notifs) throw {};
-
-				setNotifs(res.data.notifs);
-				setError(undefined);
-
-				setUnread(
-					res.data.notifs.filter((value: TNotif) => {
-						return value.read;
-					}).length,
-				);
-			} catch (error) {
-				setError(getErrorNode(error, "NOTIF_FAILED"));
-				setNotifs([]);
-			}
-		};
-		getNotifs();
-	}, []);
-
-	useEffect(() => {
-		onNotifCount(unread);
-	}, [unread, onNotifCount]);
-
-	useEffect(() => {
-		const sendRead = async () => {
-			try {
-				const res: AxiosResponse<{ error?: IErrorStruct }> =
-					await api.post(API_SOCIAL_NOTIFS_READ);
-				if (!res) throw {};
-				if (res.data.error) throw res.data.error;
-				setUnread(0);
-			} catch (error) {
-				setError(getErrorNode(error, "NOTIF_FAILED"));
-			}
-		};
-		if (isOpen && unread > 0) sendRead();
-	}, [isOpen, unread]);
-
 	function getFriendsList(): ReactNode | ReactNode[] {
 		if (error) return error;
 
@@ -111,6 +73,78 @@ function PNotif({ onSeeFriendsReq, onNotifCount, isOpen }: PNotifProps) {
 			);
 		});
 	}
+
+	//====================== EVENT / UPDATES ======================
+	useEffect(() => {
+		wsContext.setOnUpdate(() => {
+			while (wsContext.count > 0) {
+				const last: TWSRcv | undefined = wsContext.getLast();
+				if (last?.target == "notif") {
+					if (last.event == "new") {
+						notifs.splice(0, 0, last.notif);
+						setNotifs(structuredClone(notifs));
+					}
+				}
+			}
+		});
+	}, [wsContext, notifs, setNotifs]);
+
+	useEffect(() => {
+		const getNotifs = async (): Promise<void> => {
+			try {
+				const res: AxiosResponse<INotifList> = await api.get(API_SOCIAL_NOTIFS);
+				if (!res) throw {};
+				if (res.data.error) throw res.data.error;
+				if (typeof res.data != "object" || !res.data.notifs) throw {};
+
+				setNotifs(res.data.notifs);
+				setError(undefined);
+			} catch (error) {
+				setError(getErrorNode(error, "NOTIF_FAILED"));
+				setNotifs([]);
+			}
+		};
+		getNotifs();
+	}, []);
+
+	useEffect(() => {
+		onNotifCount(unread);
+	}, [unread, onNotifCount]);
+
+	useEffect(() => {
+		setUnread(
+			notifs.filter((value: TNotif) => {
+				return !value.read;
+			}).length,
+		);
+	}, [notifs, setUnread]);
+
+	useEffect(() => {
+		if (readTimeout.current != -1) {
+			clearTimeout(readTimeout.current);
+			readTimeout.current = -1;
+		}
+		const sendRead = async () => {
+			readTimeout.current = setTimeout(async () => {
+				try {
+					const res: AxiosResponse<{ error?: IErrorStruct }> =
+						await api.post(API_SOCIAL_NOTIFS_READ);
+					if (!res) throw {};
+					if (res.data.error) throw res.data.error;
+					setUnread(0);
+				} catch (error) {
+					setError(getErrorNode(error, "NOTIF_FAILED"));
+				}
+
+				notifs.forEach((notif: TNotif) => {
+					notif.read = true;
+				});
+				setNotifs(structuredClone(notifs));
+			}, 2000);
+		};
+		if (isOpen && unread > 0) sendRead();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen, unread]);
 
 	return (
 		<CTitleBasePaper
