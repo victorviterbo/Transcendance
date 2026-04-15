@@ -4,6 +4,7 @@ import { API_SOCIAL_FRIENDS_REQUEST, API_SOCIAL_FRIENDS_SEARCH } from "../../con
 import type { IFriendRequests } from "../../types/socials";
 import PFriendReq from "../../pages/PSocial/PFriendReq";
 import { mockGetExtUser } from "../../mock/handlers/social/social_dbs";
+import CWebsocket from "../../components/websocket/CWebsocket";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -49,7 +50,11 @@ describe("Socials - Friend requests", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendReq />);
+		render(
+			<CWebsocket>
+				<PFriendReq />
+			</CWebsocket>,
+		);
 		expect(screen.getByTestId("PFriendReq_" + value).childElementCount).toEqual(1);
 		expect(screen.getByText("SOCIAL_NO_" + value.toLocaleUpperCase())).toBeInTheDocument();
 		expect(screen.queryByTestId("PFriendNode")).not.toBeInTheDocument();
@@ -59,7 +64,11 @@ describe("Socials - Friend requests", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendReq />);
+		render(
+			<CWebsocket>
+				<PFriendReq />
+			</CWebsocket>,
+		);
 
 		await waitFor(() => {
 			expect(screen.getAllByText("SOCIAL_REQUESTS_ERROR").length).toEqual(2);
@@ -97,7 +106,11 @@ describe("Socials - Friend requests", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendReq />);
+		render(
+			<CWebsocket>
+				<PFriendReq />
+			</CWebsocket>,
+		);
 
 		const incomingStack = screen.getByTestId("PFriendReq_incoming");
 		const outgoingStack = screen.getByTestId("PFriendReq_outgoing");

@@ -34,6 +34,7 @@ import {
 	mockGetMessageDB,
 	type IMockMessageDBUser,
 } from "../../mock/handlers/social/socialChat_dbs";
+import { useState } from "react";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -53,6 +54,19 @@ vi.mock("../../api", () => ({
 	getAccessToken: () => accessToken,
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
+
+function SocialManager() {
+	const [currentTab, setCurrentTab] = useState<number>(0);
+
+	return (
+		<PSocial
+			activeTab={currentTab}
+			onTabChanged={(value: number) => {
+				setCurrentTab(value);
+			}}
+		/>
+	);
+}
 
 describe("Socials - Interactions", () => {
 	beforeEach(() => {
@@ -326,7 +340,7 @@ describe("Socials - Interactions", () => {
 
 			render(
 				<CWebsocket>
-					<PSocial />
+					<SocialManager></SocialManager>
 				</CWebsocket>,
 			);
 
@@ -458,7 +472,7 @@ describe("Socials - Interactions", () => {
 
 			render(
 				<CWebsocket>
-					<PSocial />
+					<SocialManager></SocialManager>
 				</CWebsocket>,
 			);
 
@@ -587,7 +601,7 @@ describe("Socials - Interactions", () => {
 
 			render(
 				<CWebsocket>
-					<PSocial />
+					<SocialManager></SocialManager>
 				</CWebsocket>,
 			);
 
@@ -742,7 +756,7 @@ describe("Socials - Interactions", () => {
 
 			render(
 				<CWebsocket>
-					<PSocial />
+					<SocialManager></SocialManager>
 				</CWebsocket>,
 			);
 
