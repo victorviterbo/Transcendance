@@ -35,10 +35,10 @@ class FriendRequestsTests(APITestCase):
 
     def test_send_request(self) -> None:
         """Test success and failure of access token regeneration operation."""
-        friend_request_url = '/api/social/request/send/'
+        friend_request_url = '/api/social/friend-request/send'
         login_url = '/api/auth/login/'
-        friend_request_see_url = '/api/social/request/pend/'
-        friend_see_url = '/api/social/friends/list/'
+        friend_request_see_url = '/api/social/friends-request'
+        friend_see_url = '/api/social/friends'
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
@@ -49,15 +49,17 @@ class FriendRequestsTests(APITestCase):
         response = self.client.get(friend_request_see_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data['outgoing']))
-        self.assertEqual(0, len(response.data['incomming']))
+        self.assertEqual(0, len(response.data['incoming']))
         response = self.client.get(friend_request_see_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data['outgoing']))
-        self.assertEqual(0, len(response.data['incomming']))
+        self.assertEqual(0, len(response.data['incoming']))
 
         for user_uid in [self.user1.uid, self.user2.uid]: #, self.user1.profile.uid
             response = self.client.post(friend_request_url, data={
-                'user_uid': user_uid})
+                        'target-uid': str(user_uid),
+                        'target-username': 'user2' if user_uid == self.user2.uid else 'user1',
+                    })
             if user_uid != self.user2.uid:
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn('error', response.data)
@@ -73,7 +75,7 @@ class FriendRequestsTests(APITestCase):
         response = self.client.get(friend_request_see_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data['outgoing']))
-        self.assertEqual(0, len(response.data['incomming']))
+        self.assertEqual(0, len(response.data['incoming']))
         response = self.client.get(friend_see_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data['friends']))
@@ -81,10 +83,12 @@ class FriendRequestsTests(APITestCase):
         response = self.client.post(friend_request_url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
-        self.assertIn('user_uid', response.data['error'])
-        self.assertEqual('MISSING_FIELD', response.data['error']['user_uid'])
+        self.assertIn('target-uid', response.data['error'])
+        self.assertEqual('MISSING_FIELD', response.data['error']['target-uid'])
         response = self.client.post(friend_request_url, data={
-            'user_uid': self.user2.uid})
+            'target-uid': str(self.user2.uid),
+            'target-username': self.user2.profile.username,
+        })
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('friendship', response.data['error'])
@@ -93,10 +97,10 @@ class FriendRequestsTests(APITestCase):
 
     def test_respond_request(self) -> None:
         """Test success and failure of access token regeneration operation."""
-        friend_respond_url = '/api/social/request/respond/'
-        friend_request_url = '/api/social/request/send/'
-        friend_request_see_url = '/api/social/request/pend/'
-        friend_see_url = '/api/social/friends/list/'
+        friend_respond_url = '/api/social/friend-request/respond'
+        friend_request_url = '/api/social/friend-request/send'
+        friend_request_see_url = '/api/social/friends-request'
+        friend_see_url = '/api/social/friends'
         login_url = '/api/auth/login/'
         user1 = APIClient()
         user2 = APIClient()
@@ -106,10 +110,11 @@ class FriendRequestsTests(APITestCase):
         access_token = login_res.data.get('access')
         user1.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
         
-        for res in ['reject', 'accept']:
+        for res in ['refuse', 'accept']:
             for user_uid in [self.user1.uid, self.user2.uid]: #, 'abc123', ''
                 response = user1.post(friend_respond_url, data={
-                                            'user_uid': user_uid,
+                                            'target-uid': str(user_uid),
+                                            'target-username': 'user2' if user_uid == self.user2.uid else 'user1',
                                             'new-status': res})
                 if user_uid != self.user2.uid:
                     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -119,9 +124,9 @@ class FriendRequestsTests(APITestCase):
                         self.assertEqual('FRIENDSHIP_NOT_FOUND',
                                          response.data['error']['friendship'])
                     else:
-                        self.assertIn('user-uid', response.data['error'])
+                        self.assertIn('target-uid', response.data['error'])
                         self.assertEqual('USER_NOT_FOUND',
-                                         response.data['error']['user-uid'])
+                                         response.data['error']['target-uid'])
             
             login_res = user1.post(login_url, data={'email': 'user1@mail.com',
                                                     'password': 'Password123+'})
@@ -131,21 +136,21 @@ class FriendRequestsTests(APITestCase):
             response = user1.get(friend_request_see_url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(0, len(response.data['outgoing']))
-            self.assertEqual(0, len(response.data['incomming']))
+            self.assertEqual(0, len(response.data['incoming']))
 
             response = user1.post(friend_request_url, data={
-                'user_uid': self.user2.uid})
+                'target-uid': str(self.user2.uid),
+                'target-username': self.user2.profile.username,
+            })
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
             response = user1.get(friend_request_see_url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data['outgoing']))
-            self.assertEqual(str(self.user1.profile.uid),
-                             response.data['outgoing'][0]['from_user']['uid'])
-            self.assertEqual(str(self.user2.profile.uid),
-                             response.data['outgoing'][0]['to_user']['uid'])
-            self.assertEqual('pending', response.data['outgoing'][0]['status'])
-            self.assertEqual(0, len(response.data['incomming']))
+            self.assertEqual(str(self.user2.profile.uid), response.data['outgoing'][0]['uid'])
+            self.assertEqual(self.user2.profile.username, response.data['outgoing'][0]['username'])
+            self.assertEqual('outgoing', response.data['outgoing'][0]['relation'])
+            self.assertEqual(0, len(response.data['incoming']))
 
             login_res = user2.post(login_url, data={'email': 'user2@mail.com',
                                                     'password': 'Password123+'})
@@ -153,7 +158,9 @@ class FriendRequestsTests(APITestCase):
             access_token = login_res.data.get('access')
             user2.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
             response = user2.post(friend_respond_url, data={
-                'user_uid': self.user1.uid, 'new-status': res})
+                'target-uid': str(self.user1.uid),
+                'target-username': self.user1.profile.username,
+                'new-status': res})
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertIn('description', response.data)
             if res == 'accept':
@@ -161,18 +168,38 @@ class FriendRequestsTests(APITestCase):
                                  response.data['description'])
                 response = user2.get(friend_request_see_url)
                 self.assertEqual(0, len(response.data['outgoing']))
-                self.assertEqual(0, len(response.data['incomming']))
+                self.assertEqual(0, len(response.data['incoming']))
                 response = user2.get(friend_see_url)
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertEqual(1, len(response.data['friends']))
+                self.assertEqual(str(self.user1.profile.uid), response.data['friends'][0]['uid'])
+                self.assertEqual('online', response.data['friends'][0]['status'])
 
-            elif res == 'reject':
+            elif res == 'refuse':
                 self.assertEqual('FRIENDSHIP_REQUEST_REJECTED',
                                  response.data['description'])
                 response = user2.get(friend_request_see_url)
-                self.assertEqual(0, len(response.data['incomming']))
+                self.assertEqual(0, len(response.data['incoming']))
                 self.assertEqual(0, len(response.data['outgoing']))
                 response = user2.get(friend_see_url)
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertEqual(0, len(response.data['friends']))
+
+    def test_search_users(self) -> None:
+        """Test the frontend-shaped user search endpoint."""
+
+        login_url = '/api/auth/login/'
+        search_url = '/api/social/friends-search'
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+                                                 'password': 'Password123+'})
+
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access_token = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+
+        response = self.client.post(search_url, data={'search': 'user'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('users', response.data)
+        self.assertGreaterEqual(len(response.data['users']), 1)
+        self.assertIn('relation', response.data['users'][0])
     

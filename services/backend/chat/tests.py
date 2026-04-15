@@ -3,6 +3,7 @@
 import uuid
 
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
 from django.test import TransactionTestCase
 from django.urls import reverse
@@ -305,6 +306,38 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
+			await communicator.disconnect()
+
+		async_to_sync(scenario)()
+
+	def test_social_notification_payload_matches_frontend_contract(self) -> None:
+		"""Friend requests should emit websocket notifications with frontend keys."""
+
+		@database_sync_to_async
+		def create_pending_friend_request() -> Friendship:
+			return Friendship.objects.create(
+				from_user=self.stranger,
+				to_user=self.user,
+				status='pending',
+			)
+
+		async def scenario() -> None:
+			communicator = WebsocketCommunicator(application, '/ws/global/')
+			communicator.scope['user'] = self.user
+			connected, _ = await communicator.connect()
+			self.assertTrue(connected)
+
+			friendship = await create_pending_friend_request()
+			response = await communicator.receive_json_from()
+
+			self.assertEqual(response.get('type'), 'social_notification')
+			self.assertEqual(response.get('target'), 'social-notif')
+			self.assertEqual(response.get('module'), 'social')
+			self.assertEqual(response.get('event'), 'NEW_FRIEND_REQUEST')
+			self.assertEqual(response.get('from_user_uid'), str(self.stranger.profile.uid))
+			self.assertEqual(response.get('to_user_uid'), str(self.user.profile.uid))
+			self.assertEqual(response.get('friendship_uid'), str(friendship.uid))
+
 			await communicator.disconnect()
 
 		async_to_sync(scenario)()

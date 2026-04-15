@@ -123,7 +123,7 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
 
             event_payload = {
                 'type': 'chat.message',
-                'message_id': message.id,
+                'message_uid': str(message.uid),
                 'message': message.body,
                 'sender': self._sender_name(),
                 'created': message.created.isoformat(),
@@ -190,6 +190,7 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
     async def send_notification(self, event: dict) -> None:
         """Forward social notifications to the connected client."""
         await self.send_json({
+            'target': event.get('target', 'social-notif'),
             'type': 'social_notification',
             'module': event.get('module', 'social'),
             'event': event.get('message'),

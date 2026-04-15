@@ -43,11 +43,12 @@ def save_profile(sender: type[Friendship],
         user_group,
         {
             'type': 'send_notification', 
+            'target': 'social-notif',
             'module': 'social',
             'message': message,
             'from_user': from_user,
-            'from_user_uid': str(instance.from_user.uid),
-            'to_user_uid': str(instance.to_user.uid),
+            'from_user_uid': str(instance.from_user.profile.uid),
+            'to_user_uid': str(instance.to_user.profile.uid),
             'friendship_uid': str(instance.uid),
         }
     )
