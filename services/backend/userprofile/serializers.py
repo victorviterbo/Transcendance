@@ -6,9 +6,10 @@ from typing import Any
 from django.core.files.base import ContentFile
 from django.templatetags.static import static
 from PIL import Image, UnidentifiedImageError
+from project import settings
 from project.validators import validate_email, validate_username
 from rest_framework import serializers
-from project import settings
+
 from .models import Profile
 
 
@@ -60,7 +61,8 @@ class LightProfileSerializer(serializers.ModelSerializer):
         if instance.avatar and hasattr(instance.avatar, 'url'):
             ret['avatar'] = instance.avatar.url
         else:
-            ret['avatar'] = settings.STATIC_URL + f"default_avatars/default_avatar_{instance.pk % 18}.png"
+            ret['avatar'] = settings.STATIC_URL + \
+                f"default_avatars/default_avatar_{instance.pk % 18}.png"
         return ret
 
 class UsersSerializer(LightProfileSerializer):
@@ -81,13 +83,11 @@ class UsersSerializer(LightProfileSerializer):
 
     def validate_email(self, value: str) -> str:
         """Specific email validation for user login."""
-        value = validate_email(value, is_creation=self.context.get('is_creation'))
-        return value
+        return validate_email(value, is_creation=self.context.get('is_creation'))
     
     def validate_username(self, value: str) -> str:
         """Specific email validation for user login."""
-        value = validate_username(value, is_creation=self.context.get('is_creation'))
-        return value
+        return validate_username(value, is_creation=self.context.get('is_creation'))
     
     def update(self, instance: Profile, validated_data: dict) -> Profile:
         """Define specific procedure to save serialized data."""

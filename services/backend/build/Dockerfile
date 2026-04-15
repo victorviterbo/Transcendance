@@ -10,5 +10,4 @@ EXPOSE 8000
 
 RUN chmod +x init.sh
 
-#CMD ["sleep", "100000"]
 ENTRYPOINT ["bash", "/backend/build/init.sh"]
