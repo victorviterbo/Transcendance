@@ -10,7 +10,7 @@ fi
 
 mkdir -p /backend/DB/website
 
-rm -f /backend/DB/website/db.sqlite3
+#rm -f /backend/DB/website/db.sqlite3
 find /backend -path "*/migrations/0*" -delete
 
 conda run -n backend python /backend/manage.py makemigrations

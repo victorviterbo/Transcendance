@@ -32,6 +32,8 @@ export const handlers = [
 	FetchPrivateRoom,
 	FetchPublicRoom,
 
+	socketConnHandler,
+
 	friendsListHandler,
 	friendsSearchHandler,
 	friendsRequestsHandler,
@@ -40,6 +42,4 @@ export const handlers = [
 	friendMessageHandler,
 	notifRequestHandler,
 	notifRequestHandlerRead,
-
-	socketConnHandler,
 ];
