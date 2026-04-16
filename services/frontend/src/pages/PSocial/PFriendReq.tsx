@@ -9,13 +9,17 @@ import { getErrorNode } from "../../utils/error";
 import PFriendNode from "./PFriendNode";
 import CText from "../../components/text/CText";
 import CAccordionSimple from "../../components/feedback/accordion/CAccordionSimple";
+import { useWS } from "../../components/websocket/CWebsocket";
+import type { IWSContextModule, TWSRcv } from "../../types/websocket";
 
 function PFriendReq() {
 	const [incoming, setIncoming] = useState<IExtUserInfo[]>([]);
 	const [outgoing, setOutgoing] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
+	const wsContext: IWSContextModule = useWS("friend-request");
 	const localId = useId();
 
+	//====================== GETTERS ======================
 	async function getUsers(): Promise<void> {
 		try {
 			const res: AxiosResponse<IFriendRequests> = await api.get(API_SOCIAL_FRIENDS_REQUEST);
@@ -47,9 +51,6 @@ function PFriendReq() {
 			setOutgoing([]);
 		}
 	}
-	useEffect(() => {
-		getUsers();
-	}, []);
 
 	function getIncoming(): ReactNode | ReactNode[] {
 		if (error) return error;
@@ -77,6 +78,26 @@ function PFriendReq() {
 			return <PFriendNode type="user" user={value} key={localId + index}></PFriendNode>;
 		});
 	}
+
+	//====================== EVENTS / UPDATES ======================
+
+	useEffect(() => {
+		wsContext.setOnUpdate(() => {
+			while (wsContext.count > 0) {
+				const last: TWSRcv | undefined = wsContext.getLast();
+				if (last?.target == "friend-request") {
+					if (last.event == "new-incoming") {
+						incoming.splice(0, 0, last.user);
+						setIncoming(structuredClone(incoming));
+					}
+				}
+			}
+		});
+	}, [wsContext, incoming, setIncoming]);
+
+	useEffect(() => {
+		getUsers();
+	}, []);
 
 	return (
 		<Stack sx={{ overflowY: "auto", flex: 1 }} data-testid="PFriendReq">
