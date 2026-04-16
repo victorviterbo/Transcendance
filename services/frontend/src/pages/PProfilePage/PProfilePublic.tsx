@@ -11,7 +11,6 @@ import CLevelProgress from "../../components/feedback/CLevelProgress";
 import CProfileRequestState from "../../components/feedback/CProfileRequestState";
 import { fetchProfile, getProfileLevelProgress, resolveProfileImage } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
-import PUserNotFound from "../static/PUserNotFound";
 
 type ProfileStatus = "idle" | "loading" | "ready" | "notFound" | "error";
 
@@ -39,7 +38,12 @@ const isProfileNotFoundError = (error: unknown): boolean => {
 	const payload = maybe.response?.data?.error;
 
 	if (status === 404) return true;
-	return status === 400 && payload === "No profile with this username";
+	if (status !== 400) return false;
+	if (payload === "No profile with this username" || payload === "USER_NOT_FOUND") return true;
+	if (payload && typeof payload === "object") {
+		return Object.values(payload).some((value) => value === "USER_NOT_FOUND");
+	}
+	return false;
 };
 
 function PProfilePublic({ username }: PProfilePublicProps) {
@@ -93,13 +97,11 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 		};
 	}, [username]);
 
-	if (status === "notFound") return <PUserNotFound />;
-
 	if (status !== "ready" || profile === null) {
 		return (
 			<GPageBase>
 				<CProfileRequestState
-					status={status === "error" ? "error" : "loading"}
+					status={status === "notFound" ? "notFound" : status === "error" ? "error" : "loading"}
 					error={error}
 				/>
 			</GPageBase>

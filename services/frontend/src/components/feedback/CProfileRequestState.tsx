@@ -3,7 +3,7 @@ import CBasePaper from "../surfaces/CBasePaper";
 import CText from "../text/CText";
 
 export interface CProfileRequestStateProps {
-	status: "loading" | "error";
+	status: "loading" | "error" | "notFound";
 	error?: string | null;
 	maxWidth?: ContainerOwnProps["maxWidth"];
 }
@@ -18,7 +18,11 @@ function CProfileRequestState({ status, error, maxWidth = "sm" }: CProfileReques
 					color={status === "error" ? "error.main" : undefined}
 					sx={{ mb: 0 }}
 				>
-					{status === "error" ? (error ?? "PROFILE_LOAD_FAILED") : "PROFILE_LOADING"}
+					{status === "error"
+						? (error ?? "PROFILE_LOAD_FAILED")
+						: status === "notFound"
+							? "USER_NOT_FOUND"
+							: "PROFILE_LOADING"}
 				</CText>
 			</CBasePaper>
 		</Container>
