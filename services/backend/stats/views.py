@@ -2,8 +2,9 @@
 
 from django.db.models import Avg, Sum
 from music.models import Playlist
+from project import settings
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,6 +13,14 @@ from userprofile.models import Profile
 from .models import GameRoundStats, UserGameStats, UserRoundStats
 from .serializers import HistoryEntrySerializer, LeaderboardEntrySerializer
 
+
+def _get_avatar_url(request: Request, profile: Profile) -> str:
+    """Return the absolute URL of a profile's avatar."""
+    if request.profile.avatar and hasattr(request.profile.avatar, 'url'):
+        return request.profile.avatar.url
+    else:
+        return (settings.STATIC_URL + \
+            f"default_avatars/default_avatar_{request.profile.pk % 18}.png")
 
 def _ranking(profile: Profile) -> int:
     """Return the 1-based global ranking of a profile by exp_points."""
@@ -27,7 +36,7 @@ def _total_players() -> int:
 
 class GlobalStatsView(APIView):
     """Return aggregated statistics for a given user."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
         """Return aggregated stats for the queried username."""
@@ -84,7 +93,7 @@ class GlobalStatsView(APIView):
 
 class LeaderboardView(APIView):
     """Return the top-10 leaderboard and the current user's ranking."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
         """Return leaderboard data."""
@@ -93,32 +102,40 @@ class LeaderboardView(APIView):
             .order_by('-exp_points')[:10]
         )
         entries = []
+        is_in_top_10 = False
         for rank, profile in enumerate(top_profiles, start=1):
-            avatar_url = (
-                request.build_absolute_uri(profile.avatar.url)
-                if profile.avatar else ''
-            )
             entries.append({
                 'username': profile.username,
-                'avatar': avatar_url,
+                'avatar': _get_avatar_url(request, profile),
                 'xp': profile.exp_points,
                 'badges': profile.badges,
-                'ranking': rank,
+                'ranking': _ranking(profile),
                 'isCurrentUser': profile == request.profile,
             })
-
+            if profile == request.profile:
+                is_in_top_10 = True
+        
+        if not is_in_top_10:
+            profile = request.profile
+            entries.append({
+                'username': profile.username,
+                'avatar': _get_avatar_url(request, profile),
+                'xp': profile.exp_points,
+                'badges': profile.badges,
+                'ranking': _ranking(profile),
+                'isCurrentUser': True,
+            })
         serializer = LeaderboardEntrySerializer(entries, many=True)
         return Response({
             'leaderboard': serializer.data,
             'leaderboardCount': len(entries),
-            'ranking': _ranking(request.profile),
             'totalNumberPlayer': _total_players(),
         }, status=status.HTTP_200_OK)
 
 
 class HistoryView(APIView):
     """Return the last 10 games played by the authenticated user."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
         """Return match history."""
@@ -133,24 +150,18 @@ class HistoryView(APIView):
         history = []
         for ugs in user_game_stats:
             game = ugs.game
-
-            # Per-player XP totals in this game, ordered descending
             game_xp_ranking = list(
                 UserRoundStats.objects.filter(game=game)
                 .values('player')
                 .annotate(total_xp=Sum('xp_earned'))
                 .order_by('-total_xp')
             )
-
-            # This player's XP and rank in the game
             my_xp = next(
                 (p['total_xp'] for p in game_xp_ranking if p['player'] == profile.pk), 0
             )
             my_rank = next(
                 (i + 1 for i, p in enumerate(game_xp_ranking) if p['player'] == profile.pk), 1
             )
-
-            # Tags: distinct playlist slugs of all tracks played in this game
             track_ids = (
                 GameRoundStats.objects.filter(game=game)
                 .values_list('track_id', flat=True)
@@ -160,8 +171,6 @@ class HistoryView(APIView):
                 .values_list('slug', flat=True)
                 .distinct()
             )
-
-            # Players summary
             players_data = []
             for player_profile in game.players.all():
                 p_xp = next(
@@ -178,8 +187,6 @@ class HistoryView(APIView):
                     'avatar': avatar_url,
                     'ranking': p_rank,
                 })
-
-            # Rounds for this player in this game
             rounds_data = []
             user_rounds = (
                 UserRoundStats.objects.filter(player=profile, game=game)
