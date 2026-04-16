@@ -192,3 +192,8 @@ TECH_LEAD,Tech Lead,Responsable technique,テックリード,Role label shown on
 DEVELOPER,Developer,Développeur,開発者,Role label shown on the contact page
 PAGE_NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
 USER_NOT_FOUND,Looks like this user does not exist,On dirait bien que cet utilisateur n'existe pas,このユーザーは存在しないようです,Shows on a missing user profile
+LEADERBOARD_LOADING,Leaderboard loading...,Chargement du classement...,ランキングを読み込み中...,Shown while the leaderboard request is loading
+LEADERBOARD_LOADING_FAILED,Leaderboard loading failed,Le chargement du classement a échoué,ランキングの読み込みに失敗しました,Shown when the leaderboard request fails
+LEADERBOARD_POINTS,Points,Points,ポイント,Leaderboard value label shown next to a player's score
+LEADERBOARD_TOTAL_PLAYERS,"Total players: {number}","Nombre total de joueurs : {number}","プレイヤー総数: {number}",Leaderboard footer showing the total number of ranked players
+LEADERBOARD_MESSAGE,Compete with others to grind the ladder!,Affrontez les autres pour grimper dans le classement !,他のプレイヤーと競い合ってランキングを駆け上がろう！,Short leaderboard intro message encouraging ranked competition
