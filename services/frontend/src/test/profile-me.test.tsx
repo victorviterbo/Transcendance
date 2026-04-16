@@ -5,6 +5,7 @@ import PProfileMe from "../pages/PProfilePage/PProfileMe";
 import type { IProfileData } from "../types/profile";
 
 const fetchProfileMock = vi.fn();
+let authUser: { username: string } | null = { username: "john" };
 
 vi.mock("../api/profile", () => ({
 	fetchProfile: (...args: unknown[]) => fetchProfileMock(...args),
@@ -13,7 +14,7 @@ vi.mock("../api/profile", () => ({
 
 vi.mock("../components/auth/CAuthProvider", () => ({
 	useAuth: () => ({
-		user: { username: "john" },
+		user: authUser,
 	}),
 }));
 
@@ -54,6 +55,7 @@ const createDeferred = <T,>() => {
 describe("PProfileMe", () => {
 	beforeEach(() => {
 		fetchProfileMock.mockReset();
+		authUser = { username: "john" };
 	});
 
 	it("uses the shared loading state until the profile request completes", async () => {
@@ -84,5 +86,42 @@ describe("PProfileMe", () => {
 		render(<PProfileMe />);
 
 		expect(await screen.findByText("PROFILE_LOAD_FAILED")).toBeInTheDocument();
+	});
+
+	it("keeps the profile view mounted while refetching after a username change", async () => {
+		const deferred = createDeferred<IProfileData>();
+		fetchProfileMock
+			.mockResolvedValueOnce({
+				username: "john",
+				avatar: null,
+				exp_points: 120,
+				badges: "Curious Cat",
+				created_at: "2026-04-12T00:00:00Z",
+				email: "john@42.fr",
+			})
+			.mockReturnValueOnce(deferred.promise);
+
+		const { rerender } = render(<PProfileMe />);
+
+		expect(await screen.findByText("john")).toBeInTheDocument();
+		expect(fetchProfileMock).toHaveBeenCalledWith("john");
+
+		authUser = { username: "marc" };
+		rerender(<PProfileMe />);
+
+		expect(fetchProfileMock).toHaveBeenCalledWith("marc");
+		expect(screen.getByText("john")).toBeInTheDocument();
+		expect(screen.queryByText("PROFILE_LOADING")).not.toBeInTheDocument();
+
+		deferred.resolve({
+			username: "marc",
+			avatar: null,
+			exp_points: 120,
+			badges: "Curious Cat",
+			created_at: "2026-04-12T00:00:00Z",
+			email: "marc@42.fr",
+		});
+
+		expect(await screen.findByText("marc")).toBeInTheDocument();
 	});
 });

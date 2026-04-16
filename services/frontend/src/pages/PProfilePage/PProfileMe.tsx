@@ -68,11 +68,26 @@ const PProfileMe = () => {
 		profile: null,
 		error: null,
 	});
+	const setReadyProfile = (nextProfile: IProfileData) => {
+		setProfileState({
+			username: nextProfile.username,
+			status: "ready",
+			profile: nextProfile,
+			error: null,
+		});
+	};
 	const username = user?.username ?? "";
+	const hasReadyProfile = profileState.status === "ready" && profileState.profile !== null;
 	const isCurrentUsername = profileState.username === username;
-	const profile = isCurrentUsername ? profileState.profile : null;
+	const profile = hasReadyProfile ? profileState.profile : null;
 	const error = isCurrentUsername ? profileState.error : null;
-	const status = !username ? "loading" : isCurrentUsername ? profileState.status : "loading";
+	const status: ProfileStatus = !username
+		? "loading"
+		: hasReadyProfile
+			? "ready"
+			: isCurrentUsername
+				? profileState.status
+				: "loading";
 
 	useEffect(() => {
 		if (!username) return;
@@ -118,23 +133,16 @@ const PProfileMe = () => {
 		<GPageBase>
 			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3}>
-					<ProfileInfo
-						profile={profile}
-						onAvatarUploaded={(nextProfile) => {
-							setProfileState({
-								username: nextProfile.username,
-								status: "ready",
-								profile: nextProfile,
-								error: null,
-							});
-						}}
-					/>
+					<ProfileInfo profile={profile} onAvatarUploaded={setReadyProfile} />
 
 					<CBasePaper>
 						<CTabs tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}>
 							<ProfileStatisticsPanel scope="me" />
 							<ProfileMatchHistoryPanel scope="me" />
-							<ProfileModifyMePanel username={user?.username} />
+							<ProfileModifyMePanel
+								username={user?.username}
+								onProfileUpdated={setReadyProfile}
+							/>
 						</CTabs>
 					</CBasePaper>
 				</Stack>

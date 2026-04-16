@@ -8,11 +8,7 @@ export interface CProfileRequestStateProps {
 	maxWidth?: ContainerOwnProps["maxWidth"];
 }
 
-function CProfileRequestState({
-	status,
-	error,
-	maxWidth = "sm",
-}: CProfileRequestStateProps) {
+function CProfileRequestState({ status, error, maxWidth = "sm" }: CProfileRequestStateProps) {
 	return (
 		<Container maxWidth={maxWidth} sx={{ py: { xs: 4, md: 6 } }}>
 			<CBasePaper sx={{ p: 3 }}>
