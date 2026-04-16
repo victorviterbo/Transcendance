@@ -5,6 +5,23 @@ import { server } from "../mock/server";
 import { resetMockDb } from "../mock/db";
 
 vi.mock("../localization/localization", () => {
+	const translations: Record<string, string> = {
+		LEADERBOARD_LOADING: "Leaderboard loading...",
+		LEADERBOARD_LOADING_FAILED: "Leaderboard loading failed",
+		LEADERBOARD_POINTS: "Points",
+		LEADERBOARD_TOTAL_PLAYERS: "Total players: {number}",
+		LEADERBOARD_MESSAGE: "Compete with others to climb the ladder!",
+	};
+
+	const ttr = (id: string) => translations[id] ?? id;
+	const ttrf = (id: string, params: Record<string, string>) => {
+		let text = ttr(id);
+		for (const [key, value] of Object.entries(params)) {
+			text = text.replaceAll(`{${key}}`, String(value));
+		}
+		return text;
+	};
+
 	return {
 		langData: {
 			headers: [],
@@ -17,7 +34,8 @@ vi.mock("../localization/localization", () => {
 		onLangChanged: vi.fn(),
 		setOnLangChanged: vi.fn(),
 		startLocalization: vi.fn(),
-		ttr: (id: string) => id,
+		ttr,
+		ttrf,
 	};
 });
 
