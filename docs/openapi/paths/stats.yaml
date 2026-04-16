@@ -60,7 +60,7 @@ leaderboard:
       - bearerAuth: []
     responses:
       "200":
-        description: List of the top 10 players.
+        description: List of the top 10 players. Current user is added to the list if not present in the top 10.
         content:
           application/json:
             schema:
@@ -75,9 +75,8 @@ leaderboard:
                       badges: "BADGE_DAZED_JELLYFISH"
                       ranking: 1
                       isCurrentUser: false
-                  ranking: 1
                   leaderboardCount: 1
-                  totalNumberPlayer: 1
+                  totalNumberPlayer: 2
       "401":
         description: Not authenticated.
         content:

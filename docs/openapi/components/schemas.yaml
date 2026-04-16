@@ -197,14 +197,11 @@ LeaderboardResponse:
   properties:
     leaderboard:
       type: array
-      description: Top-ranked players.
+      description: Top-ranked players + current player is not in top 10.
       items: { $ref: "#/LeaderboardEntry" }
     leaderboardCount:
       type: integer
       description: Number of entries returned in the leaderboard.
-    ranking:
-      type: integer
-      description: Ranking of the current user.
     totalNumberPlayer:
       type: integer
       description: Total number of players eligible for ranking.
