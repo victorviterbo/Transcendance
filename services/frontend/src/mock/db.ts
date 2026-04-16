@@ -153,7 +153,10 @@ const cloneUser = (user: MockUser): MockUser => ({ ...user });
 
 const cloneStatsProfileMap = (profiles: Record<string, Partial<MockGlobalStatsProfile>>) =>
 	Object.fromEntries(
-		Object.entries(profiles).map(([username, profile]) => [username, cloneGlobalStatsProfile(profile)]),
+		Object.entries(profiles).map(([username, profile]) => [
+			username,
+			cloneGlobalStatsProfile(profile),
+		]),
 	);
 
 const cloneHistoryMap = (historyMap: Record<string, MockHistoryEntrySeed[]>) =>
@@ -203,7 +206,10 @@ const ensureStatsState = (username: string) => {
 };
 
 const listRankedUsers = () =>
-	listUsers().sort((left, right) => right.expPoints - left.expPoints || left.username.localeCompare(right.username));
+	listUsers().sort(
+		(left, right) =>
+			right.expPoints - left.expPoints || left.username.localeCompare(right.username),
+	);
 
 const getRankPosition = (username: string) => {
 	const rankedUsers = listRankedUsers();
@@ -240,7 +246,9 @@ const moveStatsState = (currentUsername: string, nextUsername: string) => {
 	);
 	delete globalStatsProfiles[currentUsername];
 
-	matchHistories[nextUsername] = (matchHistories[currentUsername] ?? []).map(cloneHistoryEntrySeed);
+	matchHistories[nextUsername] = (matchHistories[currentUsername] ?? []).map(
+		cloneHistoryEntrySeed,
+	);
 	delete matchHistories[currentUsername];
 
 	renameHistoryParticipants(currentUsername, nextUsername);
@@ -458,6 +466,20 @@ export const getLeaderboard = (currentUsername: string): MockLeaderboardResponse
 		ranking: index + 1,
 		isCurrentUser: user.username === currentUsername,
 	}));
+
+	if (ranking > LEADERBOARD_LIMIT) {
+		const currentUser = rankedUsers[ranking - 1];
+		if (currentUser) {
+			leaderboard.push({
+				username: currentUser.username,
+				avatar: resolveAvatar(currentUser.avatar),
+				xp: currentUser.expPoints,
+				badges: getBadgeForXp(currentUser.expPoints),
+				ranking,
+				isCurrentUser: true,
+			});
+		}
+	}
 
 	return {
 		leaderboard,
