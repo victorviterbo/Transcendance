@@ -232,7 +232,6 @@ BADGE_ATTENTIVE_OWL,Attentive Owl,Chouette attentive,注意深いフクロウ,Ba
 BADGE_RHYTHMIC_RAPTOR,Rhythmic Raptor,Raptor rythmé,リズミカルなラプトル,Badge for users with XP from 2000 to 4999
 BADGE_SONIC_SHARK,Sonic Shark,Requin sonique,ソニックシャーク,Badge for users with XP from 5000 to 9999
 BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定位するコウモリ,Badge for users with XP of 10000 or more
-
 NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
 MESSAGE_SENT_FAILED,Failed to send message,,,Sent back when message has failed to be sent
 NOTIF_TITLE,Notifications,,,Notifications drawer title
