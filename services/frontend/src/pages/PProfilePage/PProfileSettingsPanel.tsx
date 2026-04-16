@@ -12,6 +12,7 @@ import { API_PROFILE } from "../../constants";
 import CTitle from "../../components/text/CTitle";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import { changeProfilePassword, deleteProfile } from "../../api/profile";
+import { type IProfileData } from "../../types/profile";
 import CDialog from "../../components/feedback/dialogs/CDialog";
 import CDialogTitle from "../../components/feedback/dialogs/CDialogTitle";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
@@ -19,9 +20,10 @@ import CText from "../../components/text/CText";
 
 export interface ProfileSettingsPanelProps extends GPageProps {
 	username: string | undefined;
+	onProfileUpdated?: (nextProfile: IProfileData) => void;
 }
 
-const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
+const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPanelProps) => {
 	const [expanded, setExpanded] = useState<string | false>("username");
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 	const [pendingDeletePassword, setPendingDeletePassword] = useState<string | null>(null);
@@ -102,14 +104,16 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 
 	async function handleChangeUsername(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			await api.post<{ access?: string; username?: string }>(`${API_PROFILE}?q=${username}`, {
+			const response = await api.post<IProfileData>(`${API_PROFILE}?q=${username}`, {
 				username: values.username,
 			});
+			const nextProfile = response.data;
+			onProfileUpdated?.(nextProfile);
 			const accessToken = getAccessToken();
 			if (accessToken) {
 				setAuth(accessToken, {
-					username: values.username.trim(),
-					email: user?.email,
+					username: nextProfile.username,
+					email: nextProfile.email ?? user?.email,
 				});
 			}
 			return { valid: true, msg: "CHANGE_SUCCESS", resetOnSuccess: true };
@@ -122,14 +126,16 @@ const PProfileSettingsPanel = ({ username }: ProfileSettingsPanelProps) => {
 
 	async function handleChangeEmail(values: Record<string, string>): Promise<IEventStatus> {
 		try {
-			await api.post<{ access?: string; email?: string }>(`${API_PROFILE}?q=${username}`, {
+			const response = await api.post<IProfileData>(`${API_PROFILE}?q=${username}`, {
 				email: values.email,
 			});
+			const nextProfile = response.data;
+			onProfileUpdated?.(nextProfile);
 			const accessToken = getAccessToken();
 			if (accessToken) {
 				setAuth(accessToken, {
-					username: user?.username ?? username ?? "",
-					email: values.email.trim(),
+					username: nextProfile.username,
+					email: nextProfile.email ?? user?.email,
 				});
 			}
 			return { valid: true, msg: "CHANGE_SUCCESS", resetOnSuccess: true };

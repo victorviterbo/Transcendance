@@ -43,10 +43,20 @@ describe("profile settings panel", () => {
 
 	it("shows success feedback and updates auth state when username changes", async () => {
 		const user = userEvent.setup();
-		postMock.mockResolvedValue({});
+		const onProfileUpdated = vi.fn();
+		postMock.mockResolvedValue({
+			data: {
+				username: "marc",
+				avatar: null,
+				exp_points: 120,
+				badges: "Curious Cat",
+				created_at: "2026-04-16T00:00:00Z",
+				email: "john@42.fr",
+			},
+		});
 		getAccessTokenMock.mockReturnValue("token");
 
-		render(<PProfileSettingsPanel username="john" />);
+		render(<PProfileSettingsPanel username="john" onProfileUpdated={onProfileUpdated} />);
 
 		const input = screen.getByLabelText(/new_username/i);
 		await user.type(input, "marc");
@@ -61,16 +71,34 @@ describe("profile settings panel", () => {
 				email: "john@42.fr",
 			}),
 		);
+		expect(onProfileUpdated).toHaveBeenCalledWith({
+			username: "marc",
+			avatar: null,
+			exp_points: 120,
+			badges: "Curious Cat",
+			created_at: "2026-04-16T00:00:00Z",
+			email: "john@42.fr",
+		});
 		expect(screen.getByText("CHANGE_SUCCESS")).toBeInTheDocument();
 		expect(input).toHaveValue("");
 	});
 
 	it("shows success feedback and updates auth state when email changes", async () => {
 		const user = userEvent.setup();
-		postMock.mockResolvedValue({});
+		const onProfileUpdated = vi.fn();
+		postMock.mockResolvedValue({
+			data: {
+				username: "john",
+				avatar: null,
+				exp_points: 120,
+				badges: "Curious Cat",
+				created_at: "2026-04-16T00:00:00Z",
+				email: "marc@42.fr",
+			},
+		});
 		getAccessTokenMock.mockReturnValue("token");
 
-		render(<PProfileSettingsPanel username="john" />);
+		render(<PProfileSettingsPanel username="john" onProfileUpdated={onProfileUpdated} />);
 
 		await user.click(screen.getByRole("button", { name: /change_email/i }));
 		const input = await screen.findByLabelText(/new_email/i);
@@ -86,6 +114,14 @@ describe("profile settings panel", () => {
 				email: "marc@42.fr",
 			}),
 		);
+		expect(onProfileUpdated).toHaveBeenCalledWith({
+			username: "john",
+			avatar: null,
+			exp_points: 120,
+			badges: "Curious Cat",
+			created_at: "2026-04-16T00:00:00Z",
+			email: "marc@42.fr",
+		});
 		expect(screen.getByText("CHANGE_SUCCESS")).toBeInTheDocument();
 		expect(input).toHaveValue("");
 	});

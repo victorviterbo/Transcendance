@@ -41,8 +41,8 @@ export const changeProfilePassword = async (
 	const response = await api.post<{ description: string; access?: string; username?: string }>(
 		API_PROFILE_PASSWORD,
 		{
-		currentPassword,
-		newPassword,
+			currentPassword,
+			newPassword,
 		},
 	);
 	return response.data;

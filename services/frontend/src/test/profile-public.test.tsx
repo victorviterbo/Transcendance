@@ -75,7 +75,7 @@ describe("PProfilePublic", () => {
 		fetchProfileMock.mockRejectedValue({
 			response: {
 				status: 400,
-				data: { error: "No profile with this username" },
+				data: { error: { query: "USER_NOT_FOUND" } },
 			},
 		});
 
