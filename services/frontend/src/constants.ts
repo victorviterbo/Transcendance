@@ -31,8 +31,9 @@ export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "api/social/message";
 export const API_SOCIAL_NOTIFS = "api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "api/social/notifs_read";
 
-// WS ADDRESS
-export const WS_ADRESS = "ws://localhost:5173/";
+//WS
+export const WS_ADRESS_WMS = "ws://localhost:5173/";
+export const WS_ADRESS = "ws://127.0.0.1:8000/";
 
 export const MUSIC_TAGS = [
 	"TAG_POP",
