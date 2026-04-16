@@ -19,6 +19,7 @@ class HistoryPlayerSerializer(serializers.Serializer):
     avatar = serializers.CharField()
     ranking = serializers.IntegerField()
 
+
 class HistoryRoundSerializer(serializers.Serializer):
     """Serialize a single round result inside a match history entry."""
     trackName = serializers.CharField()
