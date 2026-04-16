@@ -101,7 +101,13 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 		return (
 			<GPageBase>
 				<CProfileRequestState
-					status={status === "notFound" ? "notFound" : status === "error" ? "error" : "loading"}
+					status={
+						status === "notFound"
+							? "notFound"
+							: status === "error"
+								? "error"
+								: "loading"
+					}
 					error={error}
 				/>
 			</GPageBase>
