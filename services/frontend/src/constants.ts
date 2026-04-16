@@ -10,6 +10,11 @@ export const API_PROFILE_SEARCH = `${API_PROFILE}search/`;
 export const API_PROFILE_GUEST_CREATE = `${API_PROFILE}guest-create/`;
 export const API_PROFILE_GUEST_DELETE = `${API_PROFILE}guest-delete/`;
 
+//STATS
+export const API_STATS_GLOBAL = "/api/stats/global";
+export const API_STATS_LEADERBOARD = "/api/stats/leaderboard";
+export const API_STATS_HISTORY = "/api/stats/history";
+
 //HOME
 export const API_PUBLIC_ROOMS = "/api/public/rooms";
 export const API_PRIVATE_ROOMS = "/api/private/rooms";
