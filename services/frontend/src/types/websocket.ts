@@ -64,13 +64,3 @@ export type TWSSend =
 			target: "room-guess";
 			guess: string;
 	  };
-
-export type TWSSend =
-	| {
-			target: Extract<TWSModuleName, "friend-chat">;
-			event: "new";
-			message: string;
-			date: string;
-			to: string;
-			toUid: string;	
-	  }

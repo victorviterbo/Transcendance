@@ -60,39 +60,6 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		});
 	}, [wsContext, feed, targetFriend]);
 
-	//====================== INCOMINGS ======================
-	useEffect(() => {
-		wsContext.setOnUpdate(() => {
-			while (wsContext.count > 0) {
-				const last: TWSRcv | undefined = wsContext.getLast();
-				if (last?.target == "friend-chat")
-				{
-					if(last.event == "update_status")
-					{
-						if(!feed || !last.message)
-							return;
-						const index = feed.feed.findIndex((message: IFriendMessage) => {
-							return message.uid == last.message.uid;
-						});
-						if (index == -1) return;
-						feed.feed[index].status = last.message.status;
-						setFeed(structuredClone(feed));
-					}
-					if (last.event == "new") {
-						if (
-							!feed ||
-							!last.message ||
-							last.message["target-id"] != targetFriend?.uid
-						)
-							return;
-						feed.feed.splice(0, 0, last.message);
-						setFeed(structuredClone(feed));
-					}
-				}
-			}
-		});
-	}, [wsContext, feed, targetFriend]);
-
 	useEffect(() => {
 		async function getChat(): Promise<void> {
 			try {
