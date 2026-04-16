@@ -42,6 +42,8 @@ class UserRoundStats(models.Model):
                               on_delete=models.SET_NULL,
                               null=True)
     is_won = models.BooleanField(default=False)
+    artist_found = models.BooleanField(default=False)
+    song_found = models.BooleanField(default=False)
     time = models.DurationField(default=timedelta(seconds=30))
     xp_earned = models.IntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
