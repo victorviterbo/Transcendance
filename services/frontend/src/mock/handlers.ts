@@ -7,6 +7,7 @@ import {
 	ProfileSearchHandler,
 } from "./handlers/users";
 import { FetchPrivateRoom, FetchPublicRoom } from "./handlers/home";
+import { StatsGlobalHandler, StatsHistoryHandler, StatsLeaderboardHandler } from "./handlers/stats";
 import {
 	friendsListHandler,
 	friendsRequestsHandler,
@@ -27,6 +28,9 @@ export const handlers = [
 	ChangePasswordHandler,
 	DeleteProfileHandler,
 	ProfileSearchHandler,
+	StatsGlobalHandler,
+	StatsLeaderboardHandler,
+	StatsHistoryHandler,
 	FetchPrivateRoom,
 	FetchPublicRoom,
 
