@@ -1,8 +1,8 @@
 """URL routes for game API endpoints."""
 
 from django.urls import path
-from .views import GameTestView
+from .views import GameView
 
 urlpatterns = [
-    path('test/', GameTestView.as_view(), name='game-test'),
+    path('', GameView.as_view(), name='game'),
 ]
