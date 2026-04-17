@@ -63,6 +63,21 @@ def _resolve_target_user(target_uid: str | None) -> SiteUser | None:
     return profile.user
 
 
+def _notif_payload(friendship: Friendship, request: Request) -> dict[str, object]:
+    """Return a frontend-shaped notification entry for a friendship request."""
+
+    serializer = FriendUserSerializer(
+        friendship.from_user.profile,
+        context={'request': request, 'relation': 'incoming'},
+    )
+    return {
+        'kind': 'friend-request',
+        'from': serializer.data,
+        'date': friendship.created_at.isoformat(),
+        'read': friendship.read,
+    }
+
+
 class FriendRequestsSeePend(APIView):
     """Define the function to display friends and friend requests."""
     permission_classes = [IsAuthenticated]
@@ -259,7 +274,7 @@ class FriendRequestsSend(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        Friendship.objects.create(from_user=user, to_user=recipient, status='pending')
+        Friendship.objects.create(from_user=user, to_user=recipient, status='pending', read=False)
         return Response(
             {
                 'description': 'FRIENDSHIP_REQUEST_SENT',
@@ -270,3 +285,34 @@ class FriendRequestsSend(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+class NotifSee(APIView):
+    """List pending friend-request notifications for the authenticated user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        """Return incoming friend requests as notification entries."""
+
+        friendships = (
+            Friendship.objects.filter(to_user=request.user, status='pending')
+            .select_related('from_user__profile')
+            .order_by('-created_at')
+        )
+        return Response(
+            {'notifs': [_notif_payload(friendship, request) for friendship in friendships]},
+            status=status.HTTP_200_OK,
+        )
+
+
+class NotifRead(APIView):
+    """Mark pending friend-request notifications as read."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        """Mark all incoming friend-request notifications as read."""
+
+        Friendship.objects.filter(to_user=request.user, status='pending', read=False).update(read=True)
+        return Response({}, status=status.HTTP_200_OK)

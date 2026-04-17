@@ -205,4 +205,41 @@ class FriendRequestsTests(APITestCase):
         self.assertGreaterEqual(len(response.data['users']), 1)
         self.assertIn('relation', response.data['users'][0])
         self.assertIn('default_avatars/default_avatar_', response.data['users'][0]['image'])
+
+    def test_notifications_list_and_mark_read(self) -> None:
+        """Test the notification drawer endpoints."""
+
+        login_url = '/api/auth/login/'
+        send_url = '/api/social/friend-request/send'
+        notifs_url = '/api/social/notifs'
+        notifs_read_url = '/api/social/notifs_read'
+
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(send_url, data={
+            'target-uid': str(self.user2.uid),
+            'target-username': self.user2.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        login_res = self.client.post(login_url, data={'email': 'user2@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.get(notifs_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(1, len(response.data['notifs']))
+        self.assertEqual('friend-request', response.data['notifs'][0]['kind'])
+        self.assertFalse(response.data['notifs'][0]['read'])
+        self.assertEqual(self.user1.profile.username, response.data['notifs'][0]['from']['username'])
+
+        response = self.client.post(notifs_read_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(notifs_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(1, len(response.data['notifs']))
+        self.assertTrue(response.data['notifs'][0]['read'])
     
