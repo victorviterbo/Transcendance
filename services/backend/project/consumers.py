@@ -13,10 +13,9 @@ from userauth.models import SiteUser
 from userprofile.models import Profile
 
 from chat.chat_utils import accepted_friendship_exists, get_or_create_direct_room
-from .consumers_utils import ConsumerScopeUtils
 
 
-class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
+class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
 
     create_profile_if_missing = True
@@ -41,7 +40,6 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
         self.group_name = f"user_{self.profile.id}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
-        await self.mark_user_online()
         await self.accept()
         return
 
@@ -51,7 +49,6 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_discard(layer, self.channel_name)
         if getattr(self, "profile", None):
             await self._update_online_status(False)
-            await self.mark_user_offline()
         return
     
     async def receive_json(self, content: dict) -> None:
@@ -189,6 +186,11 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
 
     async def send_notification(self, event: dict) -> None:
         """Forward social notifications to the connected client."""
+        payload = event.get('payload')
+        if isinstance(payload, dict):
+            await self.send_json(payload)
+            return
+
         await self.send_json({
             'target': event.get('target', 'social-notif'),
             'type': 'social_notification',
@@ -205,6 +207,34 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
         if self.profile:
             return self.profile.username
         return 'anonymous'
+
+    @database_sync_to_async
+    def _get_profile_from_scope(self) -> Profile | None:
+        """Resolve profile from user, injected profile, or guest session."""
+        self.user = self.scope.get("user")
+        if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
+            try:
+                return self.user.profile
+            except Profile.DoesNotExist:
+                return None
+
+        profile = self.scope.get("profile")
+        if isinstance(profile, Profile):
+            return profile
+
+        session = self.scope.get("session", {})
+        guest_uid = session.get("guest_profile_uid")
+        if guest_uid:
+            return Profile.objects.filter(uid=guest_uid, is_guest=True).first()
+
+        guest_id = session.get("guest_profile_id")
+        if guest_id:
+            return Profile.objects.filter(id=guest_id, is_guest=True).first()
+
+        if self.create_profile_if_missing:
+            return Profile.objects.create()
+
+        return None
     
 
     def _is_room_participant(self) -> bool:
