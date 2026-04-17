@@ -21,7 +21,6 @@ dependencies:
   - certifi=2026.02.25
   - cffi=2.0.0
   - channels=4.3.2
-  - channels_redis=4.3.0
   - charset-normalizer=3.4.4
   - constantly=23.10.4
   - cryptography=46.0.5
@@ -94,7 +93,6 @@ dependencies:
   - python_abi=3.14
   - pyyaml=6.0.3
   - readline=8.3
-  - redis-py=7.4.0
   - referencing=0.37.0
   - requests=2.32.5
   - rpds-py=0.28.0

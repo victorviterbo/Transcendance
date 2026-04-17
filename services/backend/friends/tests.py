@@ -150,6 +150,7 @@ class FriendRequestsTests(APITestCase):
             self.assertEqual(str(self.user2.profile.uid), response.data['outgoing'][0]['uid'])
             self.assertEqual(self.user2.profile.username, response.data['outgoing'][0]['username'])
             self.assertEqual('outgoing', response.data['outgoing'][0]['relation'])
+            self.assertIn('default_avatars/default_avatar_', response.data['outgoing'][0]['image'])
             self.assertEqual(0, len(response.data['incoming']))
 
             login_res = user2.post(login_url, data={'email': 'user2@mail.com',
@@ -174,6 +175,7 @@ class FriendRequestsTests(APITestCase):
                 self.assertEqual(1, len(response.data['friends']))
                 self.assertEqual(str(self.user1.profile.uid), response.data['friends'][0]['uid'])
                 self.assertEqual('online', response.data['friends'][0]['status'])
+                self.assertIn('default_avatars/default_avatar_', response.data['friends'][0]['image'])
 
             elif res == 'refuse':
                 self.assertEqual('FRIENDSHIP_REQUEST_REJECTED',
@@ -202,4 +204,5 @@ class FriendRequestsTests(APITestCase):
         self.assertIn('users', response.data)
         self.assertGreaterEqual(len(response.data['users']), 1)
         self.assertIn('relation', response.data['users'][0])
+        self.assertIn('default_avatars/default_avatar_', response.data['users'][0]['image'])
     

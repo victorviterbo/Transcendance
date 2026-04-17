@@ -1,11 +1,26 @@
 """Serialization helpers for the friends module."""
 
+from django.templatetags.static import static
 from rest_framework import serializers
+from rest_framework.request import Request
 
 from userprofile.models import Profile
 from userprofile.serializers import UsersSerializer
 
 from .models import Friendship
+
+
+def _build_avatar_url(instance: Profile, request: Request | None = None) -> str:
+    """Return uploaded avatar URL or fallback to the profile default avatar."""
+
+    if instance.avatar:
+        avatar_url = instance.avatar.url
+    else:
+        avatar_url = static(f'default_avatars/default_avatar_{instance.pk % 18}.png')
+
+    if request:
+        return request.build_absolute_uri(avatar_url)
+    return avatar_url
 
 
 class FriendshipSerializer(serializers.ModelSerializer):
@@ -37,11 +52,7 @@ class FriendInfoSerializer(serializers.ModelSerializer):
         """Return an absolute avatar URL when possible."""
 
         request = self.context.get('request')
-        if instance.avatar and request:
-            return request.build_absolute_uri(instance.avatar.url)
-        if instance.avatar:
-            return instance.avatar.url
-        return ''
+        return _build_avatar_url(instance, request)
 
     def get_status(self, instance: Profile) -> str:
         """Map the backend presence flag to the frontend friend status."""
@@ -65,11 +76,7 @@ class FriendUserSerializer(serializers.ModelSerializer):
         """Return an absolute avatar URL when possible."""
 
         request = self.context.get('request')
-        if instance.avatar and request:
-            return request.build_absolute_uri(instance.avatar.url)
-        if instance.avatar:
-            return instance.avatar.url
-        return ''
+        return _build_avatar_url(instance, request)
 
     def get_relation(self, instance: Profile) -> str:
         """Return the computed relation for the serialized profile."""

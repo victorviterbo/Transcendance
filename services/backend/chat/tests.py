@@ -311,7 +311,7 @@ class ChatWebsocketTests(TransactionTestCase):
 		async_to_sync(scenario)()
 
 	def test_social_notification_payload_matches_frontend_contract(self) -> None:
-		"""Friend requests should emit websocket notifications with frontend keys."""
+		"""Friend requests should emit frontend-shaped realtime websocket events."""
 
 		@database_sync_to_async
 		def create_pending_friend_request() -> Friendship:
@@ -328,15 +328,33 @@ class ChatWebsocketTests(TransactionTestCase):
 			self.assertTrue(connected)
 
 			friendship = await create_pending_friend_request()
-			response = await communicator.receive_json_from()
+			response_1 = await communicator.receive_json_from()
+			response_2 = await communicator.receive_json_from()
 
-			self.assertEqual(response.get('type'), 'social_notification')
-			self.assertEqual(response.get('target'), 'social-notif')
-			self.assertEqual(response.get('module'), 'social')
-			self.assertEqual(response.get('event'), 'NEW_FRIEND_REQUEST')
-			self.assertEqual(response.get('from_user_uid'), str(self.stranger.profile.uid))
-			self.assertEqual(response.get('to_user_uid'), str(self.user.profile.uid))
-			self.assertEqual(response.get('friendship_uid'), str(friendship.uid))
+			responses = [response_1, response_2]
+			friend_request_event = next(
+				(value for value in responses if value.get('target') == 'friend-request'),
+				None,
+			)
+			notif_event = next(
+				(value for value in responses if value.get('target') == 'notif'),
+				None,
+			)
+
+			self.assertIsNotNone(friend_request_event)
+			self.assertIsNotNone(notif_event)
+
+			self.assertEqual(friend_request_event.get('event'), 'new-incoming')
+			self.assertEqual(friend_request_event['user'].get('uid'), str(self.stranger.profile.uid))
+			self.assertEqual(friend_request_event['user'].get('username'), self.stranger.profile.username)
+			self.assertEqual(friend_request_event['user'].get('relation'), 'incoming')
+
+			self.assertEqual(notif_event.get('event'), 'new')
+			self.assertEqual(notif_event['notif'].get('kind'), 'friend-request')
+			self.assertEqual(notif_event['notif']['from'].get('uid'), str(self.stranger.profile.uid))
+			self.assertEqual(notif_event['notif']['from'].get('username'), self.stranger.profile.username)
+			self.assertEqual(notif_event['notif']['from'].get('relation'), 'incoming')
+			self.assertEqual(friendship.status, 'pending')
 
 			await communicator.disconnect()
 

@@ -26,4 +26,4 @@ export const API_SOCIAL_NOTIFS_READ = "api/social/notifs_read";
 
 //WS
 export const WS_ADRESS_WMS = "ws://localhost:5173/";
-export const WS_ADRESS = "ws://127.0.0.1:8000/";
+export const WS_ADRESS = "ws://127.0.0.1:8000/ws/global/";
