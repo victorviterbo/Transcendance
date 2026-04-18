@@ -257,10 +257,16 @@ class ChatWebsocketTests(TransactionTestCase):
 									'action': 'direct-message',
 									'message': 'hello friend',
 									'user_uid': str(self.friend.uid)})
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'chat_message')
-			self.assertEqual(response['sender'], 'chat_test_user')
-			self.assertEqual(response['message'], 'hello friend')
+			dm_response = None
+			for _ in range(3):
+				response = await communicator.receive_json_from()
+				if response.get('target') == 'friend-chat' and response.get('event') == 'new':
+					dm_response = response
+					break
+			self.assertIsNotNone(dm_response)
+			self.assertEqual(dm_response['message']['direction'], 'outgoing')
+			self.assertEqual(dm_response['message']['message'], 'hello friend')
+			self.assertEqual(dm_response['message']['target-id'], str(self.friend.profile.uid))
 
 			await communicator.send_json_to({'module': 'chat',
 									'action': 'direct-message',
