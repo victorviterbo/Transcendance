@@ -83,10 +83,15 @@ interface AppWebsocketProps {
 }
 
 function CWebsocket({ children }: AppWebsocketProps) {
-	const { sendMessage, lastMessage, readyState } = useWebSocket(import.meta.env.MODE !== "mock" ? WS_ADRESS : WS_ADRESS_WMS, {
-		skipAssert: true,
-		//shouldReconnect: (_) => true,
-	});
+	const { sendMessage, lastMessage, readyState } = useWebSocket(
+		import.meta.env.MODE !== "mock" && import.meta.env.MODE !== "test"
+			? WS_ADRESS
+			: WS_ADRESS_WMS,
+		{
+			skipAssert: true,
+			//shouldReconnect: (_) => true,
+		},
+	);
 	const modules = useRef<IWSContextModule[]>([]);
 
 	useEffect(() => {

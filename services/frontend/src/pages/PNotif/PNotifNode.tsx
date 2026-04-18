@@ -42,7 +42,7 @@ function PNotifNode({ notif, onSeeFriendsReq }: PNotifNodeProps) {
 	}, [notif]);
 
 	return (
-		<Box sx={(theme) => PNotifNodeStyle(theme, { notif })}>
+		<Box sx={(theme) => PNotifNodeStyle(theme, { notif })} data-testid="PNotifNode">
 			<Stack direction={"row"}>
 				<Stack direction={"column"}>
 					<Stack direction={"row"}>
@@ -53,7 +53,11 @@ function PNotifNode({ notif, onSeeFriendsReq }: PNotifNodeProps) {
 						{getAgo()}
 					</CText>
 				</Stack>
-				<CIconButton onClick={handleSee} sx={PNotifNodeSeeButton}>
+				<CIconButton
+					onClick={handleSee}
+					sx={PNotifNodeSeeButton}
+					data-testid="PNotifNodeSeeReq"
+				>
 					<LaunchIcon fontSize="small" />
 				</CIconButton>
 			</Stack>
