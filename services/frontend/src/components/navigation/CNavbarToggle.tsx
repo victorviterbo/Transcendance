@@ -22,7 +22,8 @@ function CNavbarToggle({ icon, aria, active, notifCount, sx, ...other }: CNavbar
 				{ height: appPositions.sizes.buttons.nav },
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
 			]}
-			data-testid={aria + "_CIconButton"}
+			data-testid={aria + "_ToggleButton"}
+			parentid={aria + "_ToggleButtonParent"}
 			notifCount={notifCount}
 			{...other}
 		>
