@@ -30,7 +30,6 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [messageField, setMessageField] = useState<string>("");
 	const wsContext: IWSContextModule = useWS("friend-chat");
 
-
 	useEffect(() => {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {

@@ -166,7 +166,6 @@ export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {
 		notifs: [],
 	};
 
-
 	let count = 0;
 	mockSocialDB.users.forEach((value: IExtUserInfo) => {
 		if (value.relation == "incoming") {
@@ -175,8 +174,13 @@ export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {
 			else if (count == 2) date = new Date(Date.now() - 1000 * 60 * 60 * 2);
 			else if (count == 3) date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 12);
 
-			res.notifs.push({ 
-			uid: crypto.randomUUID(), kind: "friend-request", from: value, date: date, read: count > 1 });
+			res.notifs.push({
+				uid: crypto.randomUUID(),
+				kind: "friend-request",
+				from: value,
+				date: date,
+				read: count > 1,
+			});
 			count++;
 		}
 	});
