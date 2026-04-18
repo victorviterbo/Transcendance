@@ -76,7 +76,7 @@ export interface INotifList {
 
 export type TNotif = {
 	uid: string;
-	kind: "friend-request";
+	kind: "friend-request" | "friend-accepted";
 	from: IExtUserInfo;
 	date: Date | string;
 	read: boolean;
