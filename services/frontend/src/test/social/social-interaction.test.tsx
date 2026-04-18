@@ -412,7 +412,10 @@ describe("Socials - Interactions", () => {
 			expect(incomingStack).toBeInTheDocument();
 			expect(outgoingStack).toBeInTheDocument();
 
-			expect(within(incomingStack).getAllByTestId("PFriendNode").length == 4 || within(incomingStack).getAllByTestId("PFriendNode").length == 5).toBeTruthy();
+			expect(
+				within(incomingStack).getAllByTestId("PFriendNode").length == 4 ||
+					within(incomingStack).getAllByTestId("PFriendNode").length == 5,
+			).toBeTruthy();
 			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(4);
 			expect(within(outgoingStack).getByText(target)).toBeInTheDocument();
 		},
@@ -499,7 +502,10 @@ describe("Socials - Interactions", () => {
 			expect(incomingStack).toBeInTheDocument();
 			expect(outgoingStack).toBeInTheDocument();
 
-			expect(within(incomingStack).getAllByTestId("PFriendNode").length == 4 || within(incomingStack).getAllByTestId("PFriendNode").length == 5).toBeTruthy()
+			expect(
+				within(incomingStack).getAllByTestId("PFriendNode").length == 4 ||
+					within(incomingStack).getAllByTestId("PFriendNode").length == 5,
+			).toBeTruthy();
 			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(3);
 
 			let targetNode: HTMLElement | null = null;
@@ -628,7 +634,10 @@ describe("Socials - Interactions", () => {
 			expect(incomingStack).toBeInTheDocument();
 			expect(outgoingStack).toBeInTheDocument();
 
-			expect(within(incomingStack).getAllByTestId("PFriendNode").length == 4 || within(incomingStack).getAllByTestId("PFriendNode").length == 5).toBeTruthy();
+			expect(
+				within(incomingStack).getAllByTestId("PFriendNode").length == 4 ||
+					within(incomingStack).getAllByTestId("PFriendNode").length == 5,
+			).toBeTruthy();
 			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(3);
 
 			let targetNode: HTMLElement | null = null;
@@ -787,7 +796,10 @@ describe("Socials - Interactions", () => {
 			expect(incomingStack).toBeInTheDocument();
 			expect(outgoingStack).toBeInTheDocument();
 
-			expect(within(incomingStack).getAllByTestId("PFriendNode").length == 4 || within(incomingStack).getAllByTestId("PFriendNode").length == 5).toBeTruthy();
+			expect(
+				within(incomingStack).getAllByTestId("PFriendNode").length == 4 ||
+					within(incomingStack).getAllByTestId("PFriendNode").length == 5,
+			).toBeTruthy();
 			expect(within(outgoingStack).getAllByTestId("PFriendNode").length).toEqual(3);
 
 			let targetNode: HTMLElement | null = null;

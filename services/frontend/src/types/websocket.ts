@@ -51,7 +51,6 @@ export type TWSRcv =
 			count: number;
 	  };
 
-
 export type TWSSend =
 	| {
 			target: Extract<TWSModuleName, "friend-chat">;

@@ -53,7 +53,11 @@ function PNotifNode({ notif, onSeeFriendsReq }: PNotifNodeProps) {
 						{getAgo()}
 					</CText>
 				</Stack>
-				<CIconButton onClick={handleSee} sx={PNotifNodeSeeButton} data-testid="PNotifNodeSeeReq">
+				<CIconButton
+					onClick={handleSee}
+					sx={PNotifNodeSeeButton}
+					data-testid="PNotifNodeSeeReq"
+				>
 					<LaunchIcon fontSize="small" />
 				</CIconButton>
 			</Stack>
