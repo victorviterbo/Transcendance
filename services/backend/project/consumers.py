@@ -53,6 +53,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     
     async def receive_json(self, content: dict) -> None:
         """Receive websocket framework and reroute it to the appropriate module."""
+        if content.get('target') == 'friend-chat' and content.get('event') == 'send':
+            frontend_message = content.get('message')
+            if not isinstance(frontend_message, dict):
+                await self.send_json({'type': 'error',
+                                      'message': 'message is required'})
+                return
+            await self.chat_subroutine({
+                'action': 'direct-message',
+                'message': frontend_message.get('message'),
+                'user_uid': frontend_message.get('target-id'),
+                '_frontend_contract': True,
+            })
+            return
+
         module = content.get("module")
         if module == "chat":
             await self.chat_subroutine(content)
@@ -129,6 +143,40 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             }
             await self.group_send(f'user_{recipient_profile.id}', event_payload)
             await self.group_send(f'user_{self.profile.id}', event_payload)
+
+            sender_payload = {
+                'target': 'friend-chat',
+                'event': 'new',
+                'message': {
+                    'message': message.body,
+                    'date': message.created.isoformat(),
+                    'direction': 'outgoing',
+                    'status': 'read' if message.seen else ('recieved' if message.delivered else 'sent'),
+                    'target-id': str(recipient_profile.uid),
+                    'target': recipient_profile.username,
+                    'uid': str(message.uid),
+                },
+            }
+            recipient_payload = {
+                'target': 'friend-chat',
+                'event': 'new',
+                'message': {
+                    'message': message.body,
+                    'date': message.created.isoformat(),
+                    'direction': 'incoming',
+                    'target-id': str(self.profile.uid),
+                    'target': self.profile.username,
+                    'uid': str(message.uid),
+                },
+            }
+            await self.group_send(f'user_{self.profile.id}', {
+                'type': 'send.notification',
+                'payload': sender_payload,
+            })
+            await self.group_send(f'user_{recipient_profile.id}', {
+                'type': 'send.notification',
+                'payload': recipient_payload,
+            })
             return
         elif action in ('delivered', 'read'):
             message_id = content.get('message_id')
@@ -235,13 +283,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             return Profile.objects.create()
 
         return None
-    
-
-    def _is_room_participant(self) -> bool:
-        """Return whether profile (user) belongs to the current direct room."""
-        if self.room is None or self.profile is None:
-            return False
-        return self.room.participants.filter(id=self.profile.id).exists()
 
     @database_sync_to_async
     def _save_message(self, body: str,
@@ -253,7 +294,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             if not self.user or not self.user.is_authenticated:
                 return False, {'type': 'error',
                                'message': 'Authentication failed'}
-            target_user = SiteUser.objects.filter(uid=content['user_uid']).first()
+            target_uid = content.get('user_uid')
+            target_user = SiteUser.objects.filter(uid=target_uid).first()
+            if target_user is None and target_uid is not None:
+                target_profile = Profile.objects.filter(uid=target_uid).select_related('user').first()
+                if target_profile is not None:
+                    target_user = target_profile.user
             if target_user is None:
                 return False, {'type': 'error',
                                'message': 'User not found'}

@@ -1,6 +1,7 @@
 """Define url rerouting to views for the user module."""
 
 from django.urls import path
+from chat.views import FriendMessageFeed
 
 from .views import (
     FriendRequestsRespond,
@@ -29,6 +30,8 @@ urlpatterns = [
     path('notifs/', NotifSee.as_view()),
     path('notifs_read', NotifRead.as_view()),
     path('notifs_read/', NotifRead.as_view()),
+    path('message', FriendMessageFeed.as_view()),
+    path('message/', FriendMessageFeed.as_view()),
 
     #check if we still need those url
     path('friends/list/', FriendSee.as_view()),
