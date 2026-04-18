@@ -13,10 +13,9 @@ from userauth.models import SiteUser
 from userprofile.models import Profile
 
 from chat.chat_utils import accepted_friendship_exists, get_or_create_direct_room
-from .consumers_utils import ConsumerScopeUtils
 
 
-class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
+class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
 
     create_profile_if_missing = True
@@ -41,7 +40,6 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
         self.group_name = f"user_{self.profile.id}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
-        await self.mark_user_online()
         await self.accept()
         return
 
@@ -51,11 +49,24 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_discard(layer, self.channel_name)
         if getattr(self, "profile", None):
             await self._update_online_status(False)
-            await self.mark_user_offline()
         return
     
     async def receive_json(self, content: dict) -> None:
         """Receive websocket framework and reroute it to the appropriate module."""
+        if content.get('target') == 'friend-chat' and content.get('event') == 'send':
+            frontend_message = content.get('message')
+            if not isinstance(frontend_message, dict):
+                await self.send_json({'type': 'error',
+                                      'message': 'message is required'})
+                return
+            await self.chat_subroutine({
+                'action': 'direct-message',
+                'message': frontend_message.get('message'),
+                'user_uid': frontend_message.get('target-id'),
+                '_frontend_contract': True,
+            })
+            return
+
         module = content.get("module")
         if module == "chat":
             await self.chat_subroutine(content)
@@ -132,6 +143,40 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
             }
             await self.group_send(f'user_{recipient_profile.id}', event_payload)
             await self.group_send(f'user_{self.profile.id}', event_payload)
+
+            sender_payload = {
+                'target': 'friend-chat',
+                'event': 'new',
+                'message': {
+                    'message': message.body,
+                    'date': message.created.isoformat(),
+                    'direction': 'outgoing',
+                    'status': 'read' if message.seen else ('recieved' if message.delivered else 'sent'),
+                    'target-id': str(recipient_profile.uid),
+                    'target': recipient_profile.username,
+                    'uid': str(message.uid),
+                },
+            }
+            recipient_payload = {
+                'target': 'friend-chat',
+                'event': 'new',
+                'message': {
+                    'message': message.body,
+                    'date': message.created.isoformat(),
+                    'direction': 'incoming',
+                    'target-id': str(self.profile.uid),
+                    'target': self.profile.username,
+                    'uid': str(message.uid),
+                },
+            }
+            await self.group_send(f'user_{self.profile.id}', {
+                'type': 'send.notification',
+                'payload': sender_payload,
+            })
+            await self.group_send(f'user_{recipient_profile.id}', {
+                'type': 'send.notification',
+                'payload': recipient_payload,
+            })
             return
         elif action in ('delivered', 'read'):
             message_id = content.get('message_id')
@@ -189,6 +234,11 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
 
     async def send_notification(self, event: dict) -> None:
         """Forward social notifications to the connected client."""
+        payload = event.get('payload')
+        if isinstance(payload, dict):
+            await self.send_json(payload)
+            return
+
         await self.send_json({
             'target': event.get('target', 'social-notif'),
             'type': 'social_notification',
@@ -205,13 +255,34 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
         if self.profile:
             return self.profile.username
         return 'anonymous'
-    
 
-    def _is_room_participant(self) -> bool:
-        """Return whether profile (user) belongs to the current direct room."""
-        if self.room is None or self.profile is None:
-            return False
-        return self.room.participants.filter(id=self.profile.id).exists()
+    @database_sync_to_async
+    def _get_profile_from_scope(self) -> Profile | None:
+        """Resolve profile from user, injected profile, or guest session."""
+        self.user = self.scope.get("user")
+        if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
+            try:
+                return self.user.profile
+            except Profile.DoesNotExist:
+                return None
+
+        profile = self.scope.get("profile")
+        if isinstance(profile, Profile):
+            return profile
+
+        session = self.scope.get("session", {})
+        guest_uid = session.get("guest_profile_uid")
+        if guest_uid:
+            return Profile.objects.filter(uid=guest_uid, is_guest=True).first()
+
+        guest_id = session.get("guest_profile_id")
+        if guest_id:
+            return Profile.objects.filter(id=guest_id, is_guest=True).first()
+
+        if self.create_profile_if_missing:
+            return Profile.objects.create()
+
+        return None
 
     @database_sync_to_async
     def _save_message(self, body: str,
@@ -223,7 +294,12 @@ class GlobalConsumer(ConsumerScopeUtils, AsyncJsonWebsocketConsumer):
             if not self.user or not self.user.is_authenticated:
                 return False, {'type': 'error',
                                'message': 'Authentication failed'}
-            target_user = SiteUser.objects.filter(uid=content['user_uid']).first()
+            target_uid = content.get('user_uid')
+            target_user = SiteUser.objects.filter(uid=target_uid).first()
+            if target_user is None and target_uid is not None:
+                target_profile = Profile.objects.filter(uid=target_uid).select_related('user').first()
+                if target_profile is not None:
+                    target_user = target_profile.user
             if target_user is None:
                 return False, {'type': 'error',
                                'message': 'User not found'}
