@@ -18,6 +18,12 @@ vi.mock("../localization/localization", () => {
 		setOnLangChanged: vi.fn(),
 		startLocalization: vi.fn(),
 		ttr: (id: string) => id,
+		ttrf: (id: string, params: Record<string, string>) => {
+			for (const [key, value] of Object.entries(params)) {
+				id += " " + key + ": " + value;
+			}
+			return id;
+		},
 	};
 });
 

@@ -119,7 +119,7 @@ describe("Socials - Drawer", () => {
 		expect(firstChild).not.toBeNull();
 		expect(firstChild).not.toBeVisible();
 
-		const button = screen.getByTestId("Friends_CIconButton");
+		const button = screen.getByTestId("Friends_ToggleButton");
 
 		await userEvent.click(button);
 
