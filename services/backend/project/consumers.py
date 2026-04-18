@@ -1,5 +1,6 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
+import logging
 import uuid
 
 from channels.db import database_sync_to_async
@@ -13,6 +14,9 @@ from userauth.models import SiteUser
 from userprofile.models import Profile
 
 from chat.chat_utils import accepted_friendship_exists, get_or_create_direct_room
+
+
+logger = logging.getLogger(__name__)
 
 
 class GlobalConsumer(AsyncJsonWebsocketConsumer):
@@ -33,18 +37,38 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
+        logger.info('ws.connect.start channel_name=%s', self.channel_name)
+        logger.debug('ws.connect.scope user=%s profile_in_scope=%s session_keys=%s', 
+                     type(getattr(self, 'user', None)).__name__ if hasattr(self, 'user') else 'NOT_SET',
+                     'profile' in self.scope,
+                     list(self.scope.get('session', {}).keys()) if self.scope.get('session') else 'NO_SESSION')
+        
+        logger.debug('ws.connect.attempt user=%s scope_keys=%s', 
+                     type(getattr(self, 'user', None)).__name__,
+                     list(self.scope.keys()))
         self.profile = await self._get_profile_from_scope()
         if not self.profile:
+            logger.warning('ws.connect.rejected unauthenticated')
             await self.close(code=4401)
             return
         self.group_name = f"user_{self.profile.id}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
         await self.accept()
+        logger.info('ws.connect.accepted profile_id=%s username=%s is_guest=%s user_id=%s group=%s',
+                    self.profile.id,
+                    self.profile.username,
+                    self.profile.is_guest,
+                    self.profile.user_id,
+                    self.group_name)
         return
 
     async def disconnect(self, close_code: int) -> None:
         """Remove the socket from its channel-layer group when disconnecting."""
+        logger.info('ws.disconnect profile_id=%s close_code=%s active_layers=%s',
+                    getattr(getattr(self, 'profile', None), 'id', None),
+                    close_code,
+                    len(getattr(self, 'active_layers', set())))
         for layer in getattr(self, "active_layers", set()):
             await self.channel_layer.group_discard(layer, self.channel_name)
         if getattr(self, "profile", None):
@@ -53,12 +77,25 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     
     async def receive_json(self, content: dict) -> None:
         """Receive websocket framework and reroute it to the appropriate module."""
+        logger.debug('ws.receive profile_id=%s keys=%s module=%s target=%s event=%s action=%s',
+                     getattr(getattr(self, 'profile', None), 'id', None),
+                     list(content.keys()),
+                     content.get('module'),
+                     content.get('target'),
+                     content.get('event'),
+                     content.get('action'))
         if content.get('target') == 'friend-chat' and content.get('event') == 'send':
             frontend_message = content.get('message')
             if not isinstance(frontend_message, dict):
+                logger.warning('ws.receive.invalid_friend_chat_payload profile_id=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None))
                 await self.send_json({'type': 'error',
                                       'message': 'message is required'})
                 return
+            logger.info('ws.receive.friend_chat_translate profile_id=%s target_id=%s message_len=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        frontend_message.get('target-id'),
+                        len(str(frontend_message.get('message', ''))))
             await self.chat_subroutine({
                 'action': 'direct-message',
                 'message': frontend_message.get('message'),
@@ -73,6 +110,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         elif module == "game":
             await self.game_subroutine(content)
         else:
+            logger.warning('ws.receive.unsupported_module profile_id=%s module=%s',
+                           getattr(getattr(self, 'profile', None), 'id', None),
+                           module)
             await self.close(code=4405)
         return
     
@@ -88,11 +128,18 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     async def group_send(self, group_name: str, message: dict) -> None:
         """Send a message to the specified channel."""
+        logger.debug('ws.group_send group=%s type=%s keys=%s',
+                     group_name,
+                     message.get('type'),
+                     list(message.keys()))
         await self.channel_layer.group_send(group_name, message)
     
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
         """Process incoming message, delivered, and read actions from the client."""
         action = content.get('action')
+        logger.debug('ws.chat_subroutine profile_id=%s action=%s',
+                     getattr(getattr(self, 'profile', None), 'id', None),
+                     action)
 
         if action == 'chat-message':
             body = str(content.get('message', '')).strip()
@@ -102,8 +149,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return
             success, message = await self._save_message(body, action, content)
             if not success:
+                logger.warning('ws.chat_message.save_failed profile_id=%s error=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               message)
                 await self.send_json(message)
                 return
+
+            logger.info('ws.chat_message.saved profile_id=%s message_uid=%s room_uid=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        message.uid,
+                        message.room.uid)
 
             await self.group_send(f'user_{self.profile.id}', {
                 'type': 'chat.message',
@@ -123,14 +178,25 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return
             success, message = await self._save_message(body, action, content)
             if not success:
+                logger.warning('ws.direct_message.save_failed profile_id=%s error=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               message)
                 await self.send_json(message)
                 return
 
             recipient_profile = await self._get_direct_recipient_profile(message)
             if recipient_profile is None:
+                logger.warning('ws.direct_message.no_recipient profile_id=%s message_uid=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               message.uid)
                 await self.send_json({'type': 'error',
                                       'message': 'Target user not found'})
                 return
+
+            logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        recipient_profile.id,
+                        message.uid)
 
             event_payload = {
                 'type': 'chat.message',
@@ -181,6 +247,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         elif action in ('delivered', 'read'):
             message_id = content.get('message_id')
             if not message_id:
+                logger.warning('ws.status_update.missing_message_id profile_id=%s action=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               action)
                 await self.send_json({'type': 'error',
                                       'message': 'message_id is required'})
                 return
@@ -191,8 +260,17 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 changed = await self._mark_seen(message_id)
 
             if not changed:
+                logger.warning('ws.status_update.not_found profile_id=%s action=%s message_id=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               action,
+                               message_id)
                 await self.send_json({'type': 'error', 'message': 'message_not_found'})
                 return
+
+            logger.info('ws.status_update.applied profile_id=%s action=%s message_id=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        action,
+                        message_id)
 
             await self.group_send(self.group_name, {
                 'type': 'status.update',
@@ -235,6 +313,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def send_notification(self, event: dict) -> None:
         """Forward social notifications to the connected client."""
         payload = event.get('payload')
+        logger.debug('ws.send_notification profile_id=%s has_payload=%s target=%s',
+                     getattr(getattr(self, 'profile', None), 'id', None),
+                     isinstance(payload, dict),
+                     event.get('target'))
         if isinstance(payload, dict):
             await self.send_json(payload)
             return
@@ -262,25 +344,43 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.user = self.scope.get("user")
         if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
             try:
-                return self.user.profile
+                profile = self.user.profile
+                logger.debug('ws.profile_resolve.from_authenticated_user user_id=%s profile_id=%s username=%s',
+                             self.user.id, profile.id, profile.username)
+                return profile
             except Profile.DoesNotExist:
+                logger.warning('ws.profile_resolve.authenticated_user_no_profile user_id=%s',
+                               self.user.id)
                 return None
 
         profile = self.scope.get("profile")
         if isinstance(profile, Profile):
+            logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s is_guest=%s',
+                         profile.id, profile.is_guest)
             return profile
 
         session = self.scope.get("session", {})
         guest_uid = session.get("guest_profile_uid")
         if guest_uid:
-            return Profile.objects.filter(uid=guest_uid, is_guest=True).first()
+            guest_profile = Profile.objects.filter(uid=guest_uid, is_guest=True).first()
+            logger.debug('ws.profile_resolve.from_session_guest_uid profile_id=%s uid=%s',
+                         guest_profile.id if guest_profile else None, guest_uid)
+            return guest_profile
 
         guest_id = session.get("guest_profile_id")
         if guest_id:
-            return Profile.objects.filter(id=guest_id, is_guest=True).first()
+            guest_profile = Profile.objects.filter(id=guest_id, is_guest=True).first()
+            logger.debug('ws.profile_resolve.from_session_guest_id profile_id=%s id=%s',
+                         guest_profile.id if guest_profile else None, guest_id)
+            return guest_profile
 
         if self.create_profile_if_missing:
-            return Profile.objects.create()
+            new_profile = Profile.objects.create()
+            logger.debug('ws.profile_resolve.created_new_guest profile_id=%s', new_profile.id)
+            return new_profile
+        
+        logger.warning('ws.profile_resolve.failed no_profile_found')
+        return None
 
         return None
 
@@ -291,7 +391,30 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         """Persist a message for the profile (user) in the resolved room."""
         room = None
         if action == 'direct-message':
-            if not self.user or not self.user.is_authenticated:
+            sender_user = None
+            logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_is_guest=%s profile_user_id=%s',
+                         getattr(self.profile, 'id', None),
+                         type(getattr(self, 'user', None)).__name__,
+                         bool(self.user and self.user.is_authenticated) if self.user else False,
+                         getattr(self.profile, 'is_guest', None),
+                         getattr(self.profile, 'user_id', None))
+            if self.user and self.user.is_authenticated:
+                sender_user = self.user
+                logger.debug('ws.direct_message.sender_resolved_from_user profile_id=%s user_id=%s',
+                             getattr(self.profile, 'id', None),
+                             self.user.id)
+            elif self.profile and not self.profile.is_guest and self.profile.user_id:
+                sender_user = self.profile.user
+                logger.debug('ws.direct_message.sender_resolved_from_profile profile_id=%s user_id=%s',
+                             getattr(self.profile, 'id', None),
+                             self.profile.user_id)
+
+            if sender_user is None:
+                logger.warning('ws.direct_message.auth_failed profile_id=%s is_guest=%s user_in_scope=%s profile_user_id=%s',
+                               getattr(self.profile, 'id', None),
+                               getattr(self.profile, 'is_guest', None),
+                               bool(getattr(self, 'user', None) and self.user.is_authenticated),
+                               getattr(self.profile, 'user_id', None))
                 return False, {'type': 'error',
                                'message': 'Authentication failed'}
             target_uid = content.get('user_uid')
