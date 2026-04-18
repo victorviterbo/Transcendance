@@ -1,12 +1,13 @@
 import { Grid } from "@mui/material";
 import CTitlePaper from "../../components/surfaces/CTitlePaper";
-import { type IRoomList, type IRoomInfo } from "../../types/room";
+// import { type IRoomList, type IRoomInfo } from "../../types/room";
+import { type IRoomInfo } from "../../types/room";
 import CButtonRoom from "../../components/inputs/buttons/CButtonRoom";
 import { useEffect, useId, useState } from "react";
 import type { GPageProps } from "../common/GPageBases";
-import api from "../../api";
-import { API_PRIVATE_ROOMS, API_PUBLIC_ROOMS } from "../../constants";
-import type { AxiosResponse } from "axios";
+// import api from "../../api";
+// import { API_PRIVATE_ROOMS, API_PUBLIC_ROOMS } from "../../constants";
+// import type { AxiosResponse } from "axios";
 
 interface PRoomsProps extends GPageProps {
 	isPublic: boolean;
@@ -17,18 +18,18 @@ function PRooms({ isPublic }: PRoomsProps) {
 	const localID: string = useId();
 
 	useEffect(() => {
-		async function getRoomsTemps(): Promise<void> {
-			try {
-				const res: AxiosResponse<IRoomList> = await api.get<IRoomList>(
-					isPublic ? API_PUBLIC_ROOMS : API_PRIVATE_ROOMS,
-				);
-				setRooms(res.data.rooms);
-			} catch (error) {
-				console.log("Failed to load rooms: ", error);
-				setRooms([]);
-			}
-		}
-		getRoomsTemps();
+		// async function getRoomsTemps(): Promise<void> {
+		// 	try {
+		// 		const res: AxiosResponse<IRoomList> = await api.get<IRoomList>(
+		// 			isPublic ? API_PUBLIC_ROOMS : API_PRIVATE_ROOMS,
+		// 		);
+		// 		setRooms(res.data.rooms);
+		// 	} catch (error) {
+		// 		console.log("Failed to load rooms: ", error);
+		// 		setRooms([]);
+		// 	}
+		// }
+		// getRoomsTemps();
 	}, [setRooms, isPublic]);
 
 	return (

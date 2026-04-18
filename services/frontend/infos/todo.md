@@ -1,3 +1,4 @@
-#KRIS
+# KRIS
 
-Check friends requests
+- check friends requests
+- cHeck fo  ws error to fix

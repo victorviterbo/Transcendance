@@ -89,7 +89,7 @@ function CWebsocket({ children }: AppWebsocketProps) {
 			: WS_ADRESS_WMS,
 		{
 			skipAssert: true,
-			//shouldReconnect: (_) => true,
+			shouldReconnect: (_) => true,
 		},
 	);
 	const modules = useRef<IWSContextModule[]>([]);
