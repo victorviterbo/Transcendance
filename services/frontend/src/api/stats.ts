@@ -1,10 +1,6 @@
 import api from "./client";
 import { API_STATS_GLOBAL, API_STATS_HISTORY, API_STATS_LEADERBOARD } from "../constants";
-import type {
-	IGlobalStatsResponse,
-	IHistoryResponse,
-	ILeaderboardResponse,
-} from "../types/stats";
+import type { IGlobalStatsResponse, IHistoryResponse, ILeaderboardResponse } from "../types/stats";
 
 export const fetchGlobalStats = async (username: string): Promise<IGlobalStatsResponse> => {
 	const response = await api.get<IGlobalStatsResponse>(API_STATS_GLOBAL, {

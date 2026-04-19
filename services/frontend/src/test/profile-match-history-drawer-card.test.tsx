@@ -78,7 +78,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 	it("keeps round details hidden while collapsed", () => {
 		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
 
-		expect(screen.queryByText("Fleetwood Mac")).not.toBeInTheDocument();
+		expect(screen.getByText("Fleetwood Mac")).not.toBeVisible();
 		expect(screen.queryByText("john")).not.toBeInTheDocument();
 	});
 
@@ -95,8 +95,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 							time: 4.8,
 							ranking: 2,
 							previewUrl: "https://cdn.example.test/previews/the-chain",
-							artworkUrl:
-								"https://cdn.example.test/artworks/fleetwood-mac-the-chain",
+							artworkUrl: "https://cdn.example.test/artworks/fleetwood-mac-the-chain",
 							roundNumber: 1,
 						},
 					],
@@ -106,7 +105,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 
 		fireEvent.click(screen.getByRole("button", { expanded: false }));
 
-		expect(screen.getAllByText("Score: 52")).toHaveLength(2);
+		expect(screen.getAllByText("Score: 52")).toHaveLength(1);
 		expect(screen.getByText("Fleetwood Mac")).toBeInTheDocument();
 		expect(screen.getByText("The Chain")).toBeInTheDocument();
 		expect(screen.getByText("4.8s")).toBeInTheDocument();

@@ -120,7 +120,9 @@ function PProfileMatchHistoryDrawerCard({ entry }: PProfileMatchHistoryDrawerCar
 											sx={{ width: "100%" }}
 										>
 											<ButtonBase
-												onClick={() => navigate(`/users/${player.username}`)}
+												onClick={() =>
+													navigate(`/users/${player.username}`)
+												}
 												aria-label={ttrf("HISTORY_OPEN_PROFILE", {
 													username: player.username,
 												})}

@@ -153,10 +153,7 @@ export function ttrn(value: number, options?: Intl.NumberFormatOptions): string 
 	return new Intl.NumberFormat(locale, options).format(value);
 }
 
-export function ttrd(
-	value: string | number | Date,
-	options?: Intl.DateTimeFormatOptions,
-): string {
+export function ttrd(value: string | number | Date, options?: Intl.DateTimeFormatOptions): string {
 	const locale = NUMBER_FORMAT_LOCALES[currentLang] ?? NUMBER_FORMAT_LOCALES.en;
 	const date = value instanceof Date ? value : new Date(value);
 	return new Intl.DateTimeFormat(locale, options).format(date);
