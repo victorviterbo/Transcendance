@@ -154,7 +154,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 
 					<CBasePaper>
 						<CTabs tabs={["STATISTICS", "MATCH_HISTORY"]}>
-							<ProfileStatisticsPanel scope="public" />
+							<ProfileStatisticsPanel scope="public" username={profile.username} />
 							<ProfileMatchHistoryPanel scope="public" />
 						</CTabs>
 					</CBasePaper>
