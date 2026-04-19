@@ -5,7 +5,6 @@ import { CAuthProvider } from "../../components/auth/CAuthProvider";
 import { API_AUTH_REFRESH } from "../../constants";
 import GPageBase from "../../pages/common/GPageBases";
 import userEvent from "@testing-library/user-event";
-import CWebsocket from "../../components/websocket/CWebsocket";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -50,9 +49,7 @@ describe("Socials - Drawer", () => {
 	it("Friends panel when not logged in", async () => {
 		render(
 			<MemoryRouter initialEntries={["/"]}>
-				<CWebsocket>
-					<GPageBase />
-				</CWebsocket>
+				<GPageBase />
 			</MemoryRouter>,
 		);
 
@@ -63,11 +60,9 @@ describe("Socials - Drawer", () => {
 		logUser();
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -80,11 +75,9 @@ describe("Socials - Drawer", () => {
 		logUser();
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -102,11 +95,9 @@ describe("Socials - Drawer", () => {
 		logUser();
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -130,11 +121,9 @@ describe("Socials - Drawer", () => {
 		logUser();
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 

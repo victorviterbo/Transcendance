@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, beforeEach, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import type {
 	IFriendInfo,
@@ -35,6 +35,7 @@ import {
 	type IMockMessageDBUser,
 } from "../../mock/handlers/social/socialChat_dbs";
 import { useState } from "react";
+import { mockSetNoRequests } from "../../mock/handlers/ws/websocket";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -69,16 +70,20 @@ function SocialManager() {
 }
 
 describe("Socials - Interactions", () => {
+	beforeAll(() => {
+		mockSetNoRequests(true);
+		mockSocialResetDB();
+	});
 	beforeEach(() => {
 		mockSocialResetDB();
 	});
-
 	afterEach(() => {
 		vi.resetAllMocks();
 		getMock.mockReset();
 		postMock.mockReset();
-
-		accessToken = null;
+	});
+	afterAll(() => {
+		mockSetNoRequests(false);
 	});
 
 	//ADD FRIENDS

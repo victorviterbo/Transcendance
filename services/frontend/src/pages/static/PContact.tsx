@@ -46,7 +46,7 @@ const contactMembers: ContactMember[] = [
 const PContact = () => {
 	return (
 		<PStaticPageShell title="CONTACT">
-			<CText size="md" align="center">
+			<CText customVariant="h1" size="md" align="center">
 				CONTACT_INTRO
 			</CText>
 
