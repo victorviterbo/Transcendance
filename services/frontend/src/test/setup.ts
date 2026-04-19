@@ -23,6 +23,15 @@ vi.mock("../localization/localization", () => {
 		STATS_SONG_RATE: "Song rate",
 		STATS_COMPLETE_RATE: "Complete rate",
 		STATS_COMPLETE_RATES_BY_TAG: "Complete Rates By Tag",
+		HISTORY_LOADING: "Loading match history...",
+		HISTORY_LOADING_FAILED: "Match history loading failed",
+		HISTORY_EMPTY: "No matches to show yet.",
+		HISTORY_SCORE: "Score: {score}",
+		HISTORY_RANKING: "Rank: {rank} / {players}",
+		HISTORY_PLAYER_RANKING: "Rank: {rank}",
+		HISTORY_OPEN_PROFILE: "Open profile {username}",
+		HISTORY_ROUNDS: "Rounds",
+		HISTORY_PLAYERS: "Players",
 		TAG_POP: "Pop",
 		TAG_RAP: "Rap",
 		TAG_ROCK: "Rock",
@@ -41,6 +50,10 @@ vi.mock("../localization/localization", () => {
 	};
 	const ttrn = (value: number, options?: Intl.NumberFormatOptions) =>
 		new Intl.NumberFormat("en-US", options).format(value);
+	const ttrd = (value: string | number | Date, options?: Intl.DateTimeFormatOptions) =>
+		new Intl.DateTimeFormat("en-US", options).format(
+			value instanceof Date ? value : new Date(value),
+		);
 
 	return {
 		langData: {
@@ -57,6 +70,7 @@ vi.mock("../localization/localization", () => {
 		ttr,
 		ttrf,
 		ttrn,
+		ttrd,
 	};
 });
 

@@ -28,3 +28,36 @@ export interface ILeaderboardResponse {
 	ranking: number;
 	totalNumberPlayer: number;
 }
+
+export interface IHistoryPlayer {
+	username: string;
+	avatar: string;
+	ranking: number;
+}
+
+export interface IHistoryRound {
+	trackName: string;
+	trackArtist: string;
+	songFound: boolean;
+	artistFound: boolean;
+	time: number;
+	ranking: number;
+	previewUrl: string;
+	artworkUrl: string;
+	roundNumber: number;
+}
+
+export interface IHistoryEntry {
+	playedAt: string;
+	xpEarned: number;
+	ranking: number;
+	roomTitle: string;
+	tags: string[];
+	players: IHistoryPlayer[];
+	rounds: IHistoryRound[];
+}
+
+export interface IHistoryResponse {
+	history: IHistoryEntry[];
+	historyCount: number;
+}
