@@ -19,6 +19,9 @@ export interface MockUser {
 
 export interface MockGlobalStatsProfile {
 	averageScore: number;
+	totalGamesPlayed: number;
+	totalSongsPlayed: number;
+	totalGamesWon: number;
 	averageTime: number;
 	successRateArtist: number;
 	successRateSong: number;
@@ -116,6 +119,9 @@ const createGlobalStatsProfile = (
 
 	return {
 		averageScore: 0,
+		totalGamesPlayed: 0,
+		totalSongsPlayed: 0,
+		totalGamesWon: 0,
 		averageTime: 0,
 		successRateArtist: 0,
 		successRateSong: 0,
@@ -123,8 +129,11 @@ const createGlobalStatsProfile = (
 		...rest,
 		successRatesCompleteByTag: {
 			TAG_POP: 0,
+			TAG_RAP: 0,
 			TAG_ROCK: 0,
-			TAG_ELECTRO: 0,
+			TAG_ELECRO: 0,
+			TAG_FRENCH_VARIETY: 0,
+			TAG_RNB: 0,
 			...successRatesCompleteByTag,
 		},
 	};
