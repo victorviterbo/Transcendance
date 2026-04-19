@@ -9,19 +9,21 @@ import {
 	PNotifNodeStyle,
 } from "../../styles/pages/social/PNotifNodeStyle";
 import { ttrf } from "../../localization/localization";
-import { useCallback } from "react";
+import { useCallback, type ReactNode } from "react";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import LaunchIcon from "@mui/icons-material/Launch";
 
 export interface PNotifNodeProps extends GPageProps {
 	notif: TNotif;
 	onSeeFriendsReq?: () => void;
+	onSeeFriends?: () => void;
 }
 
-function PNotifNode({ notif, onSeeFriendsReq }: PNotifNodeProps) {
+function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 	const handleSee = useCallback(() => {
 		if (notif.kind == "friend-request" && onSeeFriendsReq) onSeeFriendsReq();
-	}, [notif, onSeeFriendsReq]);
+		if (notif.kind == "friend-accepted" && onSeeFriends) onSeeFriends();
+	}, [notif, onSeeFriendsReq, onSeeFriends]);
 
 	const getAgo = useCallback((): string => {
 		const dateIn = typeof notif.date == "string" ? new Date(notif.date) : notif.date;
@@ -41,14 +43,29 @@ function PNotifNode({ notif, onSeeFriendsReq }: PNotifNodeProps) {
 		return "NOTIF_AGO_LESS";
 	}, [notif]);
 
+	const getMessage = useCallback((): ReactNode => {
+		if (notif.kind == "friend-request")
+			return (
+				<>
+					<CText>NOTIF_FRIEND_REQ</CText>
+					<CText sx={PNotifNodeImpText}>{notif.from.username}</CText>
+				</>
+			);
+		else if (notif.kind == "friend-accepted")
+			return (
+				<>
+					<CText>NOTIF_FRIEND_ACCEPTED</CText>
+					<CText sx={PNotifNodeImpText}>{notif.from.username}</CText>
+				</>
+			);
+		return <CText>NOTIF_UNKNOWN</CText>;
+	}, [notif]);
+
 	return (
 		<Box sx={(theme) => PNotifNodeStyle(theme, { notif })} data-testid="PNotifNode">
 			<Stack direction={"row"}>
 				<Stack direction={"column"}>
-					<Stack direction={"row"}>
-						<CText>NOTIF_FRIEND_REQ</CText>
-						<CText sx={PNotifNodeImpText}>{notif.from.username}</CText>
-					</Stack>
+					<Stack direction={"row"}>{getMessage()}</Stack>
 					<CText family={appTexts.text.secondaryFamily} size="xs" fontWeight={400}>
 						{getAgo()}
 					</CText>
@@ -56,7 +73,7 @@ function PNotifNode({ notif, onSeeFriendsReq }: PNotifNodeProps) {
 				<CIconButton
 					onClick={handleSee}
 					sx={PNotifNodeSeeButton}
-					data-testid="PNotifNodeSeeReq"
+					data-testid="PNotifNodeSee"
 				>
 					<LaunchIcon fontSize="small" />
 				</CIconButton>

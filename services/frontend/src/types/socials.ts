@@ -74,10 +74,18 @@ export interface INotifList {
 	error?: IErrorStruct;
 }
 
-export type TNotif = {
-	uid: string;
-	kind: "friend-request" | "friend-accepted";
-	from: IExtUserInfo;
-	date: Date | string;
-	read: boolean;
-};
+export type TNotif =
+	| {
+			uid: string;
+			kind: "friend-request";
+			from: IExtUserInfo;
+			date: Date | string;
+			read: boolean;
+	  }
+	| {
+			uid: string;
+			kind: "friend-accepted";
+			from: IFriendInfo;
+			date: Date | string;
+			read: boolean;
+	  };
