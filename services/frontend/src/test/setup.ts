@@ -11,6 +11,24 @@ vi.mock("../localization/localization", () => {
 		LEADERBOARD_POINTS: "Points",
 		LEADERBOARD_TOTAL_PLAYERS: "Total players: {number}",
 		LEADERBOARD_MESSAGE: "Compete with others to climb the ladder!",
+		PROFILE_STATS_LOADING: "Loading statistics...",
+		PROFILE_STATS_LOAD_FAILED: "Statistics loading failed",
+		STATS_GAMES_PLAYED: "Games played",
+		STATS_SONGS_PLAYED: "Songs played",
+		STATS_GAMES_WON: "Games won",
+		STATS_AVERAGE_SCORE: "Average score",
+		STATS_AVERAGE_TIME: "Average time",
+		STATS_RANKING: "Ranking",
+		STATS_ARTIST_RATE: "Artist rate",
+		STATS_SONG_RATE: "Song rate",
+		STATS_COMPLETE_RATE: "Complete rate",
+		STATS_COMPLETE_RATES_BY_TAG: "Complete Rates By Tag",
+		TAG_POP: "Pop",
+		TAG_RAP: "Rap",
+		TAG_ROCK: "Rock",
+		TAG_ELECRO: "Elecro",
+		TAG_FRENCH_VARIETY: "French Variety",
+		TAG_RNB: "RNB",
 	};
 
 	const ttr = (id: string) => translations[id] ?? id;
@@ -21,6 +39,8 @@ vi.mock("../localization/localization", () => {
 		}
 		return text;
 	};
+	const ttrn = (value: number, options?: Intl.NumberFormatOptions) =>
+		new Intl.NumberFormat("en-US", options).format(value);
 
 	return {
 		langData: {
@@ -36,6 +56,7 @@ vi.mock("../localization/localization", () => {
 		startLocalization: vi.fn(),
 		ttr,
 		ttrf,
+		ttrn,
 	};
 });
 
