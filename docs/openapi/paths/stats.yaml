@@ -25,6 +25,9 @@ global:
                 value:
                   averageScore: 48
                   xp: 654
+                  totalGamesPlayed: 35
+                  totalSongsPlayed: 468
+                  totalGamesWon: 5
                   ranking: 3
                   totalPlayers: 1687
                   averageTime: 3.2
