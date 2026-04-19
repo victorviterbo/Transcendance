@@ -447,7 +447,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 4.8,
 					ranking: 2,
 					previewUrl: "https://cdn.example.test/previews/the-chain",
-					artworkUrl: "https://cdn.example.test/artworks/fleetwood-mac-the-chain",
+					artworkUrl:
+						"https://a1.mzstatic.com/r40/Music124/v4/4d/13/ba/4d13bac3-d3d5-7581-2c74-034219eadf2b/081227970949.jpg",
 					roundNumber: 1,
 				},
 				{
@@ -458,7 +459,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 2.4,
 					ranking: 1,
 					previewUrl: "https://cdn.example.test/previews/levitating",
-					artworkUrl: "https://cdn.example.test/artworks/dua-lipa-levitating",
+					artworkUrl:
+						"https://a1.mzstatic.com/r40/Music211/v4/ed/e8/1c/ede81c4b-593d-913a-cfe4-3b12496f67e5/5021732254870.jpg",
 					roundNumber: 2,
 				},
 				{
@@ -469,7 +471,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 2.9,
 					ranking: 1,
 					previewUrl: "https://cdn.example.test/previews/dreams",
-					artworkUrl: "https://cdn.example.test/artworks/fleetwood-mac-dreams",
+					artworkUrl:
+						"https://a1.mzstatic.com/r40/Music124/v4/4d/13/ba/4d13bac3-d3d5-7581-2c74-034219eadf2b/081227970949.jpg",
 					roundNumber: 3,
 				},
 				{
@@ -491,7 +494,7 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 5.7,
 					ranking: 2,
 					previewUrl: "https://cdn.example.test/previews/take-on-me",
-					artworkUrl: "https://cdn.example.test/artworks/a-ha-take-on-me",
+					artworkUrl: "https://i.scdn.co/image/ab67616d000082c19c911013ac599c6af125c606",
 					roundNumber: 5,
 				},
 				{

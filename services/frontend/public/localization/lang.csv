@@ -215,3 +215,12 @@ STATS_ARTIST_RATE,Artists found,Artistes trouvés,アーティスト正答率,Sh
 STATS_SONG_RATE,Songs found,Titres trouvés,曲名正答率,Shown in the stats panel
 STATS_COMPLETE_RATE,Perfect answers,Réponses complètes,完全正答率,Shown in the stats panel
 STATS_COMPLETE_RATES_BY_TAG,Perfect answers by tag,Réponses complètes par style,タグごとの完全正答率,Shown in the stats panel
+HISTORY_LOADING,Loading match history...,Chargement de l'historique des matchs...,履歴を読み込み中...,Shown while the match history request is loading
+HISTORY_LOADING_FAILED,Match history loading failed,Le chargement de l'historique des matchs a échoué,履歴の読み込みに失敗しました,Shown when the match history request fails
+HISTORY_EMPTY,No matches to show yet.,Aucun match à afficher pour le moment.,まだ表示する対戦がありません。,Shown when the user has no match history yet
+HISTORY_SCORE,"Score: {score}","Score : {score}","スコア: {score}",Shown in the match history panel
+HISTORY_RANKING,"Rank: {rank} / {players}","Classement : {rank} / {players}","順位: {rank} / {players}",Shown in the match history panel
+HISTORY_PLAYER_RANKING,"Rank: {rank}","Classement : {rank}","順位: {rank}",Shown in the match history players tab
+HISTORY_OPEN_PROFILE,"Open profile {username}","Ouvrir le profil de {username}","{username} のプロフィールを開く",Accessible label for clicking a player avatar in match history
+HISTORY_ROUNDS,Rounds,Manches,ラウンド,Shown in the match history panel
+HISTORY_PLAYERS,Players,Joueurs,プレイヤー,Shown in the match history panel
