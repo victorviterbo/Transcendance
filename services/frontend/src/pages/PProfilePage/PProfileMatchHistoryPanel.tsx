@@ -9,11 +9,6 @@ export interface MatchHistoryItem {
 	result: string;
 }
 
-const DEFAULT_PUBLIC_MATCH_HISTORY: MatchHistoryItem[] = [
-	{ date: "2026-02-19", opponent: "NovaKing", score: "9 - 7", result: "WIN" },
-	{ date: "2026-02-17", opponent: "AcePilot", score: "5 - 9", result: "LOSS" },
-];
-
 const DEFAULT_ME_MATCH_HISTORY: MatchHistoryItem[] = [
 	{ date: "2026-02-20", opponent: "AcePilot", score: "10 - 7", result: "WIN" },
 	{ date: "2026-02-18", opponent: "CyberNova", score: "6 - 12", result: "LOSS" },

@@ -1,3 +1,4 @@
+import { MUSIC_TAGS } from "../constants";
 import {
 	DEFAULT_PROFILE_AVATAR,
 	defaultMatchHistories,
@@ -116,6 +117,10 @@ const createGlobalStatsProfile = (
 	overrides: Partial<MockGlobalStatsProfile> = {},
 ): MockGlobalStatsProfile => {
 	const { successRatesCompleteByTag, ...rest } = overrides;
+	const defaultTagRates = Object.fromEntries(MUSIC_TAGS.map((tag) => [tag, 0])) as Record<
+		string,
+		number
+	>;
 
 	return {
 		averageScore: 0,
@@ -128,12 +133,7 @@ const createGlobalStatsProfile = (
 		successRateComplete: 0,
 		...rest,
 		successRatesCompleteByTag: {
-			TAG_POP: 0,
-			TAG_RAP: 0,
-			TAG_ROCK: 0,
-			TAG_ELECRO: 0,
-			TAG_FRENCH_VARIETY: 0,
-			TAG_RNB: 0,
+			...defaultTagRates,
 			...successRatesCompleteByTag,
 		},
 	};

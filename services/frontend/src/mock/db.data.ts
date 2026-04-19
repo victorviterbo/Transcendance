@@ -749,7 +749,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 5.3,
 					ranking: 3,
 					previewUrl: "https://cdn.example.test/previews/seven-nation-army",
-					artworkUrl: "https://cdn.example.test/artworks/the-white-stripes-seven-nation-army",
+					artworkUrl:
+						"https://cdn.example.test/artworks/the-white-stripes-seven-nation-army",
 					roundNumber: 11,
 				},
 				{
@@ -760,7 +761,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 3.4,
 					ranking: 2,
 					previewUrl: "https://cdn.example.test/previews/cant-get-you-out-of-my-head",
-					artworkUrl: "https://cdn.example.test/artworks/kylie-minogue-cant-get-you-out-of-my-head",
+					artworkUrl:
+						"https://cdn.example.test/artworks/kylie-minogue-cant-get-you-out-of-my-head",
 					roundNumber: 12,
 				},
 				{
@@ -770,8 +772,10 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					artistFound: false,
 					time: 4.9,
 					ranking: 2,
-					previewUrl: "https://cdn.example.test/previews/everybody-wants-to-rule-the-world",
-					artworkUrl: "https://cdn.example.test/artworks/tears-for-fears-everybody-wants-to-rule-the-world",
+					previewUrl:
+						"https://cdn.example.test/previews/everybody-wants-to-rule-the-world",
+					artworkUrl:
+						"https://cdn.example.test/artworks/tears-for-fears-everybody-wants-to-rule-the-world",
 					roundNumber: 13,
 				},
 				{
@@ -793,7 +797,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 2.5,
 					ranking: 1,
 					previewUrl: "https://cdn.example.test/previews/dog-days-are-over",
-					artworkUrl: "https://cdn.example.test/artworks/florence-and-the-machine-dog-days-are-over",
+					artworkUrl:
+						"https://cdn.example.test/artworks/florence-and-the-machine-dog-days-are-over",
 					roundNumber: 15,
 				},
 			],
@@ -932,7 +937,8 @@ export const defaultMatchHistories: Record<string, MockHistoryEntrySeed[]> = {
 					time: 3.1,
 					ranking: 1,
 					previewUrl: "https://cdn.example.test/previews/killing-in-the-name",
-					artworkUrl: "https://cdn.example.test/artworks/rage-against-the-machine-killing-in-the-name",
+					artworkUrl:
+						"https://cdn.example.test/artworks/rage-against-the-machine-killing-in-the-name",
 					roundNumber: 4,
 				},
 			],

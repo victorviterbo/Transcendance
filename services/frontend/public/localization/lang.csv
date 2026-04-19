@@ -196,4 +196,22 @@ LEADERBOARD_LOADING,Leaderboard loading...,Chargement du classement...,ランキ
 LEADERBOARD_LOADING_FAILED,Leaderboard loading failed,Le chargement du classement a échoué,ランキングの読み込みに失敗しました,Shown when the leaderboard request fails
 LEADERBOARD_POINTS,Points,Points,ポイント,Leaderboard value label shown next to a player's score
 LEADERBOARD_TOTAL_PLAYERS,"Total players: {number}","Nombre total de joueurs : {number}","プレイヤー総数: {number}",Leaderboard footer showing the total number of ranked players
-LEADERBOARD_MESSAGE,Compete with others to grind the ladder!,Affrontez les autres pour grimper dans le classement !,他のプレイヤーと競い合ってランキングを駆け上がろう！,Short leaderboard intro message encouraging ranked competition
+LEADERBOARD_MESSAGE,Compete with others to climb the ladder!,Affrontez les autres pour grimper dans le classement !,他のプレイヤーと競い合ってランキングを駆け上がろう！,Short leaderboard intro message encouraging ranked competition
+PROFILE_STATS_LOADING,Loading statistics...,Chargement des statistiques...,統計を読み込み中...,Shown while the profile statistics request is loading
+PROFILE_STATS_LOAD_FAILED,Statistics loading failed,Le chargement des statistiques a échoué,統計の読み込みに失敗しました,Shown when the profile statistics request fails
+TAG_POP,Pop,Pop,ポップ,Music tag associated to songs
+TAG_RAP,Rap,Rap,ラップ,Music tag associated to songs
+TAG_ROCK,Rock,Rock,ロック,Music tag associated to songs
+TAG_ELECRO,Electro,Electro,エレクトロ,Music tag associated to songs
+TAG_FRENCH_VARIETY,French Variety,Variété française,フレンチバラエティ,Music tag associated to songs
+TAG_RNB,RNB,RNB,R&B,Music tag associated to songs
+STATS_GAMES_PLAYED,Games played,Parties jouées,プレイしたゲーム,Shown in the stats panel
+STATS_SONGS_PLAYED,Tracks played,Musiques jouées,再生した曲,Shown in the stats panel
+STATS_GAMES_WON,Games won,Parties gagnées,勝利したゲーム,Shown in the stats panel
+STATS_AVERAGE_SCORE,Average score,Score moyen,平均スコア,Shown in the stats panel
+STATS_AVERAGE_TIME,Average time,Temps moyen,平均時間,Shown in the stats panel
+STATS_RANKING,Rank,Classement,順位,Shown in the stats panel
+STATS_ARTIST_RATE,Artists found,Artistes trouvés,アーティスト正答率,Shown in the stats panel
+STATS_SONG_RATE,Songs found,Titres trouvés,曲名正答率,Shown in the stats panel
+STATS_COMPLETE_RATE,Perfect answers,Réponses complètes,完全正答率,Shown in the stats panel
+STATS_COMPLETE_RATES_BY_TAG,Perfect answers by tag,Réponses complètes par style,タグごとの完全正答率,Shown in the stats panel
