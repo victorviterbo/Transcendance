@@ -20,24 +20,16 @@ const DEFAULT_ME_MATCH_HISTORY: MatchHistoryItem[] = [
 	{ date: "2026-02-16", opponent: "NovaKing", score: "8 - 8", result: "DRAW" },
 ];
 
-export type MatchHistoryScope = "me" | "public";
-
-export function getDefaultMatchHistory(scope: MatchHistoryScope): MatchHistoryItem[] {
-	return scope === "public" ? [...DEFAULT_PUBLIC_MATCH_HISTORY] : [...DEFAULT_ME_MATCH_HISTORY];
-}
-
 interface ProfileMatchHistoryPanelProps {
 	history?: MatchHistoryItem[];
-	scope?: MatchHistoryScope;
 	emptyMessage?: string;
 }
 
 function ProfileMatchHistoryPanel({
 	history,
-	scope = "me",
 	emptyMessage = "No matches to show yet.",
 }: ProfileMatchHistoryPanelProps) {
-	const effectiveHistory = history ?? getDefaultMatchHistory(scope);
+	const effectiveHistory = history ?? [...DEFAULT_ME_MATCH_HISTORY];
 	if (effectiveHistory.length === 0) {
 		return <CText>{emptyMessage}</CText>;
 	}
