@@ -202,3 +202,5 @@ NOTIF_AGO_HOURS,{COUNT} hour(s) ago,,,Display how many hours since notifications
 NOTIF_AGO_MINUTES,{COUNT} minutes(s) ago,,,Display how many minutes since notifications has been triggered
 NOTIF_AGO_LESS,Less than a minute ago,,,Display when notific just been triggered (less than a minute ago)
 NOTIF_FAILED,Couldn't load notifications,,,Display when notification failed to load.
+NOTIF_FRIEND_ACCEPTED,Friend request accepted by: ,,,Displayed notification when someone accpeted your friend requests
+NOTIF_UNKNOWN,Unkown notificaton,,,Fallback notification messsage
