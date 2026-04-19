@@ -3,7 +3,6 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import { server } from "../../mock/server";
 import { mockSocialDB, mockSocialResetDB } from "../../mock/handlers/social/social_dbs";
 import { CAuthProvider } from "../../components/auth/CAuthProvider";
-import CWebsocket from "../../components/websocket/CWebsocket";
 import { MemoryRouter } from "react-router-dom";
 import GPageBase from "../../pages/common/GPageBases";
 import { setAccessToken } from "../../api";
@@ -12,7 +11,7 @@ import { API_AUTH_REFRESH } from "../../constants";
 import { makeAccessToken } from "../../mock/handlers/auth";
 import userEvent from "@testing-library/user-event";
 import PNotifNode from "../../pages/PNotif/PNotifNode";
-import type { TNotif } from "../../types/socials";
+import type { IFriendInfo, TNotif } from "../../types/socials";
 import type { IExtUserInfo } from "../../types/user";
 
 describe("Socials - Interactions", () => {
@@ -33,11 +32,9 @@ describe("Socials - Interactions", () => {
 	it("DRAWER: Checking if drawer disable when not logged in", async () => {
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -68,11 +65,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -107,11 +102,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -154,11 +147,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -199,6 +190,15 @@ describe("Socials - Interactions", () => {
 			{ timeout: 5500 },
 		);
 
+		await waitFor(
+			() => {
+				notifValue = within(parentButton).getByTestId("CButtonToggleNotif");
+				expect(notifValue).toBeInTheDocument();
+				expect(within(notifValue).getByText("4")).toBeInTheDocument();
+			},
+			{ timeout: 5500 },
+		);
+
 		await userEvent.click(notifButton);
 
 		await waitFor(
@@ -222,11 +222,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -278,29 +276,73 @@ describe("Socials - Interactions", () => {
 			},
 			{ timeout: 5500 },
 		);
+
+		await waitFor(
+			() => {
+				notifValue = within(parentButton).getByTestId("CButtonToggleNotif");
+				expect(notifValue).toBeInTheDocument();
+				expect(within(notifValue).getByText("2")).toBeInTheDocument();
+			},
+			{ timeout: 5500 },
+		);
 	});
 
 	it.each([
-		[new Date(Date.now()), "NOTIF_AGO_LESS", true],
-		[new Date(Date.now() - 1000 * 60 * 60 * 4), "NOTIF_AGO_HOURS COUNT: 4", true],
-		[new Date(Date.now() - 1000 * 60 * 25), "NOTIF_AGO_MINUTES COUNT: 25", false],
-		[new Date(Date.now() - 1000 * 60 * 60 * 24 * 123), "NOTIF_AGO_DAYS COUNT: 123", false],
+		[new Date(Date.now()), "NOTIF_AGO_LESS", true, "friend-request"],
+		[
+			new Date(Date.now() - 1000 * 60 * 60 * 4),
+			"NOTIF_AGO_HOURS COUNT: 4",
+			true,
+			"friend-request",
+		],
+		[
+			new Date(Date.now() - 1000 * 60 * 25),
+			"NOTIF_AGO_MINUTES COUNT: 25",
+			false,
+			"friend-accepted",
+		],
+		[
+			new Date(Date.now() - 1000 * 60 * 60 * 24 * 123),
+			"NOTIF_AGO_DAYS COUNT: 123",
+			false,
+			"friend-accepted",
+		],
 	])(
-		"NODE: Checking base infos (Date: %s, Expect: %s Read: %d)",
-		async (DateIN, ExpectDate, ReadIn) => {
+		"NODE: Checking base infos (Date: %s, Expect: %s Read: %d, Kind: %s)",
+		async (DateIN, ExpectDate, ReadIn, Kind) => {
 			const user: IExtUserInfo = mockSocialDB.users[0];
-			const notif: TNotif = {
-				uid: crypto.randomUUID(),
-				kind: "friend-request",
-				from: mockSocialDB.users[0],
-				date: DateIN,
-				read: ReadIn,
-			};
+			const friend: IFriendInfo = mockSocialDB.friends[0];
+			let notif: TNotif | undefined = undefined;
+			if (Kind == "friend-request") {
+				notif = {
+					uid: crypto.randomUUID(),
+					kind: "friend-request",
+					from: user,
+					date: DateIN,
+					read: ReadIn,
+				};
+			} else if (Kind == "friend-accepted") {
+				notif = {
+					uid: crypto.randomUUID(),
+					kind: "friend-accepted",
+					from: friend,
+					date: DateIN,
+					read: ReadIn,
+				};
+			}
+			if (!notif) throw {};
+			if (!notif) return;
 
 			render(<PNotifNode notif={notif}></PNotifNode>);
 
-			expect(screen.getByText("NOTIF_FRIEND_REQ")).toBeInTheDocument();
-			expect(screen.getByText(user.username)).toBeInTheDocument();
+			if (Kind == "friend-request") {
+				expect(screen.getByText("NOTIF_FRIEND_REQ")).toBeInTheDocument();
+				expect(screen.getByText(user.username)).toBeInTheDocument();
+			}
+			if (Kind == "friend-accepted") {
+				expect(screen.getByText("NOTIF_FRIEND_ACCEPTED")).toBeInTheDocument();
+				expect(screen.getByText(friend.username)).toBeInTheDocument();
+			}
 			expect(screen.getByText(ExpectDate)).toBeInTheDocument();
 
 			const node = screen.getByTestId("PNotifNode");
@@ -331,11 +373,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -372,6 +412,14 @@ describe("Socials - Interactions", () => {
 				const nodes = screen.getAllByTestId("PNotifNode");
 				expect(nodes.length).toEqual(5);
 			},
+			{ timeout: 4000 },
+		);
+
+		await waitFor(
+			() => {
+				const nodes = screen.getAllByTestId("PNotifNode");
+				expect(nodes.length).toEqual(6);
+			},
 			{ timeout: 5500 },
 		);
 	});
@@ -388,11 +436,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -447,7 +493,7 @@ describe("Socials - Interactions", () => {
 							"linear-gradient(160deg, #8A41FA 0%, #1FE2D8 100%) rgba(0, 0, 0, 0)"
 						);
 					}).length,
-				).toEqual(3);
+				).toEqual(4);
 				expect(
 					nodes.filter((el: HTMLElement) => {
 						return (
@@ -480,7 +526,7 @@ describe("Socials - Interactions", () => {
 						"linear-gradient(160deg, #9E9E9E 0%, #727272 100%) rgba(0, 0, 0, 0)"
 					);
 				}).length;
-				expect(len == 5 || len == 6).toBeTruthy();
+				expect(len == 6 || len == 7 || len == 8).toBeTruthy();
 			},
 			{ timeout: 3000 },
 		);
@@ -498,11 +544,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -582,7 +626,7 @@ describe("Socials - Interactions", () => {
 							"linear-gradient(160deg, #8A41FA 0%, #1FE2D8 100%) rgba(0, 0, 0, 0)"
 						);
 					}).length,
-				).toEqual(1);
+				).toEqual(2);
 				expect(
 					nodes.filter((el: HTMLElement) => {
 						return (
@@ -613,7 +657,7 @@ describe("Socials - Interactions", () => {
 						"linear-gradient(160deg, #9E9E9E 0%, #727272 100%) rgba(0, 0, 0, 0)"
 					);
 				}).length;
-				expect(len == 5 || len == 6).toBeTruthy();
+				expect(len == 6 || len == 7 || len == 8).toBeTruthy();
 			},
 			{ timeout: 3000 },
 		);
@@ -631,11 +675,9 @@ describe("Socials - Interactions", () => {
 
 		render(
 			<CAuthProvider>
-				<CWebsocket>
-					<MemoryRouter initialEntries={["/"]}>
-						<GPageBase />
-					</MemoryRouter>
-				</CWebsocket>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
 			</CAuthProvider>,
 		);
 
@@ -668,7 +710,7 @@ describe("Socials - Interactions", () => {
 			expect(nodes.length).toEqual(4);
 		});
 
-		const button = within(nodes[0]).getByTestId("PNotifNodeSeeReq");
+		const button = within(nodes[0]).getByTestId("PNotifNodeSee");
 		expect(button).toBeInTheDocument();
 
 		await userEvent.click(button);
@@ -683,5 +725,65 @@ describe("Socials - Interactions", () => {
 			},
 			{ timeout: 5500 },
 		);
+	});
+
+	it("NODES: Click on see friends button", { timeout: 7500 }, async () => {
+		server.use(
+			http.post(API_AUTH_REFRESH, () => {
+				return HttpResponse.json(
+					{ access: makeAccessToken(), username: "john" },
+					{ status: 200 },
+				);
+			}),
+		);
+
+		render(
+			<CAuthProvider>
+				<MemoryRouter initialEntries={["/"]}>
+					<GPageBase />
+				</MemoryRouter>
+			</CAuthProvider>,
+		);
+
+		let notifDrawer: HTMLElement | undefined;
+		let notifBox: HTMLElement | undefined;
+		let notifButton: HTMLElement | undefined;
+
+		await waitFor(() => {
+			notifDrawer = screen.getByTestId("PNotifDrawer");
+			notifBox = screen.getByTestId("PNotif");
+			notifButton = screen.getByTestId("Notifications_ToggleButton");
+
+			expect(notifDrawer).toBeInTheDocument();
+			expect(notifBox).toBeInTheDocument();
+			expect(notifButton).toBeInTheDocument();
+		});
+
+		if (!notifDrawer) return;
+		if (!notifBox) return;
+		if (!notifButton) return;
+
+		const parentButton = screen.getByTestId("Notifications_ToggleButtonParent");
+		expect(parentButton).toBeInTheDocument();
+
+		await userEvent.click(notifButton);
+
+		let nodes: HTMLElement[] = [];
+		await waitFor(
+			() => {
+				nodes = screen.getAllByTestId("PNotifNode");
+				expect(nodes.length).toEqual(5);
+			},
+			{ timeout: 4000 },
+		);
+
+		const button = within(nodes[0]).getByTestId("PNotifNodeSee");
+		expect(button).toBeInTheDocument();
+
+		await userEvent.click(button);
+
+		await waitFor(() => {
+			expect(screen.getAllByTestId("PFriendNode_MessageButton").length).toEqual(6);
+		});
 	});
 });
