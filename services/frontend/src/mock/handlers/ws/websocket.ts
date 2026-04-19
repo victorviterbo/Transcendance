@@ -2,12 +2,17 @@ import { ws } from "msw";
 import { WS_ADRESS_WMS } from "../../../constants";
 import type { TWSRcv } from "../../../types/websocket";
 import { mockMessagesFriend1Update, onMessageSent } from "../social/socialChat";
-import { mockNewIncomingRequests } from "../social/social";
+import { mockAcceptingRequests, mockNewIncomingRequests } from "../social/social";
 
 //--------------------------------------------------
 //                                    NAME
 //--------------------------------------------------
 const socket = ws.link(WS_ADRESS_WMS);
+
+export let mockNoRequests: boolean = false;
+export const mockSetNoRequests = (value: boolean) => {
+	mockNoRequests = value;
+};
 
 export const socketConnHandler = socket.addEventListener("connection", ({ client }) => {
 	//====================== DATA ======================
@@ -30,5 +35,8 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 	});
 
 	mockMessagesFriend1Update(client);
-	mockNewIncomingRequests(client);
+	if (!mockNoRequests) {
+		mockNewIncomingRequests(client);
+		mockAcceptingRequests(client);
+	}
 });

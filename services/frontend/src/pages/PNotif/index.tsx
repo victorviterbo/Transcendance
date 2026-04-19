@@ -16,11 +16,12 @@ import { useWS } from "../../components/websocket/CWebsocket";
 
 interface PNotifProps extends GPageProps {
 	onSeeFriendsReq: () => void;
+	onSeeFriends: () => void;
 	onNotifCount: (Count: number) => void;
 	isOpen: boolean;
 }
 
-function PNotif({ onSeeFriendsReq, onNotifCount, isOpen }: PNotifProps) {
+function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifProps) {
 	const [notifs, setNotifs] = useState<TNotif[]>([]);
 	const [unread, setUnread] = useState<number>(0);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
@@ -69,6 +70,7 @@ function PNotif({ onSeeFriendsReq, onNotifCount, isOpen }: PNotifProps) {
 					notif={value}
 					key={localId + index}
 					onSeeFriendsReq={onSeeFriendsReq}
+					onSeeFriends={onSeeFriends}
 				></PNotifNode>
 			);
 		});

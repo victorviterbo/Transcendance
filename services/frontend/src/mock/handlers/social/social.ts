@@ -27,6 +27,7 @@ import {
 import type { IErrorReturn, IErrorStruct } from "../../../types/error";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 import type { TWSRcv } from "../../../types/websocket";
+import { mockGetMessageDB } from "./socialChat_dbs";
 
 //--------------------------------------------------
 //                   HANDLERS
@@ -238,4 +239,58 @@ export const mockNewIncomingRequests = (client: WebSocketClientConnectionProtoco
 			} as TWSRcv),
 		);
 	}, 5000);
+};
+
+export const mockAcceptingRequests = (client: WebSocketClientConnectionProtocol) => {
+	mockSocialSetDB();
+
+	setTimeout(() => {
+		const user: IExtUserInfo | undefined = mockSocialDB.users.find((value: IExtUserInfo) => {
+			return value.username === "かずま";
+		});
+		if (!user) return;
+		user.relation = "friends";
+
+		const userPos: number = mockSocialDB.users.findIndex((value: IExtUserInfo) => {
+			return value.username === "かずま";
+		});
+		if (!user || userPos == -1) return;
+
+		mockSocialDB.friends.push({
+			uid: mockSocialDB.users[userPos].uid,
+			username: mockSocialDB.users[userPos].username,
+			image: mockSocialDB.users[userPos].image,
+
+			exp_points: Math.round(Math.random() * 1000),
+			badges: mockSocialDB.users[userPos].badges,
+
+			created_at: new Date().toLocaleDateString(),
+			status: "online",
+		});
+
+		mockSocialDB.users.splice(userPos, 1);
+		const currentFriend: IFriendInfo = mockSocialDB.friends[mockSocialDB.friends.length - 1];
+		mockGetMessageDB().data.push({
+			friend: currentFriend,
+			messages: {
+				feed: [],
+			},
+		});
+
+		const notif: TNotif = {
+			uid: crypto.randomUUID(),
+			kind: "friend-accepted",
+			from: currentFriend,
+			date: new Date(),
+			read: false,
+		};
+
+		client.send(
+			JSON.stringify({
+				target: "notif",
+				event: "new",
+				notif: notif,
+			} as TWSRcv),
+		);
+	}, 3500);
 };
