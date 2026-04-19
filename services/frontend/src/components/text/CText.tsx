@@ -3,11 +3,15 @@ import type { CTextBaseProps } from "./CTextBase.tsx";
 import CTextBase from "./CTextBase.tsx";
 import { appTexts } from "../../styles/theme.ts";
 
-interface CTextProps extends CTextBaseProps {}
+interface CTextProps extends CTextBaseProps {
+	customVariant?: TypographyVariant;
+}
 
-function CText({ size, sx, children, ...other }: CTextProps) {
+function CText({ customVariant, size, sx, children, ...other }: CTextProps) {
 	//====================== FUNCTIONS ======================
 	const getVariant: () => TypographyVariant = () => {
+		if (customVariant != undefined) return customVariant;
+
 		switch (size) {
 			case "sm":
 				return "body1";
