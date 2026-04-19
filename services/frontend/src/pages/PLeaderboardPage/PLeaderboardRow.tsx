@@ -4,13 +4,11 @@ import type { ILeaderboardEntry } from "../../types/stats";
 import CAvatar from "../../components/images/CAvatar";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
+import { getScaledRadius } from "../../utils/styles";
 
 interface PLeaderboardRowProps {
 	entry: ILeaderboardEntry;
 }
-
-const getScaledRadius = (borderRadius: number | string, divisor = 1) =>
-	typeof borderRadius === "number" ? `${borderRadius / divisor}px` : borderRadius;
 
 function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 	const isTopThree = entry.ranking <= 3;

@@ -25,6 +25,10 @@ export function sizeMakeString(value?: string | number) {
 	return value ? (typeof value == "string" ? value : value + "px") : "inherit";
 }
 
+export function getScaledRadius(borderRadius: number | string, divisor = 1) {
+	return typeof borderRadius === "number" ? `${borderRadius / divisor}px` : borderRadius;
+}
+
 //--------------------------------------------------
 //               COLOR MANAGEMENT
 //--------------------------------------------------

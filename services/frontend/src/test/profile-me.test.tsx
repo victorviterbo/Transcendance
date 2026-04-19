@@ -6,6 +6,7 @@ import type { IProfileData } from "../types/profile";
 
 const fetchProfileMock = vi.fn();
 let authUser: { username: string } | null = { username: "john" };
+const profileStatisticsPanelMock = vi.fn();
 
 vi.mock("../api/profile", () => ({
 	fetchProfile: (...args: unknown[]) => fetchProfileMock(...args),
@@ -27,7 +28,10 @@ vi.mock("../components/navigation/CTabs", () => ({
 }));
 
 vi.mock("../pages/PProfilePage/PProfileStatisticsPanel", () => ({
-	default: () => <div>PROFILE_STATISTICS</div>,
+	default: (props: unknown) => {
+		profileStatisticsPanelMock(props);
+		return <div>PROFILE_STATISTICS</div>;
+	},
 }));
 
 vi.mock("../pages/PProfilePage/PProfileMatchHistoryPanel", () => ({
@@ -55,6 +59,7 @@ const createDeferred = <T,>() => {
 describe("PProfileMe", () => {
 	beforeEach(() => {
 		fetchProfileMock.mockReset();
+		profileStatisticsPanelMock.mockReset();
 		authUser = { username: "john" };
 	});
 
@@ -78,6 +83,11 @@ describe("PProfileMe", () => {
 
 		expect(await screen.findByText("john")).toBeInTheDocument();
 		expect(screen.queryByText("PROFILE_LOADING")).not.toBeInTheDocument();
+		expect(profileStatisticsPanelMock).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				username: "john",
+			}),
+		);
 	});
 
 	it("uses the shared error state when loading the profile fails", async () => {
@@ -123,5 +133,10 @@ describe("PProfileMe", () => {
 		});
 
 		expect(await screen.findByText("marc")).toBeInTheDocument();
+		expect(profileStatisticsPanelMock).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				username: "marc",
+			}),
+		);
 	});
 });

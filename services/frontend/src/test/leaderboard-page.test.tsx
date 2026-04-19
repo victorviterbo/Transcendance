@@ -39,9 +39,7 @@ const createEntry = (overrides: Partial<ILeaderboardEntry> = {}): ILeaderboardEn
 	...overrides,
 });
 
-const createResponse = (
-	overrides: Partial<ILeaderboardResponse> = {},
-): ILeaderboardResponse => ({
+const createResponse = (overrides: Partial<ILeaderboardResponse> = {}): ILeaderboardResponse => ({
 	leaderboard: [createEntry()],
 	leaderboardCount: 1,
 	ranking: 1,
@@ -104,9 +102,7 @@ describe("PLeaderboardPage", () => {
 
 		expect(await screen.findByText("alice")).toBeInTheDocument();
 		expect(screen.getByText("john")).toBeInTheDocument();
-		expect(
-			screen.getByText("Compete with others to climb the ladder!"),
-		).toBeInTheDocument();
+		expect(screen.getByText("Compete with others to climb the ladder!")).toBeInTheDocument();
 		expect(screen.getByText("Total players: 7")).toBeInTheDocument();
 		expect(screen.getByText("Attentive Owl")).toBeInTheDocument();
 		expect(screen.getByText("Dazed Jellyfish")).toBeInTheDocument();

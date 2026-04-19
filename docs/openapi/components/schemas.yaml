@@ -142,6 +142,11 @@ GlobalStatsResponse:
       format: float
       description: Average score across matches.
     xp: { type: integer, description: Total experience points. }
+    totalGamesPlayed: { type: integer, description: Number of games played. }
+    totalSongsPlayed:
+      { type: integer, descripion: Number of songs listened to. }
+    totalGamesWon:
+      { type: integer, description: Number of games played and won. }
     ranking: { type: integer, description: Current player ranking. }
     totalPlayers:
       { type: integer, description: Total number of ranked players. }

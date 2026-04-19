@@ -137,8 +137,8 @@ const PProfileMe = () => {
 
 					<CBasePaper>
 						<CTabs tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}>
-							<ProfileStatisticsPanel scope="me" />
-							<ProfileMatchHistoryPanel scope="me" />
+							<ProfileStatisticsPanel username={profile.username} />
+							<ProfileMatchHistoryPanel />
 							<ProfileModifyMePanel
 								username={user?.username}
 								onProfileUpdated={setReadyProfile}
