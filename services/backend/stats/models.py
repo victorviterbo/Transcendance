@@ -57,6 +57,7 @@ class UserGameStats(models.Model):
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE,
                                related_name='games_played')
+    is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         """Define special behaviour of database."""

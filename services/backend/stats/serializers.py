@@ -31,6 +31,9 @@ class HistoryRoundSerializer(serializers.Serializer):
     previewUrl = serializers.CharField(allow_null=True)
     artworkUrl = serializers.CharField(allow_null=True)
     roundNumber = serializers.IntegerField()
+    totalGamesPlayed = serializers.IntegerField()
+    totalGamesWon = serializers.IntegerField()
+    totalSongsPlayed = serializers.IntegerField()
 
 
 class HistoryEntrySerializer(serializers.Serializer):

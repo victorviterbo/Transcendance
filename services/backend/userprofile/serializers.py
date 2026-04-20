@@ -4,7 +4,6 @@ from io import BytesIO
 from typing import Any
 
 from django.core.files.base import ContentFile
-from django.templatetags.static import static
 from PIL import Image, UnidentifiedImageError
 from project import settings
 from project.validators import validate_email, validate_username

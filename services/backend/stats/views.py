@@ -52,6 +52,8 @@ class GlobalStatsView(APIView):
 
         rounds = UserRoundStats.objects.filter(player=profile)
         total_rounds = rounds.count()
+        total_games = GameRoundStats.objects.filter(player=profile).values('game').distinct().count()
+        total_games_won = UserGameStats.objects.filter(player=profile, is_won=True).count()
 
         agg = rounds.aggregate(avg_score=Avg('xp_earned'), avg_time=Avg('time'))
         avg_score = round(agg['avg_score'] or 0.0, 2)
@@ -77,10 +79,12 @@ class GlobalStatsView(APIView):
             if tag_total > 0:
                 tag_complete = tag_rounds.filter(artist_found=True, song_found=True).count()
                 tag_rates[playlist.slug] = round(tag_complete / tag_total * 100, 2)
-
         return Response({
             'averageScore': avg_score,
             'xp': profile.exp_points,
+            'totalGamesPlayed': total_games,
+            'totalSongsPlayed': total_rounds,
+            'totalGamesWon': total_games_won,
             'ranking': _ranking(profile),
             'totalPlayers': _total_players(),
             'averageTime': avg_time,
