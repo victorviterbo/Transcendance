@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 if playlist.rss_url:
                     entries = fetch_ids_from_rss(playlist.rss_url)
                     if not entries:
-                        self.stdout.write(self.style.WARNING(f"  No entries returned, skipping."))
+                        self.stdout.write(self.style.WARNING("  No entries returned, skipping."))
                         continue
 
                     track_ids = [e["track_id"] for e in entries]
@@ -60,7 +60,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": entry["title"],
                                     "artist": entry["artist"],
-                                    "kind": entry.get("kind", ""),
+                                    "genre": entry.get("kind", ""),
                                     "artwork_url": entry["artwork_url"],
                                     "preview_url": preview_url,
                                 },
@@ -102,7 +102,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": info["title"],
                                     "artist": info["artist"],
-                                    "kind": info.get("kind", ""),
+                                    "genre": info.get("kind", ""),
                                     "artwork_url": info["artwork_url"],
                                     "preview_url": info["preview_url"],
                                 },

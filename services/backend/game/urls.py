@@ -4,5 +4,5 @@ from django.urls import path
 from .views import GameTestView
 
 urlpatterns = [
-    path('test/', GameTestView.as_view(), name='game-test'),
+    path('', GameTestView.as_view(), name='game-test'),
 ]

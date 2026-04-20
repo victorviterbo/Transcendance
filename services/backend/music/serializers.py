@@ -20,7 +20,7 @@ class TrackSerializer(serializers.ModelSerializer):
 			'itunes_id',
 			'title',
 			'artist',
-			'kind',
+			'genre',
 			'preview_url',
 			'artwork_url',
 		]

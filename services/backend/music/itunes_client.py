@@ -104,7 +104,7 @@ def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, d
 				tracks[t_id] = {
 					"title": item.get("trackName", ""),
 					"artist": item.get("artistName", ""),
-					"kind": item.get("kind", ""),
+					"kind": item.get("primaryGenreName", ""),
 					"artwork_url": artwork_url,
 					"preview_url": item.get("previewUrl", ""),
 				}
