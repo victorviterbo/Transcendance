@@ -224,3 +224,11 @@ HISTORY_PLAYER_RANKING,"Rank: {rank}","Classement : {rank}","順位: {rank}",Sho
 HISTORY_OPEN_PROFILE,"Open profile {username}","Ouvrir le profil de {username}","{username} のプロフィールを開く",Accessible label for clicking a player avatar in match history
 HISTORY_ROUNDS,Rounds,Manches,ラウンド,Shown in the match history panel
 HISTORY_PLAYERS,Players,Joueurs,プレイヤー,Shown in the match history panel
+BADGE_DEAF_OCTOPUS,Deaf Octopus,Poulpe sourd,耳の遠いタコ,Badge for users with XP below 100
+BADGE_DAZED_JELLYFISH,Dazed Jellyfish,Méduse étourdie,ぼんやりクラゲ,Badge for users with XP from 100 to 199
+BADGE_DISTRACTED_PIGEON,Distracted Pigeon,Pigeon distrait,気まぐれなハト,Badge for users with XP from 200 to 499
+BADGE_CURIOUS_CAT,Curious Cat,Chat curieux,好奇心旺盛なネコ,Badge for users with XP from 500 to 999
+BADGE_ATTENTIVE_OWL,Attentive Owl,Chouette attentive,注意深いフクロウ,Badge for users with XP from 1000 to 1999
+BADGE_RHYTHMIC_RAPTOR,Rhythmic Raptor,Raptor rythmé,リズミカルなラプトル,Badge for users with XP from 2000 to 4999
+BADGE_SONIC_SHARK,Sonic Shark,Requin sonique,ソニックシャーク,Badge for users with XP from 5000 to 9999
+BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定位するコウモリ,Badge for users with XP of 10000 or more
