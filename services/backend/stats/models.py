@@ -32,21 +32,25 @@ class GameRoundStats(models.Model):
 
 class UserRoundStats(models.Model):
     """Specific stats for ONE player in ONE specific round."""
-    game = models.ForeignKey(Game,
-                             on_delete=models.CASCADE,
-                               related_name='stats')
+    #game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='stats')
+    #track = models.ForeignKey(Track, on_delete=models.SET_NULL, null=True)
+    round = models.ForeignKey(GameRoundStats, on_delete=models.CASCADE)
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE)
-    round = models.ForeignKey(GameRoundStats, on_delete=models.CASCADE)
-    track = models.ForeignKey(Track,
-                              on_delete=models.SET_NULL,
-                              null=True)
     is_won = models.BooleanField(default=False)
     artist_found = models.BooleanField(default=False)
     song_found = models.BooleanField(default=False)
     time = models.DurationField(default=timedelta(seconds=30))
     xp_earned = models.IntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def track(self):
+        return self.round.track
+
+    @property
+    def game(self):
+        return self.round.game
 
 class UserGameStats(models.Model):
     """Define the model for a single player for a single game."""
@@ -56,7 +60,7 @@ class UserGameStats(models.Model):
                              related_name='player_stats')
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE,
-                               related_name='games_played')
+                               related_name='round_played')
     is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
     class Meta:

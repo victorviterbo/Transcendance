@@ -71,7 +71,7 @@ class GlobalStatsView(APIView):
             artist_rate = song_rate = complete_rate = 0.0
         tag_rates = {}
         playlists = Playlist.objects.filter(
-            tracks__in=rounds.values('track')
+            tracks__in=rounds.values('round__track')
         ).distinct()
         for playlist in playlists:
             tag_rounds = rounds.filter(track__playlists=playlist)
