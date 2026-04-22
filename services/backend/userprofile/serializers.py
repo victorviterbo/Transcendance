@@ -111,5 +111,5 @@ class ProfileSerializer(LightProfileSerializer):
         ProfileSerializer class itself
         """
         model = Profile
-        fields = ['username', 'avatar', 'exp_points', 'badges', 'created_at',]
+        fields = ['username', 'avatar', 'exp_points', 'badges', 'created_at', 'is_guest', 'uid']
         read_only_fields = ['exp_points', 'badges', 'is_guest', 'uid']

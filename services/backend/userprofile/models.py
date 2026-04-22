@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import uuid
-from pathlib import Path
 
 from django.db import models
-from project.defaults import badges_strings
+from project.defaults import get_badge
 from userauth.models import SiteUser
 
 
@@ -35,10 +34,6 @@ class Profile(models.Model):
                                upload_to=avatar_path)
     
     exp_points = models.IntegerField(default=0)
-
-    badges = models.CharField(max_length=30,
-                              default=badges_strings[0],
-                              choices=[(b, b) for b in badges_strings])
     
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -67,3 +62,6 @@ class Profile(models.Model):
         """Define how to output the object as string."""
         return f'{self.username} Profile'
     
+    @property
+    def badges(self) -> str:
+        return get_badge(self.exp_points)

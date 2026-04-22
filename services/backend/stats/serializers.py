@@ -3,25 +3,36 @@
 from rest_framework import serializers
 
 
+class GlobalStatsSerializer(serializers.Serializer):
+    averageScore = serializers.IntegerField()
+    xp = serializers.IntegerField()
+    totalGamesPlayed = serializers.IntegerField()
+    totalSongsPlayed = serializers.IntegerField()
+    totalGamesWon = serializers.IntegerField()
+    ranking = serializers.IntegerField()
+    totalPlayers = serializers.IntegerField()
+    averageTime = serializers.FloatField()
+    successRateArtist = serializers.IntegerField()
+    successRateSong = serializers.IntegerField()
+    successRateComplete = serializers.IntegerField()
+    successRatesCompleteByTag = serializers.DictField()
+
 class LeaderboardEntrySerializer(serializers.Serializer):
-    """Serialize a single leaderboard entry."""
     username = serializers.CharField()
     avatar = serializers.CharField()
     xp = serializers.IntegerField()
-    badges = serializers.CharField()
+    badges = serializers.ReadOnlyField()
     ranking = serializers.IntegerField()
     isCurrentUser = serializers.BooleanField()
 
 
 class HistoryPlayerSerializer(serializers.Serializer):
-    """Serialize a player summary inside a match history entry."""
     username = serializers.CharField()
     avatar = serializers.CharField()
     ranking = serializers.IntegerField()
 
 
 class HistoryRoundSerializer(serializers.Serializer):
-    """Serialize a single round result inside a match history entry."""
     trackName = serializers.CharField()
     trackArtist = serializers.CharField()
     songFound = serializers.BooleanField()
@@ -31,13 +42,9 @@ class HistoryRoundSerializer(serializers.Serializer):
     previewUrl = serializers.CharField(allow_null=True)
     artworkUrl = serializers.CharField(allow_null=True)
     roundNumber = serializers.IntegerField()
-    totalGamesPlayed = serializers.IntegerField()
-    totalGamesWon = serializers.IntegerField()
-    totalSongsPlayed = serializers.IntegerField()
 
 
 class HistoryEntrySerializer(serializers.Serializer):
-    """Serialize a single game entry inside match history."""
     playedAt = serializers.DateTimeField()
     xpEarned = serializers.IntegerField()
     ranking = serializers.IntegerField()
