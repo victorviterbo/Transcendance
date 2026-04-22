@@ -174,7 +174,7 @@ class HistoryView(APIView):
                 players_data.append({
                     'username': player_profile.username,
                     'avatar': get_avatar_url(player_profile),
-                    'ranking': _ranking(player_profile),
+                    'ranking': ranking_map.get(player_profile.pk, (0, 1))[1],
                 })
             rounds_data = []
             user_rounds = (
