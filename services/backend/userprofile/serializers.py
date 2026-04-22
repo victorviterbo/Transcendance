@@ -5,7 +5,7 @@ from typing import Any
 
 from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
-from project import settings
+from project.defaults import get_avatar_url
 from project.validators import validate_email, validate_username
 from rest_framework import serializers
 
@@ -57,11 +57,7 @@ class LightProfileSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: Profile) -> dict:
         """Define how the Profile is exported to json."""
         ret = super().to_representation(instance)
-        if instance.avatar and hasattr(instance.avatar, 'url'):
-            ret['avatar'] = instance.avatar.url
-        else:
-            ret['avatar'] = settings.STATIC_URL + \
-                f"default_avatars/default_avatar_{instance.pk % 18}.png"
+        ret['avatar'] = get_avatar_url(instance)
         return ret
 
 class UsersSerializer(LightProfileSerializer):

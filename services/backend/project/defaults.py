@@ -2,6 +2,8 @@
 
 import bisect
 
+from project import settings
+
 badges_strings = ["BADGE_DEAF_OCTOPUS", # <100
                   "BADGE_DAZED_JELLYFISH", # < 200 
                   "BADGE_DISTRACTED_PIGEON", # < 500 
@@ -17,6 +19,15 @@ def get_badge(number: int) -> str:
     breakpoints = [100, 200, 500, 1000, 2000, 5000, 100000]
     index = bisect.bisect_right(breakpoints, number)
     return badges_strings[index]
+
+
+def get_avatar_url(profile) -> str:
+    """Return the absolute URL of a profile's avatar."""
+    if profile.avatar and hasattr(profile.avatar, 'url'):
+        return profile.avatar.url
+    else:
+        return (settings.STATIC_URL + \
+            f"default_avatars/default_avatar_{profile.pk % 19}.png")
 
 
 kinds = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']

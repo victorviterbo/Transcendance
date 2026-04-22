@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 
 class GlobalStatsSerializer(serializers.Serializer):
-    averageScore = serializers.IntegerField()
+    averageScore = serializers.FloatField()
     xp = serializers.IntegerField()
     totalGamesPlayed = serializers.IntegerField()
     totalSongsPlayed = serializers.IntegerField()

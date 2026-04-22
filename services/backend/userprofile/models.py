@@ -13,10 +13,6 @@ def avatar_path(instance: Profile, filename: str) -> str:
     """Construct the path at wich the profile picture will be stored."""
     return f'avatars/user_{instance.pk}_profile.png'
 
-def pick_random_avatar(instance: Profile) -> str:
-    """Pick a random avatar as the default."""
-    return f'default_avatars/default_avatar_{instance.pk % 19}.png'
-
 class Profile(models.Model):
     """Define the structure of the Profile, based on a generic model."""
     user = models.OneToOneField(SiteUser,

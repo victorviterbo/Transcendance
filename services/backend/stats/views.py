@@ -1,9 +1,8 @@
 """Defines the views for the stats module."""
 
 from django.db.models import Avg, Sum
-from music.models import Playlist
-from project import settings
-from project.defaults import kinds, kinds_to_label
+from music.models import Playlist, Track
+from project.defaults import get_avatar_url, kinds, kinds_to_label
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -19,20 +18,11 @@ from .serializers import (
 )
 
 
-def _get_avatar_url(request: Request, profile: Profile) -> str:
-    """Return the absolute URL of a profile's avatar."""
-    if request.profile.avatar and hasattr(request.profile.avatar, 'url'):
-        return request.profile.avatar.url
-    else:
-        return (settings.STATIC_URL + \
-            f"default_avatars/default_avatar_{request.profile.pk % 18}.png")
-
 def _ranking(profile: Profile) -> int:
     """Return the 1-based global ranking of a profile by exp_points."""
     return (
         Profile.objects.filter(is_guest=False, exp_points__gt=profile.exp_points).count() + 1
     )
-
 
 def _total_players() -> int:
     """Return the total number of registered (non-guest) players."""
@@ -77,12 +67,13 @@ class GlobalStatsView(APIView):
             artist_rate = song_rate = complete_rate = 0.0
         tag_rates = {}
         for tag in kinds:
-            print("Calculating success rate for tag:", tag)
             tag_rounds = rounds.filter(round__track__kind=tag)
             tag_total = tag_rounds.count()
             if tag_total > 0:
                 tag_complete = tag_rounds.filter(artist_found=True, song_found=True).count()
                 tag_rates[kinds_to_label.get(tag, tag)] = round(tag_complete / tag_total * 100, 2)
+            else:
+                tag_rates[kinds_to_label.get(tag, tag)] = 0.0
         serializer = GlobalStatsSerializer(data={
                                     'averageScore': avg_score,
                                     'xp': profile.exp_points,
@@ -99,7 +90,6 @@ class GlobalStatsView(APIView):
         })
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_200_OK)
-        print("GlobalStatsView serializer errors:", serializer.errors)
         return Response({'error': {'serializer': serializer.errors}},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -118,7 +108,7 @@ class LeaderboardView(APIView):
         for profile in top_profiles:
             entries.append({
                 'username': profile.username,
-                'avatar': _get_avatar_url(request, profile),
+                'avatar': get_avatar_url(profile),
                 'xp': profile.exp_points,
                 'badges': profile.badges,
                 'ranking': _ranking(profile),
@@ -131,7 +121,7 @@ class LeaderboardView(APIView):
             profile = request.profile
             entries.append({
                 'username': profile.username,
-                'avatar': _get_avatar_url(request, profile),
+                'avatar': get_avatar_url(profile),
                 'xp': profile.exp_points,
                 'badges': profile.badges,
                 'ranking': _ranking(profile),
@@ -151,7 +141,6 @@ class HistoryView(APIView):
 
     def get(self, request: Request) -> Response:
         """Return match history."""
-        print("HELLO HISTORY VIEW, request.profile:", request.profile.username)
         profile = request.profile
 
         user_game_stats = (
@@ -169,36 +158,23 @@ class HistoryView(APIView):
                 .order_by('-total_xp')
                 .all()
             )
-            my_xp = next(
-                (p['total_xp'] for p in game_xp_ranking if p['player'] == profile.pk), 0
-            )
-            my_rank = next(
-                (i + 1 for i, p in enumerate(game_xp_ranking) if p['player'] == profile.pk), 1
-            )
+            ranking_map = {p['player']: (p['total_xp'], i + 1) for i, p in enumerate(game_xp_ranking)}
+            my_xp, my_rank = ranking_map.get(profile.pk, (0, 1))
             track_ids = (
                 GameRoundStats.objects.filter(game=game)
                 .values_list('track_id', flat=True)
             )
-            tags = [kinds_to_label.get(track.kind, track.kind) for track in
-                Playlist.objects.filter(tracks__in=track_ids)
-                .values_list('slug', flat=True)
+            tags = list(
+                Track.objects.filter(itunes_id__in=track_ids)
+                .values_list('kind', flat=True)
                 .distinct()
-            ]
+            )
             players_data = []
             for player_profile in game.players.all():
-                p_xp = next(
-                    (p['total_xp'] for p in game_xp_ranking if p['player'] == player_profile.pk),
-                    0
-                )
-                p_rank = sum(1 for p in game_xp_ranking if p['total_xp'] > p_xp) + 1
-                avatar_url = (
-                    request.build_absolute_uri(player_profile.avatar.url)
-                    if player_profile.avatar else ''
-                )
                 players_data.append({
                     'username': player_profile.username,
-                    'avatar': avatar_url,
-                    'ranking': p_rank,
+                    'avatar': get_avatar_url(player_profile),
+                    'ranking': _ranking(player_profile),
                 })
             rounds_data = []
             user_rounds = (
@@ -206,12 +182,11 @@ class HistoryView(APIView):
                 .select_related('round__track')
                 .order_by('round__round_number')
             )
-            print(user_rounds)
             for urs in user_rounds:
                 track = urs.round.track if urs.round else None
                 round_rank = (
                     UserRoundStats.objects.filter(
-                        round=urs.round, xp_earned__gt=urs.xp_earned
+                        round=urs.round, time__lt=urs.time
                     ).count() + 1
                 )
                 rounds_data.append({
@@ -225,7 +200,6 @@ class HistoryView(APIView):
                     'artworkUrl': track.artwork_url if track else None,
                     'roundNumber': urs.round.round_number if urs.round else 0,
                 })
-            print("History entry for game:", game.game_name, "with players:", [p['username'] for p in players_data], "and tags:", tags) 
             history.append({
                 'playedAt': ugs.played_at,
                 'xpEarned': my_xp,
