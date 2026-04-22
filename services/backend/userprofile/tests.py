@@ -133,7 +133,7 @@ class ProfileTests(TransactionTestCase):
             'email': 'anewemail@mail.com',
             'avatar': image_generator('valid'),
             'exp_points': 5001,
-            'badge': 'Sonic Shark'
+            'badges': 'Sonic Shark'
         }
         new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')
@@ -216,7 +216,7 @@ class ProfileTests(TransactionTestCase):
             'email': 'anewemail@mail.com',
             'avatar': image_generator('valid'),
             'exp_points': 5001,
-            'badge': 'Sonic Shark'
+            'badges': 'Sonic Shark'
         }
         new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data, format='multipart')

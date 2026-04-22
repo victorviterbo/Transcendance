@@ -25,4 +25,5 @@ def save_profile(sender: type[GameRoundStats],
             if total_game_xp > 0:
                 player.exp_points += total_game_xp
                 player.badges = get_badge(player.exp_points)
+                print("Updated player:", player.username, "with new XP:", player.exp_points, "and badge:", player.badges)
                 player.save(update_fields=['exp_points', 'badges'])

@@ -3,10 +3,10 @@ import random
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from friends.models import Friendship
 from game.models import Game
 from music.models import Track
+from project.defaults import kinds
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from userauth.models import SiteUser
 from userprofile.models import Profile
@@ -91,30 +91,28 @@ for _ in range(30): # Create 30 random friend connections
             status=random.choice(['pending', 'accepted'])
         )
 
+
 for t_idx in range(1, 16):
     track, created = Track.objects.get_or_create(
         itunes_id=t_idx,
         title=f"Track {t_idx}",
         artist=f"Artist {t_idx}",
         preview_url=f"https://example.com/preview{t_idx}.mp3",
-        artwork_url=f"https://example.com/artwork{t_idx}.jpg"
+        artwork_url=f"https://example.com/artwork{t_idx}.jpg",
+        kind=random.choice(kinds)
     )
     if not created:
         print("Track already exists:", track.title)
         exit(1)
     tracks.append(track)
-print("✅ Tracks created:", len(tracks))
 # ---------------------------------------------------------
 # 4. GAMES & STATS
 # ---------------------------------------------------------
-print("Simulating Games and Round Statistics...")
-print(Profile.objects.count(), "profiles created.")
 # Simulate 10 different games
 for g_idx in range(1, 11):
     # Pick a random room and random 4 players for the game
     #game_room = random.choice(rooms)
     game_players = random.sample(profiles, 4)
-    print("game_players:", [p.username for p in game_players])
     
     game = Game.objects.create(
         game_name=f"Blind Test Arena {g_idx}",
@@ -125,7 +123,6 @@ for g_idx in range(1, 11):
     
     # Pick an overall winner for the game
     game_winner = random.choice(game_players)
-    print("game_winner:", game_winner.username)
     
     # Create UserGameStats (Overall Game Results)
     for player in game_players:
@@ -134,17 +131,10 @@ for g_idx in range(1, 11):
             player=player,
             is_won=(player == game_winner)
         )
-    print("Tracks:", len(tracks))
     # Simulate 5 rounds per game
     for round_num in range(1, 6):
         track = random.choice(tracks)
         round_winner = random.choice(game_players)
-        print("round_winner:", round_winner.username, "for track:", track.title, "in game:", game.game_name, "round:", round_num, "with players:", [p.username for p in game_players])
-        print(f"--- Diagnostic Check ---")
-        print(f"Track: {track.title} | PK: {track.pk} | State: {'Saved' if track.pk else 'UNSAVED'}")
-        print(f"Game: {game.game_name} | PK: {game.pk} | State: {'Saved' if game.pk else 'UNSAVED'}")
-        print(f"Winner: {round_winner.username} | PK: {round_winner.pk} | State: {'Saved' if round_winner.pk else 'UNSAVED'}")
-        print("OK")
 
         game_round = GameRoundStats.objects.create(
             round_number=round_num,
@@ -152,9 +142,6 @@ for g_idx in range(1, 11):
             winner=round_winner,
             track=track
         )
-        
-        print("GameRoundStats created for round", round_num, "with winner", round_winner.username)
-
         # Create UserRoundStats (Individual performance in that round)
         for player in game_players:
             # Add some randomness to how they performed

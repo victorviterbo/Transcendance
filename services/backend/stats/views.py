@@ -3,15 +3,20 @@
 from django.db.models import Avg, Sum
 from music.models import Playlist
 from project import settings
+from project.defaults import kinds, kinds_to_label
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from userprofile.models import Profile
 
 from .models import GameRoundStats, UserGameStats, UserRoundStats
-from .serializers import HistoryEntrySerializer, LeaderboardEntrySerializer
+from .serializers import (
+    GlobalStatsSerializer,
+    HistoryEntrySerializer,
+    LeaderboardEntrySerializer,
+)
 
 
 def _get_avatar_url(request: Request, profile: Profile) -> str:
@@ -36,7 +41,7 @@ def _total_players() -> int:
 
 class GlobalStatsView(APIView):
     """Return aggregated statistics for a given user."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
         """Return aggregated stats for the queried username."""
@@ -66,38 +71,41 @@ class GlobalStatsView(APIView):
             song_rate = round(
                 rounds.filter(song_found=True).count() / total_rounds * 100, 2)
             complete_rate = round(
-                rounds.filter(artist_found=True, song_found=True).count() / total_rounds * 100, 2)
+                rounds.filter(artist_found=True, song_found=True).count() /
+                                                            total_rounds * 100, 2)
         else:
             artist_rate = song_rate = complete_rate = 0.0
         tag_rates = {}
-        playlists = Playlist.objects.filter(
-            tracks__in=rounds.values('round__track')
-        ).distinct()
-        for playlist in playlists:
-            tag_rounds = rounds.filter(track__playlists=playlist)
+        for tag in kinds:
+            print("Calculating success rate for tag:", tag)
+            tag_rounds = rounds.filter(round__track__kind=tag)
             tag_total = tag_rounds.count()
             if tag_total > 0:
                 tag_complete = tag_rounds.filter(artist_found=True, song_found=True).count()
-                tag_rates[playlist.slug] = round(tag_complete / tag_total * 100, 2)
-        return Response({
-            'averageScore': avg_score,
-            'xp': profile.exp_points,
-            'totalGamesPlayed': total_games,
-            'totalSongsPlayed': total_rounds,
-            'totalGamesWon': total_games_won,
-            'ranking': _ranking(profile),
-            'totalPlayers': _total_players(),
-            'averageTime': avg_time,
-            'successRateArtist': artist_rate,
-            'successRateSong': song_rate,
-            'successRateComplete': complete_rate,
-            'successRatesCompleteByTag': tag_rates,
-        }, status=status.HTTP_200_OK)
-
+                tag_rates[kinds_to_label.get(tag, tag)] = round(tag_complete / tag_total * 100, 2)
+        serializer = GlobalStatsSerializer(data={
+                                    'averageScore': avg_score,
+                                    'xp': profile.exp_points,
+                                    'totalGamesPlayed': total_games,
+                                    'totalSongsPlayed': total_rounds,
+                                    'totalGamesWon': total_games_won,
+                                    'ranking': _ranking(profile),
+                                    'totalPlayers': _total_players(),
+                                    'averageTime': avg_time,
+                                    'successRateArtist': artist_rate,
+                                    'successRateSong': song_rate,
+                                    'successRateComplete': complete_rate,
+                                    'successRatesCompleteByTag': tag_rates,
+        })
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        print("GlobalStatsView serializer errors:", serializer.errors)
+        return Response({'error': {'serializer': serializer.errors}},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class LeaderboardView(APIView):
     """Return the top-10 leaderboard and the current user's ranking."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
         """Return leaderboard data."""
@@ -107,7 +115,7 @@ class LeaderboardView(APIView):
         )
         entries = []
         is_in_top_10 = False
-        for rank, profile in enumerate(top_profiles, start=1):
+        for profile in top_profiles:
             entries.append({
                 'username': profile.username,
                 'avatar': _get_avatar_url(request, profile),
@@ -139,10 +147,11 @@ class LeaderboardView(APIView):
 
 class HistoryView(APIView):
     """Return the last 10 games played by the authenticated user."""
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
         """Return match history."""
+        print("HELLO HISTORY VIEW, request.profile:", request.profile.username)
         profile = request.profile
 
         user_game_stats = (
@@ -154,11 +163,11 @@ class HistoryView(APIView):
         history = []
         for ugs in user_game_stats:
             game = ugs.game
-            game_xp_ranking = list(
-                UserRoundStats.objects.filter(game=game)
+            game_xp_ranking = (UserRoundStats.objects.filter(round__game=game)
                 .values('player')
                 .annotate(total_xp=Sum('xp_earned'))
                 .order_by('-total_xp')
+                .all()
             )
             my_xp = next(
                 (p['total_xp'] for p in game_xp_ranking if p['player'] == profile.pk), 0
@@ -170,11 +179,11 @@ class HistoryView(APIView):
                 GameRoundStats.objects.filter(game=game)
                 .values_list('track_id', flat=True)
             )
-            tags = list(
+            tags = [kinds_to_label.get(track.kind, track.kind) for track in
                 Playlist.objects.filter(tracks__in=track_ids)
                 .values_list('slug', flat=True)
                 .distinct()
-            )
+            ]
             players_data = []
             for player_profile in game.players.all():
                 p_xp = next(
@@ -193,10 +202,11 @@ class HistoryView(APIView):
                 })
             rounds_data = []
             user_rounds = (
-                UserRoundStats.objects.filter(player=profile, game=game)
+                UserRoundStats.objects.filter(player=profile, round__game=game)
                 .select_related('round__track')
                 .order_by('round__round_number')
             )
+            print(user_rounds)
             for urs in user_rounds:
                 track = urs.round.track if urs.round else None
                 round_rank = (
@@ -215,13 +225,13 @@ class HistoryView(APIView):
                     'artworkUrl': track.artwork_url if track else None,
                     'roundNumber': urs.round.round_number if urs.round else 0,
                 })
-
+            print("History entry for game:", game.game_name, "with players:", [p['username'] for p in players_data], "and tags:", tags) 
             history.append({
                 'playedAt': ugs.played_at,
                 'xpEarned': my_xp,
                 'ranking': my_rank,
                 'roomTitle': game.game_name,
-                'tags': tags,
+                'tags': [kinds_to_label.get(t, t) for t in tags],
                 'players': players_data,
                 'rounds': rounds_data,
             })
