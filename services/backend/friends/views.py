@@ -63,15 +63,23 @@ def _resolve_target_user(target_uid: str | None) -> SiteUser | None:
     return profile.user
 
 
-def _notif_payload(friendship: Friendship, request: Request) -> dict[str, object]:
-    """Return a frontend-shaped notification entry for a friendship request."""
+def _notif_payload(
+    friendship: Friendship,
+    request: Request,
+    *,
+    kind: str,
+    profile: Profile,
+    relation: str,
+) -> dict[str, object]:
+    """Return a frontend-shaped notification entry."""
 
     serializer = FriendUserSerializer(
-        friendship.from_user.profile,
-        context={'request': request, 'relation': 'incoming'},
+        profile,
+        context={'request': request, 'relation': relation},
     )
     return {
-        'kind': 'friend-request',
+        'uid': str(friendship.uid),
+        'kind': kind,
         'from': serializer.data,
         'date': friendship.created_at.isoformat(),
         'read': friendship.read,
@@ -209,7 +217,8 @@ class FriendRequestsRespond(APIView):
         if curr_relationship and curr_relationship.status == 'pending':
             if new_status == 'accept':
                 curr_relationship.status = 'accepted'
-                curr_relationship.save(update_fields=['status'])
+                curr_relationship.read = False
+                curr_relationship.save(update_fields=['status', 'read'])
                 return Response(
                     {
                         'description': 'FRIENDSHIP_REQUEST_ACCEPTED',
@@ -295,13 +304,41 @@ class NotifSee(APIView):
     def get(self, request: Request) -> Response:
         """Return incoming friend requests as notification entries."""
 
-        friendships = (
+        incoming_friendships = (
             Friendship.objects.filter(to_user=request.user, status='pending')
             .select_related('from_user__profile')
             .order_by('-created_at')
         )
+        accepted_friendships = (
+            Friendship.objects.filter(from_user=request.user, status='accepted')
+            .select_related('to_user__profile')
+            .order_by('-created_at')
+        )
+
+        notifs = [
+            _notif_payload(
+                friendship,
+                request,
+                kind='friend-request',
+                profile=friendship.from_user.profile,
+                relation='incoming',
+            )
+            for friendship in incoming_friendships
+        ]
+        notifs.extend(
+            _notif_payload(
+                friendship,
+                request,
+                kind='friend-accepted',
+                profile=friendship.to_user.profile,
+                relation='friends',
+            )
+            for friendship in accepted_friendships
+        )
+
+        notifs.sort(key=lambda notif: notif['date'], reverse=True)
         return Response(
-            {'notifs': [_notif_payload(friendship, request) for friendship in friendships]},
+            {'notifs': notifs},
             status=status.HTTP_200_OK,
         )
 
@@ -315,4 +352,5 @@ class NotifRead(APIView):
         """Mark all incoming friend-request notifications as read."""
 
         Friendship.objects.filter(to_user=request.user, status='pending', read=False).update(read=True)
+        Friendship.objects.filter(from_user=request.user, status='accepted', read=False).update(read=True)
         return Response({}, status=status.HTTP_200_OK)

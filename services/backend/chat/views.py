@@ -2,6 +2,8 @@
 
 import uuid
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -10,7 +12,11 @@ from rest_framework.views import APIView
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
-from .chat_utils import accepted_friendship_exists, get_or_create_direct_room
+from .chat_utils import (
+    accepted_friendship_exists,
+    get_or_create_direct_room,
+    serialize_friend_chat_message,
+)
 from .models import Message, Room
 from .serializers import MessageSerializer, RoomSerializer
 
@@ -134,25 +140,39 @@ class FriendMessageFeed(APIView):
         if created:
             room.participants.add(request.user.profile, target_user.profile)
 
+        channel_layer = get_channel_layer()
         feed: list[dict[str, object]] = []
         messages = Message.objects.filter(room=room).select_related('sender_profile').order_by('created')
         for message in messages:
             is_outgoing = message.sender_profile_id == request.user.profile.id
-            payload: dict[str, object] = {
-                'message': message.body,
-                'date': message.created.isoformat(),
-                'direction': 'outgoing' if is_outgoing else 'incoming',
-                'target-id': str(target_user.profile.uid),
-                'target': target_user.profile.username,
-                'uid': str(message.uid),
-            }
-            if is_outgoing:
-                if message.seen:
-                    payload['status'] = 'read'
-                elif message.delivered:
-                    payload['status'] = 'recieved'
-                else:
-                    payload['status'] = 'sent'
+            if not is_outgoing and not message.seen:
+                update_fields: list[str] = []
+                if not message.delivered:
+                    message.delivered = True
+                    update_fields.append('delivered')
+                message.seen = True
+                update_fields.append('seen')
+                message.save(update_fields=update_fields)
+
+                if channel_layer:
+                    payload: dict[str, object] = {
+                        'target': 'friend-chat',
+                        'event': 'update_status',
+                        'message': serialize_friend_chat_message(message, request.user.profile, 'outgoing'),
+                    }
+                    async_to_sync(channel_layer.group_send)(
+                        f'user_{message.sender_profile_id}',
+                        {
+                            'type': 'send.notification',
+                            'payload': payload,
+                        },
+                    )
+
+            payload: dict[str, object] = serialize_friend_chat_message(
+                message,
+                target_user.profile,
+                'outgoing' if is_outgoing else 'incoming',
+            )
             feed.append(payload)
 
         return Response({'feed': feed}, status=status.HTTP_200_OK)
