@@ -24,7 +24,9 @@ describe("Websocket - data recieve", () => {
 		mockSocialResetDB();
 		mockResetMessageDB();
 	});
-	afterEach(() => server.resetHandlers());
+	afterEach(() => {
+		server.resetHandlers();
+	});
 	afterAll(() => server.close());
 
 	//ADD FRIENDS

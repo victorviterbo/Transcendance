@@ -38,6 +38,9 @@ vi.mock("../localization/localization", () => {
 		TAG_ELECRO: "Elecro",
 		TAG_FRENCH_VARIETY: "French Variety",
 		TAG_RNB: "RNB",
+		NOTIF_AGO_DAYS: "NOTIF_AGO_DAYS COUNT: {COUNT}",
+		NOTIF_AGO_HOURS: "NOTIF_AGO_HOURS COUNT: {COUNT}",
+		NOTIF_AGO_MINUTES: "NOTIF_AGO_MINUTES COUNT: {COUNT}",
 	};
 
 	const ttr = (id: string) => translations[id] ?? id;
@@ -67,13 +70,8 @@ vi.mock("../localization/localization", () => {
 		onLangChanged: vi.fn(),
 		setOnLangChanged: vi.fn(),
 		startLocalization: vi.fn(),
-		ttr: (id: string) => id,
-		ttrf: (id: string, params: Record<string, string>) => {
-			for (const [key, value] of Object.entries(params)) {
-				id += " " + key + ": " + value;
-			}
-			return id;
-		},
+		ttr,
+		ttrf,
 		ttrd,
 		ttrn,
 	};
