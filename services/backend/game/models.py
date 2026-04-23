@@ -63,4 +63,4 @@ class Game(models.Model):
 
 	class Meta:
 		"""Define special behaviour of database."""
-		ordering = ['-created_at']
+		ordering = ['-played_at']
