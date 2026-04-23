@@ -36,6 +36,7 @@ import {
 } from "../../mock/handlers/social/socialChat_dbs";
 import { useState } from "react";
 import { mockSetNoRequests } from "../../mock/handlers/ws/websocket";
+import { mockOpenedWith, mockSetOpenedWith } from "../../mock/handlers/social/socialChat";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -711,6 +712,7 @@ describe("Socials - Interactions", () => {
 			const user: IExtUserInfo = mockGetExtUser(4);
 			user.image = "";
 
+			mockSetOpenedWith(undefined, undefined);
 			postMock.mockImplementation((url: string, body) => {
 				if (url === API_SOCIAL_FRIENDS_SEARCH) {
 					const input: IExtUserSearch = typeof body == "string" ? JSON.parse(body) : body;
@@ -860,6 +862,8 @@ describe("Socials - Interactions", () => {
 			await userEvent.click(messageButton);
 
 			await waitFor(() => {
+				expect(mockOpenedWith).toBeDefined();
+				expect(mockOpenedWith).not.toBeNull();
 				expect(screen.getByText("SOCIAL_NO_MESSAGE")).toBeInTheDocument();
 				expect(within(paperTitle).getByText(target)).toBeInTheDocument();
 				expect(within(paperTitle).getByAltText(target + "'s picture")).toBeInTheDocument();
@@ -930,6 +934,17 @@ describe("Socials - Interactions", () => {
 				},
 				{ timeout: 3000 },
 			);
+
+			//CLOSING CHAT
+			const closeButton = screen.getByTestId("PSocialCloseChat");
+
+			expect(closeButton).toBeInTheDocument();
+
+			await userEvent.click(closeButton);
+
+			await waitFor(() => {
+				expect(mockOpenedWith).toBeNull();
+			});
 		},
 	);
 });

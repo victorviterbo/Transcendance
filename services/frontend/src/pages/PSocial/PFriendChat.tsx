@@ -9,7 +9,7 @@ import type {
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../constants";
 import api from "../../api";
 import type { AxiosResponse } from "axios";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
 import CText from "../../components/text/CText";
@@ -17,7 +17,7 @@ import PFriendChatNode from "./PFriendChatNode";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
-import type { IWSContextModule, TWSRcv } from "../../types/websocket";
+import type { IWSContextModule, TWSRcv, TWSSend } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 
 interface PFriendChatProps extends GPageProps {
@@ -29,6 +29,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [messageField, setMessageField] = useState<string>("");
 	const wsContext: IWSContextModule = useWS("friend-chat");
+	const lastTarget = useRef<IFriendInfo | undefined>(undefined);
 
 	useEffect(() => {
 		wsContext.setOnUpdate(() => {
@@ -109,15 +110,37 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 				});
 				setFeed(res.data);
 				setError(undefined);
+
+				if (!targetFriend) return;
+				wsContext.sendMessage(
+					JSON.stringify({
+						target: "friend-chat",
+						event: "open",
+						to: targetFriend.username,
+						toUid: targetFriend.uid,
+					} as TWSSend),
+				);
+				lastTarget.current = targetFriend;
 			} catch (error) {
 				setError(getErrorNode(error, "SOCIAL_MESSAGE_ERROR"));
 				setFeed(undefined);
 			}
 		}
 
-		if (!targetFriend) setFeed(undefined);
-		else getChat();
-	}, [targetFriend]);
+		if (!targetFriend) {
+			setFeed(undefined);
+			if (lastTarget.current) {
+				wsContext.sendMessage(
+					JSON.stringify({
+						target: "friend-chat",
+						event: "close",
+						to: lastTarget.current.username,
+						toUid: lastTarget.current.uid,
+					} as TWSSend),
+				);
+			}
+		} else getChat();
+	}, [targetFriend, wsContext]);
 
 	//====================== OUTGOING ======================
 	function handleSendMessage() {
@@ -139,7 +162,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 				target: "friend-chat",
 				event: "send",
 				message: nMessage,
-			} as TWSRcv),
+			} as TWSSend),
 		);
 
 		setMessageField("");

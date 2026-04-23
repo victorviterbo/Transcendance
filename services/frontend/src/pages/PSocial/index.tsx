@@ -69,6 +69,7 @@ function PSocial({ onTabChanged, activeTab }: PSocialProps) {
 							onClick={() => {
 								setMessaging(undefined);
 							}}
+							data-testid="PSocialCloseChat"
 						>
 							<ArrowBackIcon fontSize="small" />
 						</CIconButton>
