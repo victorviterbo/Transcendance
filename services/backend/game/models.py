@@ -6,7 +6,6 @@ import uuid
 
 from chat.models import Room
 from django.db import models
-from django.utils import timezone
 from music.models import Playlist, Track
 from userprofile.models import Profile
 

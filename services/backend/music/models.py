@@ -4,7 +4,6 @@ from django.db import models
 class Playlist(models.Model):
 	"""Stores the different playlists (e.g., Rock, Rap, Classics)."""
 	name = models.CharField(max_length=255, unique=True)
-	slug = models.SlugField(max_length=100, unique=True, default='')
 	rss_url = models.URLField(max_length=500, default='')
 	
 	def __str__(self):
