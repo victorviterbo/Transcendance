@@ -30,7 +30,7 @@ export interface IWSContextModule {
 export type TWSRcv =
 	| {
 			target: Extract<TWSModuleName, "friend-chat">;
-			event: "update_status" | "new" | "send";
+			event: "update_status" | "new";
 			message: IFriendMessage;
 	  }
 	| {
@@ -44,9 +44,6 @@ export type TWSRcv =
 			user: IExtUserInfo;
 	  }
 	| {
-			target: Extract<TWSModuleName, "test_counter_event">;
-	  }
-	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
 	  };
@@ -54,13 +51,15 @@ export type TWSRcv =
 export type TWSSend =
 	| {
 			target: Extract<TWSModuleName, "friend-chat">;
-			event: "new";
-			message: string;
-			date: string;
-			to: string;
-			toUid: string;
+			event: "send" | "open" | "close";
+			message?: IFriendMessage;
+			to?: string;
+			toUid?: string;
 	  }
 	| {
 			target: "room-guess";
 			guess: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "test_counter_event">;
 	  };

@@ -10,8 +10,9 @@ import {
 	type IMockMessageDBUser,
 } from "../../mock/handlers/social/socialChat_dbs";
 import { mockSocialDB, mockSocialResetDB } from "../../mock/handlers/social/social_dbs";
-import type { IFriendInfo, IFriendMessage, TMessageStatus } from "../../types/friends";
+import type { IFriendInfo, IFriendMessage, TMessageStatus } from "../../types/socials";
 import userEvent from "@testing-library/user-event";
+import { mockOpenedWith, mockSetOpenedWith } from "../../mock/handlers/social/socialChat";
 
 describe("Websocket - data recieve", () => {
 	beforeAll(() => {
@@ -204,6 +205,30 @@ describe("Websocket - data recieve", () => {
 					return window.getComputedStyle(icon).color != "rgb(0, 0, 0)";
 				});
 				expect(allRead.length).toEqual(read);
+			});
+		},
+	);
+
+	it.each([["Ryu_88"], ["Kitsune"], ["NekoShadow"]])(
+		"Chat: Check talk to status (Target: %s)",
+		async (Target) => {
+			const messageDB = mockGetMessageDB();
+			const targetFriend = messageDB.data.find((value: IMockMessageDBUser) => {
+				return value.friend.username == Target;
+			});
+			mockSetOpenedWith(undefined, undefined);
+
+			expect(targetFriend).toBeDefined();
+			if (!targetFriend) return;
+			render(
+				<CWebsocket>
+					<PFriendChat targetFriend={targetFriend.friend}></PFriendChat>
+				</CWebsocket>,
+			);
+
+			await waitFor(() => {
+				expect(mockOpenedWith).toBeDefined();
+				expect(mockOpenedWith).not.toBeNull();
 			});
 		},
 	);

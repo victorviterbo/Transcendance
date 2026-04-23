@@ -1,10 +1,42 @@
 import { http, HttpResponse } from "msw";
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../../constants";
-import type { IFriendFeed, IFriendMessage, IFriendMessageReq } from "../../../types/socials";
+import type {
+	IFriendFeed,
+	IFriendInfo,
+	IFriendMessage,
+	IFriendMessageReq,
+} from "../../../types/socials";
 import { mockGetMessageDB, type IMockMessageDBUser } from "./socialChat_dbs";
 import { mockSocialDB } from "./social_dbs";
-import type { TWSRcv } from "../../../types/websocket";
+import type { TWSRcv, TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
+
+//--------------------------------------------------
+//                     DEBUG VARS
+//--------------------------------------------------
+export let mockOpenedWith: IFriendInfo | undefined | null = undefined;
+export const mockSetOpenedWith = (
+	target: IFriendInfo | undefined | null,
+	was: IFriendInfo | undefined | null,
+) => {
+	if (target)
+		console.log(
+			"Chat %copened%c with: %c" + target.username + "%c",
+			"color: #36a11b",
+			"color: #fff",
+			"color: #8c91db",
+			"color: #fff",
+		);
+	else if (was)
+		console.log(
+			"Chat %cclosed%c with: %c" + was.username + "%c",
+			"color: #df9a1c",
+			"color: #fff",
+			"color: #8c91db",
+			"color: #fff",
+		);
+	mockOpenedWith = target;
+};
 
 //--------------------------------------------------
 //                  STD PROTOCOLES
@@ -111,12 +143,14 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 	}, 5000);
 }
 
-export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionProtocol) {
+export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionProtocol) {
 	if (data.target != "friend-chat") return;
 	if (data.event != "send") return;
+	if (!data.message) return;
 
 	const messageUser: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
 		(user: IMockMessageDBUser) => {
+			if (!data.message) return undefined;
 			return user.friend.uid == data.message["target-id"];
 		},
 	);
@@ -194,4 +228,20 @@ export function onMessageSent(data: TWSRcv, client: WebSocketClientConnectionPro
 			}, 2000);
 		}, 1000);
 	}, 1000);
+}
+
+export function onMessageStatus(data: TWSSend) {
+	if (data.target != "friend-chat") return;
+	if (data.event != "open" && data.event != "close") return;
+	if (!data.toUid) return;
+
+	const friend: IFriendInfo | undefined = mockSocialDB.friends.find((value: IFriendInfo) => {
+		if (!data.toUid) return false;
+		return (value.uid = data.toUid);
+	});
+
+	if (!friend) return;
+
+	if (data.event == "open") mockSetOpenedWith(friend, null);
+	if (data.event == "close") mockSetOpenedWith(null, friend);
 }
