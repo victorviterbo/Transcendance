@@ -16,10 +16,10 @@ class Game(models.Model):
     game_name = models.CharField(max_length=50)
     
     players = models.ManyToManyField(Profile,
-                                     through='stats.UserGameStats')
+                                     through='stats.UserGameStats',
+                                     related_name='games_played')
     
-    tracks = models.ManyToManyField(Track,
-                                    through='stats.GameRoundStats')
+    #tracks = models.ManyToManyField(Track, through='stats.GameRoundStats')
     
     room = models.OneToOneField(Room,
                                 on_delete=models.SET_NULL,

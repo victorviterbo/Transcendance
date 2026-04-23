@@ -22,9 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # During dev, used to store user's media
 MEDIA_ROOT = BASE_DIR / 'DB' / 'media'
 
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'DB' / 'static'
 
 # SECURITY WARNING: keep the secret key used in production secret!

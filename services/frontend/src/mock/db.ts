@@ -1,3 +1,13 @@
+import { MUSIC_TAGS } from "../constants";
+import {
+	DEFAULT_PROFILE_AVATAR,
+	defaultMatchHistories,
+	defaultStatsProfiles,
+	defaultUsers,
+	mockBadgeBreakpoints,
+	mockBadgeStrings,
+} from "./db.data";
+
 export interface MockUser {
 	username: string;
 	email: string;
@@ -8,18 +18,92 @@ export interface MockUser {
 	sessionKey?: string | null;
 }
 
-export const mockBadgeStrings = [
-	"Deaf Octopus",
-	"Dazed Jellyfish",
-	"Distracted Pigeon",
-	"Curious Cat",
-	"Attentive Owl",
-	"Rhythmic Raptor",
-	"Sonic Shark",
-	"Echolocating Bat",
-] as const;
+export interface MockGlobalStatsProfile {
+	averageScore: number;
+	totalGamesPlayed: number;
+	totalSongsPlayed: number;
+	totalGamesWon: number;
+	averageTime: number;
+	successRateArtist: number;
+	successRateSong: number;
+	successRateComplete: number;
+	successRatesCompleteByTag: Record<string, number>;
+}
 
-const mockBadgeBreakpoints = [100, 200, 500, 1000, 2000, 5000, 10000] as const;
+export interface MockHistoryPlayerSeed {
+	username: string;
+	ranking: number;
+	avatar?: string | null;
+}
+
+export interface MockHistoryRound {
+	trackName: string;
+	trackArtist: string;
+	songFound: boolean;
+	artistFound: boolean;
+	time: number;
+	ranking: number;
+	previewUrl: string;
+	artworkUrl: string;
+	roundNumber: number;
+}
+
+export interface MockHistoryEntrySeed {
+	playedAt: string;
+	xpEarned: number;
+	ranking: number;
+	roomTitle: string;
+	tags: string[];
+	players: MockHistoryPlayerSeed[];
+	rounds: MockHistoryRound[];
+}
+
+export interface MockHistoryPlayer {
+	username: string;
+	avatar: string;
+	ranking: number;
+}
+
+export interface MockHistoryEntry {
+	playedAt: string;
+	xpEarned: number;
+	ranking: number;
+	roomTitle: string;
+	tags: string[];
+	players: MockHistoryPlayer[];
+	rounds: MockHistoryRound[];
+}
+
+export interface MockGlobalStatsResponse extends MockGlobalStatsProfile {
+	xp: number;
+	ranking: number;
+	totalPlayers: number;
+}
+
+export interface MockLeaderboardEntry {
+	username: string;
+	avatar: string;
+	xp: number;
+	badges: string;
+	ranking: number;
+	isCurrentUser: boolean;
+}
+
+export interface MockLeaderboardResponse {
+	leaderboard: MockLeaderboardEntry[];
+	leaderboardCount: number;
+	ranking: number;
+	totalNumberPlayer: number;
+}
+
+export interface MockHistoryResponse {
+	history: MockHistoryEntry[];
+	historyCount: number;
+}
+
+export { DEFAULT_PROFILE_AVATAR, mockBadgeStrings } from "./db.data";
+
+const LEADERBOARD_LIMIT = 10;
 
 export const getBadgeForXp = (xp: number) => {
 	const safeXp = Math.max(0, Math.floor(xp));
@@ -29,18 +113,73 @@ export const getBadgeForXp = (xp: number) => {
 		: mockBadgeStrings[badgeIndex];
 };
 
-const defaultUser: MockUser = {
-	username: "john",
-	email: "john@42.fr",
-	password: "secret",
-	avatar: null,
-	expPoints: 120,
-	isGuest: false,
-	sessionKey: null,
+const createGlobalStatsProfile = (
+	overrides: Partial<MockGlobalStatsProfile> = {},
+): MockGlobalStatsProfile => {
+	const { successRatesCompleteByTag, ...rest } = overrides;
+	const defaultTagRates = Object.fromEntries(MUSIC_TAGS.map((tag) => [tag, 0])) as Record<
+		string,
+		number
+	>;
+
+	return {
+		averageScore: 0,
+		totalGamesPlayed: 0,
+		totalSongsPlayed: 0,
+		totalGamesWon: 0,
+		averageTime: 0,
+		successRateArtist: 0,
+		successRateSong: 0,
+		successRateComplete: 0,
+		...rest,
+		successRatesCompleteByTag: {
+			...defaultTagRates,
+			...successRatesCompleteByTag,
+		},
+	};
 };
+
+const cloneGlobalStatsProfile = (profile: Partial<MockGlobalStatsProfile>) =>
+	createGlobalStatsProfile(profile);
+
+const cloneHistoryRound = (round: MockHistoryRound): MockHistoryRound => ({ ...round });
+
+const cloneHistoryPlayerSeed = (player: MockHistoryPlayerSeed): MockHistoryPlayerSeed => ({
+	...player,
+});
+
+const cloneHistoryEntrySeed = (entry: MockHistoryEntrySeed): MockHistoryEntrySeed => ({
+	playedAt: entry.playedAt,
+	xpEarned: entry.xpEarned,
+	ranking: entry.ranking,
+	roomTitle: entry.roomTitle,
+	tags: [...entry.tags],
+	players: entry.players.map(cloneHistoryPlayerSeed),
+	rounds: entry.rounds.map(cloneHistoryRound),
+});
+
+const cloneUser = (user: MockUser): MockUser => ({ ...user });
+
+const cloneStatsProfileMap = (profiles: Record<string, Partial<MockGlobalStatsProfile>>) =>
+	Object.fromEntries(
+		Object.entries(profiles).map(([username, profile]) => [
+			username,
+			cloneGlobalStatsProfile(profile),
+		]),
+	);
+
+const cloneHistoryMap = (historyMap: Record<string, MockHistoryEntrySeed[]>) =>
+	Object.fromEntries(
+		Object.entries(historyMap).map(([username, history]) => [
+			username,
+			history.map(cloneHistoryEntrySeed),
+		]),
+	);
 
 let users: MockUser[] = [];
 let sessionUser: string | null = null;
+let globalStatsProfiles: Record<string, MockGlobalStatsProfile> = {};
+let matchHistories: Record<string, MockHistoryEntrySeed[]> = {};
 
 /**
  * @brief Normalize email for comparisons.
@@ -56,13 +195,87 @@ export const normalizeEmail = (value: string) => value.trim().toLowerCase();
  */
 export const normalizeUsername = (value: string) => value.trim();
 
+const ensureStatsProfile = (username: string) => {
+	if (!globalStatsProfiles[username]) {
+		globalStatsProfiles[username] = createGlobalStatsProfile();
+	}
+	return globalStatsProfiles[username];
+};
+
+const ensureHistory = (username: string) => {
+	if (!matchHistories[username]) {
+		matchHistories[username] = [];
+	}
+	return matchHistories[username];
+};
+
+const ensureStatsState = (username: string) => {
+	ensureStatsProfile(username);
+	ensureHistory(username);
+};
+
+const listRankedUsers = () =>
+	listUsers().sort(
+		(left, right) =>
+			right.expPoints - left.expPoints || left.username.localeCompare(right.username),
+	);
+
+const getRankPosition = (username: string) => {
+	const rankedUsers = listRankedUsers();
+	const position = rankedUsers.findIndex((user) => user.username === username);
+
+	return {
+		ranking: position >= 0 ? position + 1 : rankedUsers.length + 1,
+		totalPlayers: rankedUsers.length,
+	};
+};
+
+const resolveAvatar = (avatar: string | null | undefined) => avatar ?? DEFAULT_PROFILE_AVATAR;
+
+const resolveHistoryPlayerAvatar = (player: MockHistoryPlayerSeed) =>
+	resolveAvatar(player.avatar ?? findUserByExactUsername(player.username)?.avatar);
+
+const renameHistoryParticipants = (currentUsername: string, nextUsername: string) => {
+	for (const history of Object.values(matchHistories)) {
+		for (const entry of history) {
+			for (const player of entry.players) {
+				if (player.username === currentUsername) {
+					player.username = nextUsername;
+				}
+			}
+		}
+	}
+};
+
+const moveStatsState = (currentUsername: string, nextUsername: string) => {
+	if (currentUsername === nextUsername) return;
+
+	globalStatsProfiles[nextUsername] = cloneGlobalStatsProfile(
+		globalStatsProfiles[currentUsername] ?? createGlobalStatsProfile(),
+	);
+	delete globalStatsProfiles[currentUsername];
+
+	matchHistories[nextUsername] = (matchHistories[currentUsername] ?? []).map(
+		cloneHistoryEntrySeed,
+	);
+	delete matchHistories[currentUsername];
+
+	renameHistoryParticipants(currentUsername, nextUsername);
+};
+
 /**
  * @brief Reset the mock database to the default state.
  * @returns void
  */
 export const resetMockDb = () => {
-	users = [{ ...defaultUser }];
+	users = defaultUsers.map(cloneUser);
 	sessionUser = null;
+	globalStatsProfiles = cloneStatsProfileMap(defaultStatsProfiles);
+	matchHistories = cloneHistoryMap(defaultMatchHistories);
+
+	for (const user of users) {
+		ensureStatsState(user.username);
+	}
 };
 
 /**
@@ -102,8 +315,11 @@ export const createUser = (username: string, email: string, password: string) =>
 		sessionKey: null,
 	};
 	users.push(newUser);
+	ensureStatsState(newUser.username);
 	return newUser;
 };
+
+export const listUsers = () => users.map(cloneUser);
 
 /**
  * @brief Validate credentials against the mock database.
@@ -164,6 +380,7 @@ export const updateUser = (
 	if (typeof updates.avatar !== "undefined") next.avatar = updates.avatar;
 
 	users[index] = next;
+	moveStatsState(current.username, next.username);
 
 	if (sessionUser === current.username) {
 		sessionUser = next.username;
@@ -191,6 +408,120 @@ export const updatePassword = (username: string, currentPassword: string, newPas
 	return users[index];
 };
 
+export const setUserExpPoints = (username: string, expPoints: number) => {
+	const normalizedTarget = normalizeUsername(username);
+	const index = users.findIndex((user) => normalizeUsername(user.username) === normalizedTarget);
+	if (index < 0) return null;
+
+	users[index] = {
+		...users[index],
+		expPoints: Math.max(0, Math.floor(expPoints)),
+	};
+	return users[index];
+};
+
+export const setUserStatsProfile = (
+	username: string,
+	overrides: Partial<MockGlobalStatsProfile>,
+) => {
+	const user = findUserByUsername(username);
+	if (!user) return null;
+
+	const currentProfile = ensureStatsProfile(user.username);
+	const nextProfile = createGlobalStatsProfile({
+		...currentProfile,
+		...overrides,
+		successRatesCompleteByTag: {
+			...currentProfile.successRatesCompleteByTag,
+			...overrides.successRatesCompleteByTag,
+		},
+	});
+
+	globalStatsProfiles[user.username] = nextProfile;
+	return cloneGlobalStatsProfile(nextProfile);
+};
+
+export const setUserHistory = (username: string, history: MockHistoryEntrySeed[]) => {
+	const user = findUserByUsername(username);
+	if (!user) return null;
+
+	matchHistories[user.username] = history.map(cloneHistoryEntrySeed);
+	return matchHistories[user.username].map(cloneHistoryEntrySeed);
+};
+
+export const getGlobalStats = (username: string): MockGlobalStatsResponse | null => {
+	const user = findUserByExactUsername(username);
+	if (!user) return null;
+
+	const profile = ensureStatsProfile(user.username);
+	const { ranking, totalPlayers } = getRankPosition(user.username);
+
+	return {
+		...cloneGlobalStatsProfile(profile),
+		xp: user.expPoints,
+		ranking,
+		totalPlayers,
+	};
+};
+
+export const getLeaderboard = (currentUsername: string): MockLeaderboardResponse => {
+	const rankedUsers = listRankedUsers();
+	const { ranking } = getRankPosition(currentUsername);
+	const leaderboard = rankedUsers.slice(0, LEADERBOARD_LIMIT).map((user, index) => ({
+		username: user.username,
+		avatar: resolveAvatar(user.avatar),
+		xp: user.expPoints,
+		badges: getBadgeForXp(user.expPoints),
+		ranking: index + 1,
+		isCurrentUser: user.username === currentUsername,
+	}));
+
+	if (ranking > LEADERBOARD_LIMIT) {
+		const currentUser = rankedUsers[ranking - 1];
+		if (currentUser) {
+			leaderboard.push({
+				username: currentUser.username,
+				avatar: resolveAvatar(currentUser.avatar),
+				xp: currentUser.expPoints,
+				badges: getBadgeForXp(currentUser.expPoints),
+				ranking,
+				isCurrentUser: true,
+			});
+		}
+	}
+
+	return {
+		leaderboard,
+		leaderboardCount: leaderboard.length,
+		ranking,
+		totalNumberPlayer: rankedUsers.length,
+	};
+};
+
+export const getHistory = (username: string): MockHistoryResponse | null => {
+	const user = findUserByExactUsername(username);
+	if (!user) return null;
+
+	const history = ensureHistory(user.username).map((entry) => ({
+		playedAt: entry.playedAt,
+		xpEarned: entry.xpEarned,
+		ranking: entry.ranking,
+		roomTitle: entry.roomTitle,
+		tags: [...entry.tags],
+		players: entry.players.map((player) => ({
+			username: player.username,
+			avatar: resolveHistoryPlayerAvatar(player),
+			ranking: player.ranking,
+		})),
+		rounds: entry.rounds.map(cloneHistoryRound),
+	}));
+
+	return {
+		history,
+		historyCount: history.length,
+	};
+};
+
 /**
  * @brief Delete user profile and reset session when needed.
  * @param username User identifier.
@@ -200,7 +531,11 @@ export const deleteUser = (username: string) => {
 	const normalized = normalizeUsername(username);
 	const index = users.findIndex((user) => normalizeUsername(user.username) === normalized);
 	if (index < 0) return false;
-	users.splice(index, 1);
+
+	const [deletedUser] = users.splice(index, 1);
+	delete globalStatsProfiles[deletedUser.username];
+	delete matchHistories[deletedUser.username];
+
 	if (sessionUser && normalizeUsername(sessionUser) === normalized) sessionUser = null;
 	return true;
 };
@@ -212,11 +547,18 @@ export const db = {
 	findUserByUsername,
 	findUserByExactUsername,
 	createUser,
+	listUsers,
 	authenticate,
 	getSessionUser,
 	setSessionUser,
 	clearSessionUser,
 	updateUser,
 	updatePassword,
+	setUserExpPoints,
+	setUserStatsProfile,
+	setUserHistory,
+	getGlobalStats,
+	getLeaderboard,
+	getHistory,
 	deleteUser,
 };

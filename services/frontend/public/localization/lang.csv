@@ -192,3 +192,43 @@ TECH_LEAD,Tech Lead,Responsable technique,テックリード,Role label shown on
 DEVELOPER,Developer,Développeur,開発者,Role label shown on the contact page
 PAGE_NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
 USER_NOT_FOUND,Looks like this user does not exist,On dirait bien que cet utilisateur n'existe pas,このユーザーは存在しないようです,Shows on a missing user profile
+LEADERBOARD_LOADING,Leaderboard loading...,Chargement du classement...,ランキングを読み込み中...,Shown while the leaderboard request is loading
+LEADERBOARD_LOADING_FAILED,Leaderboard loading failed,Le chargement du classement a échoué,ランキングの読み込みに失敗しました,Shown when the leaderboard request fails
+LEADERBOARD_POINTS,Points,Points,ポイント,Leaderboard value label shown next to a player's score
+LEADERBOARD_TOTAL_PLAYERS,"Total players: {number}","Nombre total de joueurs : {number}","プレイヤー総数: {number}",Leaderboard footer showing the total number of ranked players
+LEADERBOARD_MESSAGE,Compete with others to climb the ladder!,Affrontez les autres pour grimper dans le classement !,他のプレイヤーと競い合ってランキングを駆け上がろう！,Short leaderboard intro message encouraging ranked competition
+PROFILE_STATS_LOADING,Loading statistics...,Chargement des statistiques...,統計を読み込み中...,Shown while the profile statistics request is loading
+PROFILE_STATS_LOAD_FAILED,Statistics loading failed,Le chargement des statistiques a échoué,統計の読み込みに失敗しました,Shown when the profile statistics request fails
+TAG_POP,Pop,Pop,ポップ,Music tag associated to songs
+TAG_RAP,Rap,Rap,ラップ,Music tag associated to songs
+TAG_ROCK,Rock,Rock,ロック,Music tag associated to songs
+TAG_ELECRO,Electro,Electro,エレクトロ,Music tag associated to songs
+TAG_FRENCH_VARIETY,French Variety,Variété française,フレンチバラエティ,Music tag associated to songs
+TAG_RNB,RNB,RNB,R&B,Music tag associated to songs
+STATS_GAMES_PLAYED,Games played,Parties jouées,プレイしたゲーム,Shown in the stats panel
+STATS_SONGS_PLAYED,Tracks played,Musiques jouées,再生した曲,Shown in the stats panel
+STATS_GAMES_WON,Games won,Parties gagnées,勝利したゲーム,Shown in the stats panel
+STATS_AVERAGE_SCORE,Average score,Score moyen,平均スコア,Shown in the stats panel
+STATS_AVERAGE_TIME,Average time,Temps moyen,平均時間,Shown in the stats panel
+STATS_RANKING,Rank,Classement,順位,Shown in the stats panel
+STATS_ARTIST_RATE,Artists found,Artistes trouvés,アーティスト正答率,Shown in the stats panel
+STATS_SONG_RATE,Songs found,Titres trouvés,曲名正答率,Shown in the stats panel
+STATS_COMPLETE_RATE,Perfect answers,Réponses complètes,完全正答率,Shown in the stats panel
+STATS_COMPLETE_RATES_BY_TAG,Perfect answers by tag,Réponses complètes par style,タグごとの完全正答率,Shown in the stats panel
+HISTORY_LOADING,Loading match history...,Chargement de l'historique des matchs...,履歴を読み込み中...,Shown while the match history request is loading
+HISTORY_LOADING_FAILED,Match history loading failed,Le chargement de l'historique des matchs a échoué,履歴の読み込みに失敗しました,Shown when the match history request fails
+HISTORY_EMPTY,No matches to show yet.,Aucun match à afficher pour le moment.,まだ表示する対戦がありません。,Shown when the user has no match history yet
+HISTORY_SCORE,"Score: {score}","Score : {score}","スコア: {score}",Shown in the match history panel
+HISTORY_RANKING,"Rank: {rank} / {players}","Classement : {rank} / {players}","順位: {rank} / {players}",Shown in the match history panel
+HISTORY_PLAYER_RANKING,"Rank: {rank}","Classement : {rank}","順位: {rank}",Shown in the match history players tab
+HISTORY_OPEN_PROFILE,"Open profile {username}","Ouvrir le profil de {username}","{username} のプロフィールを開く",Accessible label for clicking a player avatar in match history
+HISTORY_ROUNDS,Rounds,Manches,ラウンド,Shown in the match history panel
+HISTORY_PLAYERS,Players,Joueurs,プレイヤー,Shown in the match history panel
+BADGE_DEAF_OCTOPUS,Deaf Octopus,Poulpe sourd,耳の遠いタコ,Badge for users with XP below 100
+BADGE_DAZED_JELLYFISH,Dazed Jellyfish,Méduse étourdie,ぼんやりクラゲ,Badge for users with XP from 100 to 199
+BADGE_DISTRACTED_PIGEON,Distracted Pigeon,Pigeon distrait,気まぐれなハト,Badge for users with XP from 200 to 499
+BADGE_CURIOUS_CAT,Curious Cat,Chat curieux,好奇心旺盛なネコ,Badge for users with XP from 500 to 999
+BADGE_ATTENTIVE_OWL,Attentive Owl,Chouette attentive,注意深いフクロウ,Badge for users with XP from 1000 to 1999
+BADGE_RHYTHMIC_RAPTOR,Rhythmic Raptor,Raptor rythmé,リズミカルなラプトル,Badge for users with XP from 2000 to 4999
+BADGE_SONIC_SHARK,Sonic Shark,Requin sonique,ソニックシャーク,Badge for users with XP from 5000 to 9999
+BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定位するコウモリ,Badge for users with XP of 10000 or more

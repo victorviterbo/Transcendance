@@ -38,6 +38,12 @@ paths:
     $ref: ./paths/profile.yaml#/guest-create
   /api/profile/guest-delete:
     $ref: ./paths/profile.yaml#/guest-delete
+  /api/stats/global:
+    $ref: ./paths/stats.yaml#/global
+  /api/stats/leaderboard:
+    $ref: ./paths/stats.yaml#/leaderboard
+  /api/stats/history:
+    $ref: ./paths/stats.yaml#/history
 
 components:
   schemas:
@@ -67,6 +73,12 @@ components:
       $ref: ./components/schemas.yaml#/ProfileDeleteRequest
     ProfilePasswordChangeRequest:
       $ref: ./components/schemas.yaml#/ProfilePasswordChangeRequest
+    GlobalStatsResponse:
+      $ref: ./components/schemas.yaml#/GlobalStatsResponse
+    LeaderboardResponse:
+      $ref: ./components/schemas.yaml#/LeaderboardResponse
+    HistoryResponse:
+      $ref: ./components/schemas.yaml#/HistoryResponse
     WS Reponse:
       $ref: ./components/schemas_ws.yaml#/WSReponse
     WS Requests:
@@ -84,3 +96,5 @@ tags:
     description: Friend list and friend request endpoints.
   - name: profile
     description: User profile and account management endpoints.
+  - name: stats
+    description: User statistics

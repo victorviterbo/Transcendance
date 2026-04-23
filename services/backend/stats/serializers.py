@@ -1,22 +1,54 @@
-"""This module implements the serialization the backend.
+"""This module implements the serialization for the stats backend."""
 
-After validation if needed, it converts different python objects
-to JSON and vice-versa
-"""
-
-from music.serializers import TrackSerializer
 from rest_framework import serializers
 
-from .models import GameRoundStats, UserGameStats, UserRoundStats
+
+class GlobalStatsSerializer(serializers.Serializer):
+    averageScore = serializers.FloatField()
+    xp = serializers.IntegerField()
+    totalGamesPlayed = serializers.IntegerField()
+    totalSongsPlayed = serializers.IntegerField()
+    totalGamesWon = serializers.IntegerField()
+    ranking = serializers.IntegerField()
+    totalPlayers = serializers.IntegerField()
+    averageTime = serializers.FloatField()
+    successRateArtist = serializers.IntegerField()
+    successRateSong = serializers.IntegerField()
+    successRateComplete = serializers.IntegerField()
+    successRatesCompleteByTag = serializers.DictField()
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    username = serializers.CharField()
+    avatar = serializers.CharField()
+    xp = serializers.IntegerField()
+    badges = serializers.ReadOnlyField()
+    ranking = serializers.IntegerField()
+    isCurrentUser = serializers.BooleanField()
 
 
-class GameHistory(serializers.ModelSerializer):
-    """Set how to serialize a user (user obj <-> JSON)."""
+class HistoryPlayerSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    avatar = serializers.CharField()
+    ranking = serializers.IntegerField()
 
-    track = serializers.TrackSerializer()
-    round_number = serializers.IntegerField(source='round.round_numer')
-    class Meta:
-        """Defines the game match history serializer."""
-        model = UserRoundStats
-        fields = ['track', 'round_number', 'track', 'is_won',
-                  'time', 'xp_earned', 'played-at']
+
+class HistoryRoundSerializer(serializers.Serializer):
+    trackName = serializers.CharField()
+    trackArtist = serializers.CharField()
+    songFound = serializers.BooleanField()
+    artistFound = serializers.BooleanField()
+    time = serializers.FloatField()
+    ranking = serializers.IntegerField()
+    previewUrl = serializers.CharField(allow_null=True)
+    artworkUrl = serializers.CharField(allow_null=True)
+    roundNumber = serializers.IntegerField()
+
+
+class HistoryEntrySerializer(serializers.Serializer):
+    playedAt = serializers.DateTimeField()
+    xpEarned = serializers.IntegerField()
+    ranking = serializers.IntegerField()
+    roomTitle = serializers.CharField()
+    tags = serializers.ListField(child=serializers.CharField())
+    players = HistoryPlayerSerializer(many=True)
+    rounds = HistoryRoundSerializer(many=True)

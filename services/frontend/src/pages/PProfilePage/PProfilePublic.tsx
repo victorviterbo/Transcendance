@@ -1,10 +1,8 @@
 import { Avatar, Container, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
-import CTabs from "../../components/navigation/CTabs";
 import CTitle from "../../components/text/CTitle";
 import GPageBase from "../common/GPageBases";
-import ProfileMatchHistoryPanel from "./PProfileMatchHistoryPanel";
 import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
 import { getErrorMessage } from "../../utils/error";
 import CLevelProgress from "../../components/feedback/CLevelProgress";
@@ -153,10 +151,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 					</CBasePaper>
 
 					<CBasePaper>
-						<CTabs tabs={["STATISTICS", "MATCH_HISTORY"]}>
-							<ProfileStatisticsPanel scope="public" />
-							<ProfileMatchHistoryPanel scope="public" />
-						</CTabs>
+						<ProfileStatisticsPanel username={profile.username} />
 					</CBasePaper>
 				</Stack>
 			</Container>

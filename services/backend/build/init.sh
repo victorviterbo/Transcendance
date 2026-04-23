@@ -17,6 +17,8 @@ conda run -n backend python /backend/manage.py makemigrations
 conda run -n backend python /backend/manage.py migrate
 conda run -n backend python /backend/manage.py collectstatic --noinput
 
+conda run -n backend bash -c "python /backend/manage.py shell < /backend/seed.py"
+
 if [ "$APP_MODE" = "run" ]; then
     echo "Starting Production Server..."
     exec conda run --no-capture-output -n backend daphne -b 0.0.0.0 -p 8000 project.asgi:application

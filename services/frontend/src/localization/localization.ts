@@ -9,6 +9,12 @@ export const langData: ILocalizationData = {
 };
 export let currentLang: string = "en";
 
+const NUMBER_FORMAT_LOCALES: Record<string, string> = {
+	en: "en-US",
+	fr: "fr-FR",
+	jp: "ja-JP",
+};
+
 let onLangChangedBind: (() => void) | null = null;
 export function onLangChanged(lang: string) {
 	currentLang = lang;
@@ -140,4 +146,15 @@ export function ttrf(id: string, params: Record<string, string>): string {
 		text = text.replaceAll(`{${key}}`, String(value));
 	}
 	return text;
+}
+
+export function ttrn(value: number, options?: Intl.NumberFormatOptions): string {
+	const locale = NUMBER_FORMAT_LOCALES[currentLang] ?? NUMBER_FORMAT_LOCALES.en;
+	return new Intl.NumberFormat(locale, options).format(value);
+}
+
+export function ttrd(value: string | number | Date, options?: Intl.DateTimeFormatOptions): string {
+	const locale = NUMBER_FORMAT_LOCALES[currentLang] ?? NUMBER_FORMAT_LOCALES.en;
+	const date = value instanceof Date ? value : new Date(value);
+	return new Intl.DateTimeFormat(locale, options).format(date);
 }

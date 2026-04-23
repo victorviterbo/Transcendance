@@ -1,0 +1,136 @@
+global:
+  get:
+    summary: Get user stats
+    description: Retrieve aggregated statistics for a user by exact username lookup.
+    operationId: getProfileStats
+    tags: [stats]
+    security:
+      - bearerAuth: []
+    parameters:
+      - in: query
+        name: q
+        required: true
+        description: Exact username to look up.
+        schema:
+          type: string
+    responses:
+      "200":
+        description: User stats found.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/GlobalStatsResponse
+            examples:
+              stats-ok:
+                value:
+                  averageScore: 48
+                  xp: 654
+                  totalGamesPlayed: 35
+                  totalSongsPlayed: 468
+                  totalGamesWon: 5
+                  ranking: 3
+                  totalPlayers: 1687
+                  averageTime: 3.2
+                  successRateArtist: 23.6
+                  successRateSong: 39.7
+                  successRateComplete: 45.7
+                  successRatesCompleteByTag:
+                    TAG_POP: 12.5
+                    TAG_ROCK: 65.3
+      "400":
+        description: Invalid or missing query.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/ValidationError
+            examples:
+              missing-query:
+                value:
+                  error:
+                    query: "MISSING_FIELD"
+              user-not-found:
+                value:
+                  error:
+                    query: "USER_NOT_FOUND"
+
+leaderboard:
+  get:
+    summary: Leaderboard
+    description: Return the 10 best players and their info.
+    operationId: leaderboard
+    tags: [stats]
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: List of the top 10 players. Current user is added to the list if not present in the top 10.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/LeaderboardResponse
+            examples:
+              leaderboard-ok:
+                value:
+                  leaderboard:
+                    - username: "jeanmichelblindtest"
+                      avatar: "https://example.com/avatar.png"
+                      xp: 135
+                      badges: "BADGE_DAZED_JELLYFISH"
+                      ranking: 1
+                      isCurrentUser: false
+                  leaderboardCount: 1
+                  totalNumberPlayer: 2
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError
+
+history:
+  get:
+    summary: Match history
+    description: Return the 10 last games played by the authenticated user.
+    operationId: history
+    tags: [stats]
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: Last 10 matches and their content.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/HistoryResponse
+            examples:
+              history-ok:
+                value:
+                  history:
+                    - playedAt: "2026-04-10T20:15:00Z"
+                      xpEarned: 34
+                      ranking: 3
+                      roomTitle: "Kristopher's Room"
+                      tags:
+                        - "TAG_POP"
+                        - "TAG_ROCK"
+                      players:
+                        - username: "jeanmichelblindtest"
+                          avatar: "default_pic"
+                          ranking: 5
+                      rounds:
+                        - trackName: "The Chain"
+                          trackArtist: "Fleetwood Mac"
+                          songFound: false
+                          artistFound: true
+                          time: 0
+                          ranking: 12
+                          previewUrl: "https://example.com/audio-preview"
+                          artworkUrl: "https://example.com/artwork"
+                          roundNumber: 1
+                  historyCount: 1
+      "401":
+        description: Not authenticated.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/AuthError

@@ -6,6 +6,7 @@ import PProfilePublic from "../pages/PProfilePage/PProfilePublic";
 import type { IProfileData } from "../types/profile";
 
 const fetchProfileMock = vi.fn();
+const profileStatisticsPanelMock = vi.fn();
 
 vi.mock("../api/profile", () => ({
 	fetchProfile: (...args: unknown[]) => fetchProfileMock(...args),
@@ -17,16 +18,11 @@ vi.mock("../pages/common/GPageBases", () => ({
 	default: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock("../components/navigation/CTabs", () => ({
-	default: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}));
-
 vi.mock("../pages/PProfilePage/PProfileStatisticsPanel", () => ({
-	default: () => <div>PROFILE_STATISTICS</div>,
-}));
-
-vi.mock("../pages/PProfilePage/PProfileMatchHistoryPanel", () => ({
-	default: () => <div>PROFILE_MATCH_HISTORY</div>,
+	default: (props: unknown) => {
+		profileStatisticsPanelMock(props);
+		return <div>PROFILE_STATISTICS</div>;
+	},
 }));
 
 const createDeferred = <T,>() => {
@@ -42,6 +38,7 @@ const createDeferred = <T,>() => {
 describe("PProfilePublic", () => {
 	beforeEach(() => {
 		fetchProfileMock.mockReset();
+		profileStatisticsPanelMock.mockReset();
 	});
 
 	it("does not show the not found page while the current profile is still loading", async () => {
@@ -69,6 +66,12 @@ describe("PProfilePublic", () => {
 
 		expect(await screen.findByText("john")).toBeInTheDocument();
 		expect(screen.queryByText("USER_NOT_FOUND")).not.toBeInTheDocument();
+		expect(screen.queryByText("PROFILE_MATCH_HISTORY")).not.toBeInTheDocument();
+		expect(profileStatisticsPanelMock).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				username: "john",
+			}),
+		);
 	});
 
 	it("shows the missing user page only for actual profile not found responses", async () => {
