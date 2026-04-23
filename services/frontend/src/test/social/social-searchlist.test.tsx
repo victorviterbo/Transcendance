@@ -66,7 +66,7 @@ describe("Socials - Friend list", () => {
 		await userEvent.type(input, "Test");
 
 		await waitFor(() => {
-			expect(screen.getByText("USERS_ADD_EROOR")).toBeInTheDocument();
+			expect(screen.getByText("USERS_ADD_ERROR")).toBeInTheDocument();
 		});
 		expect(screen.queryByTestId("PFriendNode")).not.toBeInTheDocument();
 	});

@@ -178,7 +178,7 @@ describe("PLeaderboardPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByText("Unable to load leaderboard")).toBeInTheDocument();
+		expect(await screen.findByText("Leaderboard loading failed")).toBeInTheDocument();
 		expect(screen.getByText("Leaderboard unavailable")).toBeInTheDocument();
 		expect(screen.queryAllByTestId("leaderboard-row")).toHaveLength(0);
 		expect(screen.queryByText("Total players: 0")).not.toBeInTheDocument();
@@ -202,7 +202,7 @@ describe("PLeaderboardPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByText("Unable to load leaderboard")).toBeInTheDocument();
+		expect(await screen.findByText("Leaderboard loading failed")).toBeInTheDocument();
 		expect(screen.getByText("Username missing, Invalid scope")).toBeInTheDocument();
 	});
 
@@ -211,7 +211,7 @@ describe("PLeaderboardPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByText("Unable to load leaderboard")).toBeInTheDocument();
-		expect(screen.getByText("LEADERBOARD_LOAD_FAILED")).toBeInTheDocument();
+		const errorTexts = await screen.findAllByText("Leaderboard loading failed");
+		expect(errorTexts).toHaveLength(2);
 	});
 });

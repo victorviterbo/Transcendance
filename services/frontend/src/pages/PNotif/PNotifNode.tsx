@@ -12,6 +12,7 @@ import { ttrf } from "../../localization/localization";
 import { useCallback, type ReactNode } from "react";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import LaunchIcon from "@mui/icons-material/Launch";
+import { DAY_MS, HOUR_MS, MINUTE_MS } from "../../constants";
 
 export interface PNotifNodeProps extends GPageProps {
 	notif: TNotif;
@@ -27,18 +28,18 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 
 	const getAgo = useCallback((): string => {
 		const dateIn = typeof notif.date == "string" ? new Date(notif.date) : notif.date;
-		const timeSince: number = Date.now() - dateIn.getTime();
-		if (timeSince >= 1000 * 60 * 60 * 24)
+		const timeSinceNotifMilliseconds: number = Date.now() - dateIn.getTime();
+		if (timeSinceNotifMilliseconds >= DAY_MS)
 			return ttrf("NOTIF_AGO_DAYS", {
-				COUNT: Number(Math.trunc(timeSince / (1000 * 60 * 60 * 24))).toString(),
+				COUNT: Number(Math.trunc(timeSinceNotifMilliseconds / DAY_MS)).toString(),
 			});
-		else if (timeSince >= 1000 * 60 * 60)
+		else if (timeSinceNotifMilliseconds >= HOUR_MS)
 			return ttrf("NOTIF_AGO_HOURS", {
-				COUNT: Number(Math.trunc(timeSince / (1000 * 60 * 60))).toString(),
+				COUNT: Number(Math.trunc(timeSinceNotifMilliseconds / HOUR_MS)).toString(),
 			});
-		else if (timeSince >= 1000 * 60)
+		else if (timeSinceNotifMilliseconds >= MINUTE_MS)
 			return ttrf("NOTIF_AGO_MINUTES", {
-				COUNT: Number(Math.trunc(timeSince / (1000 * 60))).toString(),
+				COUNT: Number(Math.trunc(timeSinceNotifMilliseconds / MINUTE_MS)).toString(),
 			});
 		return "NOTIF_AGO_LESS";
 	}, [notif]);

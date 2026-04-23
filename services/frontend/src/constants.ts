@@ -31,7 +31,7 @@ export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "/api/social/message";
 export const API_SOCIAL_NOTIFS = "/api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read";
 
-//WS
+// WS
 export const WS_ADRESS_WMS = "ws://localhost:5173/";
 export const WS_ADRESS = "ws://localhost:8000/ws/global/";
 
@@ -43,3 +43,8 @@ export const MUSIC_TAGS = [
 	"TAG_FRENCH_VARIETY",
 	"TAG_RNB",
 ] as const;
+
+// TIME CONVERSIONS
+export const DAY_MS = 1000 * 60 * 60 * 24;
+export const HOUR_MS = 1000 * 60 * 60;
+export const MINUTE_MS = 1000 * 60;

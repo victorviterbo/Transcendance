@@ -6,6 +6,7 @@ import { resetMockDb } from "../mock/db";
 
 vi.mock("../localization/localization", () => {
 	const translations: Record<string, string> = {
+		LEADERBOARD: "Leaderboard",
 		LEADERBOARD_LOADING: "Leaderboard loading...",
 		LEADERBOARD_LOADING_FAILED: "Leaderboard loading failed",
 		LEADERBOARD_POINTS: "Points",

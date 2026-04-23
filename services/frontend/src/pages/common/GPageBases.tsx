@@ -19,6 +19,7 @@ export interface GPageProps extends GProps {
 function GPageBase({ children }: GPageProps) {
 	const { user, status } = useAuth();
 	const [friendOpen, setFriendOpen] = useState<boolean>(false);
+	// 0: friendList, 1: addFriends, 2: friendRequests
 	const [friendTab, setFriendTab] = useState<number>(0);
 	const [notifOpen, setNotifOpen] = useState<boolean>(false);
 	const [notifCount, setNotifCount] = useState<number>(0);

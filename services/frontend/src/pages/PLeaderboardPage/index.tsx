@@ -44,7 +44,7 @@ function PLeaderboardPage() {
 				setLeaderboardState({
 					status: "error",
 					data: null,
-					error: getErrorMessage(error, "LEADERBOARD_LOAD_FAILED"),
+					error: getErrorMessage(error, "LEADERBOARD_LOADING_FAILED"),
 				});
 			});
 
@@ -56,7 +56,7 @@ function PLeaderboardPage() {
 	return (
 		<GPageBase>
 			<Container maxWidth="md" sx={{ py: spacing }}>
-				<CTitlePaper title="Leaderboard" titleType="title" titleSize="md">
+				<CTitlePaper title="LEADERBOARD" titleType="title" titleSize="md">
 					{leaderboardState.status === "loading" ? (
 						<CTitle size="sm">LEADERBOARD_LOADING</CTitle>
 					) : null}
@@ -64,7 +64,7 @@ function PLeaderboardPage() {
 					{leaderboardState.status === "error" ? (
 						<Stack spacing={1}>
 							<CTitle size="sm" sx={{ color: "error.main" }}>
-								Unable to load leaderboard
+								LEADERBOARD_LOADING_FAILED
 							</CTitle>
 							<CText size="md">
 								{leaderboardState.error ?? "LEADERBOARD_LOADING_FAILED"}
