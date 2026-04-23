@@ -121,7 +121,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if content.get('target') == 'friend-chat' and lifecycle_event in ('open', 'close'):
             await self.chat_subroutine({
                 'event': lifecycle_event,
-                'target_uid': content.get('target-id') or content.get('target_uid'),
+                'target_uid': content.get('toUid'),
                 '_frontend_contract': True,
             })
             return
