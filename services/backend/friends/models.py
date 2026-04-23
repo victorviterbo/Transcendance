@@ -22,6 +22,8 @@ class Friendship(models.Model):
     status = models.CharField(max_length=20, choices=[('pending', 'pending'),
                                                       ('accepted', 'accepted')])
 
+    read = models.BooleanField(default=False)
+
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

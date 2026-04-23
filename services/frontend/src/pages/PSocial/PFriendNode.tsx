@@ -6,7 +6,7 @@ import {
 	type IFriendReqSend,
 	type IFriendReqResponse,
 	type IFriendReqRes,
-} from "../../types/friends";
+} from "../../types/socials";
 import CAvatar from "../../components/images/CAvatar";
 import CTitle from "../../components/text/CTitle";
 import {

@@ -33,7 +33,7 @@ const termsSections = [
 const PTermsOfService = () => {
 	return (
 		<PStaticPageShell title="TERMS_OF_SERVICE">
-			<CText size="md" align="center">
+			<CText customVariant="h1" size="md" align="center">
 				TERMS_INTRO
 			</CText>
 			<Box

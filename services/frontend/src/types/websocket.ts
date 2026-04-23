@@ -1,10 +1,16 @@
 import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
-import type { IFriendMessage } from "./friends";
+import type { IFriendMessage, TNotif } from "./socials";
+import type { IExtUserInfo } from "./user";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 
-export type TWSModuleName = "friend-chat" | "test_counter_event" | "test_counter";
+export type TWSModuleName =
+	| "friend-chat"
+	| "friend-request"
+	| "notif"
+	| "test_counter_event"
+	| "test_counter";
 
 export interface IWSContext {
 	modules: RefObject<IWSContextModule[]>;
@@ -24,22 +30,36 @@ export interface IWSContextModule {
 export type TWSRcv =
 	| {
 			target: Extract<TWSModuleName, "friend-chat">;
-			event: "update_status" | "new" | "send";
+			event: "update_status" | "new";
 			message: IFriendMessage;
 	  }
 	| {
-			target: Extract<TWSModuleName, "test_counter_event">;
+			target: Extract<TWSModuleName, "notif">;
+			event: "new";
+			notif: TNotif;
+	  }
+	| {
+			target: Extract<TWSModuleName, "friend-request">;
+			event: "new-incoming";
+			user: IExtUserInfo;
 	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
 	  };
 
-export type TWSSend = {
-	target: Extract<TWSModuleName, "friend-chat">;
-	event: "new";
-	message: string;
-	date: string;
-	to: string;
-	toUid: string;
-};
+export type TWSSend =
+	| {
+			target: Extract<TWSModuleName, "friend-chat">;
+			event: "send" | "open" | "close";
+			message?: IFriendMessage;
+			to?: string;
+			toUid?: string;
+	  }
+	| {
+			target: "room-guess";
+			guess: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "test_counter_event">;
+	  };

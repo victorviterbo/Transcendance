@@ -3,7 +3,7 @@ import CTextField from "../../components/inputs/textFields/CTextField";
 import PFriendNode from "./PFriendNode";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import type { AxiosResponse } from "axios";
-import type { IFriendInfo, IFriendsList, TFriendStatus } from "../../types/friends";
+import type { IFriendInfo, IFriendsList, TFriendStatus } from "../../types/socials";
 import api from "../../api";
 import { API_SOCIAL_FRIENDS } from "../../constants";
 import CText from "../../components/text/CText";

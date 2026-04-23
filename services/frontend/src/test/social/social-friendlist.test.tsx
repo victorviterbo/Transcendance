@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { API_SOCIAL_FRIENDS } from "../../constants";
 import userEvent from "@testing-library/user-event";
-import type { IFriendsList } from "../../types/friends";
+import type { IFriendsList } from "../../types/socials";
 import PFriendList from "../../pages/PSocial/PFriendList";
 import { mockSocialDB, mockSocialResetDB } from "../../mock/handlers/social/social_dbs";
 const getMock = vi.fn();

@@ -29,7 +29,7 @@ const privacySections = [
 const PPrivacyPolicy = () => {
 	return (
 		<PStaticPageShell title="PRIVACY_POLICY">
-			<CText size="md" align="center">
+			<CText customVariant="h1" size="md" align="center">
 				PRIVACY_INTRO
 			</CText>
 			<Box

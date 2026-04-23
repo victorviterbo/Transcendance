@@ -1,6 +1,6 @@
 import { Grid } from "@mui/material";
 import CTitlePaper from "../../components/surfaces/CTitlePaper";
-import { type IRoomList, type IRoomInfo } from "../../types/room";
+import { type IRoomInfo, type IRoomList } from "../../types/room";
 import CButtonRoom from "../../components/inputs/buttons/CButtonRoom";
 import { useEffect, useId, useState } from "react";
 import type { GPageProps } from "../common/GPageBases";

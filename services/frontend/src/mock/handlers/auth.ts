@@ -46,7 +46,7 @@ const writeSession = (username: string | null) => {
  * @brief Create a mock access token string.
  * @returns A pseudo-random token.
  */
-const makeAccessToken = () =>
+export const makeAccessToken = () =>
 	`mock-access-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 /**

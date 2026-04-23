@@ -8,29 +8,117 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from friends.models import Friendship
+from friends.serializers import FriendUserSerializer
+
+
+def _profile_group_name(user) -> str | None:
+    """Return the websocket group name for a user profile if available."""
+    profile = getattr(user, 'profile', None)
+    if profile is None:
+        return None
+    return f'user_{profile.id}'
+
+
+def _profile_payload(profile, relation: str) -> dict[str, Any]:
+    """Return a frontend-shaped user payload for realtime social events."""
+    serializer = FriendUserSerializer(profile, context={'relation': relation})
+    return serializer.data
+
+
+def _notif_payload(from_profile, relation: str, kind: str, uid: str) -> dict[str, Any]:
+    """Return a frontend-shaped notification payload."""
+    return {
+        'uid': uid,
+        'kind': kind,
+        'from': _profile_payload(from_profile, relation),
+        'date': friendship_timestamp(),
+        'read': False,
+    }
+
+
+def friendship_timestamp() -> str:
+    """Return an ISO timestamp string for websocket notification events."""
+    from django.utils import timezone
+
+    return timezone.now().isoformat()
+
+
+def _group_send_safe(group_name: str | None, payload: dict[str, Any]) -> None:
+    """Best-effort websocket broadcast that never breaks API writes."""
+    if not group_name:
+        return
+
+    channel_layer = get_channel_layer()
+    if channel_layer is None:
+        return
+
+    try:
+        async_to_sync(channel_layer.group_send)(group_name, payload)
+    except Exception:
+        # Realtime delivery must not fail the HTTP friendship lifecycle.
+        return
 
 
 @receiver(post_save, sender=Friendship)
 def save_profile(sender: type[Friendship],
                  instance: Friendship,
                  created: bool,
+                 update_fields: set[str] | None = None,
                  **kwargs: Any) -> None:
     """Trigger sending of notifications when friendship is saved."""
-    channel_layer = get_channel_layer()
     if created:
-        user_group = f"user_{instance.to_user.id}"
-        message = 'NEW_FRIEND_REQUEST'
-        from_user = instance.from_user.username
-    else:
-        user_group = f"user_{instance.from_user.id}"
-        message = 'FRIEND_REQUEST_ACCEPTED'
-        from_user = instance.to_user.username
-    async_to_sync(channel_layer.group_send)(
-        user_group,
+        sender_profile = instance.from_user.profile
+        recipient_group = _profile_group_name(instance.to_user)
+
+        _group_send_safe(
+            recipient_group,
+            {
+                'type': 'send_notification',
+                'payload': {
+                    'target': 'friend-request',
+                    'event': 'new-incoming',
+                    'user': _profile_payload(sender_profile, relation='incoming'),
+                },
+            },
+        )
+
+        _group_send_safe(
+            recipient_group,
+            {
+                'type': 'send_notification',
+                'payload': {
+                    'target': 'notif',
+                    'event': 'new',
+                    'notif': _notif_payload(
+                        sender_profile,
+                        relation='incoming',
+                        kind='friend-request',
+                        uid=str(instance.uid),
+                    ),
+                },
+            },
+        )
+        return
+
+    # Accept event: notify requester only when the status field was updated.
+    if not update_fields or 'status' not in update_fields or instance.status != 'accepted':
+        return
+
+    accepter_profile = instance.to_user.profile
+    requester_group = _profile_group_name(instance.from_user)
+    _group_send_safe(
+        requester_group,
         {
-            'type': 'send_notification', 
-            'module': 'social',
-            'message': message,
-            'from-user': from_user
-        }
+            'type': 'send_notification',
+            'payload': {
+                'target': 'notif',
+                'event': 'new',
+                'notif': _notif_payload(
+                    accepter_profile,
+                    relation='friends',
+                    kind='friend-accepted',
+                    uid=str(instance.uid),
+                ),
+            },
+        },
     )

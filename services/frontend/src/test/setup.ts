@@ -6,6 +6,7 @@ import { resetMockDb } from "../mock/db";
 
 vi.mock("../localization/localization", () => {
 	const translations: Record<string, string> = {
+		LEADERBOARD: "Leaderboard",
 		LEADERBOARD_LOADING: "Leaderboard loading...",
 		LEADERBOARD_LOADING_FAILED: "Leaderboard loading failed",
 		LEADERBOARD_POINTS: "Points",
@@ -38,6 +39,9 @@ vi.mock("../localization/localization", () => {
 		TAG_ELECRO: "Elecro",
 		TAG_FRENCH_VARIETY: "French Variety",
 		TAG_RNB: "RNB",
+		NOTIF_AGO_DAYS: "NOTIF_AGO_DAYS COUNT: {COUNT}",
+		NOTIF_AGO_HOURS: "NOTIF_AGO_HOURS COUNT: {COUNT}",
+		NOTIF_AGO_MINUTES: "NOTIF_AGO_MINUTES COUNT: {COUNT}",
 	};
 
 	const ttr = (id: string) => translations[id] ?? id;
@@ -69,8 +73,8 @@ vi.mock("../localization/localization", () => {
 		startLocalization: vi.fn(),
 		ttr,
 		ttrf,
-		ttrn,
 		ttrd,
+		ttrn,
 	};
 });
 

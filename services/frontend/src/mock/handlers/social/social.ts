@@ -5,13 +5,17 @@ import {
 	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
 	API_SOCIAL_FRIENDS_REQUEST_SEND,
 	API_SOCIAL_FRIENDS_SEARCH,
+	API_SOCIAL_NOTIFS,
+	API_SOCIAL_NOTIFS_READ,
 } from "../../../constants";
 import type {
 	IFriendInfo,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
-} from "../../../types/friends";
+	INotifList,
+	TNotif,
+} from "../../../types/socials";
 import type { IExtUserInfo, IExtUserSearch } from "../../../types/user";
 import {
 	mockGetExtUsers,
@@ -20,11 +24,15 @@ import {
 	mockSocialDB,
 	mockSocialSetDB,
 } from "./social_dbs";
-import type { IErrorReturn } from "../../../types/error";
+import type { IErrorReturn, IErrorStruct } from "../../../types/error";
+import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
+import type { TWSRcv } from "../../../types/websocket";
+import { mockGetMessageDB } from "./socialChat_dbs";
 
 //--------------------------------------------------
 //                   HANDLERS
 //--------------------------------------------------
+//====================== FIREND ======================
 export const friendsListHandler = http.get(API_SOCIAL_FRIENDS, async () => {
 	mockSocialSetDB();
 	const isError = 0;
@@ -149,3 +157,140 @@ export const friendsRequestsResponseHandler = http.post(
 		);
 	},
 );
+
+//====================== NOTIF ======================
+export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {
+	mockSocialSetDB();
+
+	const isError: boolean = false;
+	const res: INotifList = {
+		notifs: [],
+	};
+
+	let count = 0;
+	mockSocialDB.users.forEach((value: IExtUserInfo) => {
+		if (value.relation == "incoming") {
+			let date: Date = new Date();
+			if (count == 1) date = new Date(Date.now() - 1000 * 60 * 5);
+			else if (count == 2) date = new Date(Date.now() - 1000 * 60 * 60 * 2);
+			else if (count == 3) date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 12);
+
+			res.notifs.push({
+				uid: crypto.randomUUID(),
+				kind: "friend-request",
+				from: value,
+				date: date,
+				read: count > 1,
+			});
+			count++;
+		}
+	});
+
+	if (isError) {
+		res.error = {
+			default: [{ message: "Notifaction disable", code: "Can't look up for notifications" }],
+		};
+	}
+	return HttpResponse.json(res, { status: isError ? 400 : 200 });
+});
+
+export const notifRequestHandlerRead = http.post(API_SOCIAL_NOTIFS_READ, async () => {
+	const res: { error?: IErrorStruct } = {};
+
+	const isError: boolean = false;
+	if (isError) {
+		res.error = {
+			default: [{ message: "Notifaction disable", code: "Can't look up for notifications" }],
+		};
+	}
+	return HttpResponse.json(res, { status: isError ? 400 : 200 });
+});
+
+export const mockNewIncomingRequests = (client: WebSocketClientConnectionProtocol) => {
+	mockSocialSetDB();
+
+	setTimeout(() => {
+		const user: IExtUserInfo | undefined = mockSocialDB.users.find((value: IExtUserInfo) => {
+			return value.username == "Isabella";
+		});
+		if (!user) return;
+		user.relation = "incoming";
+		const notif: TNotif = {
+			uid: crypto.randomUUID(),
+			kind: "friend-request",
+			from: user,
+			date: new Date(),
+			read: false,
+		};
+
+		client.send(
+			JSON.stringify({
+				target: "notif",
+				event: "new",
+				notif: notif,
+			} as TWSRcv),
+		);
+
+		client.send(
+			JSON.stringify({
+				target: "friend-request",
+				event: "new-incoming",
+				user: user,
+			} as TWSRcv),
+		);
+	}, 5000);
+};
+
+export const mockAcceptingRequests = (client: WebSocketClientConnectionProtocol) => {
+	mockSocialSetDB();
+
+	setTimeout(() => {
+		const user: IExtUserInfo | undefined = mockSocialDB.users.find((value: IExtUserInfo) => {
+			return value.username === "かずま";
+		});
+		if (!user) return;
+		user.relation = "friends";
+
+		const userPos: number = mockSocialDB.users.findIndex((value: IExtUserInfo) => {
+			return value.username === "かずま";
+		});
+		if (!user || userPos == -1) return;
+
+		mockSocialDB.friends.push({
+			uid: mockSocialDB.users[userPos].uid,
+			username: mockSocialDB.users[userPos].username,
+			image: mockSocialDB.users[userPos].image,
+
+			exp_points: Math.round(Math.random() * 1000),
+			badges: mockSocialDB.users[userPos].badges,
+
+			created_at: new Date().toLocaleDateString(),
+			status: "online",
+		});
+
+		mockSocialDB.users.splice(userPos, 1);
+		const currentFriend: IFriendInfo = mockSocialDB.friends[mockSocialDB.friends.length - 1];
+		mockGetMessageDB().data.push({
+			friend: currentFriend,
+			messages: {
+				feed: [],
+			},
+		});
+
+		const notif: TNotif = {
+			uid: crypto.randomUUID(),
+			kind: "friend-accepted",
+			from: currentFriend,
+			date: new Date(),
+			read: false,
+		};
+
+		client.send(
+			JSON.stringify({
+				target: "notif",
+				event: "new",
+				notif: notif,
+			} as TWSRcv),
+		);
+	}, 3500);
+};

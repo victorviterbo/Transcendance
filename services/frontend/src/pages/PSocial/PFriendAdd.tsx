@@ -37,7 +37,7 @@ function PFriendAdd() {
 			setSearch(value);
 			setError(undefined);
 		} catch (error) {
-			setError(getErrorNode(error, "USERS_ADD_EROOR"));
+			setError(getErrorNode(error, "USERS_ADD_ERROR"));
 			setUsers([]);
 		}
 	};

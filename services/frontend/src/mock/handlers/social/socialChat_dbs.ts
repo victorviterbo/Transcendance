@@ -1,4 +1,4 @@
-import type { IFriendFeed, IFriendInfo } from "../../../types/friends";
+import type { IFriendFeed, IFriendInfo } from "../../../types/socials";
 import { mockSocialDB, mockSocialSetDB } from "./social_dbs";
 
 //====================== LOCAL TYPES ======================
@@ -22,7 +22,7 @@ export function mockGetMessageDB(): IMockMessageDB {
 	return mockMessagesDB;
 }
 
-export function mockResetResetDB() {
+export function mockResetMessageDB() {
 	mockMessagesDB = {
 		data: [],
 	};

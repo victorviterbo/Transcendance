@@ -1,3 +1,0 @@
-#KRIS
-
-Check friends requests

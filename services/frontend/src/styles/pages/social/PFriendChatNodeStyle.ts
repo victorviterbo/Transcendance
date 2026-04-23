@@ -1,7 +1,7 @@
 import type { Theme } from "@mui/material";
 import { colorAlterColor, colorGetBackground } from "../../../utils/styles";
 import { appColors, appSharedStyle } from "../../theme";
-import type { TMessageStatus } from "../../../types/friends";
+import type { TMessageStatus } from "../../../types/socials";
 
 export function PFriendChatNodeStyle(_: Theme, isUser: boolean) {
 	let bgColors: string[] = [];
@@ -38,10 +38,20 @@ export function PFriendChatNodeDateStyle(_: Theme, isUser: boolean) {
 		mr: isUser ? "5px" : 0,
 	};
 }
+export function PFriendChatNodeErrorStyle(_: Theme) {
+	return {
+		color: "red",
+	};
+}
 
 export function PFriendChatNodeStatusStyle(_: Theme, status: TMessageStatus) {
 	return {
-		color: status == "read" ? appColors.secondary[0] : appColors.text.dark,
+		color:
+			status == "error"
+				? "red"
+				: status == "read"
+					? appColors.secondary[0]
+					: appColors.text.dark,
 		ml: "auto",
 	};
 }

@@ -21,9 +21,18 @@ import CNavbarToggle from "./CNavbarToggle.tsx";
 interface CNavbarProps extends GCompProps {
 	onToggleFriend: () => void;
 	isFriendActive: boolean;
+	onToggleNotif: () => void;
+	isNotifActive: boolean;
+	notifCount: number;
 }
 
-function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
+function CNavbar({
+	isFriendActive,
+	onToggleFriend,
+	onToggleNotif,
+	isNotifActive,
+	notifCount,
+}: CNavbarProps) {
 	const { status, logout } = useAuth();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -58,10 +67,12 @@ function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
 		{ kind: "link", label: "LEADERBOARD", to: "/leaderboard", icon: <LeaderboardIcon /> },
 		{
-			kind: "action",
+			kind: "toggle",
 			icon: <NotificationsIcon />,
 			aria: "Notifications",
-			onClick: () => alert("Coming soon"),
+			onClick: onToggleNotif,
+			active: isNotifActive,
+			notifCount: notifCount,
 		},
 		{
 			kind: "toggle",
@@ -138,6 +149,7 @@ function CNavbar({ isFriendActive, onToggleFriend }: CNavbarProps) {
 									onClick={item.onClick}
 									disabled={item.disabled}
 									active={item.active}
+									notifCount={item.notifCount}
 								/>
 							);
 						}

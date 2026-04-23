@@ -3,6 +3,7 @@
 import uuid
 
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
 from django.test import TransactionTestCase
 from django.urls import reverse
@@ -256,10 +257,16 @@ class ChatWebsocketTests(TransactionTestCase):
 									'action': 'direct-message',
 									'message': 'hello friend',
 									'user_uid': str(self.friend.uid)})
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'chat_message')
-			self.assertEqual(response['sender'], 'chat_test_user')
-			self.assertEqual(response['message'], 'hello friend')
+			dm_response = None
+			for _ in range(3):
+				response = await communicator.receive_json_from()
+				if response.get('target') == 'friend-chat' and response.get('event') == 'new':
+					dm_response = response
+					break
+			self.assertIsNotNone(dm_response)
+			self.assertEqual(dm_response['message']['direction'], 'outgoing')
+			self.assertEqual(dm_response['message']['message'], 'hello friend')
+			self.assertEqual(dm_response['message']['target-id'], str(self.friend.profile.uid))
 
 			await communicator.send_json_to({'module': 'chat',
 									'action': 'direct-message',
@@ -305,6 +312,50 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
+			await communicator.disconnect()
+
+		async_to_sync(scenario)()
+
+	def test_social_notification_payload_matches_frontend_contract(self) -> None:
+		"""Friend requests should emit the expected websocket social payloads."""
+
+		@database_sync_to_async
+		def create_pending_friend_request() -> Friendship:
+			return Friendship.objects.create(
+				from_user=self.stranger,
+				to_user=self.user,
+				status='pending',
+			)
+
+		async def scenario() -> None:
+			communicator = WebsocketCommunicator(application, '/ws/global/')
+			communicator.scope['user'] = self.user
+			connected, _ = await communicator.connect()
+			self.assertTrue(connected)
+
+			friendship = await create_pending_friend_request()
+			responses = [await communicator.receive_json_from(), await communicator.receive_json_from()]
+			friend_request_event = next(
+				(value for value in responses if value.get('target') == 'friend-request'),
+				None,
+			)
+			notif_event = next(
+				(value for value in responses if value.get('target') == 'notif'),
+				None,
+			)
+
+			self.assertIsNotNone(friend_request_event)
+			self.assertIsNotNone(notif_event)
+
+			self.assertEqual(friend_request_event.get('event'), 'new-incoming')
+			self.assertEqual(friend_request_event['user'].get('uid'), str(self.stranger.profile.uid))
+			self.assertEqual(friend_request_event['user'].get('username'), self.stranger.profile.username)
+
+			self.assertEqual(notif_event.get('event'), 'new')
+			self.assertEqual(notif_event['notif'].get('uid'), str(friendship.uid))
+			self.assertEqual(notif_event['notif'].get('kind'), 'friend-request')
+			self.assertEqual(notif_event['notif']['from'].get('uid'), str(self.stranger.profile.uid))
+
 			await communicator.disconnect()
 
 		async_to_sync(scenario)()

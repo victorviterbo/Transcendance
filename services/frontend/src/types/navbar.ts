@@ -17,4 +17,5 @@ export type TNavItem =
 			onClick: (event?: MouseEvent<HTMLElement>) => void;
 			disabled?: boolean;
 			active: boolean;
+			notifCount?: number;
 	  };

@@ -1,21 +1,30 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
-import uuid
+import logging
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
     AsyncWebsocketConsumer,
 )
+from django.core.cache import cache
 from chat.models import Message, Room
-from friends.models import Friendship
 from game.models import Game
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
+from chat.chat_utils import (
+    accepted_friendship_exists,
+    get_or_create_direct_room,
+    serialize_friend_chat_message,
+)
+
+logger = logging.getLogger(__name__)
 
 class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
+
+    create_profile_if_missing = True
     
     def __init__(self, *args: tuple, **kwargs: dict) -> None:
         """Define initialisation of consumer class."""
@@ -23,38 +32,109 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         
         self.room = None
         self.profile = None
+        self.active_layers = set()
         self.room_name = "default_room"
         self.group_name = None
         self.chat_group_name = f"chat_{self.room_name}"
+        self.open_direct_chat_profile_ids = set() #tracker when frontend send open/ close so can mark seen
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
+        logger.info('ws.connect.start channel_name=%s', self.channel_name)
+        logger.debug('ws.connect.scope user=%s profile_in_scope=%s session_keys=%s', 
+                     type(getattr(self, 'user', None)).__name__ if hasattr(self, 'user') else 'NOT_SET',
+                     'profile' in self.scope,
+                     list(self.scope.get('session', {}).keys()) if self.scope.get('session') else 'NO_SESSION')
+        
+        logger.debug('ws.connect.attempt user=%s scope_keys=%s', 
+                     type(getattr(self, 'user', None)).__name__,
+                     list(self.scope.keys()))
         self.profile = await self._get_profile_from_scope()
         if not self.profile:
+            logger.warning('ws.connect.rejected unauthenticated')
             await self.close(code=4401)
             return
-        self.active_layers = set()
         self.group_name = f"user_{self.profile.id}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
+        logger.info('ws.presence.online profile_id=%s username=%s group=%s',
+                    self.profile.id,
+                    self.profile.username,
+                    self.group_name)
         await self.accept()
+        logger.info('ws.connect.accepted profile_id=%s username=%s is_guest=%s user_id=%s group=%s',
+                    self.profile.id,
+                    self.profile.username,
+                    self.profile.is_guest,
+                    self.profile.user_id,
+                    self.group_name)
         return
 
     async def disconnect(self, close_code: int) -> None:
         """Remove the socket from its channel-layer group when disconnecting."""
-        for layer in self.active_layers:
+        logger.info('ws.disconnect profile_id=%s close_code=%s active_layers=%s',
+                    getattr(getattr(self, 'profile', None), 'id', None),
+                    close_code,
+                    len(getattr(self, 'active_layers', set())))
+        for layer in getattr(self, "active_layers", set()):
             await self.channel_layer.group_discard(layer, self.channel_name)
-        await self._update_online_status(False)
+        for target_profile_id in list(getattr(self, 'open_direct_chat_profile_ids', set())):
+            await self._set_direct_chat_open(target_profile_id, is_open=False)
+        if getattr(self, "profile", None):
+            await self._update_online_status(False)
+            logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
+                        self.profile.id,
+                        self.profile.username,
+                        self.group_name)
         return
     
     async def receive_json(self, content: dict) -> None:
         """Receive websocket framework and reroute it to the appropriate module."""
+        logger.debug('ws.receive profile_id=%s keys=%s module=%s target=%s event=%s action=%s',
+                     getattr(getattr(self, 'profile', None), 'id', None),
+                     list(content.keys()),
+                     content.get('module'),
+                     content.get('target'),
+                     content.get('event'),
+                     content.get('action'))
+        if content.get('target') == 'friend-chat' and content.get('event') == 'send':
+            frontend_message = content.get('message')
+            if not isinstance(frontend_message, dict):
+                logger.warning('ws.receive.invalid_friend_chat_payload profile_id=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None))
+                await self.send_json({'type': 'error',
+                                      'message': 'message is required'})
+                return
+            logger.info('ws.receive.friend_chat_translate profile_id=%s target_id=%s message_len=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        frontend_message.get('target-id'),
+                        len(str(frontend_message.get('message', ''))))
+            await self.chat_subroutine({
+                'action': 'direct-message',
+                'message': frontend_message.get('message'),
+                'user_uid': frontend_message.get('target-id'),
+                '_frontend_contract': True,
+            })
+            return
+
+        lifecycle_event = content.get('event') or content.get('action')
+        if content.get('target') == 'friend-chat' and lifecycle_event in ('open', 'close'):
+            await self.chat_subroutine({
+                'event': lifecycle_event,
+                'target_uid': content.get('toUid'),
+                '_frontend_contract': True,
+            })
+            return
+
         module = content.get("module")
         if module == "chat":
             await self.chat_subroutine(content)
         elif module == "game":
             await self.game_subroutine(content)
         else:
+            logger.warning('ws.receive.unsupported_module profile_id=%s module=%s',
+                           getattr(getattr(self, 'profile', None), 'id', None),
+                           module)
             await self.close(code=4405)
         return
     
@@ -71,28 +151,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def group_send(self, group_name: str, message: dict) -> None:
         """Send a message to the specified channel."""
         await self.channel_layer.group_send(group_name, message)
-
-    @database_sync_to_async
-    def _get_profile_from_scope(self) -> Profile:
-        """Custom helper to find the Profile identity for a WebSocket connection."""
-        self.user = self.scope.get('user')
-        if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
-            try:
-                return self.user.profile
-            except Profile.DoesNotExist:
-                return None
-        profile = self.scope.get('profile')
-        if isinstance(profile, Profile):
-            return profile
-        session = self.scope.get('session', {})
-        guest_id = session.get('guest_profile_id')
-        if guest_id:
-            return Profile.objects.filter(id=guest_id, is_guest=True).first()
-        return Profile.objects.create() # TODO: remove in prod: Should not happen: it would mean we have websocket connection before http connection
     
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
-        """Process incoming message, delivered, and read actions from the client."""
+        """Process incoming direct-message actions from the client."""
         action = content.get('action')
+        lifecycle_event = content.get('event') or action
 
         if action == 'chat-message':
             body = str(content.get('message', '')).strip()
@@ -102,12 +165,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return
             success, message = await self._save_message(body, action, content)
             if not success:
+                logger.warning('ws.chat_message.save_failed profile_id=%s error=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               message)
                 await self.send_json(message)
                 return
 
+            logger.info('ws.chat_message.saved profile_id=%s message_uid=%s room_uid=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        message.uid,
+                        message.room.uid)
+
             await self.group_send(f'user_{self.profile.id}', {
                 'type': 'chat.message',
-                'message_uid': message.uid,
+                'message_uid': str(message.uid),
                 'message': message.body,
                 'sender': self._sender_name(),
                 'created': message.created.isoformat(),
@@ -123,50 +194,135 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return
             success, message = await self._save_message(body, action, content)
             if not success:
+                logger.warning('ws.direct_message.save_failed profile_id=%s error=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               message)
                 await self.send_json(message)
                 return
 
-            await self.group_send(f'user_{self.profile.id}', {
+            recipient_profile = await self._get_direct_recipient_profile(message)
+            if recipient_profile is None:
+                logger.warning('ws.direct_message.no_recipient profile_id=%s message_uid=%s',
+                               getattr(getattr(self, 'profile', None), 'id', None),
+                               message.uid)
+                await self.send_json({'type': 'error',
+                                      'message': 'Target user not found'})
+                return
+
+            if recipient_profile.is_online:
+                recipient_chat_open = await self._is_direct_chat_open(recipient_profile.id, self.profile.id)
+                if recipient_chat_open:
+                    await self._mark_direct_message_seen(message.uid)
+                    message.delivered = True
+                    message.seen = True
+                elif not message.delivered:
+                    await self._mark_direct_message_delivered(message.uid)
+                    message.delivered = True
+
+            logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
+                        getattr(getattr(self, 'profile', None), 'id', None),
+                        recipient_profile.id,
+                        message.uid)
+
+            event_payload = {
                 'type': 'chat.message',
-                'message_id': message.id,
+                'message_uid': str(message.uid),
                 'message': message.body,
                 'sender': self._sender_name(),
                 'created': message.created.isoformat(),
                 'delivered': message.delivered,
                 'seen': message.seen,
+            }
+            await self.group_send(f'user_{recipient_profile.id}', event_payload)
+            await self.group_send(f'user_{self.profile.id}', event_payload)
+
+            sender_payload = {
+                'target': 'friend-chat',
+                'event': 'new',
+                'message': serialize_friend_chat_message(message, recipient_profile, 'outgoing'),
+            }
+            recipient_payload = {
+                'target': 'friend-chat',
+                'event': 'new',
+                'message': serialize_friend_chat_message(message, self.profile, 'incoming'),
+            }
+            await self.group_send(f'user_{self.profile.id}', {
+                'type': 'send.notification',
+                'payload': sender_payload,
             })
+            if recipient_profile.is_online:
+                await self.group_send(f'user_{recipient_profile.id}', {
+                    'type': 'send.notification',
+                    'payload': recipient_payload,
+                })
             return
-        elif action in ('delivered', 'read'):
-            message_id = content.get('message_id')
-            if not message_id:
-                await self.send_json({'type': 'error',
-                                      'message': 'message_id is required'})
+        elif lifecycle_event in ('open', 'close'):
+            target_uid = content.get('target_uid')
+            if not target_uid:
+                await self.send_json({'type': 'error', 'message': 'target_uid is required'})
+                return
+            target_profile = await self._get_profile_by_uid(target_uid)
+            if not target_profile:
+                await self.send_json({'type': 'error', 'message': 'target_not_found'})
                 return
 
-            if action == 'delivered':
-                changed = await self._mark_delivered(message_id)
+            is_open = lifecycle_event == 'open'
+            await self._set_direct_chat_open(target_profile.id, is_open=is_open)
+            if is_open:
+                self.open_direct_chat_profile_ids.add(target_profile.id)
             else:
-                changed = await self._mark_seen(message_id)
-
-            if not changed:
-                await self.send_json({'type': 'error', 'message': 'message_not_found'})
-                return
-
-            await self.group_send(self.group_name, {
-                'type': 'status.update',
-                'message_id': int(message_id),
-                'action': action,
-                'username': self._sender_name(),
-            })
+                self.open_direct_chat_profile_ids.discard(target_profile.id)
             return
-
         await self.send_json({'type': 'error', 'message': 'unsupported_action'})
 
     @database_sync_to_async
     def _update_online_status(self, is_online: bool) -> None:
         self.profile.is_online = is_online
         self.profile.save(update_fields=['is_online'])
-    
+
+    @database_sync_to_async
+    def _mark_direct_message_delivered(self, message_uid) -> None:
+        message = Message.objects.filter(uid=message_uid).first()
+        if not message:
+            logger.warning('ws.direct_message._mark_delivered.not_found message_uid=%s', message_uid)
+            return
+        if not message.delivered:
+            message.delivered = True
+            message.save(update_fields=['delivered'])
+            return
+
+    @database_sync_to_async
+    def _mark_direct_message_seen(self, message_uid) -> None:
+        message = Message.objects.filter(uid=message_uid).first()
+        if not message:
+            return
+        update_fields = []
+        if not message.delivered:
+            message.delivered = True
+            update_fields.append('delivered')
+        if not message.seen:
+            message.seen = True
+            update_fields.append('seen')
+        if update_fields:
+            message.save(update_fields=update_fields)
+
+    @database_sync_to_async
+    def _is_direct_chat_open(self, viewer_profile_id: int, target_profile_id: int) -> bool:
+        return bool(cache.get(f'chat_open:{viewer_profile_id}:{target_profile_id}'))
+
+    @database_sync_to_async
+    def _set_direct_chat_open(self, target_profile_id: int, is_open: bool) -> None:
+        if self.profile is None:
+            return
+        key = f'chat_open:{self.profile.id}:{target_profile_id}'
+        if is_open:
+            cache.set(key, True, timeout=180)
+            return
+        cache.delete(key)
+
+    @database_sync_to_async
+    def _get_profile_by_uid(self, profile_uid: str) -> Profile | None:
+        return Profile.objects.filter(uid=profile_uid).first()
 
     async def chat_message(self, event: dict) -> None:
         """Forward a chat message event to the connected client."""
@@ -181,13 +337,22 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'seen': event.get('seen'),
         })
 
-    async def status_update(self, event: dict) -> None:
-        """Forward a delivery or read status update to the connected client."""
+    async def send_notification(self, event: dict) -> None:
+        """Forward social notifications to the connected client."""
+        payload = event.get('payload')
+        if isinstance(payload, dict):
+            await self.send_json(payload)
+            return
+
         await self.send_json({
-            'type': 'status_update',
-            'message_id': event['message_id'],
-            'action': event['action'],
-            'username': event['username'],
+            'target': event.get('target', 'social-notif'),
+            'type': 'social_notification',
+            'module': event.get('module', 'social'),
+            'event': event.get('message'),
+            'from_user': event.get('from_user'),
+            'from_user_uid': event.get('from_user_uid'),
+            'to_user_uid': event.get('to_user_uid'),
+            'friendship_uid': event.get('friendship_uid'),
         })
 
     def _sender_name(self) -> str:
@@ -195,13 +360,50 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         if self.profile:
             return self.profile.username
         return 'anonymous'
-    
 
-    def _is_room_participant(self) -> bool:
-        """Return whether profile (user) belongs to the current direct room."""
-        if self.room is None or self.profile is None:
-            return False
-        return self.room.participants.filter(id=self.profile.id).exists()
+    @database_sync_to_async
+    def _get_profile_from_scope(self) -> Profile | None:
+        """Resolve profile from user, injected profile, or guest session."""
+        self.user = self.scope.get("user")
+        if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
+            try:
+                profile = self.user.profile
+                logger.debug('ws.profile_resolve.from_authenticated_user user_id=%s profile_id=%s username=%s',
+                             self.user.id, profile.id, profile.username)
+                return profile
+            except Profile.DoesNotExist:
+                logger.warning('ws.profile_resolve.authenticated_user_no_profile user_id=%s',
+                               self.user.id)
+                return None
+
+        profile = self.scope.get("profile")
+        if isinstance(profile, Profile):
+            logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s is_guest=%s',
+                         profile.id, profile.is_guest)
+            return profile
+
+        session = self.scope.get("session", {})
+        guest_uid = session.get("guest_profile_uid")
+        if guest_uid:
+            guest_profile = Profile.objects.filter(uid=guest_uid, is_guest=True).first()
+            logger.debug('ws.profile_resolve.from_session_guest_uid profile_id=%s uid=%s',
+                         guest_profile.id if guest_profile else None, guest_uid)
+            return guest_profile
+
+        guest_id = session.get("guest_profile_id")
+        if guest_id:
+            guest_profile = Profile.objects.filter(id=guest_id, is_guest=True).first()
+            logger.debug('ws.profile_resolve.from_session_guest_id profile_id=%s id=%s',
+                         guest_profile.id if guest_profile else None, guest_id)
+            return guest_profile
+
+        if self.create_profile_if_missing:
+            new_profile = Profile.objects.create()
+            logger.debug('ws.profile_resolve.created_new_guest profile_id=%s', new_profile.id)
+            return new_profile
+        
+        logger.warning('ws.profile_resolve.failed no_profile_found')
+        return None
 
     @database_sync_to_async
     def _save_message(self, body: str,
@@ -210,24 +412,46 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         """Persist a message for the profile (user) in the resolved room."""
         room = None
         if action == 'direct-message':
-            if not self.user or not self.user.is_authenticated:
+            sender_user = None
+            logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_is_guest=%s profile_user_id=%s',
+                         getattr(self.profile, 'id', None),
+                         type(getattr(self, 'user', None)).__name__,
+                         bool(self.user and self.user.is_authenticated) if self.user else False,
+                         getattr(self.profile, 'is_guest', None),
+                         getattr(self.profile, 'user_id', None))
+            if self.user and self.user.is_authenticated:
+                sender_user = self.user
+                logger.debug('ws.direct_message.sender_resolved_from_user profile_id=%s user_id=%s',
+                             getattr(self.profile, 'id', None),
+                             self.user.id)
+            elif self.profile and not self.profile.is_guest and self.profile.user_id:
+                sender_user = self.profile.user
+                logger.debug('ws.direct_message.sender_resolved_from_profile profile_id=%s user_id=%s',
+                             getattr(self.profile, 'id', None),
+                             self.profile.user_id)
+
+            if sender_user is None:
+                logger.warning('ws.direct_message.auth_failed profile_id=%s is_guest=%s user_in_scope=%s profile_user_id=%s',
+                               getattr(self.profile, 'id', None),
+                               getattr(self.profile, 'is_guest', None),
+                               bool(getattr(self, 'user', None) and self.user.is_authenticated),
+                               getattr(self.profile, 'user_id', None))
                 return False, {'type': 'error',
                                'message': 'Authentication failed'}
-            target_user = SiteUser.objects.filter(uid=content['user_uid']).first()
+            target_uid = content.get('user_uid')
+            target_user = SiteUser.objects.filter(uid=target_uid).first()
+            if target_user is None and target_uid is not None:
+                target_profile = Profile.objects.filter(uid=target_uid).select_related('user').first()
+                if target_profile is not None:
+                    target_user = target_profile.user
             if target_user is None:
                 return False, {'type': 'error',
                                'message': 'User not found'}
-            if not (Friendship.objects.filter(from_user__in=[target_user, self.user],
-                                              to_user__in=[self.user, target_user],
-                                              status='accepted'
-                                              ).exists()):
+            if not accepted_friendship_exists(self.profile, target_user.profile):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             target_profile = target_user.profile
-            id_a, id_b = self.profile.uid, target_profile.uid
-            min_uid, max_uid = (id_a, id_b) if id_a < id_b else (id_b, id_a)
-            room, created = Room.objects.get_or_create(
-                name=f'user_{min_uid}_user_{max_uid}')
+            room, created = get_or_create_direct_room(self.profile, target_profile)
             if created:
                 room.participants.add(self.profile)
                 room.participants.add(target_profile)
@@ -258,32 +482,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return True, message
 
     @database_sync_to_async
-    def _mark_delivered(self, message_id: str) -> bool:
-        """Mark a room message as delivered if it exists."""
-        message = Message.objects.filter(id=message_id).first()
-        if not message:
-            return False
-        if not message.delivered:
-            message.delivered = True
-            message.save(update_fields=['delivered'])
-        return True
-
-    @database_sync_to_async
-    def _mark_seen(self, message_uid: uuid.UUID) -> bool:
-        """Mark a room message as seen and delivered if it exists."""
-        message = Message.objects.filter(uid=message_uid, room=self.room).first()
-        if not message:
-            return False
-        changed = False
-        if not message.delivered:
-            message.delivered = True
-            changed = True
-        if not message.seen:
-            message.seen = True
-            changed = True
-        if changed:
-            message.save(update_fields=['delivered', 'seen'])
-        return True
+    def _get_direct_recipient_profile(self, message: Message) -> Profile | None:
+        """Return the other participant profile for a direct-message room."""
+        return message.room.participants.exclude(id=message.sender_profile.id).first()
 
 class NotFoundConsumer(AsyncWebsocketConsumer):
     """Handle non-existant endpoint communication."""

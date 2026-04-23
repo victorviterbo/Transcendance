@@ -1,6 +1,6 @@
 import { useContext, useEffect, type ReactNode, createContext, type Context, useRef } from "react";
 import useWebSocket, { ReadyState, type SendMessage } from "react-use-websocket";
-import { WS_ADRESS } from "../../constants";
+import { WS_ADRESS, WS_ADRESS_WMS } from "../../constants";
 import type { IWSContext, IWSContextModule, TWSModuleName, TWSRcv } from "../../types/websocket";
 
 //--------------------------------------------------
@@ -83,9 +83,15 @@ interface AppWebsocketProps {
 }
 
 function CWebsocket({ children }: AppWebsocketProps) {
-	const { sendMessage, lastMessage, readyState } = useWebSocket(WS_ADRESS, {
-		skipAssert: true,
-	});
+	const { sendMessage, lastMessage, readyState } = useWebSocket(
+		import.meta.env.MODE !== "mock" && import.meta.env.MODE !== "test"
+			? WS_ADRESS
+			: WS_ADRESS_WMS,
+		{
+			skipAssert: true,
+			shouldReconnect: (_) => true,
+		},
+	);
 	const modules = useRef<IWSContextModule[]>([]);
 
 	useEffect(() => {

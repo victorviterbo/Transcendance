@@ -5,11 +5,11 @@ import type {
 	IFriendInfo,
 	IFriendMessage,
 	IFriendMessageReq,
-} from "../../types/friends";
+} from "../../types/socials";
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../constants";
 import api from "../../api";
 import type { AxiosResponse } from "axios";
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
 import CText from "../../components/text/CText";
@@ -17,7 +17,7 @@ import PFriendChatNode from "./PFriendChatNode";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
-import type { IWSContextModule, TWSRcv } from "../../types/websocket";
+import type { IWSContextModule, TWSRcv, TWSSend } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 
 interface PFriendChatProps extends GPageProps {
@@ -28,9 +28,8 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [feed, setFeed] = useState<IFriendFeed | undefined>(undefined);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [messageField, setMessageField] = useState<string>("");
-	const localID = useId();
-
 	const wsContext: IWSContextModule = useWS("friend-chat");
+	const lastTarget = useRef<IFriendInfo | undefined>(undefined);
 
 	//====================== INCOMINGS ======================
 	useEffect(() => {
@@ -82,15 +81,37 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 				});
 				setFeed(res.data);
 				setError(undefined);
+
+				if (!targetFriend) return;
+				wsContext.sendMessage(
+					JSON.stringify({
+						target: "friend-chat",
+						event: "open",
+						to: targetFriend.username,
+						toUid: targetFriend.uid,
+					} as TWSSend),
+				);
+				lastTarget.current = targetFriend;
 			} catch (error) {
 				setError(getErrorNode(error, "SOCIAL_MESSAGE_ERROR"));
 				setFeed(undefined);
 			}
 		}
 
-		if (!targetFriend) setFeed(undefined);
-		else getChat();
-	}, [targetFriend]);
+		if (!targetFriend) {
+			setFeed(undefined);
+			if (lastTarget.current) {
+				wsContext.sendMessage(
+					JSON.stringify({
+						target: "friend-chat",
+						event: "close",
+						to: lastTarget.current.username,
+						toUid: lastTarget.current.uid,
+					} as TWSSend),
+				);
+			}
+		} else getChat();
+	}, [targetFriend, wsContext]);
 
 	//====================== OUTGOING ======================
 	function handleSendMessage() {
@@ -112,27 +133,27 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 				target: "friend-chat",
 				event: "send",
 				message: nMessage,
-			} as TWSRcv),
+			} as TWSSend),
 		);
 
 		setMessageField("");
 	}
 
 	//====================== FUNCTIONS ======================
-	function getList(): ReactNode | ReactNode[] {
+	const getList = useCallback((): ReactNode | ReactNode[] => {
 		if (error) return error;
 		if (!feed || feed.feed.length == 0 || !targetFriend)
 			return <CText align="center">SOCIAL_NO_MESSAGE</CText>;
-		return feed.feed.map((Message: IFriendMessage, index: number) => {
+		return feed.feed.map((Message: IFriendMessage) => {
 			return (
 				<PFriendChatNode
 					message={Message}
 					targetFriend={targetFriend}
-					key={localID + "_" + index}
+					key={Message.uid}
 				></PFriendChatNode>
 			);
 		});
-	}
+	}, [feed, error, targetFriend]);
 
 	return (
 		<Stack sx={{ flex: 1, overflow: "hidden" }} direction="column">
@@ -152,8 +173,13 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 					onKeyUp={(event) => {
 						if (event.code == "Enter") handleSendMessage();
 					}}
+					data-testid="PFriendChat_NewMessage"
 				></CTextField>
-				<CIconButton onClick={handleSendMessage} sx={{ my: "auto", ml: "10px" }}>
+				<CIconButton
+					onClick={handleSendMessage}
+					sx={{ my: "auto", ml: "10px" }}
+					data-testid="PFriendChat_SendButton"
+				>
 					<SendIcon />
 				</CIconButton>
 			</Stack>
