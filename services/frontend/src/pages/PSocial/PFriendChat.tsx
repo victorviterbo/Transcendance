@@ -67,6 +67,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 				const last: TWSRcv | undefined = wsContext.getLast();
 				if (last?.target == "friend-chat") {
 					if (last.event == "update_status") {
+						console.log(last);
 						if (!feed || !last.message) return;
 						const index = feed.feed.findIndex((message: IFriendMessage) => {
 							return message.uid == last.message.uid;
