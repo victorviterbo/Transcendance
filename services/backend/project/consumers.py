@@ -1,23 +1,25 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
 import logging
-import uuid
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
     AsyncWebsocketConsumer,
 )
+from django.core.cache import cache
 from chat.models import Message, Room
 from game.models import Game
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
-from chat.chat_utils import accepted_friendship_exists, get_or_create_direct_room
-
+from chat.chat_utils import (
+    accepted_friendship_exists,
+    get_or_create_direct_room,
+    serialize_friend_chat_message,
+)
 
 logger = logging.getLogger(__name__)
-
 
 class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
@@ -34,6 +36,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.room_name = "default_room"
         self.group_name = None
         self.chat_group_name = f"chat_{self.room_name}"
+        self.open_direct_chat_profile_ids = set() #tracker when frontend send open/ close so can mark seen
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
@@ -54,6 +57,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.group_name = f"user_{self.profile.id}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
+        logger.info('ws.presence.online profile_id=%s username=%s group=%s',
+                    self.profile.id,
+                    self.profile.username,
+                    self.group_name)
         await self.accept()
         logger.info('ws.connect.accepted profile_id=%s username=%s is_guest=%s user_id=%s group=%s',
                     self.profile.id,
@@ -71,8 +78,14 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                     len(getattr(self, 'active_layers', set())))
         for layer in getattr(self, "active_layers", set()):
             await self.channel_layer.group_discard(layer, self.channel_name)
+        for target_profile_id in list(getattr(self, 'open_direct_chat_profile_ids', set())):
+            await self._set_direct_chat_open(target_profile_id, is_open=False)
         if getattr(self, "profile", None):
             await self._update_online_status(False)
+            logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
+                        self.profile.id,
+                        self.profile.username,
+                        self.group_name)
         return
     
     async def receive_json(self, content: dict) -> None:
@@ -104,6 +117,15 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             })
             return
 
+        lifecycle_event = content.get('event') or content.get('action')
+        if content.get('target') == 'friend-chat' and lifecycle_event in ('open', 'close'):
+            await self.chat_subroutine({
+                'event': lifecycle_event,
+                'target_uid': content.get('target-id') or content.get('target_uid'),
+                '_frontend_contract': True,
+            })
+            return
+
         module = content.get("module")
         if module == "chat":
             await self.chat_subroutine(content)
@@ -128,18 +150,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     async def group_send(self, group_name: str, message: dict) -> None:
         """Send a message to the specified channel."""
-        logger.debug('ws.group_send group=%s type=%s keys=%s',
-                     group_name,
-                     message.get('type'),
-                     list(message.keys()))
         await self.channel_layer.group_send(group_name, message)
     
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
-        """Process incoming message, delivered, and read actions from the client."""
+        """Process incoming direct-message actions from the client."""
         action = content.get('action')
-        logger.debug('ws.chat_subroutine profile_id=%s action=%s',
-                     getattr(getattr(self, 'profile', None), 'id', None),
-                     action)
+        lifecycle_event = content.get('event') or action
 
         if action == 'chat-message':
             body = str(content.get('message', '')).strip()
@@ -193,6 +209,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                                       'message': 'Target user not found'})
                 return
 
+            if recipient_profile.is_online:
+                recipient_chat_open = await self._is_direct_chat_open(recipient_profile.id, self.profile.id)
+                if recipient_chat_open:
+                    await self._mark_direct_message_seen(message.uid)
+                    message.delivered = True
+                    message.seen = True
+                elif not message.delivered:
+                    await self._mark_direct_message_delivered(message.uid)
+                    message.delivered = True
+
             logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
                         getattr(getattr(self, 'profile', None), 'id', None),
                         recipient_profile.id,
@@ -213,80 +239,90 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             sender_payload = {
                 'target': 'friend-chat',
                 'event': 'new',
-                'message': {
-                    'message': message.body,
-                    'date': message.created.isoformat(),
-                    'direction': 'outgoing',
-                    'status': 'read' if message.seen else ('recieved' if message.delivered else 'sent'),
-                    'target-id': str(recipient_profile.uid),
-                    'target': recipient_profile.username,
-                    'uid': str(message.uid),
-                },
+                'message': serialize_friend_chat_message(message, recipient_profile, 'outgoing'),
             }
             recipient_payload = {
                 'target': 'friend-chat',
                 'event': 'new',
-                'message': {
-                    'message': message.body,
-                    'date': message.created.isoformat(),
-                    'direction': 'incoming',
-                    'target-id': str(self.profile.uid),
-                    'target': self.profile.username,
-                    'uid': str(message.uid),
-                },
+                'message': serialize_friend_chat_message(message, self.profile, 'incoming'),
             }
             await self.group_send(f'user_{self.profile.id}', {
                 'type': 'send.notification',
                 'payload': sender_payload,
             })
-            await self.group_send(f'user_{recipient_profile.id}', {
-                'type': 'send.notification',
-                'payload': recipient_payload,
-            })
+            if recipient_profile.is_online:
+                await self.group_send(f'user_{recipient_profile.id}', {
+                    'type': 'send.notification',
+                    'payload': recipient_payload,
+                })
             return
-        elif action in ('delivered', 'read'):
-            message_id = content.get('message_id')
-            if not message_id:
-                logger.warning('ws.status_update.missing_message_id profile_id=%s action=%s',
-                               getattr(getattr(self, 'profile', None), 'id', None),
-                               action)
-                await self.send_json({'type': 'error',
-                                      'message': 'message_id is required'})
+        elif lifecycle_event in ('open', 'close'):
+            target_uid = content.get('target_uid')
+            if not target_uid:
+                await self.send_json({'type': 'error', 'message': 'target_uid is required'})
+                return
+            target_profile = await self._get_profile_by_uid(target_uid)
+            if not target_profile:
+                await self.send_json({'type': 'error', 'message': 'target_not_found'})
                 return
 
-            if action == 'delivered':
-                changed = await self._mark_delivered(message_id)
+            is_open = lifecycle_event == 'open'
+            await self._set_direct_chat_open(target_profile.id, is_open=is_open)
+            if is_open:
+                self.open_direct_chat_profile_ids.add(target_profile.id)
             else:
-                changed = await self._mark_seen(message_id)
-
-            if not changed:
-                logger.warning('ws.status_update.not_found profile_id=%s action=%s message_id=%s',
-                               getattr(getattr(self, 'profile', None), 'id', None),
-                               action,
-                               message_id)
-                await self.send_json({'type': 'error', 'message': 'message_not_found'})
-                return
-
-            logger.info('ws.status_update.applied profile_id=%s action=%s message_id=%s',
-                        getattr(getattr(self, 'profile', None), 'id', None),
-                        action,
-                        message_id)
-
-            await self.group_send(self.group_name, {
-                'type': 'status.update',
-                'message_id': int(message_id),
-                'action': action,
-                'username': self._sender_name(),
-            })
+                self.open_direct_chat_profile_ids.discard(target_profile.id)
             return
-
         await self.send_json({'type': 'error', 'message': 'unsupported_action'})
 
     @database_sync_to_async
     def _update_online_status(self, is_online: bool) -> None:
         self.profile.is_online = is_online
         self.profile.save(update_fields=['is_online'])
-    
+
+    @database_sync_to_async
+    def _mark_direct_message_delivered(self, message_uid) -> None:
+        message = Message.objects.filter(uid=message_uid).first()
+        if not message:
+            logger.warning('ws.direct_message._mark_delivered.not_found message_uid=%s', message_uid)
+            return
+        if not message.delivered:
+            message.delivered = True
+            message.save(update_fields=['delivered'])
+            return
+
+    @database_sync_to_async
+    def _mark_direct_message_seen(self, message_uid) -> None:
+        message = Message.objects.filter(uid=message_uid).first()
+        if not message:
+            return
+        update_fields = []
+        if not message.delivered:
+            message.delivered = True
+            update_fields.append('delivered')
+        if not message.seen:
+            message.seen = True
+            update_fields.append('seen')
+        if update_fields:
+            message.save(update_fields=update_fields)
+
+    @database_sync_to_async
+    def _is_direct_chat_open(self, viewer_profile_id: int, target_profile_id: int) -> bool:
+        return bool(cache.get(f'chat_open:{viewer_profile_id}:{target_profile_id}'))
+
+    @database_sync_to_async
+    def _set_direct_chat_open(self, target_profile_id: int, is_open: bool) -> None:
+        if self.profile is None:
+            return
+        key = f'chat_open:{self.profile.id}:{target_profile_id}'
+        if is_open:
+            cache.set(key, True, timeout=180)
+            return
+        cache.delete(key)
+
+    @database_sync_to_async
+    def _get_profile_by_uid(self, profile_uid: str) -> Profile | None:
+        return Profile.objects.filter(uid=profile_uid).first()
 
     async def chat_message(self, event: dict) -> None:
         """Forward a chat message event to the connected client."""
@@ -301,22 +337,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'seen': event.get('seen'),
         })
 
-    async def status_update(self, event: dict) -> None:
-        """Forward a delivery or read status update to the connected client."""
-        await self.send_json({
-            'type': 'status_update',
-            'message_id': event['message_id'],
-            'action': event['action'],
-            'username': event['username'],
-        })
-
     async def send_notification(self, event: dict) -> None:
         """Forward social notifications to the connected client."""
         payload = event.get('payload')
-        logger.debug('ws.send_notification profile_id=%s has_payload=%s target=%s',
-                     getattr(getattr(self, 'profile', None), 'id', None),
-                     isinstance(payload, dict),
-                     event.get('target'))
         if isinstance(payload, dict):
             await self.send_json(payload)
             return
@@ -380,8 +403,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             return new_profile
         
         logger.warning('ws.profile_resolve.failed no_profile_found')
-        return None
-
         return None
 
     @database_sync_to_async
@@ -461,37 +482,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return True, message
 
     @database_sync_to_async
-    def _mark_delivered(self, message_id: str) -> bool:
-        """Mark a room message as delivered if it exists."""
-        message = Message.objects.filter(id=message_id).first()
-        if not message:
-            return False
-        if not message.delivered:
-            message.delivered = True
-            message.save(update_fields=['delivered'])
-        return True
-
-    @database_sync_to_async
-    def _mark_seen(self, message_uid: uuid.UUID) -> bool:
-        """Mark a room message as seen and delivered if it exists."""
-        message = Message.objects.filter(uid=message_uid, room=self.room).first()
-        if not message:
-            return False
-        changed = False
-        if not message.delivered:
-            message.delivered = True
-            changed = True
-        if not message.seen:
-            message.seen = True
-            changed = True
-        if changed:
-            message.save(update_fields=['delivered', 'seen'])
-        return True
-
-    @database_sync_to_async
     def _get_direct_recipient_profile(self, message: Message) -> Profile | None:
         """Return the other participant profile for a direct-message room."""
-        return message.room.participants.exclude(id=self.profile.id).first()
+        return message.room.participants.exclude(id=message.sender_profile.id).first()
 
 class NotFoundConsumer(AsyncWebsocketConsumer):
     """Handle non-existant endpoint communication."""

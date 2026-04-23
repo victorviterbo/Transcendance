@@ -1,6 +1,7 @@
 """Shared helpers for chat room and direct-message logic."""
 
 from friends.models import Friendship
+from chat.models import Message
 from userprofile.models import Profile
 
 from .models import Room
@@ -44,3 +45,18 @@ def get_or_create_direct_room(profile_a: Profile, profile_b: Profile) -> tuple[R
             'is_direct': True,
         },
     )
+
+
+def serialize_friend_chat_message(message: Message, target_profile: Profile, direction: str) -> dict[str, object]:
+    """Build the frontend chat contract for a persisted direct message."""
+    payload: dict[str, object] = {
+        'message': message.body,
+        'date': message.created.isoformat(),
+        'direction': direction,
+        'target-id': str(target_profile.uid),
+        'target': target_profile.username,
+        'uid': str(message.uid),
+    }
+    if direction == 'outgoing':
+        payload['status'] = 'read' if message.seen else ('recieved' if message.delivered else 'sent')
+    return payload

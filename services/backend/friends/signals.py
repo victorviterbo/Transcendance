@@ -25,10 +25,11 @@ def _profile_payload(profile, relation: str) -> dict[str, Any]:
     return serializer.data
 
 
-def _notif_payload(from_profile, relation: str) -> dict[str, Any]:
+def _notif_payload(from_profile, relation: str, kind: str, uid: str) -> dict[str, Any]:
     """Return a frontend-shaped notification payload."""
     return {
-        'kind': 'friend-request',
+        'uid': uid,
+        'kind': kind,
         'from': _profile_payload(from_profile, relation),
         'date': friendship_timestamp(),
         'read': False,
@@ -62,6 +63,7 @@ def _group_send_safe(group_name: str | None, payload: dict[str, Any]) -> None:
 def save_profile(sender: type[Friendship],
                  instance: Friendship,
                  created: bool,
+                 update_fields: set[str] | None = None,
                  **kwargs: Any) -> None:
     """Trigger sending of notifications when friendship is saved."""
     if created:
@@ -87,21 +89,36 @@ def save_profile(sender: type[Friendship],
                 'payload': {
                     'target': 'notif',
                     'event': 'new',
-                    'notif': _notif_payload(sender_profile, relation='incoming'),
+                    'notif': _notif_payload(
+                        sender_profile,
+                        relation='incoming',
+                        kind='friend-request',
+                        uid=str(instance.uid),
+                    ),
                 },
             },
         )
-    else:
-        accepter_profile = instance.to_user.profile
-        requester_group = _profile_group_name(instance.from_user)
-        _group_send_safe(
-            requester_group,
-            {
-                'type': 'send_notification',
-                'payload': {
-                    'target': 'notif',
-                    'event': 'new',
-                    'notif': _notif_payload(accepter_profile, relation='friends'),
-                },
+        return
+
+    # Accept event: notify requester only when the status field was updated.
+    if not update_fields or 'status' not in update_fields or instance.status != 'accepted':
+        return
+
+    accepter_profile = instance.to_user.profile
+    requester_group = _profile_group_name(instance.from_user)
+    _group_send_safe(
+        requester_group,
+        {
+            'type': 'send_notification',
+            'payload': {
+                'target': 'notif',
+                'event': 'new',
+                'notif': _notif_payload(
+                    accepter_profile,
+                    relation='friends',
+                    kind='friend-accepted',
+                    uid=str(instance.uid),
+                ),
             },
-        )
+        },
+    )
