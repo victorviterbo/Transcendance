@@ -63,10 +63,7 @@ function PLeaderboardPage() {
 
 					{leaderboardState.status === "error" ? (
 						<Stack spacing={1}>
-							<CTitle size="sm" sx={{ color: "error.main" }}>
-								LEADERBOARD_LOADING_FAILED
-							</CTitle>
-							<CText size="md">
+							<CText size="md" sx={{ color: "error.main" }}>
 								{leaderboardState.error ?? "LEADERBOARD_LOADING_FAILED"}
 							</CText>
 						</Stack>

@@ -2,6 +2,7 @@
 
 - [ ] Better localization for notification times: remove the (s)
 - [ ] Find a better workaround than the 150 ms voodoo shit
+- [ ] Make profile picture and username be links that navigate to /users/{username}
 
 # BUG
 
