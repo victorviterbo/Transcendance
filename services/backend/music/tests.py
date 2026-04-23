@@ -1,5 +1,3 @@
-"""Tests for the music module."""
-
 from io import StringIO
 from unittest.mock import Mock, patch
 
@@ -8,8 +6,10 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from music.itunes_client import batch_lookup, fetch_ids_from_rss, full_lookup
-from music.management.commands.seed_playlists import PLAYLISTS, STATIC_TRACK_IDS
+from music.management.commands.seed_playlists import PLAYLISTS
+from music.management.commands.seed_playlists import STATIC_TRACK_IDS
 from music.models import Playlist, Track
+from music.serializers import PlaylistTracksSerializer, TrackSerializer
 
 
 class MusicModelsTests(TestCase):
@@ -318,3 +318,61 @@ class MusicManagementCommandsTests(TestCase):
 		self.assertTrue(Track.objects.filter(itunes_id=first_track_id, title='Static Song').exists())
 		self.assertTrue(playlist.tracks.filter(itunes_id=first_track_id).exists())
 		mock_full_lookup.assert_any_call(static_ids, country='US')
+
+
+class MusicSerializersTests(TestCase):
+	"""Validate serialization for tracks and playlists."""
+
+	def test_track_serializer_fields(self):
+		"""Track serializer should expose expected public fields."""
+		track = Track.objects.create(
+			itunes_id=9001,
+			title='Serializer Song',
+			artist='Serializer Artist',
+			kind='song',
+			preview_url='https://example.org/preview.m4a',
+			artwork_url='https://example.org/artwork.jpg',
+		)
+
+		data = TrackSerializer(track).data
+
+		self.assertEqual(data['itunes_id'], 9001)
+		self.assertEqual(data['title'], 'Serializer Song')
+		self.assertEqual(data['artist'], 'Serializer Artist')
+		self.assertEqual(data['kind'], 'song')
+		self.assertEqual(data['preview_url'], 'https://example.org/preview.m4a')
+		self.assertEqual(data['artwork_url'], 'https://example.org/artwork.jpg')
+
+	def test_playlist_serializer_includes_nested_tracks(self):
+		"""Playlist serializer should include all attached tracks."""
+		playlist = Playlist.objects.create(
+			name='Serialize Playlist',
+			slug='serialize-playlist',
+			rss_url='https://example.org/rss',
+		)
+		track_1 = Track.objects.create(
+			itunes_id=111,
+			title='Track One',
+			artist='Artist One',
+			kind='song',
+			preview_url='https://example.org/1.m4a',
+			artwork_url='https://example.org/1.jpg',
+		)
+		track_2 = Track.objects.create(
+			itunes_id=222,
+			title='Track Two',
+			artist='Artist Two',
+			kind='song',
+			preview_url='https://example.org/2.m4a',
+			artwork_url='https://example.org/2.jpg',
+		)
+
+		playlist.tracks.add(track_1, track_2)
+
+		data = PlaylistTracksSerializer(playlist).data
+
+		self.assertEqual(data['name'], 'Serialize Playlist')
+		self.assertEqual(data['slug'], 'serialize-playlist')
+		self.assertEqual(len(data['tracks']), 2)
+		returned_ids = {track['itunes_id'] for track in data['tracks']}
+		self.assertEqual(returned_ids, {111, 222})
