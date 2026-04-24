@@ -4,6 +4,13 @@ from music.models import Playlist, Track
 from music.itunes_client import fetch_ids_from_rss, batch_lookup, full_lookup
 from .seed_playlists import STATIC_TRACK_IDS
 
+# Map playlist names to their STATIC_TRACK_IDS keys
+NAME_TO_SLUG_KEY = {
+    "Best of USA 80s": "bestof-usa-80s",
+    "Best of USA 2000s": "bestof-usa-2000s",
+    "Best of France 80s": "bestof-france-80s",
+}
+
 
 class Command(BaseCommand):
     help = "Sync all playlists from iTunes RSS feeds into the database."
@@ -12,12 +19,12 @@ class Command(BaseCommand):
     def _playlist_country(playlist: Playlist) -> str | None:
         """Best-effort storefront country extraction from playlist data."""
         rss_url = (playlist.rss_url or '').lower()
-        slug = (playlist.slug or '').lower()
-        if '/fr/' in rss_url or '-fr' in slug or 'france' in slug:
+        name = (playlist.name or '').lower()
+        if '/fr/' in rss_url or 'fr' in name or 'france' in name:
             return 'FR'
-        if '/ch/' in rss_url or '-ch' in slug:
+        if '/ch/' in rss_url or 'ch' in name:
             return 'CH'
-        if '/us/' in rss_url or '-us' in slug or 'usa' in slug:
+        if '/us/' in rss_url or 'us' in name or 'usa' in name:
             return 'US'
         return None
 
@@ -38,7 +45,7 @@ class Command(BaseCommand):
                 if playlist.rss_url:
                     entries = fetch_ids_from_rss(playlist.rss_url)
                     if not entries:
-                        self.stdout.write(self.style.WARNING(f"  No entries returned, skipping."))
+                        self.stdout.write(self.style.WARNING("  No entries returned, skipping."))
                         continue
 
                     track_ids = [e["track_id"] for e in entries]
@@ -60,7 +67,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": entry["title"],
                                     "artist": entry["artist"],
-                                    "kind": entry.get("kind", ""),
+                                    "genre": entry.get("kind", ""),
                                     "artwork_url": entry["artwork_url"],
                                     "preview_url": preview_url,
                                 },
@@ -77,9 +84,10 @@ class Command(BaseCommand):
                     ))
 
                 else:
-                    track_ids = STATIC_TRACK_IDS.get(playlist.slug, [])
+                    slug_key = NAME_TO_SLUG_KEY.get(playlist.name)
+                    track_ids = STATIC_TRACK_IDS.get(slug_key, [])
                     if not track_ids:
-                        self.stdout.write(self.style.WARNING(f"  No static IDs found for {playlist.slug}, skipping."))
+                        self.stdout.write(self.style.WARNING(f"  No static IDs found for {playlist.name}, skipping."))
                         continue
 
                     metadata = full_lookup(track_ids, country=country)
@@ -102,7 +110,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": info["title"],
                                     "artist": info["artist"],
-                                    "kind": info.get("kind", ""),
+                                    "genre": info.get("kind", ""),
                                     "artwork_url": info["artwork_url"],
                                     "preview_url": info["preview_url"],
                                 },

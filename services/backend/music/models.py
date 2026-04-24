@@ -4,7 +4,6 @@ from django.db import models
 class Playlist(models.Model):
 	"""Stores the different playlists (e.g., Rock, Rap, Classics)."""
 	name = models.CharField(max_length=255, unique=True)
-	slug = models.SlugField(max_length=100, unique=True, default='')
 	rss_url = models.URLField(max_length=500, default='')
 	
 	def __str__(self):
@@ -16,7 +15,7 @@ class Track(models.Model):
 	itunes_id = models.IntegerField(unique=True, primary_key=True) 
 	title = models.CharField(max_length=255)
 	artist = models.CharField(max_length=255)
-	kind = models.CharField(max_length=100, null=True, blank=True)
+	genre = models.CharField(max_length=100, null=True, blank=True)
 	
 	# URLs can sometimes exceed 200 characters, so increasing max_length is safe
 	preview_url = models.URLField(max_length=500, null=True, blank=True)
