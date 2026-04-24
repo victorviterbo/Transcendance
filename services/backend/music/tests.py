@@ -17,13 +17,13 @@ class MusicModelsTests(TestCase):
 
 	def test_track_many_to_many_playlist(self):
 		"""A track should be attachable to multiple playlists."""
-		rock = Playlist.objects.create(name='Rock', slug='rock', rss_url='https://example.org/rock')
-		pop = Playlist.objects.create(name='Pop', slug='pop', rss_url='https://example.org/pop')
+		rock = Playlist.objects.create(name='Rock', rss_url='https://example.org/rock')
+		pop = Playlist.objects.create(name='Pop', rss_url='https://example.org/pop')
 		track = Track.objects.create(
 			itunes_id=1234,
 			title='Song',
 			artist='Artist',
-			kind='song',
+			genre='song',
 			preview_url='https://example.org/preview.m4a',
 			artwork_url='https://example.org/artwork.jpg',
 		)
@@ -72,7 +72,7 @@ class ITunesClientTests(TestCase):
 		self.assertEqual(tracks[0]['track_id'], 111)
 		self.assertEqual(tracks[0]['title'], 'Song 1')
 		self.assertEqual(tracks[0]['artist'], 'Artist 1')
-		self.assertEqual(tracks[0]['kind'], 'song')
+		self.assertEqual(tracks[0]['genre'], 'song')
 		self.assertEqual(tracks[0]['artwork_url'], 'https://img.example/500x500bb.jpg')
 
 	@patch('music.itunes_client.requests.get')
@@ -132,7 +132,7 @@ class ITunesClientTests(TestCase):
 		self.assertIn(333, metadata)
 		self.assertEqual(metadata[333]['title'], 'Track 333')
 		self.assertEqual(metadata[333]['artist'], 'Artist 333')
-		self.assertEqual(metadata[333]['kind'], 'song')
+		self.assertEqual(metadata[333]['genre'], 'song')
 		self.assertEqual(metadata[333]['artwork_url'], 'https://img.example/500x500bb.jpg')
 		self.assertEqual(metadata[333]['preview_url'], 'https://example.org/333.m4a')
 
@@ -162,7 +162,6 @@ class MusicManagementCommandsTests(TestCase):
 		"""A provider timeout should be logged and the command should continue cleanly."""
 		Playlist.objects.create(
 			name='Timeout RSS',
-			slug='timeout-rss',
 			rss_url='https://example.org/rss',
 		)
 		mock_fetch_ids.side_effect = requests.exceptions.Timeout('provider timeout')
@@ -183,14 +182,13 @@ class MusicManagementCommandsTests(TestCase):
 		"""Existing tracks should be updated in place by update_or_create."""
 		playlist = Playlist.objects.create(
 			name='Update RSS',
-			slug='update-rss',
 			rss_url='https://example.org/rss',
 		)
 		Track.objects.create(
 			itunes_id=1001,
 			title='Old Title',
 			artist='Old Artist',
-			kind='song',
+			genre='song',
 			preview_url='https://example.org/old.m4a',
 			artwork_url='old_image.jpg',
 		)
@@ -199,7 +197,7 @@ class MusicManagementCommandsTests(TestCase):
 				'track_id': 1001,
 				'title': 'New Title',
 				'artist': 'New Artist',
-				'kind': 'song',
+				'genre': 'song',
 				'artwork_url': 'new_image.jpg',
 			},
 		]
@@ -226,12 +224,10 @@ class MusicManagementCommandsTests(TestCase):
 		"""The same iTunes ID should create one Track linked to multiple playlists."""
 		playlist_a = Playlist.objects.create(
 			name='Global',
-			slug='global-rss',
 			rss_url='https://example.org/global',
 		)
 		playlist_b = Playlist.objects.create(
 			name='Best Of 90s',
-			slug='bestof-90s',
 			rss_url='https://example.org/bestof',
 		)
 		mock_fetch_ids.return_value = [
@@ -239,7 +235,7 @@ class MusicManagementCommandsTests(TestCase):
 				'track_id': 4242,
 				'title': 'Shared Hit',
 				'artist': 'Shared Artist',
-				'kind': 'song',
+				'genre': 'song',
 				'artwork_url': 'https://img.example/shared.jpg',
 			},
 		]
@@ -263,7 +259,6 @@ class MusicManagementCommandsTests(TestCase):
 		"""Dynamic playlists should persist only tracks with a preview URL."""
 		playlist = Playlist.objects.create(
 			name='Live RSS',
-			slug='live-rss',
 			rss_url='https://example.org/rss',
 		)
 		mock_fetch_ids.return_value = [
@@ -271,14 +266,14 @@ class MusicManagementCommandsTests(TestCase):
 				'track_id': 1001,
 				'title': 'Track A',
 				'artist': 'Artist A',
-				'kind': 'song',
+				'genre': 'song',
 				'artwork_url': 'https://img.example/a.jpg',
 			},
 			{
 				'track_id': 1002,
 				'title': 'Track B',
 				'artist': 'Artist B',
-				'kind': 'song',
+				'genre': 'song',
 				'artwork_url': 'https://img.example/b.jpg',
 			},
 		]
@@ -299,7 +294,7 @@ class MusicManagementCommandsTests(TestCase):
 	def test_sync_playlists_static_playlist_uses_full_lookup(self, mock_full_lookup):
 		"""Static playlists should resolve metadata through the full lookup API."""
 		slug = 'bestof-usa-80s'
-		playlist = Playlist.objects.create(name='Best Of', slug=slug, rss_url='')
+		playlist = Playlist.objects.create(name='Best Of', rss_url='')
 		static_ids = STATIC_TRACK_IDS[slug]
 		first_track_id = static_ids[0]
 
@@ -307,7 +302,7 @@ class MusicManagementCommandsTests(TestCase):
 			first_track_id: {
 				'title': 'Static Song',
 				'artist': 'Static Artist',
-				'kind': 'song',
+				'genre': 'song',
 				'artwork_url': 'https://img.example/static.jpg',
 				'preview_url': 'https://example.org/static.m4a',
 			}
@@ -329,7 +324,7 @@ class MusicSerializersTests(TestCase):
 			itunes_id=9001,
 			title='Serializer Song',
 			artist='Serializer Artist',
-			kind='song',
+			genre='song',
 			preview_url='https://example.org/preview.m4a',
 			artwork_url='https://example.org/artwork.jpg',
 		)
@@ -339,7 +334,7 @@ class MusicSerializersTests(TestCase):
 		self.assertEqual(data['itunes_id'], 9001)
 		self.assertEqual(data['title'], 'Serializer Song')
 		self.assertEqual(data['artist'], 'Serializer Artist')
-		self.assertEqual(data['kind'], 'song')
+		self.assertEqual(data['genre'], 'song')
 		self.assertEqual(data['preview_url'], 'https://example.org/preview.m4a')
 		self.assertEqual(data['artwork_url'], 'https://example.org/artwork.jpg')
 
@@ -347,14 +342,13 @@ class MusicSerializersTests(TestCase):
 		"""Playlist serializer should include all attached tracks."""
 		playlist = Playlist.objects.create(
 			name='Serialize Playlist',
-			slug='serialize-playlist',
 			rss_url='https://example.org/rss',
 		)
 		track_1 = Track.objects.create(
 			itunes_id=111,
 			title='Track One',
 			artist='Artist One',
-			kind='song',
+			genre='song',
 			preview_url='https://example.org/1.m4a',
 			artwork_url='https://example.org/1.jpg',
 		)
@@ -362,7 +356,7 @@ class MusicSerializersTests(TestCase):
 			itunes_id=222,
 			title='Track Two',
 			artist='Artist Two',
-			kind='song',
+			genre='song',
 			preview_url='https://example.org/2.m4a',
 			artwork_url='https://example.org/2.jpg',
 		)
@@ -372,7 +366,6 @@ class MusicSerializersTests(TestCase):
 		data = PlaylistTracksSerializer(playlist).data
 
 		self.assertEqual(data['name'], 'Serialize Playlist')
-		self.assertEqual(data['slug'], 'serialize-playlist')
 		self.assertEqual(len(data['tracks']), 2)
 		returned_ids = {track['itunes_id'] for track in data['tracks']}
 		self.assertEqual(returned_ids, {111, 222})
