@@ -83,7 +83,7 @@ def batch_lookup(track_ids: list[int], country: str | None = None) -> dict[int, 
 def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, dict]:
 	"""
 	Perform a batch lookup and return full metadata for each track ID.
-	Returns a dict mapping track_id to {title, artist, kind, artwork_url, preview_url}.
+	Returns a dict mapping track_id to {title, artist, genre, artwork_url, preview_url}.
 	"""
 	if not track_ids:
 		return {}

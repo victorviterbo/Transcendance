@@ -36,7 +36,6 @@ class PlaylistTracksSerializer(serializers.ModelSerializer):
 		fields = [
 			'id',
 			'name',
-			'slug',
 			'rss_url',
 			'tracks',
 		]
