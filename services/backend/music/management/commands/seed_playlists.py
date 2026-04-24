@@ -70,8 +70,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for data in PLAYLISTS:
             _, created = Playlist.objects.get_or_create(
-                slug=data["slug"],
-                defaults={"name": data["name"], "rss_url": data["rss_url"]},
+                name=data["name"],
+                defaults={"rss_url": data["rss_url"]},
             )
             status = "created" if created else "already exists"
             self.stdout.write(f"  {data['name']} → {status}")
