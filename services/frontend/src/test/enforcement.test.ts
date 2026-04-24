@@ -30,8 +30,4 @@ describe("checkUsernameValid", () => {
 	it("accepts a valid username", () => {
 		expect(checkUsernameValid("johndoe")).toEqual([]);
 	});
-
-	it("allows single dot but not path traversal", () => {
-		expect(checkUsernameValid("john.doe")).toEqual([]);
-	});
 });

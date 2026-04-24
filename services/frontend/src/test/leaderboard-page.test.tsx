@@ -178,8 +178,8 @@ describe("PLeaderboardPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByText("Leaderboard loading failed")).toBeInTheDocument();
-		expect(screen.getByText("Leaderboard unavailable")).toBeInTheDocument();
+		expect(await screen.findByText("Leaderboard unavailable")).toBeInTheDocument();
+		expect(screen.queryByText("Leaderboard loading failed")).not.toBeInTheDocument();
 		expect(screen.queryAllByTestId("leaderboard-row")).toHaveLength(0);
 		expect(screen.queryByText("Total players: 0")).not.toBeInTheDocument();
 		expect(
@@ -187,14 +187,13 @@ describe("PLeaderboardPage", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("joins structured error payload values when the leaderboard request fails", async () => {
+	it("renders a structured error payload value when the leaderboard request fails", async () => {
 		fetchLeaderboardMock.mockRejectedValue({
 			response: {
 				status: 400,
 				data: {
 					error: {
 						username: "Username missing",
-						scope: "Invalid scope",
 					},
 				},
 			},
@@ -202,8 +201,8 @@ describe("PLeaderboardPage", () => {
 
 		renderPage();
 
-		expect(await screen.findByText("Leaderboard loading failed")).toBeInTheDocument();
-		expect(screen.getByText("Username missing, Invalid scope")).toBeInTheDocument();
+		expect(await screen.findByText("Username missing")).toBeInTheDocument();
+		expect(screen.queryByText("Leaderboard loading failed")).not.toBeInTheDocument();
 	});
 
 	it("falls back to the current error code when the request fails without an API message", async () => {
@@ -212,6 +211,6 @@ describe("PLeaderboardPage", () => {
 		renderPage();
 
 		const errorTexts = await screen.findAllByText("Leaderboard loading failed");
-		expect(errorTexts).toHaveLength(2);
+		expect(errorTexts).toHaveLength(1);
 	});
 });

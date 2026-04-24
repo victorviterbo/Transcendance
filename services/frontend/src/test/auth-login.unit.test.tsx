@@ -78,7 +78,7 @@ describe("auth login unit tests", () => {
 		expect(postMock).not.toHaveBeenCalled();
 	});
 
-	it("trims email and password before submit", async () => {
+	it("trims email but preserves password before submit", async () => {
 		const user = userEvent.setup();
 		postMock.mockResolvedValue({
 			data: { username: "john", access: "token" },
@@ -92,7 +92,7 @@ describe("auth login unit tests", () => {
 
 		expect(postMock).toHaveBeenCalledWith(API_AUTH_LOGIN, {
 			email: "john@42.fr",
-			password: "secret",
+			password: "  secret  ",
 		});
 	});
 

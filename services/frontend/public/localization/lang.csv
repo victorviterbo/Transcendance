@@ -62,7 +62,7 @@ REQUIRED_FIELD,Please fill this,Veuillez remplir ce champ,必須項目です,Sho
 SIGNING_UP,Signing up,Création en cours,登録中,Shows when a user presses Sign up
 SIGNUP,Sign up,Créer un compte,アカウント作成,To create an account
 STATISTICS,Statistics,Statistiques,統計情報,Shown in the user profile
-USERNAME_ADMIN,Who do you think you are?,Pour qui crois-tu te prendre ?,あなたは誰だと思ってるの？,Shown when user tries to use forbidden reserved username
+USERNAME_ADMIN,Who do you think you are?,Pour qui tu te prends ?,あなたは誰だと思ってるの？,Shown when user tries to use forbidden reserved username
 USERNAME_FORBIDDEN,Username contains forbidden characters,Le nom d'utilisateur contient des caractères interdits,ユーザー名に使用できない文字が含まれています,Shown when username has forbidden characters
 USERNAME_MAX,Username at most 20 characters,Le nom d'utilisateur ne doit pas dépasser 20 caractères,ユーザー名は20文字以内,Shown when username exceeds max length
 USERNAME_MIN,Username at least 3 characters,Le nom d'utilisateur doit contenir au moins 3 caractères,ユーザー名は3文字以上で入力してください,Shown when username is too short

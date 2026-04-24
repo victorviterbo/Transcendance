@@ -1,157 +1,61 @@
-WSReponse:
+#SERVER TO CLIENT
+WS-StoC-FriendChat:
   type: object
-  description: "WebSocket data structure under 'wss://localhost/' (Server -> Client)"
+  description: Websocket object for recieved data from the server about all friend chats requests
   properties:
-    type:
+    target: { type: string, fromat: "friend-chat"}
+    event: 
       type: string
-      description: "Action trigger"
-      enum: 
-        - friendUpdateList (friends.list)
-        - friendUpdateRequests (friends.requests)
-        - friendUpdateMessages (friends.messages)
-        - friendNewMessage (friends.messages)
+      fromat: "update_status | new"
+      descripion: "update_status: change the current status of the target message (targeted by uid) | new: Notif client there is a new message inbond"
+    message:
+      $ref: ../openapi.yaml#/components/schemas/Message
 
-        - roomHomeUpdateRooms (room_home.list)
-        - roomHomeChanged (room_home.changed)
-
-
-
-    friends:
-      type: object
-      description: "Object for all friends related messages"
-      properties:
-        list:
-          description: "List of all friend info  (Event: friendUpdateList)"
-          type: array
-          items:
-            type: object
-            properties:
-              name: { type: string }
-              status:
-                type: string
-                enum: ["offline", "busy", "online"]
-              avatar: { type: uri }
-              roomid: {type: string | null | undefined, description: "Room ID when friend is in game to offer the join button"}
-              unread: {type: integer, description: "Number of un read messages for this user"}
-
-
-        requests:
-          description: "List of all friend requests (Event: friendUpdateRequests)"
-          type: object
-          properties:
-            inward:
-              type: array
-              items:
-                type: object
-                properties:
-                  username: { type: string }
-                  date: { type: string | date }
-            outward:
-              type: array
-              items:
-                type: object
-                properties:
-                  username: { type: string }
-                  date: { type: string | date }
-
-        messages:
-          type: array
-          items:
-            type: object
-            properties:
-              message: { type: string }
-              date: { type: string | date }
-    
-    room_home:
-      type: object
-      description: "Object tom manage room displays and information on the home page"
-      properties:
-        list:
-          type: array
-          description: "List of all opened rooms (If a room is added or deleted resend all using this structure)"
-          items:
-            type: object
-            properties:
-              room_id: {type: integer, description: "ID of the room that will be used to connect to : localhost/<ROOM_ID>"}
-              name: { type: string, description: "Displayed room name"}
-              theme: { type: string, description: "Displayed theme name"}
-              music_count: { type: integer, description: "Indicate the amount of music this game will have"}
-              player_count: { type: integer, description: "Indicate the amount of connected players"}
-              player_max: { type: integer, description: "Indicate the amount of max players the can accept"}
-              private: { type: boolean, description: "Define if this room is a private room"}
-              friends: { type: boolean, description: "Define if this room is a friend's room"}
-              image: 
-                type: object
-                description: "We haven't decided yet the format of the image. For easier futur integration create an empty object."
-
-        changed:
-          type: object
-          description: "Update a specified room: (structure is the same as room_home.list)"
-          properties:
-            room_id: {type: integer, description: "ID of the room that will be used to connect to : localhost/<ROOM_ID>"}
-            name: { type: string, description: "Displayed room name"}
-            theme: { type: string, description: "Displayed theme name"}
-            music_count: { type: integer, description: "Indicate the amount of music this game will have"}
-            player_count: { type: integer, description: "Indicate the amount of connected players"}
-            player_max: { type: integer, description: "Indicate the amount of max players the can accept"}
-            private: { type: boolean, description: "Define if this room is a private room"}
-            friends: { type: boolean, description: "Define if this room is a friend's room"}
-            image: 
-              type: object
-              description: "We haven't decided yet the format of the image. For easier futur integration create an empty object."
-
-    errors:
-      type: object
-      properties:
-        event_name:
-          type: array
-          description: "Gives an error for an event"
-          items:
-            type: object
-            properties:
-              message: {type: string}
-              code: {type: string}
-
-WSRequest:
+WS-StoC-Notif:
   type: object
-  description: "WebSocket data structure under 'wss://localhost/' (Client -> Server)"
+  description: Websocket object for recieved data from the server about all notifications requests
   properties:
-    type:
+    target: { type: string, fromat: "notif"}
+    event: 
       type: string
-      description: "Action triggered"
-      enum:
-        - friendUpdateList (friends.search)
-        - friendUpdateRequests (none)
-        - friendMessageSent (none)
-        - friendMessageRead (none - triggered when chat with friend is openned)
-        - friendRequestChange (friends.request_change)
-        - friendRequestNew (friends.request_new)
+      fromat: "new"
+      descripion: "new: Notif client there is a new notification inbond"
+    notif:
+      oneOf:
+       - $ref: ../openapi.yaml#/components/schemas/Notif - Requests
+       - $ref: ../openapi.yaml#/components/schemas/Notif - Accepted
 
-        - roomHomeUpdateList (none)
+WS-StoC-FriendRequests:
+  type: object
+  description: Websocket object for recieved data from the server about all friend requests (used for live update)
+  properties:
+    target: { type: string, fromat: "friend-request"}
+    event: 
+      type: string
+      fromat: "new-incoming"
+      descripion: "new-incoming: Client recieved a new friend requests"
+    user:
+      $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
 
-    friends:
-      type: object
-      description: "Object for all friends related messages"
-      properties:
-        search: { type: string, description: "When app is calling 'friendUpdateList' an complementary filter string can be passed"}
 
-        messages:
-          type: array
-          items:
-            type: object
-            properties:
-              message: { type: string }
-              date: { type: string | date }
 
-        request_change:
-          type: object
-          description: "Called when the user accept / refused a request"
-          properties:
-            username: { type: string }
-            accepted: { type: boolean }
-
-        request_new:
-          type: object
-          description: "Called when the user ask for a friend"
-          properties:
-            username: { type: string }
+#CLIENT TO SERVER
+WS-CtoS-FriendChat:
+  type: object
+  description: Websocket object for send data to the server about all friend chats requests
+  properties:
+    target: { type: string, fromat: "friend-chat"}
+    event: 
+      type: string
+      fromat: "send | open | close"
+      descripion: "send: notify server there is a message sent by user |\
+        open: Notify server a chat has been opened with targeted user |\
+        close: Notify server a chat hjas been closed with targeted user"
+    message (send):
+      $ref: /components/schemas_social.yaml#/Message
+    to (open | close):
+      type: string
+      descripion: "Name of the target user"
+    toUid (open | close):
+      type: string
+      descripion: "uid of the target user0"

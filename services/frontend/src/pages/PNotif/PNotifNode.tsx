@@ -49,14 +49,18 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 			return (
 				<>
 					<CText>NOTIF_FRIEND_REQ</CText>
-					<CText sx={PNotifNodeImpText}>{notif.from.username}</CText>
+					<CText noTr={true} sx={PNotifNodeImpText}>
+						{notif.from.username}
+					</CText>
 				</>
 			);
 		else if (notif.kind == "friend-accepted")
 			return (
 				<>
 					<CText>NOTIF_FRIEND_ACCEPTED</CText>
-					<CText sx={PNotifNodeImpText}>{notif.from.username}</CText>
+					<CText noTr={true} sx={PNotifNodeImpText}>
+						{notif.from.username}
+					</CText>
 				</>
 			);
 		return <CText>NOTIF_UNKNOWN</CText>;

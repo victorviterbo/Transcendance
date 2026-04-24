@@ -237,7 +237,7 @@ export function onMessageStatus(data: TWSSend) {
 
 	const friend: IFriendInfo | undefined = mockSocialDB.friends.find((value: IFriendInfo) => {
 		if (!data.toUid) return false;
-		return (value.uid = data.toUid);
+		return value.uid == data.toUid;
 	});
 
 	if (!friend) return;

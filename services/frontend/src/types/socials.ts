@@ -41,9 +41,6 @@ export interface IFriendReqRes {
 }
 
 export interface IFriendReqResponse {
-	description: string;
-	"target-username": string;
-	"target-uid": string;
 	error?: IErrorStruct;
 }
 

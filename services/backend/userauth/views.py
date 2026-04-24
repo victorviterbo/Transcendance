@@ -37,14 +37,16 @@ class RegisterView(APIView):
         """
         try:
             renamed_data = request.data.copy()
-            renamed_data['profile_username'] = renamed_data.pop('username')
-            serializer = serializer = RegisterSerializer(data=renamed_data,
-                                                         context={
-                                                             'request': request,
-                                                             'is_creation': True}
+            username = renamed_data.pop('username', None)
+            if username is not None:
+                renamed_data['profile_username'] = username
+            serializer = RegisterSerializer(data=renamed_data,
+                                            context={
+                                                'request': request,
+                                                'is_creation': True}
             )
             if serializer.is_valid(raise_exception=True):
-                serializer.save(profile_username=request.data.get('username'))
+                serializer.save()
                 token = RefreshToken.for_user(serializer.instance)
                 response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},

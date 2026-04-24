@@ -22,14 +22,22 @@ paths:
     $ref: ./paths/auth.yaml#/password
   /api/auth/delete:
     $ref: ./paths/auth.yaml#/delete
-  /api/social/friends/list:
+  /api/social/friends:
     $ref: ./paths/social.yaml#/friends-list
-  /api/social/request/pend:
-    $ref: ./paths/social.yaml#/request-pend
-  /api/social/request/send:
-    $ref: ./paths/social.yaml#/request-send
-  /api/social/request/respond:
-    $ref: ./paths/social.yaml#/request-respond
+  /api/social/friends-search:
+    $ref: ./paths/social.yaml#/friends-search
+  /api/social/friends-request:
+    $ref: ./paths/social.yaml#/friends-requests
+  /api/social/friends-request/send:
+    $ref: ./paths/social.yaml#/friends-requests-send
+  /api/social/friends-request/respond:
+    $ref: ./paths/social.yaml#/friends-requests-respond
+  /api/social/message:
+    $ref: ./paths/social.yaml#/social-message
+  /api/social/notifs:
+    $ref: ./paths/social.yaml#/notif
+  /api/social/notifs_read":
+    $ref: ./paths/social.yaml#/notif-read
   /api/profile:
     $ref: ./paths/profile.yaml#/profile
   /api/profile/search:
@@ -44,6 +52,12 @@ paths:
     $ref: ./paths/stats.yaml#/leaderboard
   /api/stats/history:
     $ref: ./paths/stats.yaml#/history
+  WS/#friend-chat:
+    $ref: ./paths/websocket.yaml#/WS-friend-chat
+  WS/#notif:
+    $ref: ./paths/websocket.yaml#/WS-notif
+  WS/#friend-request:
+    $ref: ./paths/websocket.yaml#/WS-friend-request
 
 components:
   schemas:
@@ -53,8 +67,6 @@ components:
       $ref: ./components/schemas.yaml#/OwnProfile
     LightProfile:
       $ref: ./components/schemas.yaml#/LightProfile
-    Friendship:
-      $ref: ./components/schemas.yaml#/Friendship
     ValidationError:
       $ref: ./components/schemas.yaml#/ValidationError
     AuthError:
@@ -79,10 +91,25 @@ components:
       $ref: ./components/schemas.yaml#/LeaderboardResponse
     HistoryResponse:
       $ref: ./components/schemas.yaml#/HistoryResponse
-    WS Reponse:
-      $ref: ./components/schemas_ws.yaml#/WSReponse
-    WS Requests:
-      $ref: ./components/schemas_ws.yaml#/WSRequest
+    ExtUserInfo:
+      $ref: ./components/schemas_users.yaml#/ExtUserInfo
+    FriendInfo:
+      $ref: ./components/schemas_social.yaml#/FriendInfo
+    Message:
+      $ref: ./components/schemas_social.yaml#/Message
+    Notif - Requests: 
+      $ref: ./components/schemas_social.yaml#/NotifRequests
+    Notif - Accepted:
+      $ref: ./components/schemas_social.yaml#/NotifAccepted
+    WS - StoC - friend-chat:
+      $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendChat
+    WS - StoC - notif:
+      $ref: ./components/schemas_ws.yaml#/WS-StoC-Notif
+    WS - StoC - friend-request:
+      $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendRequests
+    WS - CtoS - friend-chat:
+      $ref: ./components/schemas_ws.yaml#/WS-CtoS-FriendChat
+    
   securitySchemes:
     bearerAuth:
       type: http
@@ -98,3 +125,6 @@ tags:
     description: User profile and account management endpoints.
   - name: stats
     description: User statistics
+  - name: websockets
+    description: "Websockets data (Open AI don't handle websocket -> Posts = MODULES, Requests = Client to Server, Reponse = Server to Clients)"
+

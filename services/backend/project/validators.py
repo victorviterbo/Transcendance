@@ -70,12 +70,18 @@ def validate_username(value: str, is_creation: bool = False) -> str:
     if not value:
         raise serializers.ValidationError('Username is required.',
                                           code='INVALID_USERNAME')
-    if any(pattern in value for pattern in ['/', '\\', '..', '~']):
+    if len(value) < 3:
+        raise serializers.ValidationError('Username too short',
+                                          code='USERNAME_MIN')
+    if len(value) > 20:
+        raise serializers.ValidationError('Username too long',
+                                          code='USERNAME_MAX')
+    if not re.fullmatch(r'[A-Za-z0-9_-]+', value):
         raise serializers.ValidationError('Use of forbiden character',
-                                          code='USERNAME_FORBIDDEN_CHAR')
+                                          code='USERNAME_FORBIDDEN')
     if value.lower() == 'admin':
         raise serializers.ValidationError('Who do you think you are ?',
-                                          code='RESERVED_USERNAME')
+                                          code='USERNAME_ADMIN')
     if is_creation and Profile.objects.filter(username=value).exists():
         raise serializers.ValidationError('Username already taken',
                                           code='USERNAME_TAKEN')

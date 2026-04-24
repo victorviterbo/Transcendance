@@ -1,0 +1,16 @@
+#FRIENDS
+ExtUserInfo:
+  type: object
+  description: Minimal data about an external user (not friend)
+  properties:
+    uid: { type: string }
+    username: { type: string }
+    image:
+      type: string
+      format: uri-reference
+      description: Usually a relative `/DB/media/...` path.
+    badges: { type: string }
+    status:
+      type: string
+      format: "not-friends | friends | incoming | outgoing"
+      descripion: "Give the current relation with the target user"

@@ -16,6 +16,8 @@ export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 
 	span?: boolean;
 
+	noTr?: boolean;
+
 	getVariant?: () => TypographyVariant;
 	getSize?: () => number;
 }
@@ -28,6 +30,7 @@ function CTextBase({
 	color,
 	family,
 	span,
+	noTr,
 	getVariant,
 	getSize,
 	sx,
@@ -35,6 +38,7 @@ function CTextBase({
 	...other
 }: CTextBaseProps) {
 	const getChildren = () => {
+		if (noTr) return children;
 		if (typeof children === "string") {
 			if (span) return <span>{ttr(children)}</span>;
 			return ttr(children);

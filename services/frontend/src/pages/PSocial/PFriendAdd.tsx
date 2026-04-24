@@ -33,7 +33,11 @@ function PFriendAdd() {
 			if (res.data.error) throw res.data.error;
 			if (typeof res.data != "object" || !res.data.users)
 				throw { error: { default: [{ message: "Invalid object", code: "INVALID" }] } };
-			setUsers(res.data.users);
+			setUsers(
+				res.data.users.filter((user: IExtUserInfo) => {
+					return user.relation != "friends";
+				}),
+			);
 			setSearch(value);
 			setError(undefined);
 		} catch (error) {
