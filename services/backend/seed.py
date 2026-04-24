@@ -95,15 +95,14 @@ for _ in range(30): # Create 30 random friend connections
 for t_idx in range(1, 16):
     track, created = Track.objects.get_or_create(
         itunes_id=t_idx,
-        title=f"Track {t_idx}",
-        artist=f"Artist {t_idx}",
-        preview_url=f"https://example.com/preview{t_idx}.mp3",
-        artwork_url=f"https://example.com/artwork{t_idx}.jpg",
-        kind=random.choice(kinds)
+        defaults={
+            'title': f"Track {t_idx}",
+            'artist': f"Artist {t_idx}",
+            'preview_url': f"https://example.com/preview{t_idx}.mp3",
+            'artwork_url': f"https://example.com/artwork{t_idx}.jpg",
+            'genre': random.choice(kinds)
+        }
     )
-    if not created:
-        print("Track already exists:", track.title)
-        exit(1)
     tracks.append(track)
 # ---------------------------------------------------------
 # 4. GAMES & STATS
@@ -116,9 +115,9 @@ for g_idx in range(1, 11):
     
     game = Game.objects.create(
         game_name=f"Blind Test Arena {g_idx}",
-        #room=game_room,
-        is_over=True,
-        is_public=random.choice([True, False])
+        status='finished',
+        is_public=random.choice([True, False]),
+        max_rounds=20
     )
     
     # Pick an overall winner for the game
