@@ -59,6 +59,7 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	gameSpacing: 3,
 	socialMargin: { top: 15, right: 20, bottom: 50 },
 	sizes: {
 		buttons: {
@@ -102,6 +103,7 @@ export const appSharedStyle: IThemeShared = {
 	},
 
 	radius: 30,
+	gameRadius: "20px",
 };
 
 export const appTexts: IThemeTexts = {
