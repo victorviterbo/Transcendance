@@ -30,9 +30,9 @@ def get_avatar_url(profile) -> str:
             f"default_avatars/default_avatar_{profile.pk % 19}.png")
 
 
-kinds = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']
+genres = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']
 
-kinds_to_label = {
+genres_to_label = {
     'Rock': 'TAG_ROCK',
     'Pop': 'TAG_POP',
     'Rap': 'TAG_RAP',

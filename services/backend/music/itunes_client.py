@@ -28,7 +28,7 @@ def fetch_ids_from_rss(rss_url: str) -> list[dict]:
 					"track_id": track_id,
 					"title": title,
 					"artist": artist,
-					"kind": type,
+					"genre": type,
 					"artwork_url": artwork_url,
 				})
 			except (KeyError, IndexError, ValueError):
@@ -104,7 +104,7 @@ def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, d
 				tracks[t_id] = {
 					"title": item.get("trackName", ""),
 					"artist": item.get("artistName", ""),
-					"kind": item.get("primaryGenreName", ""),
+					"genre": item.get("primaryGenreName", ""),
 					"artwork_url": artwork_url,
 					"preview_url": item.get("previewUrl", ""),
 				}

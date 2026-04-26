@@ -119,7 +119,7 @@ class ITunesClientTests(TestCase):
 					'trackId': 333,
 					'trackName': 'Track 333',
 					'artistName': 'Artist 333',
-					'kind': 'song',
+					'primaryGenreName': 'song',
 					'artworkUrl100': 'https://img.example/100x100bb.jpg',
 					'previewUrl': 'https://example.org/333.m4a',
 				}
@@ -227,7 +227,7 @@ class MusicManagementCommandsTests(TestCase):
 			rss_url='https://example.org/global',
 		)
 		playlist_b = Playlist.objects.create(
-			name='Best Of 90s',
+			name='90s Hits',
 			rss_url='https://example.org/bestof',
 		)
 		mock_fetch_ids.return_value = [
@@ -293,9 +293,8 @@ class MusicManagementCommandsTests(TestCase):
 	@patch('music.management.commands.sync_playlists.full_lookup')
 	def test_sync_playlists_static_playlist_uses_full_lookup(self, mock_full_lookup):
 		"""Static playlists should resolve metadata through the full lookup API."""
-		slug = 'bestof-usa-80s'
-		playlist = Playlist.objects.create(name='Best Of', rss_url='')
-		static_ids = STATIC_TRACK_IDS[slug]
+		playlist = Playlist.objects.create(name='Best of USA 80s', rss_url='')
+		static_ids = STATIC_TRACK_IDS['bestof-usa-80s']
 		first_track_id = static_ids[0]
 
 		mock_full_lookup.return_value = {
