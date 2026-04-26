@@ -100,6 +100,7 @@ export interface IThemeSize {
 }
 export interface IThemePosition {
 	mainSpacing: number;
+	gameSpacing: number;
 
 	socialMargin: TMargin;
 
@@ -118,6 +119,7 @@ export interface IThemeBGs {
 export interface IThemeShared {
 	bg: IThemeBGs;
 	radius: number;
+	gameRadius: number | string;
 }
 
 //====================== ANIMATIONS ======================

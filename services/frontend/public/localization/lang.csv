@@ -238,3 +238,6 @@ NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Di
 NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Displayed when loading notifications fails
 NOTIF_FRIEND_ACCEPTED,Friend request accepted:,Demande d'ami acceptée:,さんがあなたのフレンド申請を承認しました,Displayed after the highlighted username when someone accepts your friend request
 NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallback notification message
+GAME_LEADER_BOARD,Leaderboard,,,In game leaderboerd title\
+GAME_LOBBY_TITLE,Lobby,,,Lobby category in the game infrastructure
+GAME_CHAT_TITLE,Chat,,,Chat title in the game infrastructure
