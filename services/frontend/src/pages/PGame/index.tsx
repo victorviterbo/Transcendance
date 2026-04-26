@@ -5,10 +5,14 @@ import { appPositions } from "../../styles/theme";
 import PGameLBoard from "./PGameLBoard";
 import PGameLobby from "./PGameLobby";
 import PGameChat from "./PGameChat";
+import { useState } from "react";
+import type { IGameData } from "../../types/game";
 
 function PGame() {
 	//const roomId: number = useRef<number>(123456);
 	const spacing: number = appPositions.gameSpacing;
+	const [gameData, setGameData] = useState<IGameData | undefined>()
+
 
 	return (
 		<GPageBase>
