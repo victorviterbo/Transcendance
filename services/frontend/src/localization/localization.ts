@@ -7,17 +7,67 @@ export const langData: ILocalizationData = {
 	descPos: -1,
 	totalCol: -1,
 };
-export let currentLang: string = "en";
+
+export const LANGUAGE_STORAGE_KEY = "guess_tunes_language";
+
+function normalizeLang(lang: string | null | undefined): string | null {
+	if (!lang) return null;
+	return lang.trim().toLowerCase().split("-")[0] || null;
+}
+
+function isLangAvailable(lang: string | null): lang is string {
+	if (!lang) return false;
+	return langData.langs.some((item: ILangData) => item.code === lang);
+}
+
+function readStoredLanguage(): string | null {
+	if (typeof localStorage === "undefined") return null;
+	try {
+		return normalizeLang(localStorage.getItem(LANGUAGE_STORAGE_KEY));
+	} catch {
+		return null;
+	}
+}
+
+function writeStoredLanguage(lang: string): void {
+	if (typeof localStorage === "undefined") return;
+	try {
+		localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+	} catch {
+		return;
+	}
+}
+
+function readBrowserLanguage(): string | null {
+	if (typeof navigator === "undefined") return null;
+	const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+	for (const lang of langs) {
+		const normalized = normalizeLang(lang);
+		if (normalized) return normalized;
+	}
+	return null;
+}
+
+function applyDocumentLanguage(lang: string): void {
+	if (typeof document === "undefined") return;
+	document.documentElement.lang = lang;
+}
+
+export let currentLang: string = readStoredLanguage() ?? "en";
 
 const NUMBER_FORMAT_LOCALES: Record<string, string> = {
 	en: "en-US",
 	fr: "fr-FR",
-	jp: "ja-JP",
+	ja: "ja-JP",
 };
 
 let onLangChangedBind: (() => void) | null = null;
 export function onLangChanged(lang: string) {
-	currentLang = lang;
+	const nextLang = normalizeLang(lang);
+	if (!isLangAvailable(nextLang)) return;
+	currentLang = nextLang;
+	writeStoredLanguage(nextLang);
+	applyDocumentLanguage(nextLang);
 	if (onLangChangedBind) onLangChangedBind();
 }
 export function setOnLangChanged(func: () => void): void {
@@ -102,6 +152,15 @@ function applyContent(content: string[], lineID: number): void {
 	});
 }
 
+function applyInitialLanguage(): void {
+	const storedLang = readStoredLanguage();
+	const browserLang = readBrowserLanguage();
+	const preferredLang = [storedLang, browserLang, currentLang, "en"].find(isLangAvailable);
+
+	currentLang = preferredLang ?? langData.langs[0]?.code ?? "en";
+	applyDocumentLanguage(currentLang);
+}
+
 export async function startLocalization(): Promise<void> {
 	await fetch("/localization/lang.csv", {
 		method: "GET",
@@ -126,6 +185,7 @@ export async function startLocalization(): Promise<void> {
 				if (line == "") return;
 				applyContent(splitLines(line), index);
 			});
+			applyInitialLanguage();
 		});
 }
 

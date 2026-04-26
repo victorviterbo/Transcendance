@@ -31,7 +31,7 @@ function CDialogLanguage({ open, ...other }: CDialogLanguageProps) {
 						options={[
 							{ value: "en", label: "English" },
 							{ value: "fr", label: "Français" },
-							{ value: "jp", label: "日本語" },
+							{ value: "ja", label: "日本語" },
 						]}
 						onChange={(_, value) => {
 							setCurrentLangState(value);
