@@ -92,7 +92,7 @@ class ProfileTests(TransactionTestCase):
             if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertStartsWith(response.data['avatar'],
-                                      'static/default_avatars/default_avatar_')
+                                      '/static/default_avatars/default_avatar_')
                 self.assertIn('username', response.data)
                 self.assertIn('exp_points', response.data)
                 self.assertIn('badges', response.data)
@@ -172,7 +172,7 @@ class ProfileTests(TransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
-        self.assertEqual(response.data['badges'], 'Deaf Octopus')
+        self.assertEqual(response.data['badges'], 'BADGE_DEAF_OCTOPUS')
         self.assertTrue(Path(str(MEDIA_ROOT) + response.data['avatar'].removeprefix('/media')).is_file())
 
     def test_profile_delete(self) -> None:

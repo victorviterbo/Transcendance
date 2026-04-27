@@ -224,8 +224,8 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
-			await communicator.send_json_to({'module': 'chat',
-									'action': 'chat-message',
+			await communicator.send_json_to({'target': 'chat',
+									'event': 'chat-message',
 									'message': '   '})
 			response = await communicator.receive_json_from()
 			self.assertEqual(response, {'type': 'error',
@@ -239,12 +239,11 @@ class ChatWebsocketTests(TransactionTestCase):
 		async def scenario() -> None:
 			communicator = WebsocketCommunicator(application, '/ws/global/')
 			communicator.scope['user'] = self.user
-			communicator.scope['module'] = 'chat'
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
 
-			await communicator.send_json_to({'module': 'chat',
-									'action': 'chat-message',
+			await communicator.send_json_to({'target': 'chat',
+									'event': 'chat-message',
 									'message': 'hello websocket',
 									'room_uid': str(self.room.uid)})
 			
@@ -253,8 +252,8 @@ class ChatWebsocketTests(TransactionTestCase):
 			self.assertEqual(response['sender'], 'chat_test_user')
 			self.assertEqual(response['message'], 'hello websocket')
 
-			await communicator.send_json_to({'module': 'chat',
-									'action': 'direct-message',
+			await communicator.send_json_to({'target': 'chat',
+									'event': 'direct-message',
 									'message': 'hello friend',
 									'user_uid': str(self.friend.uid)})
 			dm_response = None
@@ -268,16 +267,16 @@ class ChatWebsocketTests(TransactionTestCase):
 			self.assertEqual(dm_response['message']['message'], 'hello friend')
 			self.assertEqual(dm_response['message']['target-id'], str(self.friend.profile.uid))
 
-			await communicator.send_json_to({'module': 'chat',
-									'action': 'direct-message',
+			await communicator.send_json_to({'target': 'chat',
+									'event': 'direct-message',
 									'message': 'hello stranger',
 									'user_uid': str(self.stranger.uid)})
 			response = await communicator.receive_json_from()
 			self.assertEqual(response['type'], 'error')
 			self.assertEqual(response['message'], 'Target is not a friend')
 
-			await communicator.send_json_to({'module': 'chat',
-									'action': 'direct-message',
+			await communicator.send_json_to({'target': 'chat',
+									'event': 'direct-message',
 									'message': 'hello guest',
 									'user_uid': str(self.guest.uid)})
 			response = await communicator.receive_json_from()

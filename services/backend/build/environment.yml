@@ -10,7 +10,6 @@ dependencies:
   - asgiref=3.11.1
   - async-timeout=5.0.1
   - attrs=25.4.0
-  - autobahn=25.12.2
   - automat=24.8.1
   - bcrypt=5.0.0
   - brotlicffi=1.2.0.0
@@ -82,7 +81,6 @@ dependencies:
   - pip=26.0.1
   - pixman=0.46.4
   - pthread-stubs=0.3
-  - py-ubjson=0.16.1
   - pyasn1=0.6.2
   - pyasn1-modules=0.4.2
   - pycparser=2.21
@@ -124,4 +122,7 @@ dependencies:
   - zope=1.0
   - zope.interface=8.0.1
   - zstd=1.5.7
+  - pip:
+    - py-ubjson>=0.16.1
+    - autobahn==25.12.2
 prefix: /opt/conda/envs/backend

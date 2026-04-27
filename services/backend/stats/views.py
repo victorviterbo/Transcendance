@@ -1,8 +1,8 @@
 """Defines the views for the stats module."""
 
 from django.db.models import Avg, Sum
-from music.models import Playlist, Track
-from project.defaults import get_avatar_url, kinds, kinds_to_label
+from music.models import Track
+from project.defaults import get_avatar_url, genres, genres_to_label
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -66,14 +66,14 @@ class GlobalStatsView(APIView):
         else:
             artist_rate = song_rate = complete_rate = 0.0
         tag_rates = {}
-        for tag in kinds:
-            tag_rounds = rounds.filter(round__track__kind=tag)
+        for tag in genres:
+            tag_rounds = rounds.filter(round__track__genre=tag)
             tag_total = tag_rounds.count()
             if tag_total > 0:
                 tag_complete = tag_rounds.filter(artist_found=True, song_found=True).count()
-                tag_rates[kinds_to_label.get(tag, tag)] = round(tag_complete / tag_total * 100, 2)
+                tag_rates[genres_to_label.get(tag, tag)] = round(tag_complete / tag_total * 100, 2)
             else:
-                tag_rates[kinds_to_label.get(tag, tag)] = 0.0
+                tag_rates[genres_to_label.get(tag, tag)] = 0.0
         serializer = GlobalStatsSerializer(data={
                                     'averageScore': avg_score,
                                     'xp': profile.exp_points,
@@ -166,7 +166,7 @@ class HistoryView(APIView):
             )
             tags = list(
                 Track.objects.filter(itunes_id__in=track_ids)
-                .values_list('kind', flat=True)
+                .values_list('genre', flat=True)
                 .distinct()
             )
             players_data = []
@@ -205,7 +205,7 @@ class HistoryView(APIView):
                 'xpEarned': my_xp,
                 'ranking': my_rank,
                 'roomTitle': game.game_name,
-                'tags': [kinds_to_label.get(t, t) for t in tags],
+                'tags': [genres_to_label.get(t, t) for t in tags],
                 'players': players_data,
                 'rounds': rounds_data,
             })

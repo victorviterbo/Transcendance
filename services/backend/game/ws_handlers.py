@@ -8,22 +8,22 @@ from music.serializers import TrackSerializer
 
 
 async def handle_game_action(consumer: Any, content: dict) -> None:
-    """Route game events to appropriate handlers."""
-    event = content.get('event')
+	"""Route game events to appropriate handlers."""
+	game_event = content.get('event')
 
-    match event:
-        case 'join_room':
-            await _join_game_room(consumer, content)
-        case 'start_game':
-            await _start_game(consumer, content)
-        case 'submit_answer':
-            await _submit_answer(consumer, content)
-        case 'reveal_track':
-            await _reveal_track(consumer, content)
-        case 'leave_room':
-            await _leave_game_room(consumer, content)
-        case _:
-            await consumer.send_json({'target': 'game', 'event': 'error', 'message': f'Unknown game event: {event}'})
+	match game_event:
+		case 'join_room':
+			await _join_game_room(consumer, content)
+		case 'start_game':
+			await _start_game(consumer, content)
+		case 'submit_answer':
+			await _submit_answer(consumer, content)
+		case 'reveal_track':
+			await _reveal_track(consumer, content)
+		case 'leave_room':
+			await _leave_game_room(consumer, content)
+		case _:
+			await consumer.send_json({'target': 'game', 'event': 'error', 'message': f'Unknown game event: {game_event}'})
 
 
 async def _join_game_room(consumer: Any, content: dict) -> None:
