@@ -90,14 +90,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         return
     
     async def receive_json(self, content: dict) -> None:
-        """Receive websocket framework and reroute it to the appropriate module."""
-        logger.debug('ws.receive profile_id=%s keys=%s module=%s target=%s event=%s action=%s',
+        """Receive websocket payloads and route them by target/event."""
+        logger.debug('ws.receive profile_id=%s keys=%s target=%s event=%s',
                      getattr(getattr(self, 'profile', None), 'id', None),
                      list(content.keys()),
-                     content.get('module'),
                      content.get('target'),
-                     content.get('event'),
-                     content.get('action'))
+                     content.get('event'))
         if content.get('target') == 'friend-chat' and content.get('event') == 'send':
             frontend_message = content.get('message')
             if not isinstance(frontend_message, dict):
@@ -111,14 +109,14 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                         frontend_message.get('target-id'),
                         len(str(frontend_message.get('message', ''))))
             await self.chat_subroutine({
-                'action': 'direct-message',
+                'event': 'direct-message',
                 'message': frontend_message.get('message'),
                 'user_uid': frontend_message.get('target-id'),
                 '_frontend_contract': True,
             })
             return
 
-        lifecycle_event = content.get('event') or content.get('action')
+        lifecycle_event = content.get('event')
         if content.get('target') == 'friend-chat' and lifecycle_event in ('open', 'close'):
             await self.chat_subroutine({
                 'event': lifecycle_event,
@@ -127,15 +125,15 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             })
             return
 
-        module = content.get("module")
-        if module == "chat":
+        target = content.get('target')
+        if target == 'chat':
             await self.chat_subroutine(content)
-        elif module == "game":
+        elif target == 'game':
             await handle_game_action(self, content)
         else:
-            logger.warning('ws.receive.unsupported_module profile_id=%s module=%s',
+            logger.warning('ws.receive.unsupported_target profile_id=%s target=%s',
                            getattr(getattr(self, 'profile', None), 'id', None),
-                           module)
+                           target)
             await self.close(code=4405)
         return
     
@@ -154,17 +152,17 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_send(group_name, message)
     
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
-        """Process incoming direct-message actions from the client."""
-        action = content.get('action')
-        lifecycle_event = content.get('event') or action
+        """Process incoming chat events from the client."""
+        event = content.get('event')
+        lifecycle_event = event
 
-        if action == 'chat-message':
+        if event == 'chat-message':
             body = str(content.get('message', '')).strip()
             if not body:
                 await self.send_json({'type': 'error',
                                       'message': 'message is required'})
                 return
-            success, message = await self._save_message(body, action, content)
+            success, message = await self._save_message(body, event, content)
             if not success:
                 logger.warning('ws.chat_message.save_failed profile_id=%s error=%s',
                                getattr(getattr(self, 'profile', None), 'id', None),
@@ -187,17 +185,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 'seen': message.seen,
             })
             return
-        elif action == 'direct-message':
+        elif event == 'direct-message':
             body = str(content.get('message', '')).strip()
             if not body:
                 await self.send_json({'type': 'error',
                                       'message': 'message is required'})
                 return
-            success, message = await self._save_message(body, action, content)
+            success, message = await self._save_message(body, event, content)
             if not success:
-                logger.warning('ws.direct_message.save_failed profile_id=%s error=%s',
-                               getattr(getattr(self, 'profile', None), 'id', None),
-                               message)
+                expected_validation_errors = {'Target is not a friend', 'User not found'}
+                message_text = message.get('message') if isinstance(message, dict) else None
+                log_fn = logger.info if message_text in expected_validation_errors else logger.warning
+                log_fn('ws.direct_message.save_failed profile_id=%s error=%s',
+                       getattr(getattr(self, 'profile', None), 'id', None),
+                       message)
                 await self.send_json(message)
                 return
 
@@ -274,7 +275,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             else:
                 self.open_direct_chat_profile_ids.discard(target_profile.id)
             return
-        await self.send_json({'type': 'error', 'message': 'unsupported_action'})
+        await self.send_json({'type': 'error', 'message': 'unsupported_event'})
 
     @database_sync_to_async
     def _update_online_status(self, is_online: bool) -> None:
@@ -348,7 +349,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': event.get('target', 'social-notif'),
             'type': 'social_notification',
-            'module': event.get('module', 'social'),
             'event': event.get('message'),
             'from_user': event.get('from_user'),
             'from_user_uid': event.get('from_user_uid'),
@@ -457,11 +457,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _save_message(self, body: str,
-                      action: str,
+                      event: str,
                       content: dict) -> tuple[bool, Message | dict]:
         """Persist a message for the profile (user) in the resolved room."""
         room = None
-        if action == 'direct-message':
+        if event == 'direct-message':
             sender_user = None
             logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_is_guest=%s profile_user_id=%s',
                          getattr(self.profile, 'id', None),
@@ -505,7 +505,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             if created:
                 room.participants.add(self.profile)
                 room.participants.add(target_profile)
-        elif action == 'chat-message':
+        elif event == 'chat-message':
             if content.get('room_uid'):
                 room = Room.objects.filter(uid=content['room_uid']).first()
                 self.room = room

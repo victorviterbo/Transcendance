@@ -142,10 +142,11 @@ class MusicManagementCommandsTests(TestCase):
 
 	def test_seed_playlists_is_idempotent(self):
 		"""Running seed twice should not duplicate playlist rows."""
-		call_command('seed_playlists')
+		out = StringIO()
+		call_command('seed_playlists', stdout=out)
 		self.assertEqual(Playlist.objects.count(), len(PLAYLISTS))
 
-		call_command('seed_playlists')
+		call_command('seed_playlists', stdout=out)
 		self.assertEqual(Playlist.objects.count(), len(PLAYLISTS))
 
 	def test_sync_playlists_warns_when_no_playlist_exists(self):
@@ -205,7 +206,7 @@ class MusicManagementCommandsTests(TestCase):
 			1001: 'https://example.org/new.m4a',
 		}
 
-		call_command('sync_playlists')
+		call_command('sync_playlists', stdout=StringIO())
 
 		self.assertEqual(Track.objects.count(), 1)
 		track = Track.objects.get(itunes_id=1001)
@@ -243,7 +244,7 @@ class MusicManagementCommandsTests(TestCase):
 			4242: 'https://example.org/shared.m4a',
 		}
 
-		call_command('sync_playlists')
+		call_command('sync_playlists', stdout=StringIO())
 
 		self.assertEqual(Track.objects.filter(itunes_id=4242).count(), 1)
 		self.assertTrue(playlist_a.tracks.filter(itunes_id=4242).exists())
@@ -282,7 +283,7 @@ class MusicManagementCommandsTests(TestCase):
 			# 1002 intentionally missing => should be skipped
 		}
 
-		call_command('sync_playlists')
+		call_command('sync_playlists', stdout=StringIO())
 
 		self.assertEqual(Track.objects.count(), 1)
 		self.assertTrue(Track.objects.filter(itunes_id=1001, title='Track A').exists())
@@ -307,7 +308,7 @@ class MusicManagementCommandsTests(TestCase):
 			}
 		}
 
-		call_command('sync_playlists')
+		call_command('sync_playlists', stdout=StringIO())
 
 		self.assertTrue(Track.objects.filter(itunes_id=first_track_id, title='Static Song').exists())
 		self.assertTrue(playlist.tracks.filter(itunes_id=first_track_id).exists())

@@ -1,6 +1,10 @@
+import logging
 from urllib.parse import urlencode
 
 import requests
+
+
+logger = logging.getLogger(__name__)
 
 
 def fetch_ids_from_rss(rss_url: str) -> list[dict]:
@@ -37,7 +41,7 @@ def fetch_ids_from_rss(rss_url: str) -> list[dict]:
 		return tracks
 
 	except (requests.RequestException, ValueError) as e:
-		print(f"[itunes_client] RSS fetch error: {e}")
+		logger.debug('[itunes_client] RSS fetch error: %s', e)
 		return []
 	
 def _build_lookup_url(track_ids: list[int], country: str | None = None) -> str:
@@ -77,7 +81,7 @@ def batch_lookup(track_ids: list[int], country: str | None = None) -> dict[int, 
 		return preview_urls
 
 	except (requests.RequestException, ValueError) as e:
-		print(f"[itunes_client] Batch lookup error: {e}")
+		logger.debug('[itunes_client] Batch lookup error: %s', e)
 		return {}
 
 def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, dict]:
@@ -114,5 +118,5 @@ def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, d
 		return tracks
 
 	except (requests.RequestException, ValueError) as e:
-		print(f"[itunes_client] Full lookup error: {e}")
+		logger.debug('[itunes_client] Full lookup error: %s', e)
 		return {}

@@ -8,29 +8,29 @@ from music.serializers import TrackSerializer
 
 
 async def handle_game_action(consumer: Any, content: dict) -> None:
-    """Route game actions to appropriate handlers."""
-    action = content.get('action')
+	"""Route game events to appropriate handlers."""
+	game_event = content.get('event')
 
-    match action:
-        case 'join_room':
-            await _join_game_room(consumer, content)
-        case 'start_game':
-            await _start_game(consumer, content)
-        case 'submit_answer':
-            await _submit_answer(consumer, content)
-        case 'reveal_track':
-            await _reveal_track(consumer, content)
-        case 'leave_room':
-            await _leave_game_room(consumer, content)
-        case _:
-            await consumer.send_json({'target': 'game', 'action': 'error', 'message': f'Unknown game action: {action}'})
+	match game_event:
+		case 'join_room':
+			await _join_game_room(consumer, content)
+		case 'start_game':
+			await _start_game(consumer, content)
+		case 'submit_answer':
+			await _submit_answer(consumer, content)
+		case 'reveal_track':
+			await _reveal_track(consumer, content)
+		case 'leave_room':
+			await _leave_game_room(consumer, content)
+		case _:
+			await consumer.send_json({'target': 'game', 'event': 'error', 'message': f'Unknown game event: {game_event}'})
 
 
 async def _join_game_room(consumer: Any, content: dict) -> None:
 	"""Join a game room group."""
 	game_id = content.get('game_id')
 	if not game_id:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'game_id required'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
 	group_name = f'game_{game_id}'
@@ -44,7 +44,7 @@ async def _join_game_room(consumer: Any, content: dict) -> None:
 	
 	await consumer.send_json({
 		'target': 'game',
-		'action': 'joined_room',
+		'event': 'joined_room',
 		'game_id': game_id,
 	})
 
@@ -53,7 +53,7 @@ async def _start_game(consumer: Any, content: dict) -> None:
 	"""Start a game session."""
 	game_id = content.get('game_id')
 	if not game_id:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'game_id required'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
 	group_name = f'game_{game_id}'
@@ -66,7 +66,7 @@ async def _start_game(consumer: Any, content: dict) -> None:
 	
 	await consumer.send_json({
 		'target': 'game',
-		'action': 'game_started',
+		'event': 'game_started',
 	})
 
 
@@ -74,7 +74,7 @@ async def _reveal_track(consumer: Any, content: dict) -> None:
 	"""Reveal the track for the current round with full details."""
 	game_id = content.get('game_id')
 	if not game_id:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'game_id required'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
 	group_name = f'game_{game_id}'
@@ -83,7 +83,7 @@ async def _reveal_track(consumer: Any, content: dict) -> None:
 	track_data = await get_track_reveal_data(game_id)
 	
 	if not track_data:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'No track available'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'No track available'})
 		return
 	
 	await consumer.group_send(group_name, {
@@ -99,7 +99,7 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 	answer = content.get('answer')
 	
 	if not game_id or answer is None:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'game_id and answer required'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id and answer required'})
 		return
 
 	group_name = f'game_{game_id}'
@@ -110,7 +110,7 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 	# Save player answer to database
 	saved = await save_player_answer(game_id, consumer.profile.id, points_earned, is_correct)
 	if not saved:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'Failed to save answer'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Failed to save answer'})
 		return
 	
 	# Broadcast answer submission to all players in room
@@ -137,7 +137,7 @@ async def _leave_game_room(consumer: Any, content: dict) -> None:
 	"""Leave a game room group."""
 	game_id = content.get('game_id')
 	if not game_id:
-		await consumer.send_json({'target': 'game', 'action': 'error', 'message': 'game_id required'})
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
 	group_name = f'game_{game_id}'
@@ -152,7 +152,7 @@ async def _leave_game_room(consumer: Any, content: dict) -> None:
 	
 	await consumer.send_json({
 		'target': 'game',
-		'action': 'left_room',
+		'event': 'left_room',
 		'game_id': game_id,
 	})
 
