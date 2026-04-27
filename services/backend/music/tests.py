@@ -78,7 +78,7 @@ class ITunesClientTests(TestCase):
 	@patch('music.itunes_client.requests.get')
 	def test_fetch_ids_from_rss_returns_empty_on_http_error(self, mock_get):
 		"""RSS fetch errors should return an empty list."""
-		mock_get.side_effect = requests.RequestException('boom')
+		mock_get.side_effect = requests.RequestException('Apple go kaboom')
 
 		tracks = fetch_ids_from_rss('https://example.org/rss')
 
@@ -257,61 +257,60 @@ class MusicManagementCommandsTests(TestCase):
 		mock_fetch_ids,
 		mock_batch_lookup,
 	):
-		"""Dynamic playlists should persist only tracks with a preview URL."""
+		"""RSS playlists should persist the full feed when previews exist."""
 		playlist = Playlist.objects.create(
-			name='Live RSS',
-			rss_url='https://example.org/rss',
+			name=PLAYLISTS[0]['name'],
+			rss_url=PLAYLISTS[0]['rss_url'],
 		)
+		track_ids = list(range(1000, 1100))
 		mock_fetch_ids.return_value = [
 			{
-				'track_id': 1001,
-				'title': 'Track A',
-				'artist': 'Artist A',
+				'track_id': track_id,
+				'title': f'Track {track_id}',
+				'artist': f'Artist {track_id}',
 				'genre': 'song',
-				'artwork_url': 'https://img.example/a.jpg',
-			},
-			{
-				'track_id': 1002,
-				'title': 'Track B',
-				'artist': 'Artist B',
-				'genre': 'song',
-				'artwork_url': 'https://img.example/b.jpg',
-			},
+				'artwork_url': f'https://img.example/{track_id}.jpg',
+			}
+			for track_id in track_ids
 		]
 		mock_batch_lookup.return_value = {
-			1001: 'https://example.org/a.m4a',
-			# 1002 intentionally missing => should be skipped
+			track_id: f'https://example.org/{track_id}.m4a'
+			for track_id in track_ids
 		}
 
 		call_command('sync_playlists', stdout=StringIO())
 
-		self.assertEqual(Track.objects.count(), 1)
-		self.assertTrue(Track.objects.filter(itunes_id=1001, title='Track A').exists())
-		self.assertTrue(playlist.tracks.filter(itunes_id=1001).exists())
-		self.assertFalse(Track.objects.filter(itunes_id=1002).exists())
-		mock_fetch_ids.assert_called_once_with('https://example.org/rss')
+		self.assertEqual(Track.objects.filter(itunes_id__in=track_ids).count(), 100)
+		self.assertEqual(playlist.tracks.count(), 100)
+		self.assertTrue(playlist.tracks.filter(itunes_id=1000).exists())
+		self.assertTrue(playlist.tracks.filter(itunes_id=1099).exists())
+		mock_fetch_ids.assert_called_once_with(PLAYLISTS[0]['rss_url'])
 
+	@patch('music.management.commands.sync_playlists.STATIC_TRACK_IDS', {'bestof-usa-80s': STATIC_TRACK_IDS['bestof-usa-80s']})
+	@patch('music.management.commands.sync_playlists.NAME_TO_SLUG_KEY', {'Best of USA 80s': 'bestof-usa-80s'})
 	@patch('music.management.commands.sync_playlists.full_lookup')
 	def test_sync_playlists_static_playlist_uses_full_lookup(self, mock_full_lookup):
 		"""Static playlists should resolve metadata through the full lookup API."""
 		playlist = Playlist.objects.create(name='Best of USA 80s', rss_url='')
 		static_ids = STATIC_TRACK_IDS['bestof-usa-80s']
-		first_track_id = static_ids[0]
 
 		mock_full_lookup.return_value = {
-			first_track_id: {
-				'title': 'Static Song',
-				'artist': 'Static Artist',
+			track_id: {
+				'title': f'Static Song {index}',
+				'artist': f'Static Artist {index}',
 				'genre': 'song',
-				'artwork_url': 'https://img.example/static.jpg',
-				'preview_url': 'https://example.org/static.m4a',
+				'artwork_url': f'https://img.example/static{index}.jpg',
+				'preview_url': f'https://example.org/static{index}.m4a',
 			}
+			for index, track_id in enumerate(static_ids, start=1)
 		}
 
 		call_command('sync_playlists', stdout=StringIO())
 
-		self.assertTrue(Track.objects.filter(itunes_id=first_track_id, title='Static Song').exists())
-		self.assertTrue(playlist.tracks.filter(itunes_id=first_track_id).exists())
+		self.assertEqual(Track.objects.filter(itunes_id__in=static_ids).count(), len(static_ids))
+		self.assertEqual(playlist.tracks.count(), len(static_ids))
+		self.assertTrue(playlist.tracks.filter(itunes_id=static_ids[0]).exists())
+		self.assertTrue(playlist.tracks.filter(itunes_id=static_ids[-1]).exists())
 		mock_full_lookup.assert_any_call(static_ids, country='US')
 
 
