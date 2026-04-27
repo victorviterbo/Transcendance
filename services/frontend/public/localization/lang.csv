@@ -1,4 +1,4 @@
-id,en,fr,jp,desc
+id,en,fr,ja,desc
 CHANGE,Change,Changer,変更,Shown on a button to update information
 CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,Shown on profile accordion heading
 CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Shown on profile accordion heading

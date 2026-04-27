@@ -1,4 +1,6 @@
-import { Box, capitalize } from "@mui/material";
+import { Box, IconButton, InputAdornment, capitalize } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useMemo, useState, type FormEvent } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import type { IEventStatus } from "../../types/events.tsx";
@@ -20,6 +22,11 @@ interface IFieldSpec extends TFormFieldConfig {
 	confirmError?: string;
 }
 
+interface CPasswordVisibilityAdornmentProps {
+	visible: boolean;
+	onToggle: () => void;
+}
+
 /**
  * @brief confirm might be true, an object or undefined. This function turns it into a standard
  * object (or null if no confirm).
@@ -31,6 +38,20 @@ const normalizeConfirm = (confirm: TFormFieldConfig["confirm"]): TConfirmConfig 
 	if (confirm === true) return {};
 	return confirm;
 };
+
+function CPasswordVisibilityAdornment({ visible, onToggle }: CPasswordVisibilityAdornmentProps) {
+	return (
+		<InputAdornment position="end" sx={{ paddingRight: 1 }}>
+			<IconButton
+				edge="end"
+				onClick={onToggle}
+				onMouseDown={(event) => event.preventDefault()}
+			>
+				{visible ? <VisibilityOff /> : <Visibility />}
+			</IconButton>
+		</InputAdornment>
+	);
+}
 
 function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 	//====================== MEMOS ======================
@@ -80,6 +101,7 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 		errors: initialErrors,
 	}));
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+	const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
 	const [formMessage, setFormMessage] = useState<{
 		text: string;
 		tone: "error" | "success";
@@ -160,6 +182,10 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 		);
 	};
 
+	const togglePasswordVisibility = (name: string) => {
+		setVisiblePasswords((prev) => ({ ...prev, [name]: !prev[name] }));
+	};
+
 	function handleSubmit(e: FormEvent) {
 		e.preventDefault();
 		setIsSubmitting(true);
@@ -208,19 +234,33 @@ function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
 		>
 			{specs.map((spec) => {
 				const fieldErrors = formState.errors[spec.name] ?? [];
+				const isPassword = spec.type === "password";
+				const isPasswordVisible = Boolean(visiblePasswords[spec.name]);
 				return (
 					<CTextField
 						key={spec.name}
 						label={ttr(spec.label)}
 						name={spec.name}
-						type={spec.type}
+						type={isPassword && isPasswordVisible ? "text" : spec.type}
 						fullWidth
 						margin="normal"
 						value={formState.values[spec.name] ?? ""}
 						error={Boolean(fieldErrors.length)}
 						helperText={renderErrors(fieldErrors)}
 						onChange={(event) => setField(spec.name, event.target.value)}
-						slotProps={{ formHelperText: { component: "div" } }}
+						slotProps={{
+							formHelperText: { component: "div" },
+							input: isPassword
+								? {
+										endAdornment: (
+											<CPasswordVisibilityAdornment
+												visible={isPasswordVisible}
+												onToggle={() => togglePasswordVisibility(spec.name)}
+											/>
+										),
+									}
+								: undefined,
+						}}
 					/>
 				);
 			})}
