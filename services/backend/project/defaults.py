@@ -27,7 +27,7 @@ def get_avatar_url(profile) -> str:
         return profile.avatar.url
     else:
         return (settings.STATIC_URL + \
-            f"default_avatars/default_avatar_{profile.pk % 19}.png")
+            f"default_avatars/default_avatar_{profile.pk % 18}.png")
 
 
 genres = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']
