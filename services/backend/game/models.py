@@ -16,10 +16,9 @@ class Game(models.Model):
 	game_name = models.CharField(max_length=50)
 	
 	players = models.ManyToManyField(Profile,
-									 through='stats.UserGameStats',
-									 related_name='games_played')
-	
-	#tracks = models.ManyToManyField(Track, through='stats.GameRoundStats')
+									through='stats.UserGameStats',
+									related_name='games_played'
+									)
 	
 	room = models.OneToOneField(Room,
 								on_delete=models.SET_NULL,
@@ -40,6 +39,20 @@ class Game(models.Model):
 								  ],
 							  default='waiting')
 	
+	playback_duration = models.DurationField(null=True, blank=True)
+
+	break_duration = models.DurationField(null=True, blank=True)
+
+	answer_public = models.BooleanField(default=False)
+
+	game_mode = models.CharField(max_length=20,
+								choices=[
+									('normal', 'GAME_MODE_NORMAL'),
+									('speed', 'GAME_MODE_SPEED'),
+									('armagedon', 'GAME_MODE_ARMAGEDON'),
+									],
+								default='waiting')
+	
 	current_round = models.PositiveIntegerField(default=0)
 	
 	current_track = models.ForeignKey(Track,
@@ -58,8 +71,13 @@ class Game(models.Model):
 
 	uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
-	is_public = models.BooleanField(default=False)
-
+	public_level = models.CharField(max_length=20,
+								choices=[
+									('public', 'PUBLIC'),
+									('friends_only', 'FRIENDS_ONLY'),
+									('invite_only', 'INVITE_ONLY'),
+									],
+								default='waiting')
 
 	class Meta:
 		"""Define special behaviour of database."""

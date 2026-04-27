@@ -19,19 +19,19 @@ class GameView(APIView):
 
 	def post(self, request: Request) -> Response:
 		"""Create a game with tracks from specified genres.
-		
-		Request body:
-		{
-			"genres": ["rock", "pop"],
-			"num_tracks": 10
-		}
-		
-		Returns:
-			- game_uid: UUID of the created game
-			- playlist: Playlist name with genres
-			- current_track: Current track preview URL
-			- num_tracks: Total tracks selected
-		"""
+        
+        Request body:
+        {
+            "genres": ["rock", "pop"],
+            "num_tracks": 10
+        }
+        
+        Returns:
+            - game_uid: UUID of the created game
+            - playlist: Playlist name with genres
+            - current_track: Current track preview URL
+            - num_tracks: Total tracks selected
+        """
 		genres = request.data.get('genres', [])
 		num_tracks = request.data.get('num_tracks')
 		

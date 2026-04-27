@@ -3,8 +3,12 @@
 from typing import Any
 
 from channels.db import database_sync_to_async
-from game.models import Game
 from music.serializers import TrackSerializer
+from stats.models import GameRoundStats, UserGameStats, UserRoundStats
+from thefuzz import fuzz
+from userprofile.models import Profile
+
+from game.models import Game
 
 
 async def handle_game_action(consumer: Any, content: dict) -> None:
@@ -105,7 +109,7 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 	group_name = f'game_{game_id}'
 	
 	# Validate answer against actual track
-	is_correct, points_earned = await validate_answer(game_id, answer)
+	is_correct, points_earned = await validate_answer(consumer.profile, game_id, answer)
 	
 	# Save player answer to database
 	saved = await save_player_answer(game_id, consumer.profile.id, points_earned, is_correct)
@@ -178,12 +182,12 @@ def get_track_reveal_data(game_id: str) -> dict | None:
 	except Game.DoesNotExist:
 		return None
 
-
 @database_sync_to_async
-def validate_answer(game_id: str, answer: str) -> tuple[bool, int]:
+def validate_answer(player: Profile, game_id: str, answer: str) -> tuple[bool, int]:
 	"""Validate answer against current track and return correctness + points.
 	
 	Args:
+		player: The player profile
 		game_id: UUID of the game
 		answer: Player's answer (song title or artist name)
 	
@@ -194,20 +198,39 @@ def validate_answer(game_id: str, answer: str) -> tuple[bool, int]:
 		game = Game.objects.get(uid=game_id)
 		if not game.current_track:
 			return False, 0
-		
-		# Get track info
-		track_title = game.current_track.title.lower().strip()
-		track_artist = game.current_track.artist.lower().strip()
+		if player is None or player not in game.players.all():
+			return False, 0
+		round_stat = UserRoundStats.objects.filter(round__game=game,
+													round__round_number=game.current_round
+													)
+		if not round_stat.exists():
+			return False, 0
+		player_stats = round_stat.filter(player=player)
+		player_stats = player_stats.first()
 		player_answer = answer.lower().strip()
-		
-		# Check if answer matches title or artist (exact or partial match)
-		is_correct = (
-			player_answer == track_title 
-			or player_answer == track_artist
-			or player_answer in track_title
-			or player_answer in track_artist
-		)
-		
+		if not player_stats.artist_found:
+			track_artist = game.current_track.artist.lower().strip()
+			if fuzz.partial_ratio(player_answer, track_artist) >= 80:
+				ranking = round_stat.filter(artist_found=True).count()
+				player_stats.xp_earned += max(5 - ranking, 2)
+				player_stats.artist_found = True
+				player_stats.save(update_fields=['artist_found', 'xp_earned'])
+				return True, 3
+		if not player_stats.title_found:
+			track_title = game.current_track.title.lower().strip()
+			if fuzz.partial_ratio(player_answer, track_title) >= 80:
+				ranking = round_stat.filter(song_found=True).count()
+				player_stats.xp_earned += max(5 - ranking, 2)
+				player_stats.title_found = True
+				player_stats.save(update_fields=['title_found', 'xp_earned'])
+				return True, 3
+		if (player_stats.artist_found and player_stats.title_found and
+				not round_stat.filter(is_won=True).exists()):
+			round_stat.update(is_won=True)
+		else:
+			title_similarity = fuzz.partial_ratio(player_answer, track_title)
+			artist_similarity = fuzz.partial_ratio(player_answer, track_artist)
+			is_correct = title_similarity >= 80 or artist_similarity >= 80
 		# Calculate points (10 base, can add speed bonus later)
 		points = 10 if is_correct else 0
 		
@@ -215,7 +238,6 @@ def validate_answer(game_id: str, answer: str) -> tuple[bool, int]:
 	
 	except Game.DoesNotExist:
 		return False, 0
-
 
 @database_sync_to_async
 def save_player_answer(game_id: str, player_id: int, points_earned: int, is_correct: bool) -> bool:
@@ -230,9 +252,6 @@ def save_player_answer(game_id: str, player_id: int, points_earned: int, is_corr
 	Returns:
 		bool: Success or failure
 	"""
-	from stats.models import UserGameStats, UserRoundStats, GameRoundStats
-	from userprofile.models import Profile
-	
 	try:
 		game = Game.objects.get(uid=game_id)
 		player = Profile.objects.get(id=player_id)
