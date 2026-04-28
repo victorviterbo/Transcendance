@@ -56,6 +56,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 				API_SOCIAL_FRIENDS_REQUEST_SEND,
 				{ "target-uid": user.uid, "target-username": user.username } as IFriendReqSend,
 			);
+			console.log(res);
 			if (!res) throw {};
 			if (res.data.error) throw res.data.error;
 			setRelation("outgoing");
@@ -100,7 +101,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 					<Stack sx={PFriendNodeTextsStyle}>
 						{!error ? (
 							<>
-								<CTitle sx={PFriendNodeNameStyle} size="sm">
+								<CTitle noTr={true} sx={PFriendNodeNameStyle} size="sm">
 									{user.username}
 								</CTitle>
 								<CText sx={PFriendNodeBadgeStyle} size="sm">

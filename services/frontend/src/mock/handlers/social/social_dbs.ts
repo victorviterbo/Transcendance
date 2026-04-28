@@ -137,6 +137,16 @@ export function mockGetExtUsers(searchFilter: string): IExtUserList {
 		list.users.push(info);
 	});
 
+	mockSocialDB.friends.forEach((info: IFriendInfo) => {
+		if (
+			searchFilter !== "" &&
+			!info.username.toLocaleLowerCase().includes(searchFilter.toLocaleLowerCase())
+		)
+			return;
+		const asExt = { relation: "friends", ...info } as IExtUserInfo;
+		list.users.push(asExt);
+	});
+
 	return list;
 }
 

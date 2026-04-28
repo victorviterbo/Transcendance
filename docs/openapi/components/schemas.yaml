@@ -44,18 +44,6 @@ LightProfile:
       type: string
       nullable: true
 
-Friendship:
-  type: object
-  description: A friendship or pending friend request between two users.
-  properties:
-    from_user:
-      $ref: "#/OwnProfile"
-    to_user:
-      $ref: "#/OwnProfile"
-    status: { type: string, enum: [pending, accepted] }
-    created_at: { type: string, format: date-time }
-    uid: { type: string, format: uuid }
-
 ValidationError:
   type: object
   description: Structured validation error details (values are localization keys).

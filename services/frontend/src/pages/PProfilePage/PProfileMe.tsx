@@ -48,7 +48,9 @@ const ProfileInfo = ({ profile, onAvatarUploaded }: ProfileInfoProps) => {
 					onUploaded={onAvatarUploaded}
 				/>
 				<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-					<CTitle size="md">{displayUsername}</CTitle>
+					<CTitle noTr={true} size="md">
+						{displayUsername}
+					</CTitle>
 					<CLevelProgress
 						level={levelProgress.level}
 						progressPercent={levelProgress.progressPercent}

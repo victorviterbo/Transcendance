@@ -46,7 +46,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 		try {
 			const res = await api.post<{ access?: string; username?: string }>(API_AUTH_LOGIN, {
 				email: values.email.trim(),
-				password: values.password.trim(),
+				password: values.password,
 			});
 			if (!res.data?.access || !res.data?.username) {
 				return { valid: false, msg: "LOGIN_FAILED" };

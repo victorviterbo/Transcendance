@@ -33,7 +33,12 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 	return (
 		<Box sx={(theme) => PFriendChatNodeStyle(theme, isUser)} data-testid="PFriendChatNode">
 			<Stack direction={"column"}>
-				<CText family={appTexts.text.secondaryFamily} fontWeight={600} size="md">
+				<CText
+					noTr={true}
+					family={appTexts.text.secondaryFamily}
+					fontWeight={600}
+					size="md"
+				>
 					{message.message}
 				</CText>
 				<Stack direction="row" sx={{ alignItems: "center" }}>

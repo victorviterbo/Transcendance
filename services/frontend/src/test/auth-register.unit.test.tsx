@@ -240,6 +240,16 @@ describe("auth register unit tests", () => {
 		expect(await screen.findByText(/username_forbidden/i)).toBeInTheDocument();
 	});
 
+	it("shows forbidden warning when username contains SQL punctuation", async () => {
+		const user = userEvent.setup();
+
+		render(<PRegisterForm />);
+
+		await user.type(screen.getByLabelText(/username/i), "john';--");
+
+		expect(await screen.findByText(/username_forbidden/i)).toBeInTheDocument();
+	});
+
 	it("shows admin warning for reserved username", async () => {
 		const user = userEvent.setup();
 

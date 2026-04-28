@@ -25,8 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         SiteUserSerializer class itself
         """
         model = SiteUser
-        fields = ['email', 'password', 'profile_username',
-                  'is_staff', 'is_superuser', 'uid']
+        fields = ['email', 'password', 'profile_username', 'uid']
         extra_kwargs = {'password': {
                                 'write_only': True
                             },
@@ -97,4 +96,3 @@ class LoginSerializer(serializers.ModelSerializer):
         """Specific email validation for user login."""
         value = validate_email(value, is_creation=False)
         return value
-

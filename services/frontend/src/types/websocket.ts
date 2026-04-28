@@ -57,9 +57,5 @@ export type TWSSend =
 			toUid?: string;
 	  }
 	| {
-			target: "room-guess";
-			guess: string;
-	  }
-	| {
 			target: Extract<TWSModuleName, "test_counter_event">;
 	  };

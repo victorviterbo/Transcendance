@@ -1,6 +1,7 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
 
 import logging
+import uuid
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import (
@@ -278,9 +279,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({'type': 'error', 'message': 'unsupported_event'})
 
     @database_sync_to_async
-    def _update_online_status(self, is_online: bool) -> None:
+    def _update_online_status(self, is_online: bool) -> bool:
+        profile_id = getattr(self.profile, 'id', None)
+        if profile_id is None:
+            return False
+
+        updated_rows = Profile.objects.filter(id=profile_id).update(is_online=is_online)
+        if updated_rows == 0:
+            logger.info('ws.presence.skip_missing_profile profile_id=%s desired_online=%s',
+                        profile_id,
+                        is_online)
+            return False
+
         self.profile.is_online = is_online
-        self.profile.save(update_fields=['is_online'])
+        return True
 
     @database_sync_to_async
     def _mark_direct_message_delivered(self, message_uid) -> None:
@@ -424,7 +436,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             except Profile.DoesNotExist:
                 logger.warning('ws.profile_resolve.authenticated_user_no_profile user_id=%s',
                                self.user.id)
-                return None
 
         profile = self.scope.get("profile")
         if isinstance(profile, Profile):
@@ -435,20 +446,23 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         session = self.scope.get("session", {})
         guest_uid = session.get("guest_profile_uid")
         if guest_uid:
-            guest_profile = Profile.objects.filter(uid=guest_uid, is_guest=True).first()
-            logger.debug('ws.profile_resolve.from_session_guest_uid profile_id=%s uid=%s',
-                         guest_profile.id if guest_profile else None, guest_uid)
-            return guest_profile
-
-        guest_id = session.get("guest_profile_id")
-        if guest_id:
-            guest_profile = Profile.objects.filter(id=guest_id, is_guest=True).first()
-            logger.debug('ws.profile_resolve.from_session_guest_id profile_id=%s id=%s',
-                         guest_profile.id if guest_profile else None, guest_id)
+            guest_profile = Profile.objects.filter(uid=guest_uid).first()
+            logger.debug('ws.profile_resolve.from_session_profile_uid profile_id=%s uid=%s is_guest=%s',
+                         guest_profile.id if guest_profile else None,
+                         guest_uid,
+                         guest_profile.is_guest if guest_profile else None)
+            if guest_profile and self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated and guest_profile.user_id is None:
+                guest_profile.user = self.user
+                guest_profile.is_guest = False
+                guest_profile.save(update_fields=['user', 'is_guest'])
+                logger.info('ws.profile_resolve.session_profile_linked user_id=%s profile_id=%s',
+                            self.user.id,
+                            guest_profile.id)
             return guest_profile
 
         if self.create_profile_if_missing:
-            new_profile = Profile.objects.create()
+            guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
+            new_profile = Profile.objects.create(username=guest_username, is_guest=True)
             logger.debug('ws.profile_resolve.created_new_guest profile_id=%s', new_profile.id)
             return new_profile
         

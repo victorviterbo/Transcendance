@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PFriendAdd from "./PFriendAdd";
 import PFriendList from "./PFriendList";
 import PFriendReq from "./PFriendReq";
@@ -17,10 +17,18 @@ import CCtrlTabs from "../../components/navigation/CCtrlTabs";
 interface PSocialProps extends GPageProps {
 	activeTab: number;
 	onTabChanged: (Value: number) => void;
+	closed: boolean;
 }
 
-function PSocial({ onTabChanged, activeTab }: PSocialProps) {
+function PSocial({ onTabChanged, activeTab, closed }: PSocialProps) {
 	const [messaging, setMessaging] = useState<IFriendInfo | undefined>(undefined);
+
+	useEffect(() => {
+		async function checkClosed() {
+			if (closed) setMessaging(undefined);
+		}
+		checkClosed();
+	}, [closed, setMessaging]);
 
 	function getTitle() {
 		if (messaging) {
@@ -50,7 +58,7 @@ function PSocial({ onTabChanged, activeTab }: PSocialProps) {
 							src={messaging.image}
 							alt={messaging.username + "'s picture"}
 						></CAvatar>
-						<CText size={"lg"} textAlign="center">
+						<CText noTr={true} size={"lg"} textAlign="center">
 							{messaging.username}
 						</CText>
 					</Stack>

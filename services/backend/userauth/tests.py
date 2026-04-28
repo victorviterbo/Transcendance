@@ -38,6 +38,20 @@ class UserAccountTests(APITestCase):
                     self.assertEqual(response.data['error']['auth'],
                                      'INVALID_CREDENTIALS')
 
+    def test_login_rejects_sql_injection_payloads(self) -> None:
+        """Injection-shaped credentials must not bypass authentication."""
+        url = '/api/auth/login/'
+        payloads = [
+            {'email': "test@mail.com' OR '1'='1", 'password': 'anything'},
+            {'email': 'test@mail.com', 'password': "' OR '1'='1"},
+            {'email': "' OR 1=1 --", 'password': "' OR 1=1 --"},
+        ]
+        for payload in payloads:
+            response = self.client.post(url, payload, format='json')
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+            self.assertEqual(response.data['error']['auth'], 'INVALID_CREDENTIALS')
+        self.assertTrue(SiteUser.objects.filter(email='test@mail.com').exists())
+
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""
         url = '/api/auth/register/'
@@ -74,6 +88,53 @@ class UserAccountTests(APITestCase):
                                          response.data['error']['password'])
                     self.assertTrue(('refresh-token' in self.client.cookies)
                                     or ('sessionid' in self.client.cookies))
+
+    def test_register_rejects_sql_injection_payloads(self) -> None:
+        """Injection-shaped registration fields must fail validation."""
+        url = '/api/auth/register/'
+        payloads = [
+            {
+                'email': "new@mail.com' OR '1'='1",
+                'username': 'newuser',
+                'password': 'AnewPassword1+',
+            },
+            {
+                'email': 'new@mail.com',
+                'username': "newuser'); DROP TABLE userauth_siteuser;--",
+                'password': 'AnewPassword1+',
+            },
+        ]
+        for payload in payloads:
+            response = self.client.post(url, payload, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn('error', response.data)
+        self.assertTrue(SiteUser.objects.filter(email='test@mail.com').exists())
+        self.assertFalse(SiteUser.objects.filter(email='new@mail.com').exists())
+
+    def test_register_ignores_privilege_escalation_fields(self) -> None:
+        """Public registration must never allow staff/superuser creation."""
+        response = self.client.post('/api/auth/register/', {
+            'email': 'privilege@mail.com',
+            'username': 'regular_user',
+            'password': 'AnewPassword1+',
+            'is_staff': True,
+            'is_superuser': True,
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        user = SiteUser.objects.get(email='privilege@mail.com')
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+    def test_register_missing_username_returns_validation_error(self) -> None:
+        """Malformed registration payloads should not raise server errors."""
+        response = self.client.post('/api/auth/register/', {
+            'email': 'missing-username@mail.com',
+            'password': 'AnewPassword1+',
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error']['username'], 'INVALID_USERNAME')
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""

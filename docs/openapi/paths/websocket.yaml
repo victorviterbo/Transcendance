@@ -1,0 +1,131 @@
+WS-friend-chat:
+  post:
+    summary: WS about all friend chat
+    description: Websocket object for recieved data from the server about all friend chats requests
+    operationId: WSStoCFriendChat
+    tags: [ws]
+    requestBody:
+      required: true
+      content:
+        send:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - friend-chat
+          examples:
+            list:
+              value:
+                target: "friend-chat"
+                event: "send"
+                message:
+                  message: "Hey !!!"
+                  date: "2026-04-26T10:33:49.316Z"
+                  direction: "outgoing"
+                  status: "read"
+                  target-id: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                  target: "alice"
+                  uid: "TEMP_ID"
+        open:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - friend-chat
+          examples:
+            list:
+              value:
+                target: "friend-chat"
+                event: "open"
+                toUid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                to: "alice"
+        close:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - friend-chat
+          examples:
+            list:
+              value:
+                target: "friend-chat"
+                event: "close"
+                toUid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                to: "alice"
+    responses:
+      "200":
+        content:
+          json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/WS - StoC - friend-chat
+            examples:
+              new:
+                value:
+                  target: "friend-chat"
+                  event: "new"
+                  message:
+                    message: "Hey !!!"
+                    date: "2026-04-26T10:33:49.316Z"
+                    direction: "outgoing"
+                    status: "sent"
+                    target-id: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                    target: "alice"
+                    uid: "57092788-491a-484c-a162-b67657584fa5"
+              update_status:
+                value:
+                  target: "friend-chat"
+                  event: "update_status"
+                  message:
+                    message: "Hey !!!"
+                    date: "2026-04-26T10:33:49.316Z"
+                    direction: "outgoing"
+                    status: "read"
+                    target-id: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                    target: "alice"
+                    uid: "57092788-491a-484c-a162-b67657584fa5"
+
+
+WS-notif:
+  post:
+    summary: WS about all notifications
+    description: Websocket object for recieved data from the server about all notifications requests
+    operationId: WSStoCNotif
+    tags: [ws]
+    responses:
+      "200":
+        content:
+          json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/WS - StoC - notif
+            examples:
+              new:
+                value:
+                  target: "notif"
+                  event: "new"
+                  notif:
+                    uid: "57092788-491a-484c-a162-b67657584fa5"
+                    kind: "friend-request"
+                    from:
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                    date: 2026-04-26T10:33:49.316Z"
+                    read: false;
+
+                    
+WS-friend-request:
+  post:
+    summary: WS about all friend requests
+    description: Websocket object for recieved data from the server about all friend requests (used for live update)
+    operationId: WSStoCNotif
+    tags: [ws]
+    responses:
+      "200":
+        content:
+          json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/WS - StoC - friend-request
+            examples:
+              new-incoming:
+                value:
+                  target: "friend-request"
+                  event: "new-incoming"
+                  user:
+                    uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                    username: "alice"
+                    image: "path/to/image"
+                    badges: "deaf octopus"
+                    relation: "incoming"

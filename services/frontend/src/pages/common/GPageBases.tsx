@@ -111,6 +111,7 @@ function GPageBase({ children }: GPageProps) {
 								onTabChanged={(value: number) => {
 									setFriendTab(value);
 								}}
+								closed={!friendOpen}
 							></PSocial>
 						</CDrawer>
 					)}

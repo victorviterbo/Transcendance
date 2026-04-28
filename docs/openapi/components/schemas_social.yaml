@@ -1,0 +1,68 @@
+#FRIENDS
+FriendInfo:
+  type: object
+  description: All required information about a friend to be displayed
+  properties:
+    uid: { type: string }
+    username: { type: string }
+    image:
+      type: string
+      format: uri-reference
+      description: Usually a relative `/DB/media/...` path.
+    exp_points: { type: integer }
+    badges: { type: string }
+    created_at: { type: string, format: date-time }
+    status:
+      type: string
+      format: "offline | busy | online"
+      descripion: "Give the current user status"
+
+# MESSAGE
+Message:
+  type: object
+  description: Data about private messages
+  properties:
+    message: { type: string }
+    date: { type: string, format: date-time }
+    direction:
+      type: string
+      format: "outgoing | incoming"
+      descripion: "Defines if a message in incoming or outcoming"
+    status:
+      type: string
+      format: "not-sent | sent | recieved | read | error"
+      descripion: "Defines the current status of a message"
+    target-id:
+      type: string
+      descripion: "Targeted friend UID"
+    target:
+      type: string
+      descripion: "Targeted friend"
+    uid: { type: string, descripion: "message unique ID" }
+
+# NOTIF
+NotifRequests:
+  type: object
+  description: Notif when user recieve a friend requests
+  properties:
+    uid: { type: string }
+    kind: { type: string, format: "friend-request"}
+    from:
+      $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
+    date: { type: string, format: date-time }
+    read:
+      type: boolean
+      descripion: "Defines if the notification is already read"
+
+NotifAccepted:
+  type: object
+  description: Notif when another user accepted current user requests
+  properties:
+    uid: { type: string }
+    kind: { type: string, format: "friend-accepted"}
+    from:
+      $ref: ../openapi.yaml#/components/schemas/FriendInfo
+    date: { type: string, format: date-time }
+    read:
+      type: boolean
+      descripion: "Defines if the notification is already read"

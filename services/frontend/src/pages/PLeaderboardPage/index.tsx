@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { fetchLeaderboard } from "../../api/stats";
 import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import CText from "../../components/text/CText";
-import CTitle from "../../components/text/CTitle";
 import { getErrorMessage } from "../../utils/error";
 import type { ILeaderboardResponse } from "../../types/stats";
 import GPageBase from "../common/GPageBases";
@@ -58,7 +57,7 @@ function PLeaderboardPage() {
 			<Container maxWidth="md" sx={{ py: spacing }}>
 				<CTitlePaper title="LEADERBOARD" titleType="title" titleSize="md">
 					{leaderboardState.status === "loading" ? (
-						<CTitle size="sm">LEADERBOARD_LOADING</CTitle>
+						<CText size="md">LEADERBOARD_LOADING</CText>
 					) : null}
 
 					{leaderboardState.status === "error" ? (
