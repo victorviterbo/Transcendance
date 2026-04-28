@@ -32,6 +32,8 @@ paths:
     $ref: ./paths/social.yaml#/friends-requests-send
   /api/social/friends-request/respond:
     $ref: ./paths/social.yaml#/friends-requests-respond
+  /api/social/friend/remove:
+    $ref: ./paths/social.yaml#/friend-remove
   /api/social/message:
     $ref: ./paths/social.yaml#/social-message
   /api/social/notifs:
@@ -127,4 +129,3 @@ tags:
     description: User statistics
   - name: websockets
     description: "Websockets data (Open AI don't handle websocket -> Posts = MODULES, Requests = Client to Server, Reponse = Server to Clients)"
-

@@ -167,7 +167,55 @@ friends-requests-respond:
                 target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
                 new-status: "refuse"
 
-                
+friend-remove:
+  post:
+    summary: Remove an accepted friend
+    description: Called from a public profile when the current user wants to remove an accepted friendship. This endpoint is a proposed frontend contract and is not implemented yet.
+    operationId: removeFriend
+    tags: [social]
+    security:
+      - bearerAuth: []
+    requestBody:
+      description: Targeted friend to remove
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [target-uid]
+            properties:
+              target-username: { type: string }
+              target-uid: { type: string }
+          examples:
+            remove:
+              value:
+                target-username: "alice"
+                target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+    responses:
+      "200":
+        description: Friendship removed.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description: { type: string, example: "FRIENDSHIP_REMOVED" }
+                target-uid: { type: string }
+                target-username: { type: string }
+      "400":
+        description: Missing target, unknown user, or no accepted friendship exists.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/SerializerErrorResponse
+            examples:
+              not-friends:
+                value:
+                  error:
+                    friendship: "FRIENDSHIP_NOT_FOUND"
+      "401":
+        description: Authentication required.
+
 
 social-message:
   post:
