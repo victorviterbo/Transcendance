@@ -1,9 +1,6 @@
 import { Box, Collapse, Stack } from "@mui/material";
 import type { GPageProps } from "../common/GPageBases";
-import {
-	type TFriendRelation,
-	type IFriendInfo,
-} from "../../types/socials";
+import { type TFriendRelation, type IFriendInfo } from "../../types/socials";
 import CAvatar from "../../components/images/CAvatar";
 import CTitle from "../../components/text/CTitle";
 import {

@@ -53,9 +53,7 @@ export const fetchFriendRequests = async (): Promise<IFriendRequests> => {
 	return throwOnSocialError(response.data);
 };
 
-export const sendFriendRequest = async (
-	target: SocialTarget,
-): Promise<IFriendReqResponse> => {
+export const sendFriendRequest = async (target: SocialTarget): Promise<IFriendReqResponse> => {
 	const response = await api.post<IFriendReqResponse>(API_SOCIAL_FRIENDS_REQUEST_SEND, {
 		"target-uid": target.uid,
 		"target-username": target.username,

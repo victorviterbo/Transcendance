@@ -1,10 +1,6 @@
 import { Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
-import type {
-	IFriendFeed,
-	IFriendInfo,
-	IFriendMessage,
-} from "../../types/socials";
+import type { IFriendFeed, IFriendInfo, IFriendMessage } from "../../types/socials";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
