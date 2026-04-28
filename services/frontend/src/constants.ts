@@ -27,6 +27,7 @@ export const API_SOCIAL_FRIENDS_SEARCH = "/api/social/friends-search";
 export const API_SOCIAL_FRIENDS_REQUEST = "/api/social/friends-request";
 export const API_SOCIAL_FRIENDS_REQUEST_SEND = "/api/social/friend-request/send";
 export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "/api/social/friend-request/respond";
+export const API_SOCIAL_FRIEND_REMOVE = "/api/social/friend/remove";
 export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "/api/social/message";
 export const API_SOCIAL_NOTIFS = "/api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read";

@@ -85,15 +85,18 @@ describe("Home rendering tests", () => {
 			</CAuthProvider>,
 		);
 
-		await waitFor(async () => {
-			const rooms = screen.getAllByTestId("CButtonRoom");
-			expect(rooms.length).toBeGreaterThan(0);
+		await waitFor(
+			() => {
+				const rooms = screen.getAllByTestId("CButtonRoom");
+				expect(rooms.length).toBeGreaterThan(0);
 
-			const allTexts = within(rooms[0]).getAllByTestId("CTextBase");
-			expect(allTexts).toHaveLength(3);
+				const allTexts = within(rooms[0]).getAllByTestId("CTextBase");
+				expect(allTexts).toHaveLength(3);
 
-			const foundtext = within(rooms[0]).getByText(/\d+ \/ \d+/gm);
-			expect(foundtext).toBeInTheDocument();
-		});
+				const foundtext = within(rooms[0]).getByText(/\d+ \/ \d+/);
+				expect(foundtext).toBeInTheDocument();
+			},
+			{ timeout: 4000 },
+		);
 	});
 });

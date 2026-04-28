@@ -9,7 +9,7 @@ const getMock = vi.fn();
 const postMock = vi.fn();
 let accessToken: string | null = null;
 
-vi.mock("../../api", () => ({
+vi.mock("../../api/client", () => ({
 	default: {
 		get: (...args: unknown[]) => getMock(...args),
 		post: (...args: unknown[]) => postMock(...args),

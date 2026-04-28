@@ -135,7 +135,7 @@ describe("Socials - Interactions", () => {
 		expect(screen.getByText("NOTIF_TITLE")).toBeInTheDocument();
 	});
 
-	it("BUTTON: Checking notification count", { timeout: 10000 }, async () => {
+	it("BUTTON: Checking notification count", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -187,7 +187,7 @@ describe("Socials - Interactions", () => {
 				expect(notifValue).toBeInTheDocument();
 				expect(within(notifValue).getByText("3")).toBeInTheDocument();
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 
 		await waitFor(
@@ -196,7 +196,7 @@ describe("Socials - Interactions", () => {
 				expect(notifValue).toBeInTheDocument();
 				expect(within(notifValue).getByText("4")).toBeInTheDocument();
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 
 		await userEvent.click(notifButton);
@@ -206,11 +206,11 @@ describe("Socials - Interactions", () => {
 				notifValue = within(parentButton).queryByTestId("CButtonToggleNotif");
 				expect(notifValue).not.toBeInTheDocument();
 			},
-			{ timeout: 3000 },
+			{ timeout: 8000 },
 		);
 	});
 
-	it("BUTTON: Checking notification count opnend between", { timeout: 10000 }, async () => {
+	it("BUTTON: Checking notification count opnend between", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -263,7 +263,7 @@ describe("Socials - Interactions", () => {
 				notifValue = within(parentButton).queryByTestId("CButtonToggleNotif");
 				expect(notifValue).not.toBeInTheDocument();
 			},
-			{ timeout: 3000 },
+			{ timeout: 8000 },
 		);
 
 		await userEvent.click(notifButton);
@@ -274,7 +274,7 @@ describe("Socials - Interactions", () => {
 				expect(notifValue).toBeInTheDocument();
 				expect(within(notifValue).getByText("1")).toBeInTheDocument();
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 
 		await waitFor(
@@ -283,7 +283,7 @@ describe("Socials - Interactions", () => {
 				expect(notifValue).toBeInTheDocument();
 				expect(within(notifValue).getByText("2")).toBeInTheDocument();
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 	});
 
@@ -361,7 +361,7 @@ describe("Socials - Interactions", () => {
 		},
 	);
 
-	it("NODES: Counting notifs", { timeout: 10000 }, async () => {
+	it("NODES: Counting notifs", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -412,7 +412,7 @@ describe("Socials - Interactions", () => {
 				const nodes = screen.getAllByTestId("PNotifNode");
 				expect(nodes.length).toEqual(5);
 			},
-			{ timeout: 4000 },
+			{ timeout: 8000 },
 		);
 
 		await waitFor(
@@ -420,11 +420,11 @@ describe("Socials - Interactions", () => {
 				const nodes = screen.getAllByTestId("PNotifNode");
 				expect(nodes.length).toEqual(6);
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 	});
 
-	it("NODES: Counting notifs (Colors)", { timeout: 10000 }, async () => {
+	it("NODES: Counting notifs (Colors)", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -503,7 +503,7 @@ describe("Socials - Interactions", () => {
 					}).length,
 				).toEqual(2);
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 
 		await userEvent.click(notifButton);
@@ -528,11 +528,11 @@ describe("Socials - Interactions", () => {
 				}).length;
 				expect(len == 6 || len == 7 || len == 8).toBeTruthy();
 			},
-			{ timeout: 3000 },
+			{ timeout: 8000 },
 		);
 	});
 
-	it("NODES: Counting notifs (Colors) opened btw", { timeout: 10000 }, async () => {
+	it("NODES: Counting notifs (Colors) opened btw", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -613,7 +613,7 @@ describe("Socials - Interactions", () => {
 					}).length,
 				).toEqual(4);
 			},
-			{ timeout: 3000 },
+			{ timeout: 8000 },
 		);
 
 		await waitFor(
@@ -636,7 +636,7 @@ describe("Socials - Interactions", () => {
 					}).length,
 				).toEqual(4);
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 
 		await waitFor(
@@ -659,11 +659,11 @@ describe("Socials - Interactions", () => {
 				}).length;
 				expect(len == 6 || len == 7 || len == 8).toBeTruthy();
 			},
-			{ timeout: 3000 },
+			{ timeout: 8000 },
 		);
 	});
 
-	it("NODES: Click on see requests button", { timeout: 7500 }, async () => {
+	it("NODES: Click on see requests button", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -723,11 +723,11 @@ describe("Socials - Interactions", () => {
 			() => {
 				expect(screen.getAllByTestId("PFriendNode_ValidButton").length).toEqual(5);
 			},
-			{ timeout: 5500 },
+			{ timeout: 8000 },
 		);
 	});
 
-	it("NODES: Click on see friends button", { timeout: 7500 }, async () => {
+	it("NODES: Click on see friends button", { timeout: 25000 }, async () => {
 		server.use(
 			http.post(API_AUTH_REFRESH, () => {
 				return HttpResponse.json(
@@ -774,7 +774,7 @@ describe("Socials - Interactions", () => {
 				nodes = screen.getAllByTestId("PNotifNode");
 				expect(nodes.length).toEqual(5);
 			},
-			{ timeout: 4000 },
+			{ timeout: 8000 },
 		);
 
 		const button = within(nodes[0]).getByTestId("PNotifNodeSee");

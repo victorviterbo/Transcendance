@@ -40,6 +40,11 @@ export interface IFriendReqRes {
 	"new-status": "accept" | "refuse";
 }
 
+export interface IFriendRemoveReq {
+	"target-username": string;
+	"target-uid": string;
+}
+
 export interface IFriendReqResponse {
 	error?: IErrorStruct;
 }

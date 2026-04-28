@@ -1,4 +1,5 @@
 export interface IProfileData {
+	uid?: string;
 	username: string;
 	avatar?: string | null;
 	exp_points: number;
