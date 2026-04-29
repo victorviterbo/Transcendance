@@ -296,6 +296,51 @@ class FriendRequestsSend(APIView):
         )
 
 
+class FriendRemove(APIView):
+    """Define the functions related to removing friends."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        """Remove an accepted friendship."""
+
+        target_uid = _get_request_data_value(request, 'target-uid', 'user_uid', 'user-uid')
+        target_username = _get_request_data_value(request, 'target-username', 'user-username')
+
+        if target_uid is None:
+            return _error_response(
+                {'target-uid': 'MISSING_FIELD'},
+                {'user_uid': 'MISSING_FIELD', 'user-uid': 'MISSING_FIELD'},
+            )
+
+        target_user = _resolve_target_user(target_uid)
+        if target_user is None:
+            return _error_response(
+                {'target-uid': 'USER_NOT_FOUND'},
+                {'user_uid': 'USER_NOT_FOUND', 'user-uid': 'USER_NOT_FOUND'},
+            )
+
+        user = request.user
+        friendship = Friendship.objects.filter(
+            Q(from_user=user, to_user=target_user) | Q(from_user=target_user, to_user=user),
+            status='accepted'
+        ).first()
+
+        if friendship is None:
+            return Response(
+                {'error': {'friendship': 'FRIENDSHIP_NOT_FOUND'}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        friendship.delete()
+        return Response(
+            {
+                'description': 'FRIENDSHIP_REMOVED',
+                'target-uid': str(target_user.profile.uid),
+                'target-username': target_username or target_user.profile.username,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 class NotifSee(APIView):
     """List pending friend-request notifications for the authenticated user."""
 
