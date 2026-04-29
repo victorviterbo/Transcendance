@@ -198,7 +198,7 @@ def validate_answer(player: Profile, game_id: str, answer: str) -> tuple[bool, i
 		if not game.current_track:
 			return False, 0
 		if player is None or player not in game.players.all():
-			return False, 0
+			return False
 		round_stat = UserRoundStats.objects.filter(round__game=game,
 													round__round_number=game.current_round
 													)
