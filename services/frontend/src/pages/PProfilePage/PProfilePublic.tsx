@@ -9,6 +9,7 @@ import CLevelProgress from "../../components/feedback/CLevelProgress";
 import CProfileRequestState from "../../components/feedback/CProfileRequestState";
 import { fetchProfile, getProfileLevelProgress, resolveProfileImage } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
+import PProfilePublicRelation from "./PProfilePublicRelation";
 
 type ProfileStatus = "idle" | "loading" | "ready" | "notFound" | "error";
 
@@ -122,30 +123,34 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3} sx={{ mt: 3 }}>
 					<CBasePaper sx={{ p: 3 }}>
-						<Stack
-							direction={{ xs: "column", sm: "row" }}
-							spacing={2}
-							alignItems={{ xs: "flex-start", sm: "center" }}
-						>
-							<Avatar
-								src={resolveProfileImage(profile.avatar)}
-								sx={{
-									width: 88,
-									height: 88,
-									bgcolor: "secondary.main",
-									fontWeight: "bold",
-									fontSize: "2rem",
-								}}
+						<Stack spacing={2}>
+							<Stack
+								direction={{ xs: "column", sm: "row" }}
+								spacing={2}
+								alignItems={{ xs: "flex-start", sm: "center" }}
 							>
-								{displayUsername.charAt(0).toUpperCase()}
-							</Avatar>
-							<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-								<CTitle size="md">{displayUsername}</CTitle>
-								<CLevelProgress
-									level={levelProgress.level}
-									progressPercent={levelProgress.progressPercent}
-									title={displayBadge}
-								/>
+								<Avatar
+									src={resolveProfileImage(profile.avatar)}
+									sx={{
+										width: 88,
+										height: 88,
+										bgcolor: "secondary.main",
+										fontWeight: "bold",
+										fontSize: "2rem",
+										flexShrink: 0,
+									}}
+								>
+									{displayUsername.charAt(0).toUpperCase()}
+								</Avatar>
+								<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+									<CTitle size="md">{displayUsername}</CTitle>
+									<CLevelProgress
+										level={levelProgress.level}
+										progressPercent={levelProgress.progressPercent}
+										title={displayBadge}
+									/>
+								</Stack>
+								<PProfilePublicRelation profile={profile} />
 							</Stack>
 						</Stack>
 					</CBasePaper>

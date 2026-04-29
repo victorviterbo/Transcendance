@@ -33,6 +33,26 @@ type SocialResponseWithError = {
 	error?: IErrorStruct;
 };
 
+const valueHasSocialErrorCode = (value: unknown, code: string): boolean => {
+	if (typeof value === "string") return value === code;
+	if (!value || typeof value !== "object") return false;
+	if (Array.isArray(value)) return value.some((entry) => valueHasSocialErrorCode(entry, code));
+
+	const error = value as { code?: unknown; message?: unknown };
+	return error.code === code || error.message === code;
+};
+
+export const hasSocialErrorCode = (error: unknown, code: string): boolean => {
+	const maybeError = error as {
+		response?: { data?: { error?: unknown } };
+		error?: unknown;
+	};
+	const payload = maybeError?.response?.data?.error ?? maybeError?.error ?? error;
+	if (!payload || typeof payload !== "object") return valueHasSocialErrorCode(payload, code);
+
+	return Object.values(payload).some((value) => valueHasSocialErrorCode(value, code));
+};
+
 const throwOnSocialError = <TData extends SocialResponseWithError>(data: TData): TData => {
 	if (data.error) throw data.error;
 	return data;
