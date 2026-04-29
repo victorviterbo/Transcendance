@@ -3,13 +3,11 @@ from urllib.parse import urlencode
 
 import requests
 
-
 logger = logging.getLogger(__name__)
 
 
 def fetch_ids_from_rss(rss_url: str) -> list[dict]:
-	"""
-	Fetch the top tracks from an iTunes RSS feed.
+	"""Fetch the top tracks from an iTunes RSS feed.
 	Returns a list of dicts: track_id, title, artist,type, artwork_url.
 	"""
 	try:
@@ -55,8 +53,7 @@ def _build_lookup_url(track_ids: list[int], country: str | None = None) -> str:
 
 
 def batch_lookup(track_ids: list[int], country: str | None = None) -> dict[int, str]:
-	"""
-	Perform a batch lookup to get preview URLs for the given track IDs.
+	"""Perform a batch lookup to get preview URLs for the given track IDs.
 	Returns a dict mapping track_id to preview_url.
 	"""
 	if not track_ids:
@@ -85,8 +82,7 @@ def batch_lookup(track_ids: list[int], country: str | None = None) -> dict[int, 
 		return {}
 
 def full_lookup(track_ids: list[int], country: str | None = None) -> dict[int, dict]:
-	"""
-	Perform a batch lookup and return full metadata for each track ID.
+	"""Perform a batch lookup and return full metadata for each track ID.
 	Returns a dict mapping track_id to {title, artist, genre, artwork_url, preview_url}.
 	"""
 	if not track_ids:

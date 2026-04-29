@@ -1,16 +1,17 @@
 """HTTP views for game management and testing."""
 
 import uuid
+
+from chat.models import Room
+from music.models import Playlist, Track
+from music.serializers import BlindSerializer
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chat.models import Room
 from game.models import Game
-from music.models import Playlist, Track
-from music.serializers import BlindSerializer
 
 
 class GameView(APIView):
@@ -20,18 +21,18 @@ class GameView(APIView):
 	def post(self, request: Request) -> Response:
 		"""Create a game with tracks from specified genres.
         
-        Request body:
-        {
-            "genres": ["rock", "pop"],
-            "num_tracks": 10
-        }
+		Request body:
+		{
+		    "genres": ["rock", "pop"],
+		    "num_tracks": 10
+		}
         
-        Returns:
-            - game_uid: UUID of the created game
-            - playlist: Playlist name with genres
-            - current_track: Current track preview URL
-            - num_tracks: Total tracks selected
-        """
+		Returns:
+		    - game_uid: UUID of the created game
+		    - playlist: Playlist name with genres
+		    - current_track: Current track preview URL
+		    - num_tracks: Total tracks selected
+		"""
 		genres = request.data.get('genres', [])
 		num_tracks = request.data.get('num_tracks')
 		

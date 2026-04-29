@@ -8,18 +8,17 @@ from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
     AsyncWebsocketConsumer,
 )
-from django.core.cache import cache
-from chat.models import Message, Room
-from game.models import Game
-from game.ws_handlers import handle_game_action
-from userauth.models import SiteUser
-from userprofile.models import Profile
-
 from chat.chat_utils import (
     accepted_friendship_exists,
     get_or_create_direct_room,
     serialize_friend_chat_message,
 )
+from chat.models import Message, Room
+from django.core.cache import cache
+from game.models import Game
+from game.ws_handlers import handle_game_action
+from userauth.models import SiteUser
+from userprofile.models import Profile
 
 logger = logging.getLogger(__name__)
 

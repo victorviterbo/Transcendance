@@ -2,7 +2,7 @@
 
 from django.db.models import Avg, Sum
 from music.models import Track
-from project.defaults import get_avatar_url, genres, genres_to_label
+from project.defaults import genres, genres_to_label, get_avatar_url
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request

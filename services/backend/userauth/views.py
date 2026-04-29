@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from django.contrib.auth import authenticate, login, logout 
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as coreValidationError
 from rest_framework import serializers, status
@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+
 from userprofile.models import Profile
 
 from .models import SiteUser

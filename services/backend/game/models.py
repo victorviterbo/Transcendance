@@ -61,8 +61,6 @@ class Game(models.Model):
 									  blank=True,
 									  related_name='current_in_games')
 	
-	round_end_time = models.DateTimeField(null=True, blank=True)
-	
 	max_rounds = models.PositiveIntegerField(default=5)
 
 	played_at = models.DateTimeField(auto_now_add=True)

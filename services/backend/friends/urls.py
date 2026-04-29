@@ -1,7 +1,7 @@
 """Define url rerouting to views for the user module."""
 
-from django.urls import path
 from chat.views import FriendMessageFeed
+from django.urls import path
 
 from .views import (
     FriendRemove,

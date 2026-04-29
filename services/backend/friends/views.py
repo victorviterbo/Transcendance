@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -16,7 +15,6 @@ from .serializers import FriendInfoSerializer, FriendUserSerializer
 
 def _get_request_data_value(request: Request, *keys: str) -> str | None:
     """Return the first non-empty request value found for the provided keys."""
-
     for key in keys:
         value = request.data.get(key)
         if value is not None:
@@ -26,7 +24,6 @@ def _get_request_data_value(request: Request, *keys: str) -> str | None:
 
 def _friendship_relation(user: SiteUser, profile: Profile) -> str:
     """Return the frontend relation label for a profile."""
-
     outgoing = Friendship.objects.filter(from_user=user, to_user=profile.user).first()
     if outgoing:
         return 'friends' if outgoing.status == 'accepted' else 'outgoing'
@@ -40,7 +37,6 @@ def _friendship_relation(user: SiteUser, profile: Profile) -> str:
 
 def _error_response(payload: dict[str, str], legacy_payload: dict[str, str] | None = None) -> Response:
     """Build a standardized 400 response with optional legacy aliases."""
-
     error_payload = payload.copy()
     if legacy_payload:
         error_payload.update(legacy_payload)
@@ -49,7 +45,6 @@ def _error_response(payload: dict[str, str], legacy_payload: dict[str, str] | No
 
 def _resolve_target_user(target_uid: str | None) -> SiteUser | None:
     """Resolve a target user from either SiteUser.uid or Profile.uid."""
-
     if target_uid is None:
         return None
 
@@ -72,7 +67,6 @@ def _notif_payload(
     relation: str,
 ) -> dict[str, object]:
     """Return a frontend-shaped notification entry."""
-
     serializer = FriendUserSerializer(
         profile,
         context={'request': request, 'relation': relation},
@@ -92,7 +86,6 @@ class FriendRequestsSeePend(APIView):
 
     def get(self, request: Request) -> Response:
         """List all pending friend requests for the authenticated user."""
-
         incoming_requests = Friendship.objects.filter(
             to_user=request.user,
             status='pending',
@@ -130,7 +123,6 @@ class FriendSee(APIView):
 
     def get(self, request: Request) -> Response:
         """List all accepted friends for the authenticated user."""
-
         friendships = Friendship.objects.filter(
             Q(to_user=request.user) | Q(from_user=request.user),
             status='accepted',
@@ -154,7 +146,6 @@ class FriendSearch(APIView):
 
     def post(self, request: Request) -> Response:
         """Search profiles by username substring."""
-
         query = _get_request_data_value(request, 'search', 'q')
         if query is None:
             return _error_response({'search': 'MISSING_FIELD'}, {'q': 'MISSING_FIELD'})
@@ -186,7 +177,6 @@ class FriendRequestsRespond(APIView):
 
     def post(self, request: Request) -> Response:
         """Accept or refuse a pending friend request."""
-
         target_uid = _get_request_data_value(request, 'target-uid', 'user_uid', 'user-uid')
         target_username = _get_request_data_value(request, 'target-username', 'user-username')
         new_status = request.data.get('new-status')
@@ -250,7 +240,6 @@ class FriendRequestsSend(APIView):
 
     def post(self, request: Request) -> Response:
         """Send a new friend request."""
-
         target_uid = _get_request_data_value(request, 'target-uid', 'user_uid', 'user-uid')
         target_username = _get_request_data_value(request, 'target-username', 'user-username')
 
@@ -354,7 +343,6 @@ class NotifSee(APIView):
 
     def get(self, request: Request) -> Response:
         """Return incoming friend requests as notification entries."""
-
         incoming_friendships = (
             Friendship.objects.filter(to_user=request.user, status='pending')
             .select_related('from_user__profile')
@@ -401,7 +389,6 @@ class NotifRead(APIView):
 
     def post(self, request: Request) -> Response:
         """Mark all incoming friend-request notifications as read."""
-
         Friendship.objects.filter(to_user=request.user, status='pending', read=False).update(read=True)
         Friendship.objects.filter(from_user=request.user, status='accepted', read=False).update(read=True)
         return Response({}, status=status.HTTP_200_OK)

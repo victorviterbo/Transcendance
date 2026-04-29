@@ -3,7 +3,6 @@
 from django.templatetags.static import static
 from rest_framework import serializers
 from rest_framework.request import Request
-
 from userprofile.models import Profile
 from userprofile.serializers import UsersSerializer
 
@@ -12,7 +11,6 @@ from .models import Friendship
 
 def _build_avatar_url(instance: Profile, request: Request | None = None) -> str:
     """Return uploaded avatar URL or fallback to the profile default avatar."""
-
     if instance.avatar:
         avatar_url = instance.avatar.url
     else:
@@ -50,13 +48,11 @@ class FriendInfoSerializer(serializers.ModelSerializer):
 
     def get_image(self, instance: Profile) -> str:
         """Return an absolute avatar URL when possible."""
-
         request = self.context.get('request')
         return _build_avatar_url(instance, request)
 
     def get_status(self, instance: Profile) -> str:
         """Map the backend presence flag to the frontend friend status."""
-
         return 'online' if instance.is_online else 'offline'
 
 
@@ -74,12 +70,10 @@ class FriendUserSerializer(serializers.ModelSerializer):
 
     def get_image(self, instance: Profile) -> str:
         """Return an absolute avatar URL when possible."""
-
         request = self.context.get('request')
         return _build_avatar_url(instance, request)
 
     def get_relation(self, instance: Profile) -> str:
         """Return the computed relation for the serialized profile."""
-
         return self.context.get('relation', 'not-friends')
     

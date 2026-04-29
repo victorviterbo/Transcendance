@@ -1,11 +1,11 @@
 """Tests for the game module."""
 
 from django.test import TestCase
-from rest_framework.test import APIClient
 from rest_framework import status
-from music.models import Playlist, Track
+from rest_framework.test import APIClient
+
 from game.models import Game
-from chat.models import Room
+from music.models import Playlist, Track
 
 
 class GameViewTests(TestCase):

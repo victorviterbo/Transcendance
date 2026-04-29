@@ -13,9 +13,6 @@ from userprofile.models import Profile
 
 User = get_user_model()
 
-#@transaction.atomic
-#def run():
-
 print("Seeding database...")
 
 # ---------------------------------------------------------
@@ -114,7 +111,6 @@ for g_idx in range(1, 11):
     game = Game.objects.create(
         game_name=f"Blind Test Arena {g_idx}",
         status='finished',
-        is_public=random.choice([True, False]),
         max_rounds=20
     )
     

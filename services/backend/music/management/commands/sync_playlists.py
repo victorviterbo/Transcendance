@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
 
+from music.itunes_client import batch_lookup, fetch_ids_from_rss, full_lookup
 from music.models import Playlist, Track
-from music.itunes_client import fetch_ids_from_rss, batch_lookup, full_lookup
+
 from .seed_playlists import STATIC_TRACK_IDS
 
 # Map playlist names to their STATIC_TRACK_IDS keys

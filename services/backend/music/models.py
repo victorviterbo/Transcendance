@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Playlist(models.Model):
 	"""Stores the different playlists (e.g., Rock, Rap, Classics)."""
