@@ -2,6 +2,7 @@ import { Box, Collapse, Stack } from "@mui/material";
 import type { GPageProps } from "../common/GPageBases";
 import { type TFriendRelation, type IFriendInfo } from "../../types/socials";
 import CAvatar from "../../components/images/CAvatar";
+import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CTitle from "../../components/text/CTitle";
 import {
 	PFriendNodeAvatarStyle,
@@ -68,6 +69,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 			>
 				<Stack direction="row">
 					<CAvatar
+						profileUsername={user.username}
 						sx={PFriendNodeAvatarStyle}
 						src={user.image}
 						alt={user.username + "'s picture"}
@@ -75,9 +77,11 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 					<Stack sx={PFriendNodeTextsStyle}>
 						{!error ? (
 							<>
-								<CTitle noTr={true} sx={PFriendNodeNameStyle} size="sm">
-									{user.username}
-								</CTitle>
+								<CUserProfileLink username={user.username}>
+									<CTitle noTr={true} sx={PFriendNodeNameStyle} size="sm">
+										{user.username}
+									</CTitle>
+								</CUserProfileLink>
 								<CText sx={PFriendNodeBadgeStyle} size="sm">
 									{user.badges}
 								</CText>

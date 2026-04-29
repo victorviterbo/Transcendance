@@ -333,7 +333,11 @@ describe("Socials - Interactions", () => {
 			if (!notif) throw {};
 			if (!notif) return;
 
-			render(<PNotifNode notif={notif}></PNotifNode>);
+			render(
+				<MemoryRouter>
+					<PNotifNode notif={notif}></PNotifNode>
+				</MemoryRouter>,
+			);
 
 			if (Kind == "friend-request") {
 				expect(screen.getByText("NOTIF_FRIEND_REQ")).toBeInTheDocument();

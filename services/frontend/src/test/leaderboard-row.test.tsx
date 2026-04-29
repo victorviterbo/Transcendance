@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import PLeaderboardRow from "../pages/PLeaderboardPage/PLeaderboardRow";
 import type { ILeaderboardEntry } from "../types/stats";
 
@@ -19,6 +21,20 @@ const createEntry = (overrides: Partial<ILeaderboardEntry> = {}): ILeaderboardEn
 	...overrides,
 });
 
+function LocationProbe() {
+	const location = useLocation();
+	return <span data-testid="location">{location.pathname}</span>;
+}
+
+const renderRow = (entry: ILeaderboardEntry) => {
+	return render(
+		<MemoryRouter initialEntries={["/leaderboard"]}>
+			<PLeaderboardRow entry={entry} />
+			<LocationProbe />
+		</MemoryRouter>,
+	);
+};
+
 describe("PLeaderboardRow", () => {
 	beforeEach(() => {
 		resolveProfileImageMock.mockReset();
@@ -26,7 +42,7 @@ describe("PLeaderboardRow", () => {
 	});
 
 	it("renders the leaderboard entry details and localized points label", () => {
-		render(<PLeaderboardRow entry={createEntry()} />);
+		renderRow(createEntry());
 
 		expect(screen.getByText("7")).toBeInTheDocument();
 		expect(screen.getByText("mika")).toBeInTheDocument();
@@ -37,27 +53,33 @@ describe("PLeaderboardRow", () => {
 	});
 
 	it("falls back to the username initial when no resolved profile image is available", () => {
-		render(<PLeaderboardRow entry={createEntry({ username: "zoe" })} />);
+		renderRow(createEntry({ username: "zoe" }));
 
 		expect(screen.getByText("Z")).toBeInTheDocument();
 	});
 
 	it("renders multi-digit rankings and current-user entries as regular rows", () => {
-		render(
-			<PLeaderboardRow
-				entry={createEntry({
-					username: "john",
-					xp: 120,
-					badges: "Dazed Jellyfish",
-					ranking: 14,
-					isCurrentUser: true,
-				})}
-			/>,
+		renderRow(
+			createEntry({
+				username: "john",
+				xp: 120,
+				badges: "Dazed Jellyfish",
+				ranking: 14,
+				isCurrentUser: true,
+			}),
 		);
 
 		expect(screen.getByText("14")).toBeInTheDocument();
 		expect(screen.getByText("john")).toBeInTheDocument();
 		expect(screen.getByText("120")).toBeInTheDocument();
 		expect(screen.queryByText("You")).not.toBeInTheDocument();
+	});
+
+	it("navigates to the user profile when avatar or username is clicked", async () => {
+		const user = userEvent.setup();
+		renderRow(createEntry({ username: "mika" }));
+
+		await user.click(screen.getByRole("button", { name: "mika" }));
+		expect(screen.getByTestId("location")).toHaveTextContent("/users/mika");
 	});
 });

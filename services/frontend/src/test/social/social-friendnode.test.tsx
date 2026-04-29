@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter, useLocation } from "react-router-dom";
+import type { ReactNode } from "react";
 import type { IFriendInfo, TFriendRelation } from "../../types/socials";
 import PFriendNode from "../../pages/PSocial/PFriendNode";
 import type { IExtUserInfo } from "../../types/user";
@@ -28,6 +31,20 @@ vi.mock("../../api/client", () => ({
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
 
+function LocationProbe() {
+	const location = useLocation();
+	return <span data-testid="location">{location.pathname}</span>;
+}
+
+const renderWithRouter = (children: ReactNode) => {
+	return render(
+		<MemoryRouter initialEntries={["/social"]}>
+			{children}
+			<LocationProbe />
+		</MemoryRouter>,
+	);
+};
+
 describe("Socials - Friend/user node", () => {
 	beforeEach(() => {
 		mockSocialResetDB();
@@ -43,7 +60,7 @@ describe("Socials - Friend/user node", () => {
 
 	//FRIEND NODE
 	it("Check for base data (friend)", async () => {
-		render(<PFriendNode user={mockSocialDB.friends[0]} type="friend" />);
+		renderWithRouter(<PFriendNode user={mockSocialDB.friends[0]} type="friend" />);
 
 		expect(screen.getByText(mockSocialDB.friends[0].username)).toBeInTheDocument();
 		expect(screen.getByText(mockSocialDB.friends[0].badges)).toBeInTheDocument();
@@ -51,7 +68,7 @@ describe("Socials - Friend/user node", () => {
 	it("Check for base data (user)", async () => {
 		const user: IExtUserInfo = mockGetExtUser(0);
 
-		render(<PFriendNode user={user} type="user" />);
+		renderWithRouter(<PFriendNode user={user} type="user" />);
 
 		expect(screen.getByText(user.username)).toBeInTheDocument();
 		expect(screen.getByText(user.badges)).toBeInTheDocument();
@@ -76,7 +93,7 @@ describe("Socials - Friend/user node", () => {
 			user.relation = relation;
 		}
 
-		render(<PFriendNode user={user} type={type} />);
+		renderWithRouter(<PFriendNode user={user} type={type} />);
 
 		if (type == "friend" || (user as IExtUserInfo).relation == "friends")
 			expect(screen.getByTestId("PFriendNode_MessageButton")).toBeInTheDocument();
@@ -107,7 +124,7 @@ describe("Socials - Friend/user node", () => {
 		users[2].status = "offline";
 		users[3].status = "online";
 
-		render(
+		renderWithRouter(
 			<>
 				<PFriendNode user={users[0]} type="friend" />
 				<PFriendNode user={users[1]} type="friend" />
@@ -144,7 +161,7 @@ describe("Socials - Friend/user node", () => {
 			user.username = "test_" + index;
 		});
 
-		render(
+		renderWithRouter(
 			<>
 				<PFriendNode user={users[0]} type="user" />
 				<PFriendNode user={users[1]} type="user" />
@@ -167,5 +184,25 @@ describe("Socials - Friend/user node", () => {
 		expect(allBG[0] === allBG[2]).toBeTruthy();
 		expect(allBG[1] === allBG[2]).toBeTruthy();
 		expect(allBG[0] === allBG[3]).toBeTruthy();
+	});
+
+	it("navigates to a profile from the friend username", async () => {
+		const user = userEvent.setup();
+		const friend = mockSocialDB.friends[0];
+
+		renderWithRouter(<PFriendNode user={friend} type="friend" />);
+
+		await user.click(screen.getByRole("button", { name: friend.username }));
+		expect(screen.getByTestId("location")).toHaveTextContent(`/users/${friend.username}`);
+	});
+
+	it("navigates to a profile from the friend avatar", async () => {
+		const user = userEvent.setup();
+		const friend = mockSocialDB.friends[0];
+
+		renderWithRouter(<PFriendNode user={friend} type="friend" />);
+
+		await user.click(screen.getByRole("button", { name: `Open profile ${friend.username}` }));
+		expect(screen.getByTestId("location")).toHaveTextContent(`/users/${friend.username}`);
 	});
 });

@@ -2,6 +2,7 @@ import { alpha, Box, Stack } from "@mui/material";
 import { resolveProfileImage } from "../../api/profile";
 import type { ILeaderboardEntry } from "../../types/stats";
 import CAvatar from "../../components/images/CAvatar";
+import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
 import { getScaledRadius } from "../../utils/styles";
@@ -67,6 +68,7 @@ function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 			</Box>
 
 			<CAvatar
+				profileUsername={entry.username}
 				src={resolveProfileImage(entry.avatar)}
 				sx={(theme) => ({
 					width: { xs: 48, sm: 56 },
@@ -91,9 +93,11 @@ function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 					spacing={1}
 					alignItems={{ xs: "flex-start", sm: "center" }}
 				>
-					<CTitle size="sm" sx={{ mb: 0 }}>
-						{entry.username}
-					</CTitle>
+					<CUserProfileLink username={entry.username}>
+						<CTitle size="sm" sx={{ mb: 0 }}>
+							{entry.username}
+						</CTitle>
+					</CUserProfileLink>
 				</Stack>
 				<Box
 					sx={(theme) => ({
