@@ -5,11 +5,13 @@ import {
 	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
 	API_SOCIAL_FRIENDS_REQUEST_SEND,
 	API_SOCIAL_FRIENDS_SEARCH,
+	API_SOCIAL_FRIEND_REMOVE,
 	API_SOCIAL_NOTIFS,
 	API_SOCIAL_NOTIFS_READ,
 } from "../../../constants";
 import type {
 	IFriendInfo,
+	IFriendRemoveReq,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
@@ -19,6 +21,7 @@ import type {
 import type { IExtUserInfo, IExtUserSearch } from "../../../types/user";
 import {
 	mockGetExtUsers,
+	mockOnFriendRemove,
 	mockOnAddRequestSend,
 	mockSocialOnResponse,
 	mockSocialDB,
@@ -157,6 +160,31 @@ export const friendsRequestsResponseHandler = http.post(
 		);
 	},
 );
+
+export const friendsRemoveHandler = http.post(API_SOCIAL_FRIEND_REMOVE, async ({ request }) => {
+	mockSocialSetDB();
+	const data: IFriendRemoveReq = (await request.json()) as IFriendRemoveReq;
+	const out: IExtUserInfo | IFriendInfo | IErrorReturn = mockOnFriendRemove(data);
+	if (!("uid" in out))
+		return HttpResponse.json(
+			{
+				error: out.error,
+			},
+			{ status: out.status ? out.status : 400 },
+		);
+
+	return HttpResponse.json(
+		{
+			"target-username": out.username,
+			"target-uid": out.uid,
+			description:
+				"relation" in out && out.relation === "not-friends"
+					? "FRIENDSHIP_REQUEST_CANCELLED"
+					: "FRIENDSHIP_REMOVED",
+		},
+		{ status: 200 },
+	);
+});
 
 //====================== NOTIF ======================
 export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {

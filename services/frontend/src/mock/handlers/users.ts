@@ -19,6 +19,7 @@ const unauthorized = () => HttpResponse.json({ error: "Unauthorized" }, { status
 const DEFAULT_PROFILE_AVATAR = "/DB/media/default_pp.jpg";
 
 const toProfileResponse = (user: MockUser) => ({
+	uid: user.uid ?? `mock-profile-${user.username.trim()}`,
 	username: user.username,
 	avatar: user.avatar ?? DEFAULT_PROFILE_AVATAR,
 	exp_points: user.expPoints,

@@ -9,6 +9,7 @@ import {
 } from "./db.data";
 
 export interface MockUser {
+	uid?: string;
 	username: string;
 	email: string;
 	password: string;
@@ -158,7 +159,12 @@ const cloneHistoryEntrySeed = (entry: MockHistoryEntrySeed): MockHistoryEntrySee
 	rounds: entry.rounds.map(cloneHistoryRound),
 });
 
-const cloneUser = (user: MockUser): MockUser => ({ ...user });
+const createMockUserUid = (username: string) => `mock-profile-${username.trim()}`;
+
+const cloneUser = (user: MockUser): MockUser => ({
+	...user,
+	uid: user.uid ?? createMockUserUid(user.username),
+});
 
 const cloneStatsProfileMap = (profiles: Record<string, Partial<MockGlobalStatsProfile>>) =>
 	Object.fromEntries(
@@ -306,6 +312,7 @@ export const findUserByExactUsername = (username: string) =>
  */
 export const createUser = (username: string, email: string, password: string) => {
 	const newUser: MockUser = {
+		uid: createMockUserUid(username),
 		username: normalizeUsername(username),
 		email: normalizeEmail(email),
 		password,
