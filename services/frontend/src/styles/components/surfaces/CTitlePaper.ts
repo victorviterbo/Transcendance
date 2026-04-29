@@ -1,17 +1,19 @@
 import type { SxProps, Theme } from "@mui/material";
-import { appColors } from "../../theme";
+import { appColors, appSharedStyle } from "../../theme";
+import type { CTitleBasePaperProps } from "../../../components/surfaces/CTitleBasePaper";
 
-export const CTitlePaperStyle: SxProps<Theme> = (_theme) => ({
+export const CTitlePaperStyle = ({borderRadius}: CTitleBasePaperProps) => ({
+	borderRadius: borderRadius == undefined ? appSharedStyle.paperRadius : borderRadius,
 	p: 0,
 });
 
-export const CTitlePaperTitleBoxStyle: SxProps<Theme> = (theme) => ({
-	backgroundColor: theme.palette.primary.main,
+export const CTitlePaperTitleBoxStyle = ({borderRadius, titlePadding}: CTitleBasePaperProps) => ({
+	backgroundColor: appColors.primary[0],
+	
+	borderTopLeftRadius: borderRadius == undefined ? appSharedStyle.paperRadius : borderRadius,
+	borderTopRightRadius: borderRadius == undefined ? appSharedStyle.paperRadius : borderRadius,
 
-	borderTopLeftRadius: theme.shape.borderRadius,
-	borderTopRightRadius: theme.shape.borderRadius,
-
-	p: 1,
+	p: titlePadding == undefined ? 1 : titlePadding,
 });
 
 export const CTitlePaperTitleStyle: SxProps<Theme> = (_theme) => ({
@@ -20,4 +22,10 @@ export const CTitlePaperTitleStyle: SxProps<Theme> = (_theme) => ({
 
 export const CTitlePaperContentBox: SxProps<Theme> = (_theme) => ({
 	p: 4,
+});
+
+
+export const CGamePaperTitleStyle: SxProps<Theme> = (_) => ({
+	color: appColors.text.dark,
+	mx: 0,
 });
