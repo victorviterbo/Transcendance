@@ -13,31 +13,41 @@ import type { ReactNode } from "react";
 export interface CTitleBasePaperProps extends GCompProps, CBasePaperProps {
 	titleNode: ReactNode;
 
+	//POSITIONS
 	contentFlex?: number;
 	isFlex?: boolean;
 	overflow?: TOverflow;
 	position?: TPosition;
+
+	//STYLING
+	borderRadius?: number | string;
+	titlePadding?: number | string;
 }
 
-function CTitleBasePaper({
-	titleNode,
-	children,
+function CTitleBasePaper(props: CTitleBasePaperProps) {
 
-	contentFlex,
-	isFlex,
-	overflow,
-	position,
+	const {
+		titleNode,
+		children,
 
-	sx,
-	...other
-}: CTitleBasePaperProps) {
+		contentFlex,
+		isFlex,
+		overflow,
+		position,
+
+		sx,
+		...other
+	} = props;
+
+	console.log(props.borderRadius);
+
 	return (
 		<CBasePaper
-			sx={[CTitlePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			sx={[CTitlePaperStyle(props), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
 			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
-				<Box sx={CTitlePaperTitleBoxStyle} data-testid="CTitleBasePaper_Title">
+				<Box sx={CTitlePaperTitleBoxStyle(props)} data-testid="CTitleBasePaper_Title">
 					{titleNode}
 				</Box>
 				<Box

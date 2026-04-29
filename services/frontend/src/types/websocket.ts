@@ -9,6 +9,7 @@ export type TWSModuleName =
 	| "friend-chat"
 	| "friend-request"
 	| "notif"
+	| "game"
 	| "test_counter_event"
 	| "test_counter";
 
@@ -55,6 +56,11 @@ export type TWSSend =
 			message?: IFriendMessage;
 			to?: string;
 			toUid?: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "join";
+			roomid: string;
 	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;

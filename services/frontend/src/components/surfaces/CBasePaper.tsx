@@ -6,6 +6,7 @@ export interface CBasePaperProps extends GCompProps, PaperOwnProps {}
 
 //TODO: Change sx here
 function CBasePaper({ sx, children, ...other }: CBasePaperProps) {
+
 	//====================== DOM ======================
 	return (
 		<Paper

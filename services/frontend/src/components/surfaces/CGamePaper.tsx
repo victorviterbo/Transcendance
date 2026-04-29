@@ -1,28 +1,22 @@
 import type { GCompProps } from "../common/GProps";
-import CBasePaper, { type CBasePaperProps } from "./CBasePaper";
-import {
-	CGamePaperStyle,
-	CGamePaperTitleBoxStyle,
-	CGamePaperTitleStyle,
-} from "../../styles/components/surfaces/CGamePaper";
-import { Box, Stack } from "@mui/material";
 import CTitle from "../text/CTitle";
+import type { CTitleBasePaperProps } from "./CTitleBasePaper";
+import CTitleBasePaper from "./CTitleBasePaper";
+import { appSharedStyle } from "../../styles/theme";
+import { CGamePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
 
-export interface CGameBasePaperProps extends GCompProps, CBasePaperProps {
+export interface CGameBasePaperProps extends GCompProps, Omit<CTitleBasePaperProps, "titleNode"> {
 	title: string;
 }
 
-function CGamePaper({ title, sx, ...other }: CGameBasePaperProps) {
+function CGamePaper({ title,  ...other }: CGameBasePaperProps) {
+
 	return (
-		<CBasePaper sx={[CGamePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} {...other}>
-			<Stack>
-				<Box sx={CGamePaperTitleBoxStyle}>
-					<CTitle sx={CGamePaperTitleStyle} align={"center"} size="2xs" weight={100}>
-						{title}
-					</CTitle>
-				</Box>
-			</Stack>
-		</CBasePaper>
+		<CTitleBasePaper sx={{height: "100%"}} titlePadding="0px" borderRadius={appSharedStyle.gameRadius} titleNode={
+				<CTitle sx={CGamePaperTitleStyle} align={"center"} size="2xs" weight={100}>
+					{title}
+				</CTitle>
+		} {...other}></CTitleBasePaper>
 	);
 }
 
