@@ -301,7 +301,7 @@ class FriendRemove(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        """Remove an accepted friendship."""
+        """Remove an accepted friendship or cancel an outgoing pending request."""
 
         target_uid = _get_request_data_value(request, 'target-uid', 'user_uid', 'user-uid')
         target_username = _get_request_data_value(request, 'target-username', 'user-username')
@@ -321,8 +321,9 @@ class FriendRemove(APIView):
 
         user = request.user
         friendship = Friendship.objects.filter(
-            Q(from_user=user, to_user=target_user) | Q(from_user=target_user, to_user=user),
-            status='accepted'
+            Q(from_user=user, to_user=target_user, status='accepted')
+            | Q(from_user=target_user, to_user=user, status='accepted')
+            | Q(from_user=user, to_user=target_user, status='pending')
         ).first()
 
         if friendship is None:
@@ -331,10 +332,15 @@ class FriendRemove(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        description = (
+            'FRIENDSHIP_REQUEST_CANCELLED'
+            if friendship.status == 'pending'
+            else 'FRIENDSHIP_REMOVED'
+        )
         friendship.delete()
         return Response(
             {
-                'description': 'FRIENDSHIP_REMOVED',
+                'description': description,
                 'target-uid': str(target_user.profile.uid),
                 'target-username': target_username or target_user.profile.username,
             },

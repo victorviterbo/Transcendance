@@ -169,14 +169,14 @@ friends-requests-respond:
 
 friend-remove:
   post:
-    summary: Remove an accepted friend
-    description: Called from a public profile when the current user wants to remove an accepted friendship. This endpoint is a proposed frontend contract and is not implemented yet.
+    summary: Remove an accepted friend or cancel an outgoing friend request
+    description: Called from a public profile when the current user wants to remove an accepted friendship or cancel a pending request they sent. Incoming pending requests must still be refused with the friend-request respond endpoint.
     operationId: removeFriend
     tags: [social]
     security:
       - bearerAuth: []
     requestBody:
-      description: Targeted friend to remove
+      description: Targeted friend or outgoing pending request to remove
       required: true
       content:
         application/json:
@@ -193,17 +193,20 @@ friend-remove:
                 target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
     responses:
       "200":
-        description: Friendship removed.
+        description: Friendship removed or outgoing request cancelled.
         content:
           application/json:
             schema:
               type: object
               properties:
-                description: { type: string, example: "FRIENDSHIP_REMOVED" }
+                description:
+                  type: string
+                  enum: [FRIENDSHIP_REMOVED, FRIENDSHIP_REQUEST_CANCELLED]
+                  example: "FRIENDSHIP_REMOVED"
                 target-uid: { type: string }
                 target-username: { type: string }
       "400":
-        description: Missing target, unknown user, or no accepted friendship exists.
+        description: Missing target, unknown user, or no removable friendship/request exists.
         content:
           application/json:
             schema:
