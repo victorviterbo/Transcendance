@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.db import models
+from django.utils.functional import cached_property
 from game.models import Game
 from music.models import Track
 
@@ -15,10 +16,6 @@ class GameRoundStats(models.Model):
     round_number = models.PositiveIntegerField()
     game = models.ForeignKey(Game,
                              on_delete=models.CASCADE)
-    winner = models.ForeignKey('userprofile.Profile',
-                               on_delete=models.SET_NULL,
-                               null=True,
-                               related_name='won_rounds')
     track = models.ForeignKey(Track,
                               on_delete=models.SET_NULL,
                               null=True)
@@ -32,23 +29,22 @@ class GameRoundStats(models.Model):
 
 class UserRoundStats(models.Model):
     """Specific stats for ONE player in ONE specific round."""
-    #game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='stats')
-    #track = models.ForeignKey(Track, on_delete=models.SET_NULL, null=True)
     round = models.ForeignKey(GameRoundStats, on_delete=models.CASCADE)
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE)
-    is_won = models.BooleanField(default=False)
     artist_found = models.BooleanField(default=False)
     song_found = models.BooleanField(default=False)
+    artist_found_at = models.DurationField(default=timedelta(seconds=30))
+    song_found_at = models.DurationField(default=timedelta(seconds=30))
     time = models.DurationField(default=timedelta(seconds=30))
-    xp_earned = models.IntegerField(default=0)
+    xp_earned = models.PositiveIntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
 
-    @property
+    @cached_property
     def track(self):
         return self.round.track
 
-    @property
+    @cached_property
     def game(self):
         return self.round.game
 
@@ -61,9 +57,9 @@ class UserGameStats(models.Model):
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE,
                                related_name='round_played')
+    total_xp_earned = models.PositiveIntegerField(default=0)
     is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
-    
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-played_at']

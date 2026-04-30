@@ -127,19 +127,17 @@ for g_idx in range(1, 11):
     # Simulate 5 rounds per game
     for round_num in range(1, 6):
         track = random.choice(tracks)
-        round_winner = random.choice(game_players)
 
         game_round = GameRoundStats.objects.create(
             round_number=round_num,
             game=game,
-            winner=round_winner,
             track=track
         )
         # Create UserRoundStats (Individual performance in that round)
         for player in game_players:
             # Add some randomness to how they performed
-            found_artist = random.choice([True, False]) if player != round_winner else True
-            found_song = random.choice([True, False]) if player != round_winner else True
+            found_artist = random.choice([True, False])
+            found_song = random.choice([True, False])
             
             # Base XP logic
             xp = 0
@@ -147,16 +145,13 @@ for g_idx in range(1, 11):
                 xp += 10
             if found_song:
                 xp += 10
-            if player == round_winner:
-                xp += 30
             UserRoundStats.objects.create(
-                #game=game,
                 player=player,
                 round=game_round,
-                #track=track,
-                is_won=(player == round_winner),
                 artist_found=found_artist,
                 song_found=found_song,
+                artist_found_at=timedelta(seconds=random.randint(5, 30)),
+                song_found_at=timedelta(seconds=random.randint(5, 30)),
                 time=timedelta(seconds=random.randint(5, 30)),
                 xp_earned=xp
             )
