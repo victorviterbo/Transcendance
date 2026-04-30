@@ -35,19 +35,20 @@ function CTitleBasePaper(props: CTitleBasePaperProps) {
 		overflow,
 		position,
 
+		borderRadius,
+		titlePadding,
+
 		sx,
 		...other
 	} = props;
 
-	console.log(props.borderRadius);
-
 	return (
 		<CBasePaper
-			sx={[CTitlePaperStyle(props), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			sx={[CTitlePaperStyle({borderRadius, titlePadding}), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
 			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
-				<Box sx={CTitlePaperTitleBoxStyle(props)} data-testid="CTitleBasePaper_Title">
+				<Box sx={CTitlePaperTitleBoxStyle({borderRadius, titlePadding})} data-testid="CTitleBasePaper_Title">
 					{titleNode}
 				</Box>
 				<Box
