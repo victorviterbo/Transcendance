@@ -2,12 +2,17 @@ import type { SxProps, Theme } from "@mui/material";
 import { appColors, appSharedStyle } from "../../theme";
 import type { CTitleBasePaperProps } from "../../../components/surfaces/CTitleBasePaper";
 
-export const CTitlePaperStyle = ({borderRadius}: CTitleBasePaperProps) => ({
+interface CTitlePaperStyleProps {
+	borderRadius?: number | string;
+	titlePadding?: number | string;
+}
+
+export const CTitlePaperStyle = ({borderRadius}: CTitlePaperStyleProps) => ({
 	borderRadius: borderRadius == undefined ? appSharedStyle.paperRadius : borderRadius,
 	p: 0,
 });
 
-export const CTitlePaperTitleBoxStyle = ({borderRadius, titlePadding}: CTitleBasePaperProps) => ({
+export const CTitlePaperTitleBoxStyle = ({borderRadius, titlePadding}: CTitlePaperStyleProps) => ({
 	backgroundColor: appColors.primary[0],
 	
 	borderTopLeftRadius: borderRadius == undefined ? appSharedStyle.paperRadius : borderRadius,

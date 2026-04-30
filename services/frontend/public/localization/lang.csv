@@ -241,5 +241,6 @@ NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallbac
 GAME_LEADER_BOARD,Leaderboard,,,In game leaderboerd title\
 GAME_LOBBY_TITLE,Lobby,,,Lobby category in the game infrastructure
 GAME_CHAT_TITLE,Chat,,,Chat title in the game infrastructure
+GAME_ERROR_GLOBAL,Failed to fetch game data,,,Error message whenever game could'tbe loaded.
 GAME_ERROR_TITLE,Error,,,Title for error in game
 GAME_ERROR_INVALID_ROOM,Room is is not valid,,,Error when room number is not valid
