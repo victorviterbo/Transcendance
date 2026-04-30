@@ -5,6 +5,8 @@ import userEvent from "@testing-library/user-event";
 import type { IFriendsList } from "../../types/socials";
 import PFriendList from "../../pages/PSocial/PFriendList";
 import { mockSocialDB, mockSocialResetDB } from "../../mock/handlers/social/social_dbs";
+import { MemoryRouter } from "react-router-dom";
+import type { ReactNode } from "react";
 const getMock = vi.fn();
 const postMock = vi.fn();
 let accessToken: string | null = null;
@@ -23,6 +25,10 @@ vi.mock("../../api/client", () => ({
 	getAccessToken: () => accessToken,
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
+
+const renderWithRouter = (children: ReactNode) => {
+	return render(<MemoryRouter>{children}</MemoryRouter>);
+};
 
 describe("Socials - Friend list", () => {
 	beforeEach(() => {
@@ -52,7 +58,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList onMessaging={() => {}} />);
+		renderWithRouter(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getByText("FRIEND_EMPTY")).toBeInTheDocument();
@@ -64,7 +70,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList onMessaging={() => {}} />);
+		renderWithRouter(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getByText("FRIEND_ERROR")).toBeInTheDocument();
@@ -79,7 +85,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList onMessaging={() => {}} />);
+		renderWithRouter(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
@@ -94,7 +100,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList onMessaging={() => {}} />);
+		renderWithRouter(<PFriendList onMessaging={() => {}} />);
 
 		await waitFor(() => {
 			expect(screen.getAllByTestId("PFriendNode_MessageButton").length).toEqual(5);
@@ -111,7 +117,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendList onMessaging={() => {}} />);
+		renderWithRouter(<PFriendList onMessaging={() => {}} />);
 		await waitFor(() => {
 			expect(screen.getAllByTestId("PFriendNode").length).toEqual(5);
 		});

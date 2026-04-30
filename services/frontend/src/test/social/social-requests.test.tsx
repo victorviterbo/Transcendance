@@ -5,6 +5,8 @@ import type { IFriendRequests } from "../../types/socials";
 import PFriendReq from "../../pages/PSocial/PFriendReq";
 import { mockGetExtUser } from "../../mock/handlers/social/social_dbs";
 import CWebsocket from "../../components/websocket/CWebsocket";
+import { MemoryRouter } from "react-router-dom";
+import type { ReactNode } from "react";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -24,6 +26,10 @@ vi.mock("../../api/client", () => ({
 	getAccessToken: () => accessToken,
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
+
+const renderWithRouter = (children: ReactNode) => {
+	return render(<MemoryRouter>{children}</MemoryRouter>);
+};
 
 describe("Socials - Friend requests", () => {
 	afterEach(() => {
@@ -50,7 +56,7 @@ describe("Socials - Friend requests", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(
+		renderWithRouter(
 			<CWebsocket>
 				<PFriendReq />
 			</CWebsocket>,
@@ -64,7 +70,7 @@ describe("Socials - Friend requests", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(
+		renderWithRouter(
 			<CWebsocket>
 				<PFriendReq />
 			</CWebsocket>,
@@ -106,7 +112,7 @@ describe("Socials - Friend requests", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(
+		renderWithRouter(
 			<CWebsocket>
 				<PFriendReq />
 			</CWebsocket>,
