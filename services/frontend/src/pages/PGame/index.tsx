@@ -50,6 +50,15 @@ function PGame() {
 		)
 	}
 
+	if(!gameData)
+	{
+		return(
+			<CGamePaper contentFlex={1} sx={{position: "relative", maxWidth: "500px", maxHeight: "150px", mt: "50px", mx: "auto"}} title={"GAME_LOADING_TITLE"}>
+				<CText align="center" sx={{my: "auto"}}>GAME_LOADING</CText>
+			</CGamePaper>
+		)
+	}
+
 	return (
 		<Stack
 			sx={{
@@ -67,7 +76,7 @@ function PGame() {
 				}}
 			>
 				<Grid size={3}>
-					<PGameLBoard />
+					<PGameLBoard game={gameData}/>
 				</Grid>
 				<Grid size={6}>
 					<PGameLobby />
