@@ -244,3 +244,5 @@ GAME_CHAT_TITLE,Chat,,,Chat title in the game infrastructure
 GAME_ERROR_GLOBAL,Failed to fetch game data,,,Error message whenever game could'tbe loaded.
 GAME_ERROR_TITLE,Error,,,Title for error in game
 GAME_ERROR_INVALID_ROOM,Room is is not valid,,,Error when room number is not valid
+GAME_LOADING_TITLE,Loading,,,TItle of the loading message paper
+GAME_LOADING,Game isd loading...,,,Content of the loading message paper
