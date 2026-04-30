@@ -1,10 +1,10 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors, appSharedStyle } from "../../theme";
-import type { CTitleBasePaperProps } from "../../../components/surfaces/CTitleBasePaper";
 
 interface CTitlePaperStyleProps {
 	borderRadius?: number | string;
 	titlePadding?: number | string;
+	contentPadding?: number | string;
 }
 
 export const CTitlePaperStyle = ({borderRadius}: CTitlePaperStyleProps) => ({
@@ -25,8 +25,8 @@ export const CTitlePaperTitleStyle: SxProps<Theme> = (_theme) => ({
 	color: appColors.text.dark,
 });
 
-export const CTitlePaperContentBox: SxProps<Theme> = (_theme) => ({
-	p: 4,
+export const CTitlePaperContentBox = ({contentPadding}: CTitlePaperStyleProps) => ({
+	p: contentPadding == undefined ? 4 : contentPadding,
 });
 
 
