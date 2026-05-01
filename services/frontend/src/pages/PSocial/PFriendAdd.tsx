@@ -1,13 +1,11 @@
 import { Box, Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
-import { API_SOCIAL_FRIENDS_SEARCH } from "../../constants";
-import api from "../../api";
-import type { IExtUserInfo, IExtUserList } from "../../types/user";
-import type { AxiosResponse } from "axios";
+import type { IExtUserInfo } from "../../types/user";
 import { useId, useState, type ReactNode } from "react";
 import CText from "../../components/text/CText";
 import PFriendNode from "./PFriendNode";
 import { getErrorNode } from "../../utils/error";
+import { searchFriends } from "../../api/social";
 
 function PFriendAdd() {
 	const [users, setUsers] = useState<IExtUserInfo[]>([]);
@@ -25,16 +23,11 @@ function PFriendAdd() {
 		}
 
 		try {
-			const res: AxiosResponse<IExtUserList> = await api.post(API_SOCIAL_FRIENDS_SEARCH, {
-				search: value,
-			});
-			if (!res)
-				throw { error: { default: [{ message: "No response", code: "NO_RESPONSE" }] } };
-			if (res.data.error) throw res.data.error;
-			if (typeof res.data != "object" || !res.data.users)
+			const res = await searchFriends(value);
+			if (typeof res != "object" || !res.users)
 				throw { error: { default: [{ message: "Invalid object", code: "INVALID" }] } };
 			setUsers(
-				res.data.users.filter((user: IExtUserInfo) => {
+				res.users.filter((user: IExtUserInfo) => {
 					return user.relation != "friends";
 				}),
 			);

@@ -25,6 +25,21 @@ vi.mock("../../api", () => ({
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
 
+vi.mock("../../api/client", () => ({
+	default: {
+		get: (...args: unknown[]) => getMock(...args),
+		post: (...args: unknown[]) => postMock(...args),
+	},
+	setAccessToken: (token: string | null) => {
+		accessToken = token;
+	},
+	clearAccessToken: () => {
+		accessToken = null;
+	},
+	getAccessToken: () => accessToken,
+	setAuthFailureHandler: (_: (() => void) | null) => {},
+}));
+
 function logUser() {
 	postMock.mockImplementation((url: string) => {
 		if (url === API_AUTH_REFRESH) {

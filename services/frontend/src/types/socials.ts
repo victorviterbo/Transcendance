@@ -3,6 +3,9 @@ import type { IExtUserInfo } from "./user";
 
 export type TFriendStatus = "offline" | "busy" | "online";
 export type TFriendRelation = "not-friends" | "friends" | "incoming" | "outgoing";
+export type TRelationStatus = "idle" | "loading" | "ready" | "error";
+export type TRelationAction = "send" | "accept" | "refuse" | "remove" | "cancel";
+export type TConfirmableRelationAction = Extract<TRelationAction, "remove" | "cancel">;
 export type TMessageStatus = "not-sent" | "sent" | "recieved" | "read" | "error";
 export type TMessageDirection = "outgoing" | "incoming";
 
@@ -40,8 +43,19 @@ export interface IFriendReqRes {
 	"new-status": "accept" | "refuse";
 }
 
+export interface IFriendRemoveReq {
+	"target-username": string;
+	"target-uid": string;
+}
+
 export interface IFriendReqResponse {
 	error?: IErrorStruct;
+}
+
+export interface IRelationState {
+	status: TRelationStatus;
+	relation: TFriendRelation;
+	error: string | null;
 }
 
 //====================== MESSAGES ======================

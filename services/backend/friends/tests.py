@@ -207,6 +207,98 @@ class FriendRequestsTests(APITestCase):
         self.assertIn('relation', response.data['users'][0])
         self.assertIn('default_avatars/default_avatar_', response.data['users'][0]['image'])
 
+    def test_remove_friend_and_cancel_outgoing_request(self) -> None:
+        """Test removing accepted friends and canceling outgoing pending requests."""
+
+        login_url = '/api/auth/login/'
+        send_url = '/api/social/friend-request/send'
+        respond_url = '/api/social/friend-request/respond'
+        remove_url = '/api/social/friend/remove'
+
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(send_url, data={
+            'target-uid': str(self.user2.uid),
+            'target-username': self.user2.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(remove_url, data={
+            'target-uid': str(self.user2.uid),
+            'target-username': self.user2.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual('FRIENDSHIP_REQUEST_CANCELLED', response.data['description'])
+        self.assertFalse(Friendship.objects.filter(from_user=self.user1, to_user=self.user2).exists())
+
+        response = self.client.post(send_url, data={
+            'target-uid': str(self.user2.uid),
+            'target-username': self.user2.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        login_res = self.client.post(login_url, data={'email': 'user2@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(respond_url, data={
+            'target-uid': str(self.user1.uid),
+            'target-username': self.user1.profile.username,
+            'new-status': 'accept',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(remove_url, data={
+            'target-uid': str(self.user1.uid),
+            'target-username': self.user1.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual('FRIENDSHIP_REMOVED', response.data['description'])
+        self.assertFalse(
+            Friendship.objects.filter(
+                from_user=self.user1,
+                to_user=self.user2,
+                status='accepted',
+            ).exists()
+        )
+
+    def test_remove_does_not_cancel_incoming_request(self) -> None:
+        """Test incoming pending requests must still be refused through respond."""
+
+        login_url = '/api/auth/login/'
+        send_url = '/api/social/friend-request/send'
+        remove_url = '/api/social/friend/remove'
+
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(send_url, data={
+            'target-uid': str(self.user2.uid),
+            'target-username': self.user2.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        login_res = self.client.post(login_url, data={'email': 'user2@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(remove_url, data={
+            'target-uid': str(self.user1.uid),
+            'target-username': self.user1.profile.username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual('FRIENDSHIP_NOT_FOUND', response.data['error']['friendship'])
+        self.assertTrue(
+            Friendship.objects.filter(
+                from_user=self.user1,
+                to_user=self.user2,
+                status='pending',
+            ).exists()
+        )
+
     def test_notifications_list_and_mark_read(self) -> None:
         """Test the notification payload contract for friend requests and acceptances."""
 
@@ -253,4 +345,3 @@ class FriendRequestsTests(APITestCase):
         self.assertEqual('friend-accepted', response.data['notifs'][0]['kind'])
         self.assertEqual(str(friendship.uid), response.data['notifs'][0]['uid'])
         self.assertFalse(response.data['notifs'][0]['read'])
-    

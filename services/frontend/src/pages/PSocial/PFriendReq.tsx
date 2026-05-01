@@ -1,8 +1,4 @@
 import { Stack } from "@mui/material";
-import type { IFriendRequests } from "../../types/socials";
-import { API_SOCIAL_FRIENDS_REQUEST } from "../../constants";
-import api from "../../api";
-import type { AxiosResponse } from "axios";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import type { IExtUserInfo } from "../../types/user";
 import { getErrorNode } from "../../utils/error";
@@ -11,6 +7,7 @@ import CText from "../../components/text/CText";
 import CAccordionSimple from "../../components/feedback/accordion/CAccordionSimple";
 import { useWS } from "../../components/websocket/CWebsocket";
 import type { IWSContextModule, TWSRcv } from "../../types/websocket";
+import { fetchFriendRequests } from "../../api/social";
 
 function PFriendReq() {
 	const [incoming, setIncoming] = useState<IExtUserInfo[]>([]);
@@ -22,28 +19,25 @@ function PFriendReq() {
 	//====================== GETTERS ======================
 	async function getUsers(): Promise<void> {
 		try {
-			const res: AxiosResponse<IFriendRequests> = await api.get(API_SOCIAL_FRIENDS_REQUEST);
+			const res = await fetchFriendRequests();
+			if (typeof res != "object" || !res.incoming || !res.outgoing) throw {};
 
-			if (!res) throw {};
-			if (res.data.error) throw res.data.error;
-			if (typeof res.data != "object" || !res.data.incoming || !res.data.outgoing) throw {};
-
-			res.data.incoming.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
+			res.incoming.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
 				if (friend1.username.toLocaleLowerCase() > friend2.username.toLocaleLowerCase())
 					return 1;
 				if (friend1.username.toLocaleLowerCase() < friend2.username.toLocaleLowerCase())
 					return -1;
 				return 0;
 			});
-			res.data.outgoing.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
+			res.outgoing.sort((friend1: IExtUserInfo, friend2: IExtUserInfo) => {
 				if (friend1.username.toLocaleLowerCase() > friend2.username.toLocaleLowerCase())
 					return 1;
 				if (friend1.username.toLocaleLowerCase() < friend2.username.toLocaleLowerCase())
 					return -1;
 				return 0;
 			});
-			setIncoming(res.data.incoming);
-			setOutgoing(res.data.outgoing);
+			setIncoming(res.incoming);
+			setOutgoing(res.outgoing);
 			setError(undefined);
 		} catch (error) {
 			setError(getErrorNode(error, "SOCIAL_REQUESTS_ERROR"));

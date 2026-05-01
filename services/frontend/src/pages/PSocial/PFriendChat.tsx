@@ -1,14 +1,6 @@
 import { Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
-import type {
-	IFriendFeed,
-	IFriendInfo,
-	IFriendMessage,
-	IFriendMessageReq,
-} from "../../types/socials";
-import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../constants";
-import api from "../../api";
-import type { AxiosResponse } from "axios";
+import type { IFriendFeed, IFriendInfo, IFriendMessage } from "../../types/socials";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
@@ -19,6 +11,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
 import type { IWSContextModule, TWSRcv, TWSSend } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
+import { fetchFriendMessages } from "../../api/social";
 
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
@@ -64,25 +57,17 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	useEffect(() => {
 		async function getChat(): Promise<void> {
 			try {
-				const res: AxiosResponse<IFriendFeed> = await api.post(
-					API_SOCIAL_FRIENDS_MESSAGE_FEED,
-					{
-						username: targetFriend?.username,
-						uid: targetFriend?.uid,
-					} as IFriendMessageReq,
-				);
-				if (!res) throw {};
-				if (res.data.error) throw res.data.error;
-				if (typeof res.data != "object" || !res.data.feed) throw {};
-				res.data.feed = res.data.feed.reverse();
-				res.data.feed.forEach((message: IFriendMessage) => {
+				if (!targetFriend) return;
+				const res: IFriendFeed = await fetchFriendMessages(targetFriend);
+				if (typeof res != "object" || !res.feed) throw {};
+				res.feed = res.feed.reverse();
+				res.feed.forEach((message: IFriendMessage) => {
 					if (typeof message.date == "string")
 						message.date = new Date(message.date.toString());
 				});
-				setFeed(res.data);
+				setFeed(res);
 				setError(undefined);
 
-				if (!targetFriend) return;
 				wsContext.sendMessage(
 					JSON.stringify({
 						target: "friend-chat",

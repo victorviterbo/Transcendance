@@ -1,6 +1,7 @@
 import type { IErrorReturn } from "../../../types/error";
 import type {
 	IFriendInfo,
+	IFriendRemoveReq,
 	IFriendReqRes,
 	IFriendReqSend,
 	IFriendRequests,
@@ -187,14 +188,19 @@ export function mockOnAddRequestSend(data: IFriendReqSend): IExtUserInfo | IErro
 			},
 		};
 
-	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"];
+	let user = mockSocialDB.users.find((user: IExtUserInfo) => {
+		return user.uid == data["target-uid"] || user.username == data["target-username"];
 	});
-	if (!user)
-		return {
-			error: { notfound: [{ message: "target not found", code: "NOT_FOUND" }] },
-			status: 404,
+	if (!user) {
+		user = {
+			uid: data["target-uid"],
+			username: data["target-username"],
+			image: mockProfilesPics[0],
+			badges: badges[0],
+			relation: "not-friends",
 		};
+		mockSocialDB.users.push(user);
+	}
 	user.relation = "outgoing";
 	return user;
 }
@@ -219,10 +225,10 @@ export function mockSocialOnResponse(
 		};
 
 	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"];
+		return user.uid == data["target-uid"] || user.username == data["target-username"];
 	});
 	const userPos: number = mockSocialDB.users.findIndex((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"];
+		return user.uid == data["target-uid"] || user.username == data["target-username"];
 	});
 	if (!user)
 		return {
@@ -255,4 +261,43 @@ export function mockSocialOnResponse(
 		},
 	});
 	return currentFriend;
+}
+
+export function mockOnFriendRemove(
+	data: IFriendRemoveReq,
+): IFriendInfo | IExtUserInfo | IErrorReturn {
+	if (!data["target-uid"])
+		return {
+			error: {
+				"target-uid": [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
+			},
+		};
+
+	const friendPos = mockSocialDB.friends.findIndex((friend: IFriendInfo) => {
+		return friend.uid == data["target-uid"] || friend.username == data["target-username"];
+	});
+	if (friendPos >= 0) {
+		const [friend] = mockSocialDB.friends.splice(friendPos, 1);
+		mockSocialDB.users.push({
+			uid: friend.uid,
+			username: friend.username,
+			image: friend.image,
+			badges: friend.badges,
+			relation: "not-friends",
+		});
+		return friend;
+	}
+
+	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
+		return user.uid == data["target-uid"] || user.username == data["target-username"];
+	});
+	if (user?.relation == "outgoing") {
+		user.relation = "not-friends";
+		return user;
+	}
+
+	return {
+		error: { friendship: [{ message: "friendship not found", code: "FRIENDSHIP_NOT_FOUND" }] },
+		status: 400,
+	};
 }

@@ -167,7 +167,58 @@ friends-requests-respond:
                 target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
                 new-status: "refuse"
 
-                
+friend-remove:
+  post:
+    summary: Remove an accepted friend or cancel an outgoing friend request
+    description: Called from a public profile when the current user wants to remove an accepted friendship or cancel a pending request they sent. Incoming pending requests must still be refused with the friend-request respond endpoint.
+    operationId: removeFriend
+    tags: [social]
+    security:
+      - bearerAuth: []
+    requestBody:
+      description: Targeted friend or outgoing pending request to remove
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [target-uid]
+            properties:
+              target-username: { type: string }
+              target-uid: { type: string }
+          examples:
+            remove:
+              value:
+                target-username: "alice"
+                target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+    responses:
+      "200":
+        description: Friendship removed or outgoing request cancelled.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  enum: [FRIENDSHIP_REMOVED, FRIENDSHIP_REQUEST_CANCELLED]
+                  example: "FRIENDSHIP_REMOVED"
+                target-uid: { type: string }
+                target-username: { type: string }
+      "400":
+        description: Missing target, unknown user, or no removable friendship/request exists.
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/SerializerErrorResponse
+            examples:
+              not-friends:
+                value:
+                  error:
+                    friendship: "FRIENDSHIP_NOT_FOUND"
+      "401":
+        description: Authentication required.
+
 
 social-message:
   post:

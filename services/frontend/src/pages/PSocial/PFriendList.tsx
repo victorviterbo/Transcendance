@@ -2,13 +2,11 @@ import { Box, Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import PFriendNode from "./PFriendNode";
 import { useEffect, useId, useState, type ReactNode } from "react";
-import type { AxiosResponse } from "axios";
-import type { IFriendInfo, IFriendsList, TFriendStatus } from "../../types/socials";
-import api from "../../api";
-import { API_SOCIAL_FRIENDS } from "../../constants";
+import type { IFriendInfo, TFriendStatus } from "../../types/socials";
 import CText from "../../components/text/CText";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
+import { fetchFriends } from "../../api/social";
 
 interface PFriendListProps extends GPageProps {
 	onMessaging: (Friend: IFriendInfo) => void;
@@ -23,13 +21,11 @@ function PFriendList({ onMessaging }: PFriendListProps) {
 	useEffect(() => {
 		async function getFriends(): Promise<void> {
 			try {
-				const res: AxiosResponse<IFriendsList> = await api.get(API_SOCIAL_FRIENDS);
-				if (!res) throw {};
-				if (res.data.error) throw res.data.error;
-				if (typeof res.data != "object" || !res.data.friends) throw {};
+				const res = await fetchFriends();
+				if (typeof res != "object" || !res.friends) throw {};
 
 				const allstatus: TFriendStatus[] = ["online", "busy", "offline"];
-				res.data.friends.sort((friend1: IFriendInfo, friend2: IFriendInfo) => {
+				res.friends.sort((friend1: IFriendInfo, friend2: IFriendInfo) => {
 					if (
 						allstatus.findIndex((status: TFriendStatus) => friend1.status == status) >
 						allstatus.findIndex((status: TFriendStatus) => friend2.status == status)
@@ -47,7 +43,7 @@ function PFriendList({ onMessaging }: PFriendListProps) {
 						return -1;
 					return 0;
 				});
-				setFriends(res.data.friends);
+				setFriends(res.friends);
 				setError(undefined);
 			} catch (error) {
 				setError(getErrorNode(error, "FRIEND_ERROR"));

@@ -9,6 +9,7 @@ import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
 import CText from "../../components/text/CText";
 import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
 import CAvatar from "../../components/images/CAvatar";
+import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { GPageProps } from "../common/GPageBases";
@@ -54,13 +55,16 @@ function PSocial({ onTabChanged, activeTab, closed }: PSocialProps) {
 						}}
 					>
 						<CAvatar
+							profileUsername={messaging.username}
 							sx={{ height: "35px", width: "35px", mr: "10px" }}
 							src={messaging.image}
 							alt={messaging.username + "'s picture"}
 						></CAvatar>
-						<CText noTr={true} size={"lg"} textAlign="center">
-							{messaging.username}
-						</CText>
+						<CUserProfileLink username={messaging.username}>
+							<CText noTr={true} size={"lg"} textAlign="center" sx={{ mb: 0 }}>
+								{messaging.username}
+							</CText>
+						</CUserProfileLink>
 					</Stack>
 					<Stack
 						direction="row"

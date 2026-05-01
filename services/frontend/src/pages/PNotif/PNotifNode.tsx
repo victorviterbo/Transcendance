@@ -11,6 +11,7 @@ import {
 import { ttrf } from "../../localization/localization";
 import { useCallback, type ReactNode } from "react";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
+import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { DAY_MS, HOUR_MS, MINUTE_MS } from "../../constants";
 
@@ -49,18 +50,22 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 			return (
 				<>
 					<CText>NOTIF_FRIEND_REQ</CText>
-					<CText noTr={true} sx={PNotifNodeImpText}>
-						{notif.from.username}
-					</CText>
+					<CUserProfileLink username={notif.from.username}>
+						<CText noTr={true} sx={PNotifNodeImpText}>
+							{notif.from.username}
+						</CText>
+					</CUserProfileLink>
 				</>
 			);
 		else if (notif.kind == "friend-accepted")
 			return (
 				<>
 					<CText>NOTIF_FRIEND_ACCEPTED</CText>
-					<CText noTr={true} sx={PNotifNodeImpText}>
-						{notif.from.username}
-					</CText>
+					<CUserProfileLink username={notif.from.username}>
+						<CText noTr={true} sx={PNotifNodeImpText}>
+							{notif.from.username}
+						</CText>
+					</CUserProfileLink>
 				</>
 			);
 		return <CText>NOTIF_UNKNOWN</CText>;

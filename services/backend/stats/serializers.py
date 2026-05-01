@@ -12,9 +12,9 @@ class GlobalStatsSerializer(serializers.Serializer):
     ranking = serializers.IntegerField()
     totalPlayers = serializers.IntegerField()
     averageTime = serializers.FloatField()
-    successRateArtist = serializers.IntegerField()
-    successRateSong = serializers.IntegerField()
-    successRateComplete = serializers.IntegerField()
+    successRateArtist = serializers.FloatField()
+    successRateSong = serializers.FloatField()
+    successRateComplete = serializers.FloatField()
     successRatesCompleteByTag = serializers.DictField()
 
 class LeaderboardEntrySerializer(serializers.Serializer):

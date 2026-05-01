@@ -5,12 +5,14 @@ import type { IExtUserList, IExtUserSearch } from "../../types/user";
 import PFriendAdd from "../../pages/PSocial/PFriendAdd";
 import userEvent from "@testing-library/user-event";
 import { mockGetExtUsers } from "../../mock/handlers/social/social_dbs";
+import { MemoryRouter } from "react-router-dom";
+import type { ReactNode } from "react";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
 let accessToken: string | null = null;
 
-vi.mock("../../api", () => ({
+vi.mock("../../api/client", () => ({
 	default: {
 		get: (...args: unknown[]) => getMock(...args),
 		post: (...args: unknown[]) => postMock(...args),
@@ -24,6 +26,10 @@ vi.mock("../../api", () => ({
 	getAccessToken: () => accessToken,
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
+
+const renderWithRouter = (children: ReactNode) => {
+	return render(<MemoryRouter>{children}</MemoryRouter>);
+};
 
 describe("Socials - Friend list", () => {
 	afterEach(() => {
@@ -49,7 +55,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendAdd />);
+		renderWithRouter(<PFriendAdd />);
 		expect(screen.getByTestId("PFriendAdd_Stack").childElementCount).toEqual(0);
 		expect(screen.queryByTestId("PFriendNode")).not.toBeInTheDocument();
 	});
@@ -58,7 +64,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendAdd />);
+		renderWithRouter(<PFriendAdd />);
 
 		const searchField = screen.getByTestId("PSocialASearchAdd");
 		expect(searchField).toBeInTheDocument();
@@ -82,7 +88,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendAdd />);
+		renderWithRouter(<PFriendAdd />);
 
 		const searchField = screen.getByTestId("PSocialASearchAdd");
 		expect(searchField).toBeInTheDocument();
@@ -110,7 +116,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendAdd />);
+		renderWithRouter(<PFriendAdd />);
 
 		const searchField = screen.getByTestId("PSocialASearchAdd");
 		expect(searchField).toBeInTheDocument();
@@ -140,7 +146,7 @@ describe("Socials - Friend list", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendAdd />);
+		renderWithRouter(<PFriendAdd />);
 
 		const searchField = screen.getByTestId("PSocialASearchAdd");
 		expect(searchField).toBeInTheDocument();
@@ -179,7 +185,7 @@ describe("Socials - Friend list", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(<PFriendAdd />);
+			renderWithRouter(<PFriendAdd />);
 
 			const searchField = screen.getByTestId("PSocialASearchAdd");
 			expect(searchField).toBeInTheDocument();

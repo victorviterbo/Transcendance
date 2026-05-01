@@ -1,13 +1,8 @@
 import { Box, Collapse, Stack } from "@mui/material";
 import type { GPageProps } from "../common/GPageBases";
-import {
-	type TFriendRelation,
-	type IFriendInfo,
-	type IFriendReqSend,
-	type IFriendReqResponse,
-	type IFriendReqRes,
-} from "../../types/socials";
+import { type TFriendRelation, type IFriendInfo } from "../../types/socials";
 import CAvatar from "../../components/images/CAvatar";
+import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CTitle from "../../components/text/CTitle";
 import {
 	PFriendNodeAvatarStyle,
@@ -26,12 +21,7 @@ import CValidButton from "../../components/inputs/buttons/CValidButton";
 import CCancelButton from "../../components/inputs/buttons/CCancelButton";
 import { useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
-import type { AxiosResponse } from "axios";
-import api from "../../api";
-import {
-	API_SOCIAL_FRIENDS_REQUEST_RESPOND,
-	API_SOCIAL_FRIENDS_REQUEST_SEND,
-} from "../../constants";
+import { respondFriendRequest, sendFriendRequest } from "../../api/social";
 
 export interface PFriendNodeProps extends GPageProps {
 	user: IFriendInfo | IExtUserInfo;
@@ -52,13 +42,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 		try {
 			if (type != "user") throw {};
 
-			const res: AxiosResponse<IFriendReqResponse> = await api.post(
-				API_SOCIAL_FRIENDS_REQUEST_SEND,
-				{ "target-uid": user.uid, "target-username": user.username } as IFriendReqSend,
-			);
-			console.log(res);
-			if (!res) throw {};
-			if (res.data.error) throw res.data.error;
+			await sendFriendRequest(user);
 			setRelation("outgoing");
 		} catch (error) {
 			setError(getErrorNode(error, "SOCIAL_ADD_FRIEND_FAILED", { size: "sm" }));
@@ -69,16 +53,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 		try {
 			if (type != "user") throw {};
 
-			const res: AxiosResponse<IFriendReqResponse> = await api.post(
-				API_SOCIAL_FRIENDS_REQUEST_RESPOND,
-				{
-					"target-uid": user.uid,
-					"target-username": user.username,
-					"new-status": Action,
-				} as IFriendReqRes,
-			);
-			if (!res) throw {};
-			if (res.data.error) throw res.data.error;
+			await respondFriendRequest(user, Action);
 			if (onStateChanged) onStateChanged();
 			setError(undefined);
 		} catch (error) {
@@ -94,6 +69,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 			>
 				<Stack direction="row">
 					<CAvatar
+						profileUsername={user.username}
 						sx={PFriendNodeAvatarStyle}
 						src={user.image}
 						alt={user.username + "'s picture"}
@@ -101,9 +77,11 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 					<Stack sx={PFriendNodeTextsStyle}>
 						{!error ? (
 							<>
-								<CTitle noTr={true} sx={PFriendNodeNameStyle} size="sm">
-									{user.username}
-								</CTitle>
+								<CUserProfileLink username={user.username}>
+									<CTitle noTr={true} sx={PFriendNodeNameStyle} size="sm">
+										{user.username}
+									</CTitle>
+								</CUserProfileLink>
 								<CText sx={PFriendNodeBadgeStyle} size="sm">
 									{user.badges}
 								</CText>

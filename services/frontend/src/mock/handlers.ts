@@ -10,6 +10,7 @@ import { FetchPrivateRoom, FetchPublicRoom } from "./handlers/home";
 import { StatsGlobalHandler, StatsHistoryHandler, StatsLeaderboardHandler } from "./handlers/stats";
 import {
 	friendsListHandler,
+	friendsRemoveHandler,
 	friendsRequestsHandler,
 	friendsRequestsResponseHandler,
 	friendsRequestsSendHandler,
@@ -43,6 +44,7 @@ export const handlers = [
 	friendsRequestsHandler,
 	friendsRequestsSendHandler,
 	friendsRequestsResponseHandler,
+	friendsRemoveHandler,
 	friendMessageHandler,
 	notifRequestHandler,
 	notifRequestHandlerRead,

@@ -4,8 +4,6 @@ import {
 	AccordionDetails,
 	AccordionSummary,
 	alpha,
-	Avatar,
-	ButtonBase,
 	Box,
 	Chip,
 	Divider,
@@ -14,8 +12,9 @@ import {
 	ListItemText,
 	Stack,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import { resolveProfileImage } from "../../api/profile";
+import CAvatar from "../../components/images/CAvatar";
+import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CTabs from "../../components/navigation/CTabs";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
@@ -29,7 +28,6 @@ interface PProfileMatchHistoryDrawerCardProps {
 }
 
 function PProfileMatchHistoryDrawerCard({ entry }: PProfileMatchHistoryDrawerCardProps) {
-	const navigate = useNavigate();
 	const playedAtLabel = ttrd(entry.playedAt, {
 		year: "numeric",
 		month: "short",
@@ -119,37 +117,23 @@ function PProfileMatchHistoryDrawerCard({ entry }: PProfileMatchHistoryDrawerCar
 											alignItems="center"
 											sx={{ width: "100%" }}
 										>
-											<ButtonBase
-												onClick={() =>
-													navigate(`/users/${player.username}`)
-												}
-												aria-label={ttrf("HISTORY_OPEN_PROFILE", {
+											<CAvatar
+												profileUsername={player.username}
+												profileAriaLabel={ttrf("HISTORY_OPEN_PROFILE", {
 													username: player.username,
 												})}
-												sx={{
-													borderRadius: "999px",
-													flexShrink: 0,
-												}}
+												src={resolveProfileImage(player.avatar)}
+												sx={{ width: 36, height: 36 }}
 											>
-												<Avatar
-													src={resolveProfileImage(player.avatar)}
-													sx={{ width: 36, height: 36 }}
-												>
-													{player.username.charAt(0).toUpperCase()}
-												</Avatar>
-											</ButtonBase>
+												{player.username.charAt(0).toUpperCase()}
+											</CAvatar>
 											<ListItemText
 												primary={
-													<ButtonBase
-														onClick={() =>
-															navigate(`/users/${player.username}`)
-														}
-														sx={{ justifyContent: "flex-start" }}
-													>
+													<CUserProfileLink username={player.username}>
 														<CText size="sm" sx={{ mb: 0 }}>
 															{player.username}
 														</CText>
-													</ButtonBase>
+													</CUserProfileLink>
 												}
 												secondary={ttrf("HISTORY_PLAYER_RANKING", {
 													rank: ttrn(player.ranking),

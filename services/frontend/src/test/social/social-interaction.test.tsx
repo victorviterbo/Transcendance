@@ -34,15 +34,16 @@ import {
 	mockGetMessageDB,
 	type IMockMessageDBUser,
 } from "../../mock/handlers/social/socialChat_dbs";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { mockSetNoRequests } from "../../mock/handlers/ws/websocket";
 import { mockOpenedWith, mockSetOpenedWith } from "../../mock/handlers/social/socialChat";
+import { MemoryRouter } from "react-router-dom";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
 let accessToken: string | null = null;
 
-vi.mock("../../api", () => ({
+vi.mock("../../api/client", () => ({
 	default: {
 		get: (...args: unknown[]) => getMock(...args),
 		post: (...args: unknown[]) => postMock(...args),
@@ -56,6 +57,10 @@ vi.mock("../../api", () => ({
 	getAccessToken: () => accessToken,
 	setAuthFailureHandler: (_: (() => void) | null) => {},
 }));
+
+const renderWithRouter = (children: ReactNode) => {
+	return render(<MemoryRouter>{children}</MemoryRouter>);
+};
 
 function SocialManager() {
 	const [currentTab, setCurrentTab] = useState<number>(0);
@@ -109,7 +114,7 @@ describe("Socials - Interactions", () => {
 			}
 		});
 
-		render(<PFriendNode user={user} type="user" />);
+		renderWithRouter(<PFriendNode user={user} type="user" />);
 		const addButton = screen.getByTestId("PFriendNode_AddButton");
 		expect(addButton).toBeInTheDocument();
 
@@ -135,7 +140,7 @@ describe("Socials - Interactions", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendNode user={user} type="user" />);
+		renderWithRouter(<PFriendNode user={user} type="user" />);
 		const addButton = screen.getByTestId("PFriendNode_AddButton");
 		expect(addButton).toBeInTheDocument();
 
@@ -183,7 +188,7 @@ describe("Socials - Interactions", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(
+		renderWithRouter(
 			<PFriendNode
 				user={user}
 				type="user"
@@ -211,7 +216,7 @@ describe("Socials - Interactions", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendNode user={user} type="user" />);
+		renderWithRouter(<PFriendNode user={user} type="user" />);
 		const addButton = screen.getByTestId("PFriendNode_ValidButton");
 		expect(addButton).toBeInTheDocument();
 
@@ -259,7 +264,7 @@ describe("Socials - Interactions", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(
+		renderWithRouter(
 			<PFriendNode
 				user={user}
 				type="user"
@@ -287,7 +292,7 @@ describe("Socials - Interactions", () => {
 			return Promise.reject(new Error(`unexpected call: ${url}`));
 		});
 
-		render(<PFriendNode user={user} type="user" />);
+		renderWithRouter(<PFriendNode user={user} type="user" />);
 		const addButton = screen.getByTestId("PFriendNode_CancelButton");
 		expect(addButton).toBeInTheDocument();
 
@@ -344,7 +349,7 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(
+			renderWithRouter(
 				<CWebsocket>
 					<SocialManager></SocialManager>
 				</CWebsocket>,
@@ -479,7 +484,7 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(
+			renderWithRouter(
 				<CWebsocket>
 					<SocialManager></SocialManager>
 				</CWebsocket>,
@@ -611,7 +616,7 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(
+			renderWithRouter(
 				<CWebsocket>
 					<SocialManager></SocialManager>
 				</CWebsocket>,
@@ -770,7 +775,7 @@ describe("Socials - Interactions", () => {
 				return Promise.reject(new Error(`unexpected call: ${url}`));
 			});
 
-			render(
+			renderWithRouter(
 				<CWebsocket>
 					<SocialManager></SocialManager>
 				</CWebsocket>,

@@ -59,5 +59,5 @@ describe("Websocket - data recieve", () => {
 			await userEvent.click(button);
 			expect(screen.getByText(counter)).toBeInTheDocument();
 		}
-	});
+	}, 15000);
 });

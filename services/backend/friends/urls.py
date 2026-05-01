@@ -4,6 +4,7 @@ from django.urls import path
 from chat.views import FriendMessageFeed
 
 from .views import (
+    FriendRemove,
     FriendRequestsRespond,
     FriendRequestsSeePend,
     FriendRequestsSend,
@@ -25,6 +26,8 @@ urlpatterns = [
     path('friend-request/respond/', FriendRequestsRespond.as_view()),
     path('friend-request/send', FriendRequestsSend.as_view()),
     path('friend-request/send/', FriendRequestsSend.as_view()),
+    path('friend/remove', FriendRemove.as_view()),
+    path('friend/remove/', FriendRemove.as_view()),
 
     path('notifs', NotifSee.as_view()),
     path('notifs/', NotifSee.as_view()),

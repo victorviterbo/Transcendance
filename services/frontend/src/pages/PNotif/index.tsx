@@ -2,17 +2,14 @@ import { Box, Stack } from "@mui/material";
 import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
 import CText from "../../components/text/CText";
 import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
-import type { AxiosResponse } from "axios";
-import { type TNotif, type INotifList } from "../../types/socials";
-import api from "../../api";
-import { API_SOCIAL_NOTIFS, API_SOCIAL_NOTIFS_READ } from "../../constants";
+import { type TNotif } from "../../types/socials";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import PNotifNode from "./PNotifNode";
 import type { GPageProps } from "../common/GPageBases";
-import type { IErrorStruct } from "../../types/error";
 import type { IWSContextModule, TWSRcv } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
+import { fetchNotifications, markNotificationsRead } from "../../api/social";
 
 interface PNotifProps extends GPageProps {
 	onSeeFriendsReq: () => void;
@@ -94,12 +91,10 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 	useEffect(() => {
 		const getNotifs = async (): Promise<void> => {
 			try {
-				const res: AxiosResponse<INotifList> = await api.get(API_SOCIAL_NOTIFS);
-				if (!res) throw {};
-				if (res.data.error) throw res.data.error;
-				if (typeof res.data != "object" || !res.data.notifs) throw {};
+				const res = await fetchNotifications();
+				if (typeof res != "object" || !res.notifs) throw {};
 
-				setNotifs(res.data.notifs);
+				setNotifs(res.notifs);
 				setError(undefined);
 			} catch (error) {
 				setError(getErrorNode(error, "NOTIF_FAILED"));
@@ -129,10 +124,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 		const sendRead = async () => {
 			readTimeout.current = setTimeout(async () => {
 				try {
-					const res: AxiosResponse<{ error?: IErrorStruct }> =
-						await api.post(API_SOCIAL_NOTIFS_READ);
-					if (!res) throw {};
-					if (res.data.error) throw res.data.error;
+					await markNotificationsRead();
 					setUnread(0);
 				} catch (error) {
 					setError(getErrorNode(error, "NOTIF_FAILED"));
