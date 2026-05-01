@@ -1,6 +1,7 @@
 """HTTP views for game management and testing."""
 
 import uuid
+from datetime import timedelta
 
 from chat.models import Room
 from django.db.models import Max, Sum
@@ -55,21 +56,25 @@ class GameView(APIView):
 
 	def post(self, request: Request) -> Response:
 		"""Create a game with tracks from specified genres.
-        
+
 		Request body:
 		{
-		    "genres": ["rock", "pop"],
-		    "num_tracks": 10
+			"genres": ["rock", "pop"],
+			"num_tracks": 10
 		}
-        
+
 		Returns:
-		    - game_uid: UUID of the created game
-		    - playlist: Playlist name with genres
-		    - current_track: Current track preview URL
-		    - num_tracks: Total tracks selected
-		"""
+			- game_uid: UUID of the created game
+			- playlist: Playlist name with genres
+			- current_track: Current track preview URL
+			- num_tracks: Total tracks selected
+		"""  # noqa: D206
 		genres = request.data.get('genres', [])
 		num_tracks = request.data.get('num_tracks')
+		game_mode = request.data.get('game_mode', 'normal')
+		public_level = request.data.get('public_level', 'public')
+		break_duration = request.data.get('break_duration', 10)  # Default to 10 seconds
+		playback_duration = request.data.get('playback_duration', 30)  # Default to 30 seconds
 		if not genres or not isinstance(genres, list):
 			return Response({
 				'error': 'Invalid genres',
@@ -81,20 +86,29 @@ class GameView(APIView):
 				'error': 'Invalid num_tracks',
 				'message': 'num_tracks must be a positive integer'
 			}, status=status.HTTP_400_BAD_REQUEST)
+		
+		if not isinstance(playback_duration, int) or playback_duration < 5:
+			return Response({
+				'error': 'Invalid playback_duration',
+				'message': 'playback_duration must be an integer >= 5 seconds'
+			}, status=status.HTTP_400_BAD_REQUEST)
+		
+		if playback_duration > 30:
+			playback_duration = 30
 		tracks_per_genre = num_tracks // len(genres)
 		if tracks_per_genre == 0:
 			return Response({
 				'error': 'Not enough tracks',
-				'message': f'num_tracks ({num_tracks}) must be >= number of genres ({len(genres)})'
+				'message': f'num_tracks ({num_tracks}) must be >= number of genres ({len(genres)})'  # noqa: E501
 			}, status=status.HTTP_400_BAD_REQUEST)
 		all_tracks = []
 		for genre in genres:
-			genre_tracks = Track.objects.filter(genre=genre).order_by('?')[:tracks_per_genre]
+			genre_tracks = Track.objects.filter(genre__iexact=genre).order_by('?')[:tracks_per_genre]  # noqa: E501
 			
 			if len(genre_tracks) < tracks_per_genre:
 				return Response({
 					'error': f'Not enough tracks for genre: {genre}',
-					'message': f'Found {len(genre_tracks)} tracks, but need {tracks_per_genre}'
+					'message': f'Found {len(genre_tracks)} tracks, but need {tracks_per_genre}'  # noqa: E501
 				}, status=status.HTTP_400_BAD_REQUEST)
 			
 			all_tracks.extend(genre_tracks)
@@ -121,6 +135,10 @@ class GameView(APIView):
 			current_round=1,
 			current_track=current_track,
 			max_rounds=num_tracks,
+			game_mode=game_mode,
+			public_level=public_level,
+			break_duration=timedelta(seconds=break_duration),
+			playback_duration=timedelta(seconds=playback_duration),
 		)
 		
 		return Response({

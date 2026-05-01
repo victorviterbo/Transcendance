@@ -68,7 +68,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": entry["title"],
                                     "artist": entry["artist"],
-                                    "genre": entry.get("kind", ""),
+                                    "genre": entry.get("genre", ""),
                                     "artwork_url": entry["artwork_url"],
                                     "preview_url": preview_url,
                                 },
@@ -111,7 +111,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": info["title"],
                                     "artist": info["artist"],
-                                    "genre": info.get("kind", ""),
+                                    "genre": info.get("genre", ""),
                                     "artwork_url": info["artwork_url"],
                                     "preview_url": info["preview_url"],
                                 },

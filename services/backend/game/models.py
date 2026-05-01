@@ -27,17 +27,17 @@ class Game(models.Model):
 	
 	
 	playlist = models.ForeignKey(Playlist,
-								 on_delete=models.SET_NULL,
-								 null=True,
-								 related_name='games')
+									on_delete=models.SET_NULL,
+									null=True,
+									related_name='games')
 	
 	status = models.CharField(max_length=20,
-							  choices=[
-								  ('waiting', 'Waiting for players'),
-								  ('playing', 'Game in progress'),
-								  ('finished', 'Game finished'),
-								  ],
-							  default='waiting')
+								choices=[
+									('waiting', 'Waiting for players'),
+									('playing', 'Game in progress'),
+									('finished', 'Game finished'),
+									],
+									default='waiting')
 	
 	playback_duration = models.DurationField(null=True, blank=True)
 
@@ -51,15 +51,15 @@ class Game(models.Model):
 									('speed', 'GAME_MODE_SPEED'),
 									('armagedon', 'GAME_MODE_ARMAGEDON'),
 									],
-								default='waiting')
+								default='normal')
 	
 	current_round = models.PositiveIntegerField(default=0)
 	
 	current_track = models.ForeignKey(Track,
-									  on_delete=models.SET_NULL,
-									  null=True,
-									  blank=True,
-									  related_name='current_in_games')
+										on_delete=models.SET_NULL,
+										null=True,
+										blank=True,
+										related_name='current_in_games')
 	
 	max_rounds = models.PositiveIntegerField(default=5)
 
@@ -75,7 +75,7 @@ class Game(models.Model):
 									('friends_only', 'FRIENDS_ONLY'),
 									('invite_only', 'INVITE_ONLY'),
 									],
-								default='waiting')
+								default='public')
 
 	class Meta:
 		"""Define special behaviour of database."""

@@ -47,7 +47,7 @@ GENRE_MAPPING = {
 class GenresView(APIView):
 	"""Get top genres with normalized names, ordered by count (top 6)."""
 	
-	def get(self, request):
+	def get(self, request) -> Response:
 		"""Return list of genres with their track counts (normalized and grouped)."""
 		# Get all genres with their counts
 		all_genres = Track.objects.values('genre').annotate(
