@@ -33,7 +33,7 @@ export const API_SOCIAL_NOTIFS = "/api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read";
 
 //GAME
-export const API_GAME = "/api/game/{ROOMID}"
+export const API_GAME = "/api/game/{ROOMID}";
 
 // WS
 export const WS_ADRESS_WMS = "ws://localhost:5173/";

@@ -10,55 +10,98 @@ import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData, gameGetRoom } from "../../api/game";
 import CGamePaper from "../../components/surfaces/CGamePaper";
 import CText from "../../components/text/CText";
-import type { TWSRcv } from "../../types/websocket";
+import type { TWSRcv, TWSSend } from "../../types/websocket";
 import { API_GAME } from "../../constants";
+import { gameOnPlayerJoin } from "../../handlers/gameHandlers";
 
 function PGame() {
-	
 	const spacing: number = appPositions.gameSpacing;
-	const [gameData, setGameData] = useState<IGameData | undefined>()
+	const [gameData, setGameData] = useState<IGameData | undefined>();
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
-	const [roomId] = useState<string | undefined >(gameGetRoom());
+	const [gameID] = useState<string | undefined>(gameGetRoom());
 	const wsContext = useWS("game");
-	
 
 	//====================== HTTP ======================
 	useEffect(() => {
-		if(roomId == undefined)
-			return;
-		gameFetchData<IGameData | undefined, IGameDataRes, "game">(API_GAME.replaceAll("{ROOMID}", roomId), "game", setGameData, setError, undefined, "GAME_ERROR_GLOBAL")
-	}, [setGameData, roomId])
+		if (gameID == undefined) return;
+		gameFetchData<IGameData | undefined, IGameDataRes, "game">(
+			API_GAME.replaceAll("{ROOMID}", gameID),
+			"game",
+			setGameData,
+			setError,
+			undefined,
+			"GAME_ERROR_GLOBAL",
+		);
+	}, [setGameData, gameID]);
+
+	//====================== EVENT HAN ======================
 
 	//====================== WS ======================
 	useEffect(() => {
-		if(!roomId)
-			return; 
+		if (!gameID) return;
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
+				if (!last || last.target != "game" || !gameData) return;
+				if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player);
 			}
 		});
-		
-	}, [wsContext, roomId]);
+	}, [wsContext, gameID, gameData]);
 
-	if(roomId == undefined || error)
-	{
-		return(
-			<CGamePaper contentFlex={1} sx={{position: "relative", maxWidth: "500px", maxHeight: "150px", mt: "50px", mx: "auto"}} title={"GAME_ERROR_TITLE"}>
-				{roomId == undefined ? <CText align="center" sx={{my: "auto", color: appColors.cancel[0]}}>GAME_ERROR_INVALID_ROOM</CText> : error}
+	useEffect(() => {
+		wsContext.sendMessage(
+			JSON.stringify({ target: "game", event: "join", gameid: gameID } as TWSSend),
+		);
+	}, [wsContext, gameID]);
+
+	//====================== BUILD ======================
+	//--------------------- EROR ---------------------
+	if (gameID == undefined || error) {
+		return (
+			<CGamePaper
+				contentFlex={1}
+				sx={{
+					position: "relative",
+					maxWidth: "500px",
+					maxHeight: "150px",
+					mt: "50px",
+					mx: "auto",
+				}}
+				title={"GAME_ERROR_TITLE"}
+			>
+				{gameID == undefined ? (
+					<CText align="center" sx={{ my: "auto", color: appColors.cancel[0] }}>
+						GAME_ERROR_INVALID_ROOM
+					</CText>
+				) : (
+					error
+				)}
 			</CGamePaper>
-		)
+		);
 	}
 
-	if(!gameData)
-	{
-		return(
-			<CGamePaper contentFlex={1} sx={{position: "relative", maxWidth: "500px", maxHeight: "150px", mt: "50px", mx: "auto"}} title={"GAME_LOADING_TITLE"}>
-				<CText align="center" sx={{my: "auto"}}>GAME_LOADING</CText>
+	//--------------------- LOADIN ---------------------
+	if (!gameData) {
+		return (
+			<CGamePaper
+				contentFlex={1}
+				sx={{
+					position: "relative",
+					maxWidth: "500px",
+					maxHeight: "150px",
+					mt: "50px",
+					mx: "auto",
+				}}
+				title={"GAME_LOADING_TITLE"}
+			>
+				<CText align="center" sx={{ my: "auto" }}>
+					GAME_LOADING
+				</CText>
 			</CGamePaper>
-		)
+		);
 	}
 
+	//--------------------- FINAL ---------------------
 	return (
 		<Stack
 			sx={{
@@ -76,7 +119,7 @@ function PGame() {
 				}}
 			>
 				<Grid size={3}>
-					<PGameLBoard game={gameData}/>
+					<PGameLBoard game={gameData} />
 				</Grid>
 				<Grid size={6}>
 					<PGameLobby />
