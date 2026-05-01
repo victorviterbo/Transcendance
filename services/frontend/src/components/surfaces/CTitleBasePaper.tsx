@@ -26,7 +26,6 @@ export interface CTitleBasePaperProps extends GCompProps, CBasePaperProps {
 }
 
 function CTitleBasePaper(props: CTitleBasePaperProps) {
-
 	const {
 		titleNode,
 		children,
@@ -46,11 +45,17 @@ function CTitleBasePaper(props: CTitleBasePaperProps) {
 
 	return (
 		<CBasePaper
-			sx={[CTitlePaperStyle({borderRadius, titlePadding, contentPadding}), ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			sx={[
+				CTitlePaperStyle({ borderRadius, titlePadding, contentPadding }),
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+			]}
 			{...other}
 		>
 			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
-				<Box sx={CTitlePaperTitleBoxStyle({borderRadius, titlePadding, contentPadding})} data-testid="CTitleBasePaper_Title">
+				<Box
+					sx={CTitlePaperTitleBoxStyle({ borderRadius, titlePadding, contentPadding })}
+					data-testid="CTitleBasePaper_Title"
+				>
 					{titleNode}
 				</Box>
 				<Box
@@ -58,7 +63,7 @@ function CTitleBasePaper(props: CTitleBasePaperProps) {
 						position ? { position: position } : {},
 						isFlex ? { display: "flex", flexDirection: "column" } : {},
 						{ overflow: overflow, flex: contentFlex },
-						CTitlePaperContentBox({borderRadius, titlePadding, contentPadding}),
+						CTitlePaperContentBox({ borderRadius, titlePadding, contentPadding }),
 					]}
 					data-testid="hello"
 				>

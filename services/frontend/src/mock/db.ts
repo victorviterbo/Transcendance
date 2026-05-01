@@ -7,6 +7,11 @@ import {
 	mockBadgeBreakpoints,
 	mockBadgeStrings,
 } from "./db.data";
+import { mockProfilesPics } from "./rcs/profilepics";
+
+export const mockDefaultUserUID: string = "6efc8dcd-dfec-48b0-937c-b88da64d950e";
+export const mockDefaultUsername: string = "John";
+export const mockDefaultPP: string = mockProfilesPics[5];
 
 export interface MockUser {
 	uid?: string;
