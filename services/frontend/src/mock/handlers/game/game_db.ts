@@ -29,6 +29,7 @@ export function mockCreateRoom(GameID: string) {
 	const nRoom: IMockGameData = {
 		players: [],
 		maxPlayers: 100,
+		id: GameID,
 		lastId: 0,
 		isOn: false,
 	};

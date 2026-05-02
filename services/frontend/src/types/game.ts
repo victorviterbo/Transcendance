@@ -9,6 +9,7 @@ export interface IGamePlayer {
 export interface IGameData {
 	players: IGamePlayer[];
 	maxPlayers: number;
+	id: string;
 }
 
 export interface IGameDataRes {

@@ -18,7 +18,11 @@ interface PGameLBoardNodeProps extends GPageProps {
 //TODO: REMEMBER TO PUT THE NO TR
 function PGameLBoardNode({ user, position }: PGameLBoardNodeProps) {
 	return (
-		<Stack direction={"row"} sx={PGameLBoardNodeStyle(position, user.user.relation == "self")}>
+		<Stack
+			direction={"row"}
+			sx={PGameLBoardNodeStyle(position, user.user.relation == "self")}
+			data-testid="PGameLBoardNode"
+		>
 			<CText sx={PGameLBoardNodePosStyle}>{position + 1 + "."}</CText>
 			<CAvatar src={user.user.image} />
 			<CText noTr={true} sx={PGameLBoardNodeUsernameStyle}>
