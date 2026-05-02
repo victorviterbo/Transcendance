@@ -6,6 +6,15 @@
 - [ ] Message notifications
 - [ ] Change notification message to accept coloring and {username}
 - [ ] Maybe switch to websockets for friends?
+- [ ] Redo search timeout
+- [ ] Index-derived keys are used in: 
+	- `services/frontend/src/pages/PSocial/PFriendAdd.tsx`
+	- `services/frontend/src/pages/PSocial/PFriendList.tsx`
+	- `services/frontend/src/pages/PSocial/PFriendReq.tsx`
+	- `services/frontend/src/pages/PNotif/index.tsx`
+- [ ] Modify API images in IExtUser and IFriendInfo:
+- [ ] Message failed not showing 
+- [ ] useParams(); for room id;
 
 # BUG
 
