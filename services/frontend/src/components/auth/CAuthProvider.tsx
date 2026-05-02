@@ -59,10 +59,13 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 	}, [status, setAuth]);
 
 	const logout = async () => {
-		await api.post(API_AUTH_LOGOUT);
-		clearAccessToken();
-		setUser(null);
-		setStatus("guest");
+		try {
+			await api.post(API_AUTH_LOGOUT);
+		} finally {
+			clearAccessToken();
+			setUser(null);
+			setStatus("guest");
+		}
 	};
 
 	return (
