@@ -16,7 +16,7 @@ from chat.chat_utils import (
 from chat.models import Message, Room
 from django.core.cache import cache
 from game.models import Game
-from game.ws_handlers import handle_game_action
+from services.backend.game.ws_game_handler import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -414,6 +414,52 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'player_name': event['player_name'],
             'player_id': event['player_id'],
             'room_id': event.get('room_id'),
+        })
+
+    async def game_round_started(self, event: dict) -> None:
+        """Broadcast round start with blind track info to all players."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_started',
+            'round_number': event['round_number'],
+            'track': event['track'],
+            'playback_duration': event['playback_duration'],
+        })
+
+    async def game_player_answered(self, event: dict) -> None:
+        """Broadcast that a player has submitted an answer."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'player_answered',
+            'player_id': event['player_id'],
+            'player_name': event.get('player_name'),
+        })
+
+    async def game_round_end(self, event: dict) -> None:
+        """Send round results and next round timing."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_end',
+            'round_number': event['round_number'],
+            'results': event.get('results', []),
+            'next_round_in': event.get('next_round_in'),
+            'is_last_round': event.get('is_last_round', False),
+        })
+
+    async def game_round_advanced(self, event: dict) -> None:
+        """Notify clients that the round number advanced."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_advanced',
+            'round_number': event.get('round_number'),
+        })
+
+    async def game_game_completed(self, event: dict) -> None:
+        """Broadcast final game results and leaderboard."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_completed',
+            'final_leaderboard': event['final_leaderboard'],
         })
 
     def _sender_name(self) -> str:

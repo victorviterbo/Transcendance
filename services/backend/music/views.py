@@ -2,46 +2,8 @@ from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .genre_utils import GENRE_MAPPING
 from .models import Track
-
-# Normalize genre names (map variations to canonical genres)
-GENRE_MAPPING = {
-	# Hip Hop variants
-	"Hip-Hop/Rap": "Hip Hop/Rap",
-	"Rap": "Hip Hop/Rap",
-	
-	# Pop variants
-	"K-Pop": "Pop",
-	"French Pop": "Variété française",
-	"Indie Pop": "Pop",
-	"Pop in Spanish": "Pop",
-	"Pop Latino": "Pop",
-	"Afro-Pop": "Pop",
-	
-	# Rock variants
-	"Hard Rock": "Rock",
-	"Indie Rock": "Rock",
-	"Heavy Metal": "Rock",
-	"Punk": "Rock",
-	"Alternative": "Rock",
-	"New Wave": "Rock",
-	"British Invasion": "Rock",
-	
-	# R&B/Soul variants
-	"Soul": "R&B/Soul",
-	"Neo-Soul": "R&B/Soul",
-	
-	# Dance variants
-	"House": "Dance",
-	"Disco": "Dance",
-	"Electronic": "Dance",
-	"Afro House": "Dance",
-	
-	# Latin variants
-	"Latin": "Latin",
-	"Latin Urban": "Latin",
-	"Latin Rap": "Latin",
-}
 
 
 class GenresView(APIView):

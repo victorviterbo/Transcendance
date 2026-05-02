@@ -75,6 +75,8 @@ class GameView(APIView):
 		public_level = request.data.get('public_level', 'public')
 		break_duration = request.data.get('break_duration', 10)  # Default to 10 seconds
 		playback_duration = request.data.get('playback_duration', 30)  # Default to 30 seconds
+		fuzzy_match = request.data.get('fuzzy_match', True)
+		answer_public = request.data.get('answer_public', False)
 		if not genres or not isinstance(genres, list):
 			return Response({
 				'error': 'Invalid genres',
@@ -139,6 +141,8 @@ class GameView(APIView):
 			public_level=public_level,
 			break_duration=timedelta(seconds=break_duration),
 			playback_duration=timedelta(seconds=playback_duration),
+			fuzzy_match=fuzzy_match,
+			answer_public=answer_public,
 		)
 		
 		return Response({
@@ -147,7 +151,6 @@ class GameView(APIView):
 				'name': playlist.name,
 				'id': playlist.id,
 			},
-			'current_track': BlindSerializer(current_track).data, #Remove line and put in gameplay loop instead of initialization ?
 			'num_tracks': num_tracks,
 			'message': 'Game created successfully. Use game_uid to join via WebSocket.'
 		}, status=status.HTTP_201_CREATED)

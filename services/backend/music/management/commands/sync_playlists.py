@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 
+from music.genre_utils import normalize_genre
 from music.itunes_client import batch_lookup, fetch_ids_from_rss, full_lookup
 from music.models import Playlist, Track
 
@@ -68,7 +69,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": entry["title"],
                                     "artist": entry["artist"],
-                                    "genre": entry.get("genre", ""),
+                                    "genre": normalize_genre(entry.get("genre", "")),
                                     "artwork_url": entry["artwork_url"],
                                     "preview_url": preview_url,
                                 },
@@ -111,7 +112,7 @@ class Command(BaseCommand):
                                 defaults={
                                     "title": info["title"],
                                     "artist": info["artist"],
-                                    "genre": info.get("genre", ""),
+                                    "genre": normalize_genre(info.get("genre", "")),
                                     "artwork_url": info["artwork_url"],
                                     "preview_url": info["preview_url"],
                                 },

@@ -1,14 +1,16 @@
 """WebSocket handlers for game module."""
 
+import asyncio
 from typing import Any
 
 from channels.db import database_sync_to_async
-from music.serializers import TrackSerializer
+from music.serializers import BlindSerializer, TrackSerializer
 from project.defaults import default_pts
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from thefuzz import fuzz
 from userprofile.models import Profile
 
+from services.backend.game.ws_game_loop import play_rounds_loop
 from game.models import Game
 
 
@@ -23,8 +25,8 @@ async def handle_game_action(consumer: Any, content: dict) -> None:
 			await _start_game(consumer, content)
 		case 'submit_answer':
 			await _submit_answer(consumer, content)
-		case 'reveal_track':
-			await _reveal_track(consumer, content)
+		# case 'reveal_track':
+		# 	await _reveal_track(consumer, content)
 		case 'leave_room':
 			await _leave_game_room(consumer, content)
 		case _:
@@ -39,13 +41,15 @@ async def _join_game_room(consumer: Any, content: dict) -> None:
 		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 	
+	profile_id = consumer.profile.id
+	profile_name = consumer.profile.username
 	group_name = f'game_{game_id}'
 	await consumer.add_to_layer(group_name)
 	
 	await consumer.group_send(group_name, {
 		'type': 'game.player_joined',
-		'player_name': consumer._sender_name(),
-		'player_id': consumer.profile.id,
+		'player_name': profile_name,
+		'player_id': profile_id,
 	})
 	
 	await consumer.send_json({
@@ -55,7 +59,7 @@ async def _join_game_room(consumer: Any, content: dict) -> None:
 	})
 
 async def _start_game(consumer: Any, content: dict) -> None:
-	"""Start a game session."""
+	"""Start a game session / Begin the round loop."""
 	game_id = content.get('game_id')
 	if not game_id:
 		await consumer.send_json({'target': 'game',
@@ -64,7 +68,8 @@ async def _start_game(consumer: Any, content: dict) -> None:
 		return
 
 	group_name = f'game_{game_id}'
-	
+
+	# Broadcast: game started
 	await consumer.group_send(group_name, {
 		'type': 'game.game_started',
 		'started_by': consumer._sender_name(),
@@ -75,65 +80,71 @@ async def _start_game(consumer: Any, content: dict) -> None:
 		'target': 'game',
 		'event': 'game_started',
 	})
-
-async def _reveal_track(consumer: Any, content: dict) -> None:
-	"""Reveal the track for the current round with full details."""
-	game_id = content.get('game_id')
-	if not game_id:
-		await consumer.send_json({'target': 'game',
-							'event': 'error',
-							'message': 'game_id required'})
+	# START THE ROUND LOOP IN BACKGROUND so this client can keep receiving broadcasts
+	# (awaiting the loop here blocks the same consumer from handling group events).
+	if not hasattr(consumer, '_game_loop_tasks'):
+		consumer._game_loop_tasks = {}
+	if game_id in consumer._game_loop_tasks and not consumer._game_loop_tasks[game_id].done():
 		return
+	consumer._game_loop_tasks[game_id] = asyncio.create_task(play_rounds_loop(consumer, game_id))
 
-	group_name = f'game_{game_id}'
-	
-	track_data = await get_track_reveal_data(game_id)
-	
-	if not track_data:
-		await consumer.send_json({'target': 'game',
-							'event': 'error',
-							'message': 'No track available'})
-		return
-	
-	await consumer.group_send(group_name, {
-		'type': 'game.track_revealed',
-		'track': track_data,
-		'game_id': game_id,
-	})
 
 async def _submit_answer(consumer: Any, content: dict) -> None:
 	"""Submit an answer to current game question."""
 	game_id = content.get('game_id')
 	answer = content.get('answer')
+	answer_time = content.get('answer_time')
 	
-	if not game_id or answer is None:
+	if not game_id or answer is None or answer_time is None:
 		await consumer.send_json({'target': 'game',
 							'event': 'error',
-							'message': 'game_id and answer required'})
+							'message': 'game_id, answer, and answer_time required'})
 		return
-	game = await database_sync_to_async(Game.objects.get)(uid=game_id)
-	group_name = f'game_{game_id}'
+
+	# Check if the player is in playback phase
+	if not hasattr(consumer, 'current_round_state'):
+		await consumer.send_json({
+			'target': 'game',
+			'event': 'error',
+			'message': 'No active round'
+		})
+		return
+	
+	profile_id = consumer.profile.id
+	profile_name = consumer.profile.username
+	track = await get_track_reveal_data(game_id)
 
 	is_correct = await validate_answer(consumer.profile, game_id, answer)
+
+	consumer.current_round_state['answers'][profile_id] = {
+		'answer': answer,
+		'time': answer_time,
+		'is_correct': is_correct,
+		'player_id': profile_id,
+		'player_username': profile_name,
+	}
 	
+	# Send response to THIS player only
 	if is_correct:
-		await _reveal_track(consumer, {'game_id': game_id})
-	elif game.answer_public:
-		# SHAME! : Broadcast the incorrect answer to all players if answers are public
-		await consumer.group_send(group_name, {
-			'type': 'game.answer_submitted',
-			'player_name': consumer._sender_name(),
-			'is_correct': False,
-			'message': 'Incorrect answer. Try again!',
+		await consumer.send_json({
+			'target': 'game',
+			'event': 'answer_correct',
+			'track': track,  # Already serialized from get_track_reveal_data
 		})
 	else:
-		# Send private feedback to the player if answers are not public
-		await consumer.send_json(group_name, {
-			'type': 'game.answer_submitted',
-			'player_name': consumer._sender_name(),
-			'is_correct': False,
-			'message': 'Incorrect answer. Try again!',
+		# Tell incorrect players their answer was wrong
+		await consumer.send_json({
+			'target': 'game',
+			'event': 'answer_incorrect',
+			'message': 'Wrong answer'
 		})
+	
+	# Broadcast to ALL that someone answered (without the answer)
+	await consumer.group_send(f'game_{game_id}', {
+		'type': 'game.player_answered',
+		'player_name': profile_name,
+	})
+
 		
 async def _leave_game_room(consumer: Any, content: dict) -> None:
 	"""Leave a game room group."""
@@ -142,13 +153,15 @@ async def _leave_game_room(consumer: Any, content: dict) -> None:
 		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'game_id required'})
 		return
 
+	profile_id = consumer.profile.id
+	profile_name = consumer.profile.username
 	group_name = f'game_{game_id}'
 	await consumer.remove_from_layer(group_name)
 	
 	await consumer.group_send(group_name, {
 		'type': 'game.player_left',
-		'player_name': consumer._sender_name(),
-		'player_id': consumer.profile.id,
+		'player_name': profile_name,
+		'player_id': profile_id,
 		'game_id': game_id,
 	})
 	
@@ -168,7 +181,7 @@ def get_track_reveal_data(game_id: str) -> dict | None:
 	
 	Returns:
 		dict with track details (title, artist, preview_url, artwork_url) or None
-	"""
+	"""  # noqa: D206
 	try:
 		game = Game.objects.get(uid=game_id)
 		if not game.current_track:
@@ -189,7 +202,7 @@ def validate_answer(player: Profile, game_id: str, answer: str) -> bool:
 	
 	Returns:
 		bool: Whether the answer is correct
-	"""
+	"""  # noqa: D206
 	try:
 		game = Game.objects.get(uid=game_id)
 		if not game.current_track:

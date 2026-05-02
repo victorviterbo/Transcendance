@@ -77,6 +77,8 @@ class Game(models.Model):
 									],
 								default='public')
 
+	fuzzy_match = models.BooleanField(default=True)
+
 	class Meta:
 		"""Define special behaviour of database."""
 		ordering = ['-played_at']
