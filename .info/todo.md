@@ -2,7 +2,7 @@
 
 - [ ] Better localization for notification times: remove the (s)
 - [ ] Find a better workaround than the 150 ms voodoo shit
-- [ ] Make profile picture and username be links that navigate to /users/{username}F
+- [x] Make profile picture and username be links that navigate to /users/{username}
 - [ ] Message notifications
 - [ ] Change notification message to accept coloring and {username}
 - [ ] Maybe switch to websockets for friends?
@@ -21,7 +21,6 @@
 
 # TO CHECK
 
-- Highest-risk weirdness is the text abstraction: CTextBase.tsx (line 37) auto-runs ttr() on every string child.
 - Auth refresh is wired to status in CAuthProvider.tsx (line 43), so login/register success triggers an extra refresh request immediately after setAuth. If that second call fails, a valid login can bounce straight back to guest state.
 - Deployment config is inconsistent: HTTP uses VITE_API_URL in api/client.ts (line 29), but websocket URLs are hardcoded localhost values in constants.ts (line 35), and profile image URLs are rebuilt from window.location.origin in api/profile.ts (line 55). That’s going to be awkward outside a same-origin local setup.
 - Friend search is race-prone. In PFriendAdd.tsx (line 16), the debounce timer lives in a render-local variable, there’s no cleanup, and there’s no guard against older responses overwriting newer search results.
