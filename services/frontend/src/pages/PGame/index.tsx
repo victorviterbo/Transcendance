@@ -38,8 +38,6 @@ function PGame() {
 		);
 	}, [setGameData, gameID]);
 
-	//====================== EVENT HAN ======================
-
 	//====================== WS ======================
 	useEffect(() => {
 		if (!gameID) return;
