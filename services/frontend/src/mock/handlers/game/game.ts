@@ -6,9 +6,11 @@ import {
 	mockClientJoinRoom,
 	mockGameAddPlayer,
 	type IMockGameData,
+	mockPlayerLeaveRoom,
 } from "./game_db";
 import type { TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
+import { mockSocialDB } from "../social/social_dbs";
 
 //====================== GETS ======================
 export const gameRequestHandler = http.get(API_GAME.replaceAll("{ROOMID}", "123456"), async () => {
@@ -39,8 +41,20 @@ function mockGameSimulate(GameID: string) {
 	const data: IMockGameData = mockGetGameData(GameID);
 	if (data.isOn) return;
 	data.isOn = true;
-	for (let i = 0; i < 10; i++) {
-		const time: number = Math.random() * 10000 + 1000;
-		setTimeout(() => mockGameAddPlayer(GameID), time);
+	for (let i = 0; i < 15; i++) {
+		const time: number = Math.random() * 7000 + 1000;
+		setTimeout(() => {
+			mockGameAddPlayer(GameID);
+			const lastID = data.lastId - 1;
+
+			if (lastID == 6 || lastID == 9) {
+				setTimeout(() => mockPlayerLeaveRoom(GameID, mockSocialDB.users[lastID].uid), 5000);
+			} else if (lastID == 11) {
+				setTimeout(
+					() => mockPlayerLeaveRoom(GameID, mockSocialDB.users[lastID].uid, true),
+					5000,
+				);
+			}
+		}, time);
 	}
 }
