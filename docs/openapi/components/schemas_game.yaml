@@ -1,0 +1,19 @@
+#GLOBAL
+GameData:
+  type: object
+  description:  All data about the current game
+  properties:
+    id: { type: string, descripion: "Current game / room id"}
+    maxPlayers: { type: int, descripion: "Maximum allowed player in that game"}
+    players: 
+      type: array
+      items:
+        $ref: "../openapi.yaml#/components/schemas/Game - GamePlayer"
+
+GamePlayer:
+  type: object
+  description:  Data about one of the player in the game
+  properties:
+    user:
+      $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
+    points: { type: int, descripion: "Current player points"}
