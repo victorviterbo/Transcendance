@@ -12,7 +12,11 @@ import CGamePaper from "../../components/surfaces/CGamePaper";
 import CText from "../../components/text/CText";
 import type { TWSRcv, TWSSend } from "../../types/websocket";
 import { API_GAME } from "../../constants";
-import { gameOnPlayerJoin } from "../../handlers/gameHandlers";
+import {
+	gameOnPlayerJoin,
+	gameOnPlayerLeave,
+	gameOnPlayerUpdate,
+} from "../../handlers/gameHandlers";
 
 function PGame() {
 	const spacing: number = appPositions.gameSpacing;
@@ -44,6 +48,8 @@ function PGame() {
 				const last: TWSRcv | undefined = wsContext.getLast();
 				if (!last || last.target != "game" || !gameData) return;
 				if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player);
+				if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player);
+				if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players);
 			}
 		});
 	}, [wsContext, gameID, gameData]);

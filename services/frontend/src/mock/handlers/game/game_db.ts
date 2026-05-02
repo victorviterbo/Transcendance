@@ -4,6 +4,12 @@ import { mockBadgeStrings, mockDefaultPP, mockDefaultUserUID, mockDefaultUsernam
 import type { IExtUserInfo } from "../../../types/user";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 import type { TWSRcv } from "../../../types/websocket";
+import {
+	MOCK_COLOR_CYAN_B,
+	MOCK_COLOR_GREEN_B,
+	MOCK_COLOR_NORMAL,
+	MOCK_COLOR_RED_B,
+} from "../styling";
 
 export interface IMockGameData extends IGameData {
 	lastId: number;
@@ -67,12 +73,63 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 		user: User,
 	});
 
+	console.log(
+		"[mock] Player %c" + User.username + "%c has joined the game %c" + GameID + "%c",
+		MOCK_COLOR_CYAN_B,
+		MOCK_COLOR_NORMAL,
+		MOCK_COLOR_GREEN_B,
+		MOCK_COLOR_NORMAL,
+	);
+
 	if (!currentClient) return;
 	currentClient.send(
 		JSON.stringify({
 			target: "game",
 			event: "player-join",
 			player: data.players[data.players.length - 1],
+		} as TWSRcv),
+	);
+}
+
+export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean = false) {
+	const data: IMockGameData = mockGetGameData(GameID);
+	const pos: number = data.players.findIndex((player: IGamePlayer) => {
+		return player.user.uid == ID;
+	});
+	if (pos == -1) return;
+
+	const player: IGamePlayer[] = data.players.splice(pos, 1);
+	if (player.length == 0) return;
+
+	console.log(
+		"[mock] Player %c" +
+			player[0].user.username +
+			"%c has leaved the game %c" +
+			GameID +
+			"%c" +
+			(Update ? " (Update requested)" : ""),
+		MOCK_COLOR_RED_B,
+		MOCK_COLOR_NORMAL,
+		MOCK_COLOR_GREEN_B,
+		MOCK_COLOR_NORMAL,
+	);
+
+	if (!currentClient) return;
+	if (Update) {
+		currentClient.send(
+			JSON.stringify({
+				target: "game",
+				event: "players-update",
+				players: data.players,
+			} as TWSRcv),
+		);
+		return;
+	}
+	currentClient.send(
+		JSON.stringify({
+			target: "game",
+			event: "player-leave",
+			player: player[0],
 		} as TWSRcv),
 	);
 }
