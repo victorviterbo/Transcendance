@@ -3,7 +3,7 @@ WS-friend-chat:
     summary: WS about all friend chat
     description: Websocket object for recieved data from the server about all friend chats requests
     operationId: WSStoCFriendChat
-    tags: [ws]
+    tags: [websockets]
     requestBody:
       required: true
       content:
@@ -81,7 +81,7 @@ WS-notif:
     summary: WS about all notifications
     description: Websocket object for recieved data from the server about all notifications requests
     operationId: WSStoCNotif
-    tags: [ws]
+    tags: [websockets]
     responses:
       "200":
         content:
@@ -111,7 +111,7 @@ WS-friend-request:
     summary: WS about all friend requests
     description: Websocket object for recieved data from the server about all friend requests (used for live update)
     operationId: WSStoCNotif
-    tags: [ws]
+    tags: [websockets]
     responses:
       "200":
         content:
@@ -129,3 +129,75 @@ WS-friend-request:
                     image: "path/to/image"
                     badges: "deaf octopus"
                     relation: "incoming"
+
+
+#====================== GAME ======================
+WS-game:
+  post:
+    summary: WS about all game data
+    description: Websocket object for recieved data from the server about all game data
+    operationId: WSStoCGame
+    tags: [websockets]
+    requestBody:
+      required: true
+      content:
+        join:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
+          examples:
+            join:
+              value:
+                target: "game"
+                event: "join"
+                gameid: "123456"
+        
+    responses:
+      "200":
+        content:
+          json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/WS - StoC - game
+            examples:
+              player-join::
+                value:
+                  target: "game"
+                  event: "player-join"
+                  player:
+                    user: 
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                    points: 150
+              player-leave::
+                value:
+                  target: "game"
+                  event: "player-leave"
+                  player:
+                    user: 
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                    points: 150
+              players-update::
+                value:
+                  target: "game"
+                  event: "players-update"
+                  players:
+                    - user: 
+                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "alice"
+                        image: "path/to/image"
+                        badges: "deaf octopus"
+                        relation: "incoming"
+                      points: 150
+                    - user: 
+                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        image: "path/to/image"
+                        badges: "deaf octopus"
+                        relation: "self"
+                      points: 50
