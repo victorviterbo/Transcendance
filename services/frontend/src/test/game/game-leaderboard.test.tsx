@@ -9,6 +9,7 @@ import { mockSocialDB, mockSocialResetDB } from "../../mock/handlers/social/soci
 import { mockSetGameError } from "../../mock/handlers/game/game";
 import PGameLBoardNode from "../../pages/PGame/PGameLBoardNode";
 import type { IGamePlayer } from "../../types/game";
+import { mockDefaultUsername } from "../../mock/db";
 
 describe("Common game page tests", () => {
 	beforeAll(() => {
@@ -33,6 +34,7 @@ describe("Common game page tests", () => {
 				...mockSocialDB.users[0],
 				image: "/DB/media/default_pp.jpg",
 			},
+			host: false,
 		};
 
 		render(<PGameLBoardNode position={3} user={currentUser}></PGameLBoardNode>);
@@ -57,6 +59,7 @@ describe("Common game page tests", () => {
 					image: "/DB/media/default_pp.jpg",
 					relation: i == 3 ? "self" : "not-friends",
 				},
+				host: i == 0,
 			});
 		}
 
@@ -99,6 +102,7 @@ describe("Common game page tests", () => {
 			});
 		});
 
+		expect(window.getComputedStyle(list[0]).border).not.toEqual("");
 		expect(window.getComputedStyle(list[3]).border).not.toEqual("");
 		expect(window.getComputedStyle(list[4]).border).toEqual("");
 	});
@@ -125,7 +129,10 @@ describe("Common game page tests", () => {
 		//FINDING SELF
 		expect(
 			nodeList.find((el: HTMLElement) => {
-				return window.getComputedStyle(el).border != "";
+				return (
+					window.getComputedStyle(el).border != "" &&
+					within(el).queryByText(mockDefaultUsername)
+				);
 			}),
 		).toBeInTheDocument();
 
