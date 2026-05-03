@@ -9,11 +9,11 @@ export interface CGameBasePaperProps extends GCompProps, Omit<CTitleBasePaperPro
 	title: string;
 }
 
-function CGamePaper({ title, ...other }: CGameBasePaperProps) {
+function CGamePaper({ title, contentPadding, ...other }: CGameBasePaperProps) {
 	return (
 		<CTitleBasePaper
 			sx={{ height: "100%" }}
-			contentPadding={"5px"}
+			contentPadding={contentPadding ? contentPadding : "5px"}
 			titlePadding={"0px"}
 			borderRadius={appSharedStyle.gameRadius}
 			titleNode={

@@ -6,6 +6,9 @@ export interface CTextFieldProps extends GCompProps, Omit<TextFieldProps, "varia
 	fontFamily?: string;
 	fontSize?: number;
 	fontWeight?: number;
+
+	borderWidth?: string;
+	verticalPadding?: string;
 }
 
 function CTextField(props: CTextFieldProps) {

@@ -1,3 +1,4 @@
+import { appColors } from "../styles/theme";
 import type { TColor, TColorAlteration, TDropShadow } from "../types/styles";
 
 //--------------------------------------------------
@@ -32,6 +33,22 @@ export function getScaledRadius(borderRadius: number | string, divisor = 1) {
 //--------------------------------------------------
 //               COLOR MANAGEMENT
 //--------------------------------------------------
+export function colorFromID(ID: number) {
+	const colors: string[] = [];
+	colors.push(appColors.primary[0]);
+	colors.push(appColors.primary[1]);
+	colors.push(appColors.secondary[0]);
+	colors.push(appColors.secondary[1]);
+	colors.push(appColors.tertiary[0]);
+	colors.push(appColors.tertiary[1]);
+	colors.push(appColors.quaternary[0]);
+	colors.push(appColors.quaternary[1]);
+	colors.push(appColors.quinary[0]);
+	colors.push(appColors.quinary[1]);
+
+	return colors[ID % colors.length];
+}
+
 export function colorGetBackground(
 	colors: string | string[],
 	positions?: number[],

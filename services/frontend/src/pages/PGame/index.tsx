@@ -129,7 +129,7 @@ function PGame() {
 					<PGameLobby />
 				</Grid>
 				<Grid size={3}>
-					<PGameChat />
+					<PGameChat game={gameData} />
 				</Grid>
 			</Grid>
 		</Stack>
