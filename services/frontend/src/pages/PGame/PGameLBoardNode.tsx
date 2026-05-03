@@ -20,7 +20,7 @@ function PGameLBoardNode({ user, position }: PGameLBoardNodeProps) {
 	return (
 		<Stack
 			direction={"row"}
-			sx={PGameLBoardNodeStyle(position, user.user.relation == "self")}
+			sx={PGameLBoardNodeStyle(position, user.user.relation == "self", user.host)}
 			data-testid="PGameLBoardNode"
 		>
 			<CText sx={PGameLBoardNodePosStyle}>{position + 1 + "."}</CText>

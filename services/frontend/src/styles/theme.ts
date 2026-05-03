@@ -260,7 +260,20 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	components: {
-		MuiCssBaseline: {},
+		MuiCssBaseline: {
+			styleOverrides: (_) => ({
+				"*::-webkit-scrollbar": {
+					width: "3px",
+				},
+				"*::-webkit-scrollbar-thumb": {
+					backgroundColor: "rgba(255,255,255,0.3)",
+					borderRadius: "100px",
+				},
+				"*::-webkit-scrollbar-track": {
+					backgroundColor: "transparent",
+				},
+			}),
+		},
 	},
 };
 const appTheme = createTheme(appThemeBase);

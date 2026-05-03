@@ -29,6 +29,7 @@ export function mockCreateRoom(GameID: string) {
 	const nRoom: IMockGameData = {
 		players: [],
 		maxPlayers: 100,
+		isHost: false,
 		id: GameID,
 		lastId: 0,
 		isOn: false,
@@ -39,6 +40,7 @@ export function mockCreateRoom(GameID: string) {
 		nRoom.players.push({
 			points: 0,
 			user: mockSocialDB.users[nRoom.lastId],
+			host: nRoom.lastId == 0,
 		});
 	}
 
@@ -72,6 +74,7 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 	data.players.push({
 		points: 0,
 		user: User,
+		host: false,
 	});
 
 	console.log(
