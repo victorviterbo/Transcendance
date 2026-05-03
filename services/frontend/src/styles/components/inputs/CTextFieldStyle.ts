@@ -1,10 +1,18 @@
 import { type Theme } from "@mui/material";
 import { appAnimation, appColors, appTexts } from "../../theme";
-import type { CTextFieldProps } from "../../../components/inputs/textFields/CTextField";
+
+export interface CTextFieldStyleProps {
+	fontFamily?: string;
+	fontSize?: number;
+	fontWeight?: number;
+
+	borderWidth?: string;
+	verticalPadding?: string;
+}
 
 export function CTextFieldStyle(
 	theme: Theme,
-	{ fontSize, fontFamily, fontWeight, borderWidth, verticalPadding }: CTextFieldProps,
+	{ fontSize, fontFamily, fontWeight, borderWidth, verticalPadding }: CTextFieldStyleProps,
 ) {
 	return {
 		//Label

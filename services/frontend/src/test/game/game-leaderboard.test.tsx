@@ -35,6 +35,7 @@ describe("Common game page tests", () => {
 				image: "/DB/media/default_pp.jpg",
 			},
 			host: false,
+			colorid: 0,
 		};
 
 		render(<PGameLBoardNode position={3} user={currentUser}></PGameLBoardNode>);
@@ -60,6 +61,7 @@ describe("Common game page tests", () => {
 					relation: i == 3 ? "self" : "not-friends",
 				},
 				host: i == 0,
+				colorid: 0,
 			});
 		}
 
