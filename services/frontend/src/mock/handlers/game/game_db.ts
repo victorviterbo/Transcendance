@@ -23,11 +23,76 @@ const mockGameData: Record<string, IMockGameData> = {};
 //--------------------------------------------------
 //                      MANAGE
 //--------------------------------------------------
+function mockCreateChat(Room: IMockGameData) {
+	Room.chat.push({
+		userid: mockSocialDB.users[0].uid,
+		username: mockSocialDB.users[0].username,
+		uid: crypto.randomUUID(),
+
+		type: "message",
+		message: "Hello everyone how are ?",
+	});
+
+	Room.chat.push({
+		userid: mockSocialDB.users[1].uid,
+		username: mockSocialDB.users[1].username,
+		uid: crypto.randomUUID(),
+
+		type: "message",
+		message: "Hey",
+	});
+
+	Room.chat.push({
+		userid: mockSocialDB.users[0].uid,
+		username: mockSocialDB.users[0].username,
+		uid: crypto.randomUUID(),
+
+		type: "message",
+		message: "Hey !!",
+	});
+
+	Room.chat.push({
+		userid: mockSocialDB.users[1].uid,
+		username: mockSocialDB.users[1].username,
+		uid: crypto.randomUUID(),
+
+		type: "message",
+		message:
+			"sloubi 1 sloubi 2 sloubi 3 sloubi 4 sloubi 5 sloubi 6 sloubi 7 sloubi 8 sloubi 9 sloubi 10 sloubi 11 sloubi 12 sloubi 13 sloubi 14 sloubi 15 sloubi 16 sloubi 17 sloubi 18 sloubi 19 sloubi 20",
+	});
+
+	Room.chat.push({
+		userid: mockSocialDB.users[0].uid,
+		username: mockSocialDB.users[0].username,
+		uid: crypto.randomUUID(),
+
+		type: "message",
+		message: "TG",
+	});
+
+	Room.chat.push({
+		userid: mockSocialDB.users[0].uid,
+		username: mockSocialDB.users[0].username,
+		uid: crypto.randomUUID(),
+
+		type: "guessed",
+		message: "o zone dragostea din tei",
+	});
+
+	Room.chat.push({
+		userid: mockSocialDB.users[0].uid,
+		username: mockSocialDB.users[0].username,
+		uid: crypto.randomUUID(),
+
+		type: "found",
+	});
+}
 export function mockCreateRoom(GameID: string) {
 	mockSocialSetDB();
 
 	const nRoom: IMockGameData = {
 		players: [],
+		chat: [],
 		maxPlayers: 100,
 		isHost: false,
 		id: GameID,
@@ -41,8 +106,19 @@ export function mockCreateRoom(GameID: string) {
 			points: 0,
 			user: mockSocialDB.users[nRoom.lastId],
 			host: nRoom.lastId == 0,
+			colorid: nRoom.lastId % 10,
+		});
+
+		nRoom.chat.push({
+			userid: mockSocialDB.users[nRoom.lastId].uid,
+			username: mockSocialDB.users[nRoom.lastId].username,
+			uid: crypto.randomUUID(),
+
+			type: "joined",
 		});
 	}
+
+	mockCreateChat(nRoom);
 
 	mockGameData[GameID] = nRoom;
 	return nRoom;
@@ -75,6 +151,7 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 		points: 0,
 		user: User,
 		host: false,
+		colorid: data.lastId % 10,
 	});
 
 	console.log(
