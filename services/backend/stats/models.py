@@ -41,11 +41,13 @@ class UserRoundStats(models.Model):
     played_at = models.DateTimeField(auto_now_add=True)
 
     @cached_property
-    def track(self):
+    def track(self) -> Track:
+        """Get the track associated with this round."""
         return self.round.track
 
     @cached_property
-    def game(self):
+    def game(self) -> Game:
+        """Get the game associated with this round."""
         return self.round.game
 
 class UserGameStats(models.Model):

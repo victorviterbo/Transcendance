@@ -10,14 +10,22 @@ from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from thefuzz import fuzz
 from userprofile.models import Profile
 
-from services.backend.game.ws_game_loop import play_rounds_loop
 from game.models import Game
+from services.backend.game.ws_game_loop import play_rounds_loop
 
+
+@database_sync_to_async
+async def _get_game(consumer: Any) -> Game | None:
+	"""Fetch the Game instance for a given game_id."""
+	try:
+		return Game.objects.filter(player=consumer.profile).first()
+	except Game.DoesNotExist:
+		return None
 
 async def handle_game_action(consumer: Any, content: dict) -> None:
 	"""Route game events to appropriate handlers."""
 	game_event = content.get('event')
-
+	consumer.current_game = await _get_game(consumer, content.get('game_id'))
 	match game_event:
 		case 'join_room':
 			await _join_game_room(consumer, content)
@@ -181,7 +189,7 @@ def get_track_reveal_data(game_id: str) -> dict | None:
 	
 	Returns:
 		dict with track details (title, artist, preview_url, artwork_url) or None
-	"""  # noqa: D206
+	"""
 	try:
 		game = Game.objects.get(uid=game_id)
 		if not game.current_track:
@@ -202,7 +210,7 @@ def validate_answer(player: Profile, game_id: str, answer: str) -> bool:
 	
 	Returns:
 		bool: Whether the answer is correct
-	"""  # noqa: D206
+	"""
 	try:
 		game = Game.objects.get(uid=game_id)
 		if not game.current_track:

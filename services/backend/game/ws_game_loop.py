@@ -22,15 +22,15 @@ async def play_rounds_loop(consumer: Any, game_id: str) -> None:
 	_log(f'game_loop.start game_id={game_id}')
 	# Mark game as playing and record start time
 	await set_game_status(game_id, 'playing')
-	max_rounds = await get_max_rounds(game_id)
+	num_tracks = await get_num_tracks(game_id)
 	group_name = f'game_{game_id}'
 
 	# Fetch playlist tracks and iterate through songs rather than numeric rounds
 	playlist_tracks = await get_playlist_tracks(game_id)
 	_log(f'game_loop.playlist_fetched game_id={game_id} track_count={len(playlist_tracks)}')
-	# Limit by max_rounds
-	tracks_to_play = playlist_tracks[:max_rounds] if max_rounds else playlist_tracks
-	_log(f'game_loop.tracks_to_play game_id={game_id} max_rounds={max_rounds} playing_count={len(tracks_to_play)}')
+	# Limit by num_tracks
+	tracks_to_play = playlist_tracks[:num_tracks] if num_tracks else playlist_tracks
+	_log(f'game_loop.tracks_to_play game_id={game_id} num_tracks={num_tracks} playing_count={len(tracks_to_play)}')
 
 	for idx, track in enumerate(tracks_to_play, start=1):
 		_log(f"game_loop.round_start game_id={game_id} round={idx} track_id={track.get('itunes_id')}")
@@ -51,7 +51,7 @@ async def play_single_round(consumer: Any, game_id: str, group_name: str,
 
 	If `track` is provided we use that serialized track; otherwise fall back
 	to the DB-backed `get_current_track` helper.
-	"""  # noqa: D206
+	"""
 	# Local state for this round
 	answers_received = {}  # {player_id: {'answer': str, 'time': float, 'is_correct': bool, 'player_id': int, 'player_username': str}}
 	if track is None:
@@ -97,10 +97,10 @@ async def play_single_round(consumer: Any, game_id: str, group_name: str,
 	
 	# STEP 5: Break between rounds
 	break_duration = await get_break_duration(game_id)
-	max_rounds = await get_max_rounds(game_id)
+	num_tracks = await get_num_tracks(game_id)
 	show_answers = await get_show_answers(game_id)
 	
-	if round_num < max_rounds:
+	if round_num < num_tracks:
 		_log(f'game_loop.broadcast_round_end game_id={game_id} round={round_num} has_next=True')
 		await consumer.group_send(group_name, {
 			'type': 'game.round_end',
@@ -221,9 +221,9 @@ def get_break_duration(game_id: str) -> float:
 	return val.total_seconds() if val else 0.0
 
 @database_sync_to_async
-def get_max_rounds(game_id: str) -> int:
+def get_num_tracks(game_id: str) -> int:
 	"""Get max rounds for a game."""
-	return Game.objects.filter(uid=game_id).values_list('max_rounds', flat=True).first() or 0
+	return Game.objects.filter(uid=game_id).values_list('num_tracks', flat=True).first() or 0
 
 @database_sync_to_async
 def get_show_answers(game_id: str) -> bool:

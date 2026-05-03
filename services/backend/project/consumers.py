@@ -16,9 +16,10 @@ from chat.chat_utils import (
 from chat.models import Message, Room
 from django.core.cache import cache
 from game.models import Game
-from services.backend.game.ws_game_handler import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
+
+from services.backend.game.ws_game_handler import handle_game_action
 
 logger = logging.getLogger(__name__)
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import timedelta
 
 from chat.models import Room
 from django.db import models
@@ -39,9 +40,14 @@ class Game(models.Model):
 									],
 									default='waiting')
 	
-	playback_duration = models.DurationField(null=True, blank=True)
+	playback_duration = models.DurationField(null=True,
+										blank=True,
+										default=timedelta(seconds=30))
 
-	break_duration = models.DurationField(null=True, blank=True)
+	break_duration = models.DurationField(null=True,
+                                          blank=True,
+                                          default=timedelta(seconds=10)
+									)
 
 	answer_public = models.BooleanField(default=False)
 
@@ -53,7 +59,7 @@ class Game(models.Model):
 									],
 								default='normal')
 	
-	current_round = models.PositiveIntegerField(default=0)
+	current_round = models.PositiveIntegerField(default=1)
 	
 	current_track = models.ForeignKey(Track,
 										on_delete=models.SET_NULL,
@@ -61,7 +67,7 @@ class Game(models.Model):
 										blank=True,
 										related_name='current_in_games')
 	
-	max_rounds = models.PositiveIntegerField(default=5)
+	num_tracks = models.PositiveIntegerField(default=5)
 
 	played_at = models.DateTimeField(auto_now_add=True)
 	

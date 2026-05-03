@@ -32,6 +32,8 @@ def get_avatar_url(profile) -> str:  # noqa: ANN001
 
 genres = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']
 
+num_genres = len(genres)
+
 genres_to_label = {
     'Rock': 'TAG_ROCK',
     'Pop': 'TAG_POP',

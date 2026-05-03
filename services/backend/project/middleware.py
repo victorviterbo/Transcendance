@@ -3,7 +3,6 @@
 import uuid
 
 from django.http import HttpRequest, HttpResponse
-
 from userprofile.models import Profile
 
 

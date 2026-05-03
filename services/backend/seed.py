@@ -111,7 +111,7 @@ for g_idx in range(1, 11):
     game = Game.objects.create(
         game_name=f"Blind Test Arena {g_idx}",
         status='finished',
-        max_rounds=20
+        num_tracks=20
     )
     
     # Pick an overall winner for the game

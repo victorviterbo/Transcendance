@@ -65,7 +65,7 @@ class GameViewTests(TestCase):
 		
 		# Verify game was created
 		game = Game.objects.get(uid=response.data['game_uid'])
-		self.assertEqual(game.max_rounds, 4)
+		self.assertEqual(game.num_tracks, 4)
 		self.assertEqual(game.status, 'waiting')
 		self.assertEqual(game.current_round, 1)
 	
@@ -242,5 +242,5 @@ class GameViewTests(TestCase):
 		self.assertIsNotNone(game.room)
 		self.assertIsNotNone(game.current_track)
 		self.assertEqual(game.current_round, 1)
-		self.assertEqual(game.max_rounds, 4)
+		self.assertEqual(game.num_tracks, 4)
 		self.assertEqual(game.status, 'waiting')

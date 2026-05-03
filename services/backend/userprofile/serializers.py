@@ -5,10 +5,9 @@ from typing import Any
 
 from django.core.files.base import ContentFile
 from PIL import Image, UnidentifiedImageError
-from rest_framework import serializers
-
 from project.defaults import get_avatar_url
 from project.validators import validate_email, validate_username
+from rest_framework import serializers
 
 from .models import Profile
 
@@ -97,6 +96,7 @@ class UsersSerializer(LightProfileSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
 
 class ProfileSerializer(LightProfileSerializer):
     """Set how to serialize a user's profile."""
