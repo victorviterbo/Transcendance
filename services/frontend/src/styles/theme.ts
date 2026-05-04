@@ -59,6 +59,7 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	gameSpacing: 3,
 	socialMargin: { top: 15, right: 20, bottom: 50 },
 	sizes: {
 		buttons: {
@@ -102,6 +103,8 @@ export const appSharedStyle: IThemeShared = {
 	},
 
 	radius: 30,
+	paperRadius: "30px",
+	gameRadius: "20px",
 };
 
 export const appTexts: IThemeTexts = {
@@ -257,7 +260,20 @@ const appThemeBase: ThemeOptions = {
 	},
 
 	components: {
-		MuiCssBaseline: {},
+		MuiCssBaseline: {
+			styleOverrides: (_) => ({
+				"*::-webkit-scrollbar": {
+					width: "3px",
+				},
+				"*::-webkit-scrollbar-thumb": {
+					backgroundColor: "rgba(255,255,255,0.3)",
+					borderRadius: "100px",
+				},
+				"*::-webkit-scrollbar-track": {
+					backgroundColor: "transparent",
+				},
+			}),
+		},
 	},
 };
 const appTheme = createTheme(appThemeBase);

@@ -8,6 +8,7 @@ import { CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
 import appTheme from "./styles/theme";
 import { getFontRegistry } from "./styles/fonts/fonts";
 import { PContact, PPageNotFound, PPrivacyPolicy, PQA, PTermsOfService } from "./pages/static";
+import PGameBase from "./pages/PGame/PGameBase";
 
 function App() {
 	return (
@@ -17,6 +18,7 @@ function App() {
 			<Routes>
 				<Route path="/" element={<PHomePage />} />
 				<Route path="/auth" element={<PAuthPage />} />
+				<Route path="/game/*" element={<PGameBase />} />
 				<Route path="/contact" element={<PContact />} />
 				<Route path="/qa" element={<PQA />} />
 				<Route path="/terms-of-service" element={<PTermsOfService />} />

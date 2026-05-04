@@ -13,31 +13,49 @@ import type { ReactNode } from "react";
 export interface CTitleBasePaperProps extends GCompProps, CBasePaperProps {
 	titleNode: ReactNode;
 
+	//POSITIONS
 	contentFlex?: number;
 	isFlex?: boolean;
 	overflow?: TOverflow;
 	position?: TPosition;
+
+	//STYLING
+	borderRadius?: number | string;
+	titlePadding?: number | string;
+	contentPadding?: number | string;
 }
 
-function CTitleBasePaper({
-	titleNode,
-	children,
+function CTitleBasePaper(props: CTitleBasePaperProps) {
+	const {
+		titleNode,
+		children,
 
-	contentFlex,
-	isFlex,
-	overflow,
-	position,
+		contentFlex,
+		isFlex,
+		overflow,
+		position,
 
-	sx,
-	...other
-}: CTitleBasePaperProps) {
+		borderRadius,
+		titlePadding,
+		contentPadding,
+
+		sx,
+		...other
+	} = props;
+
 	return (
 		<CBasePaper
-			sx={[CTitlePaperStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			sx={[
+				CTitlePaperStyle({ borderRadius, titlePadding, contentPadding }),
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+			]}
 			{...other}
 		>
 			<Stack sx={{ overflow: "hidden", flex: 1, alignItems: "stretch" }}>
-				<Box sx={CTitlePaperTitleBoxStyle} data-testid="CTitleBasePaper_Title">
+				<Box
+					sx={CTitlePaperTitleBoxStyle({ borderRadius, titlePadding, contentPadding })}
+					data-testid="CTitleBasePaper_Title"
+				>
 					{titleNode}
 				</Box>
 				<Box
@@ -45,11 +63,7 @@ function CTitleBasePaper({
 						position ? { position: position } : {},
 						isFlex ? { display: "flex", flexDirection: "column" } : {},
 						{ overflow: overflow, flex: contentFlex },
-						...(Array.isArray(CTitlePaperContentBox)
-							? CTitlePaperContentBox
-							: CTitlePaperContentBox
-								? [CTitlePaperContentBox]
-								: []),
+						CTitlePaperContentBox({ borderRadius, titlePadding, contentPadding }),
 					]}
 					data-testid="hello"
 				>

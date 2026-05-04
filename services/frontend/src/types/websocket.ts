@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
+import type { IGamePlayer } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 
@@ -9,6 +10,7 @@ export type TWSModuleName =
 	| "friend-chat"
 	| "friend-request"
 	| "notif"
+	| "game"
 	| "test_counter_event"
 	| "test_counter";
 
@@ -43,6 +45,18 @@ export type TWSRcv =
 			event: "new-incoming";
 			user: IExtUserInfo;
 	  }
+
+	//GAME
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "player-join" | "player-leave";
+			player: IGamePlayer;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "players-update";
+			players: IGamePlayer[];
+	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
@@ -55,6 +69,11 @@ export type TWSSend =
 			message?: IFriendMessage;
 			to?: string;
 			toUid?: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "join";
+			gameid: string;
 	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;

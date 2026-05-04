@@ -6,15 +6,32 @@ export interface CTextFieldProps extends GCompProps, Omit<TextFieldProps, "varia
 	fontFamily?: string;
 	fontSize?: number;
 	fontWeight?: number;
+
+	borderWidth?: string;
+	verticalPadding?: string;
 }
 
-function CTextField(props: CTextFieldProps) {
-	const { sx, ...other } = props;
+function CTextField({
+	sx,
+	fontFamily,
+	fontSize,
+	fontWeight,
+	verticalPadding,
+	borderWidth,
+	...other
+}: CTextFieldProps) {
 	return (
 		<TextField
 			margin="normal"
 			sx={[
-				(theme) => CTextFieldStyle(theme, props),
+				(theme) =>
+					CTextFieldStyle(theme, {
+						fontFamily,
+						fontSize,
+						fontWeight,
+						verticalPadding,
+						borderWidth,
+					}),
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
 			]}
 			{...other}

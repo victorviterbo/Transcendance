@@ -3,6 +3,7 @@ import { WS_ADRESS_WMS } from "../../../constants";
 import type { TWSRcv, TWSSend } from "../../../types/websocket";
 import { mockMessagesFriend1Update, onMessageSent, onMessageStatus } from "../social/socialChat";
 import { mockAcceptingRequests, mockNewIncomingRequests } from "../social/social";
+import { mockHandleGameMessages } from "../game/game";
 
 //--------------------------------------------------
 //                                    NAME
@@ -35,6 +36,8 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 			if (dataRcv.event == "send") onMessageSent(dataRcv, client);
 			else if (dataRcv.event == "open") onMessageStatus(dataRcv);
 			else if (dataRcv.event == "close") onMessageStatus(dataRcv);
+		} else if (dataRcv.target == "game") {
+			mockHandleGameMessages(dataRcv, client);
 		}
 	});
 
