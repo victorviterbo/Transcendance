@@ -6,6 +6,7 @@ to JSON and vice-versa, namely:
 """
 
 from rest_framework import serializers
+
 from userprofile.serializers import LightProfileSerializer
 
 from .models import Message, Room

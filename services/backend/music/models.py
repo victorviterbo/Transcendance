@@ -1,11 +1,15 @@
+"""Define models for tracks and playlist."""
+import uuid
+
 from django.db import models
 
-# Create your models here.
+
 class Playlist(models.Model):
 	"""Stores the different playlists (e.g., Rock, Rap, Classics)."""
 	name = models.CharField(max_length=255, unique=True)
 	rss_url = models.URLField(max_length=500, default='')
-	
+	uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
 	def __str__(self):
 		return self.name
 

@@ -2,12 +2,6 @@
 
 set -eu
 
-if conda env list | grep -q '^backend '; then
-    conda env update --name backend --file /backend/build/environment.yml --prune
-else
-    conda env create --file /backend/build/environment.yml
-fi
-
 mkdir -p /backend/DB/website
 
 rm -f /backend/DB/website/db.sqlite3

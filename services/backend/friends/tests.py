@@ -2,9 +2,10 @@
 
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from friends.models import Friendship
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
+
+from friends.models import Friendship
 
 
 class FriendRequestsTests(APITestCase):
@@ -28,7 +29,7 @@ class FriendRequestsTests(APITestCase):
         
         serializer = ProfileSerializer(data={'username': 'an_anonymous_user',
                                               'exp_points': '12',
-                                              'badges': 'Deaf Octopus'
+                                              'badges': 'BADGE_DEAF_OCTOPUS'
                                             },
                                             context={'is_creation': True})
         if serializer.is_valid():
@@ -56,7 +57,7 @@ class FriendRequestsTests(APITestCase):
         self.assertEqual(0, len(response.data['outgoing']))
         self.assertEqual(0, len(response.data['incoming']))
 
-        for user_uid in [self.user1.uid, self.user2.uid]: #, self.user1.profile.uid
+        for user_uid in [self.user1.uid, self.user2.uid]:
             response = self.client.post(friend_request_url, data={
                         'target-uid': str(user_uid),
                         'target-username': 'user2' if user_uid == self.user2.uid else 'user1',
@@ -112,7 +113,7 @@ class FriendRequestsTests(APITestCase):
         user1.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
         
         for res in ['refuse', 'accept']:
-            for user_uid in [self.user1.uid, self.user2.uid]: #, 'abc123', ''
+            for user_uid in [self.user1.uid, self.user2.uid]:
                 response = user1.post(friend_respond_url, data={
                                             'target-uid': str(user_uid),
                                             'target-username': 'user2' if user_uid == self.user2.uid else 'user1',
@@ -190,7 +191,6 @@ class FriendRequestsTests(APITestCase):
 
     def test_search_users(self) -> None:
         """Test the frontend-shaped user search endpoint."""
-
         login_url = '/api/auth/login/'
         search_url = '/api/social/friends-search'
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
@@ -301,7 +301,6 @@ class FriendRequestsTests(APITestCase):
 
     def test_notifications_list_and_mark_read(self) -> None:
         """Test the notification payload contract for friend requests and acceptances."""
-
         login_url = '/api/auth/login/'
         send_url = '/api/social/friend-request/send'
         notifs_url = '/api/social/notifs'

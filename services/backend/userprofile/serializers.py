@@ -97,6 +97,7 @@ class UsersSerializer(LightProfileSerializer):
         instance.save()
         return instance
 
+
 class ProfileSerializer(LightProfileSerializer):
     """Set how to serialize a user's profile."""
 

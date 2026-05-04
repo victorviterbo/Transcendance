@@ -63,7 +63,7 @@ class ProfileTests(TransactionTestCase):
         
         serializer = ProfileSerializer(data={'username': 'an_anonymous_user',
                                               'exp_points': '12',
-                                              'badges': 'Deaf Octopus'
+                                              'badges': 'BADGE_DEAF_OCTOPUS'
                                             },
                                             context={'is_creation': True})
         if serializer.is_valid():
@@ -280,7 +280,7 @@ class ProfileTests(TransactionTestCase):
             'username': 'a_new_user',
             'avatar': image_generator('valid'),
             'exp_points': '0',
-            'badges': 'Deaf Octopus'
+            'badges': 'BADGE_DEAF_OCTOPUS'
         }
         for username in ['a_new_user', 'user1', 'an_anonymous_user', 'asuperlongusernamethatshouldfailbutnotcrash']:
             raw_data['username'] = username

@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -23,7 +24,6 @@ from .serializers import MessageSerializer, RoomSerializer
 
 def _resolve_target_user(target_uid: str | None) -> SiteUser | None:
     """Resolve a target user from either SiteUser.uid or Profile.uid."""
-
     if target_uid is None:
         return None
 
@@ -115,7 +115,6 @@ class FriendMessageFeed(APIView):
 
     def post(self, request: Request) -> Response:
         """Fetch a friend chat feed in the frontend contract shape."""
-
         target_uid = request.data.get('uid') or request.data.get('user_uid') or request.data.get('target-uid')
         if target_uid is None:
             return Response(

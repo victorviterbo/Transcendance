@@ -1,7 +1,7 @@
 """Shared helpers for chat room and direct-message logic."""
 
-from friends.models import Friendship
 from chat.models import Message
+from friends.models import Friendship
 from userprofile.models import Profile
 
 from .models import Room

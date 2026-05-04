@@ -2,7 +2,7 @@
 
 from django.db.models import Avg, Sum
 from music.models import Track
-from project.defaults import get_avatar_url, genres, genres_to_label
+from project.defaults import genres, genres_to_label, get_avatar_url
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -47,8 +47,15 @@ class GlobalStatsView(APIView):
 
         rounds = UserRoundStats.objects.filter(player=profile)
         total_rounds = rounds.count()
-        total_games = GameRoundStats.objects.filter(player=profile).values('game').distinct().count()
-        total_games_won = UserGameStats.objects.filter(player=profile, is_won=True).count()
+        total_games = (GameRoundStats.objects.filter(player=profile)
+            .values('game')
+            .distinct()
+            .count()
+        )
+        total_games_won = (UserGameStats.objects.filter(player=profile,
+                                                       is_won=True)
+            .count()
+        )
 
         agg = rounds.aggregate(avg_score=Avg('xp_earned'), avg_time=Avg('time'))
         avg_score = round(agg['avg_score'] or 0.0, 2)
@@ -70,8 +77,10 @@ class GlobalStatsView(APIView):
             tag_rounds = rounds.filter(round__track__genre=tag)
             tag_total = tag_rounds.count()
             if tag_total > 0:
-                tag_complete = tag_rounds.filter(artist_found=True, song_found=True).count()
-                tag_rates[genres_to_label.get(tag, tag)] = round(tag_complete / tag_total * 100, 2)
+                tag_complete = tag_rounds.filter(artist_found=True,
+                                                 song_found=True).count()
+                tag_rates[genres_to_label.get(tag, tag)] = round(tag_complete
+                                                                 / tag_total * 100, 2)
             else:
                 tag_rates[genres_to_label.get(tag, tag)] = 0.0
         serializer = GlobalStatsSerializer(data={

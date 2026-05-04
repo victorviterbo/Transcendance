@@ -1,11 +1,11 @@
 """Tests for the game module."""
 
 from django.test import TestCase
-from rest_framework.test import APIClient
 from rest_framework import status
-from music.models import Playlist, Track
+from rest_framework.test import APIClient
+
 from game.models import Game
-from chat.models import Room
+from music.models import Playlist, Track
 
 
 class GameViewTests(TestCase):
@@ -65,7 +65,7 @@ class GameViewTests(TestCase):
 		
 		# Verify game was created
 		game = Game.objects.get(uid=response.data['game_uid'])
-		self.assertEqual(game.max_rounds, 4)
+		self.assertEqual(game.num_tracks, 4)
 		self.assertEqual(game.status, 'waiting')
 		self.assertEqual(game.current_round, 1)
 	
@@ -242,5 +242,5 @@ class GameViewTests(TestCase):
 		self.assertIsNotNone(game.room)
 		self.assertIsNotNone(game.current_track)
 		self.assertEqual(game.current_round, 1)
-		self.assertEqual(game.max_rounds, 4)
+		self.assertEqual(game.num_tracks, 4)
 		self.assertEqual(game.status, 'waiting')
