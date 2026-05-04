@@ -30,16 +30,14 @@ class TrackSerializer(serializers.ModelSerializer):
 
 
 class PlaylistMiniSerializer(serializers.ModelSerializer):
-	"""Serialize a playlist with its attached tracks."""
-
-	tracks = TrackSerializer(many=True, read_only=True)
+	"""Serialize a playlist."""
 
 	class Meta:
 		"""Serialize a playlist with very minimal fields to be sent at game start."""
 		model = Playlist
 		fields = [
 			'name',
-			'uid'
+			'uid',
 		]
 
 class PlaylistTracksSerializer(serializers.ModelSerializer):

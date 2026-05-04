@@ -14,7 +14,9 @@ from userprofile.models import Profile
 class Game(models.Model):
 	"""Define the model for a single game session."""
 
-	game_name = models.CharField(max_length=50)
+	game_name = models.CharField(max_length=100, blank=True, default='')
+	
+	genres = models.JSONField(default=list)
 	
 	players = models.ManyToManyField(Profile,
 									through='stats.UserGameStats',
@@ -88,3 +90,10 @@ class Game(models.Model):
 	class Meta:
 		"""Define special behaviour of database."""
 		ordering = ['-played_at']
+
+	def save(self, *args, **kwargs):
+		"""Auto-generate game_name from genres and uid if not provided."""
+		if not self.game_name and self.genres:
+			genres_str = ' - '.join(self.genres)
+			self.game_name = f"{genres_str} - {self.uid}"
+		super().save(*args, **kwargs)

@@ -16,10 +16,9 @@ from chat.chat_utils import (
 from chat.models import Message, Room
 from django.core.cache import cache
 from game.models import Game
+from game.ws_game_handler import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
-
-from services.backend.game.ws_game_handler import handle_game_action
 
 logger = logging.getLogger(__name__)
 
@@ -375,7 +374,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'target': 'game',
             'event': 'player_joined',
             'player_name': event['player_name'],
-            'player_id': event['player_id'],
+            'player_uid': event.get('player_uid'),
         })
 
     async def game_game_started(self, event: dict) -> None:
@@ -402,7 +401,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'target': 'game',
             'event': 'answer_submitted',
             'player_name': event['player_name'],
-            'player_id': event['player_id'],
+            'player_uid': event.get('player_uid'),
             'answer': event['answer'],
             'is_correct': event['is_correct'],
         })
@@ -413,7 +412,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'target': 'game',
             'event': 'player_left',
             'player_name': event['player_name'],
-            'player_id': event['player_id'],
+            'player_uid': event.get('player_uid'),
             'room_id': event.get('room_id'),
         })
 
@@ -429,10 +428,17 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     async def game_player_answered(self, event: dict) -> None:
         """Broadcast that a player has submitted an answer."""
+        player_uid = event.get('player_uid')
+        if player_uid is None:
+            player_name = event.get('player_name')
+            if player_name:
+                profile = await database_sync_to_async(lambda: Profile.objects.filter(username=player_name).first())()
+                player_uid = str(getattr(profile, 'uid', None)) if profile else None
+
         await self.send_json({
             'target': 'game',
             'event': 'player_answered',
-            'player_id': event['player_id'],
+            'player_uid': player_uid,
             'player_name': event.get('player_name'),
         })
 

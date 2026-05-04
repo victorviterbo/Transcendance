@@ -123,15 +123,15 @@ class GameView(APIView):
 				raise serializers.ValidationError(
 					'No tracks available for the selected genres',
 					code='NO_TRACKS_FOUND')
-			all_tracks = random.shuffle(all_tracks)
-			#create playlist
+			# shuffle in-place
+			random.shuffle(all_tracks)
 			playlist_uid = uuid.uuid4()
 			playlist_name = f"Game Playlist - {', '.join(new_game.genres)} ({playlist_uid})"
 			playlist = Playlist.objects.create(
 				name=playlist_name,
 				uid=playlist_uid,
-				tracks=all_tracks
-				)
+			)
+			playlist.tracks.set(all_tracks)
 			#create room
 			room_uid = uuid.uuid4()
 			room_name = f"Game Room - {', '.join(new_game.genres)} ({room_uid})"

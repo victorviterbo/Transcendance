@@ -16,22 +16,18 @@ from .models import Game
 class GameCreationSerializer(serializers.ModelSerializer):
     """Set how to serialize game creation request."""
     
-    num_tracks = serializers.IntegerField(source='num_tracks',
-                                         write_only=True,
+    num_tracks = serializers.IntegerField(write_only=True,
                                          required=True,
                                          min_value=1,
                                          max_value=100
                                          )
     
-    playback_duration = serializers.DurationField(source='playback_duration',
-                                                 write_only=True,
+    playback_duration = serializers.DurationField(write_only=True,
                                                  required=True,
                                                  min_value=timedelta(seconds=5),
                                                  max_value=timedelta(seconds=30)
                                                  )
     
-
-
     genres = serializers.ListField(
         child=serializers.CharField(),
         min_length=1,
@@ -55,6 +51,9 @@ class GameCreationSerializer(serializers.ModelSerializer):
                   'fuzzy_match',
                   'answer_public',
                   ]
+        extra_kwargs = {
+            'game_name': {'required': False, 'allow_blank': True}
+        }
 
     def validate(self, data: dict) -> dict:
         """Perform cross-field validation for game creation."""
@@ -70,6 +69,8 @@ class GameCreationSerializer(serializers.ModelSerializer):
 class GameSendSerializer(serializers.ModelSerializer):
     """Set how to serialize a game for sending to clients."""
 
+    # Expose model `uid` as `game_uid` for API clients
+    game_uid = serializers.UUIDField(source='uid', read_only=True)
     playlist = PlaylistMiniSerializer(read_only=True)
     
     class Meta:

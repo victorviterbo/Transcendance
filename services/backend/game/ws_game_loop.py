@@ -171,7 +171,7 @@ async def process_round_answers(game_id: str, round_num: int,
 		player_username = answer_data['player_username']
 
 		results['answers'].append({
-			'player_id': player_id,
+			'player_uid': player_id,
 			'player_name': player_username,
 			'answer': answer,
 			'is_correct': is_correct,
