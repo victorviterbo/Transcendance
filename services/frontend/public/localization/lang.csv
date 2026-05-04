@@ -238,11 +238,15 @@ NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Di
 NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Displayed when loading notifications fails
 NOTIF_FRIEND_ACCEPTED,Friend request accepted:,Demande d'ami acceptée:,さんがあなたのフレンド申請を承認しました,Displayed after the highlighted username when someone accepts your friend request
 NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallback notification message
-GAME_LEADER_BOARD,Leaderboard,,,In game leaderboerd title\
-GAME_LOBBY_TITLE,Lobby,,,Lobby category in the game infrastructure
-GAME_CHAT_TITLE,Chat,,,Chat title in the game infrastructure
-GAME_ERROR_GLOBAL,Failed to fetch game data,,,Error message whenever game could'tbe loaded.
-GAME_ERROR_TITLE,Error,,,Title for error in game
-GAME_ERROR_INVALID_ROOM,Room is is not valid,,,Error when room number is not valid
-GAME_LOADING_TITLE,Loading,,,TItle of the loading message paper
-GAME_LOADING,Game isd loading...,,,Content of the loading message paper
+GAME_LEADER_BOARD,Leaderboard,Classement,リーダーボード,In game leaderboard title
+GAME_LOBBY_TITLE,Lobby,Salon,ロビー,Lobby category in the game infrastructure
+GAME_CHAT_TITLE,Chat,Discussion,チャット,Chat title in the game infrastructure
+GAME_ERROR_GLOBAL,Failed to fetch game data,Impossible de récupérer les données du jeu,ゲームデータの取得に失敗しました,Error message whenever game couldn't be loaded.
+GAME_ERROR_TITLE,Error,Erreur,エラー,Title for error in game
+GAME_ERROR_INVALID_ROOM,Room is not valid,La salle n’est pas valide,ルームが無効です,Error when room number is not valid
+GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Title of the loading message paper
+GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Content of the loading message paper
+GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
+GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
+GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
+GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
