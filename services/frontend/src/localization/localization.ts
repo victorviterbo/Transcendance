@@ -216,7 +216,6 @@ export function ttrfn(id: string, params: Record<string, ReactNode>): ReactNode[
 
 	let array: RegExpExecArray | null = null;
 	while ((array = reg.exec(text)) !== null) {
-		console.log(array);
 		if (array.length != 4) continue;
 		out.push(array[1]);
 		out.push(params[array[2]]);
