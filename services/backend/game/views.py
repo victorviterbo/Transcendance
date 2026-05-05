@@ -5,8 +5,8 @@ import uuid
 
 from chat.models import Room
 from django.db.models import Max, Sum
+from django.shortcuts import get_object_or_404
 from music.models import Playlist, Track
-from music.serializers import BlindSerializer
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -16,7 +16,10 @@ from stats.models import UserGameStats, UserRoundStats
 
 from game.models import Game
 
-from .serializers import GameCreationSerializer, GameSendSerializer
+from .serializers import (
+	GameCreationSerializer,
+	GameDetailSerializer,
+)
 
 
 def _parse_validation_errors(val_error: serializers.ValidationError) -> Response:
@@ -86,29 +89,21 @@ def _wrapup_game_stats(game: Game) -> None:
 			total_xp_earned=xp
 		)
 
-class GameView(APIView):
-	"""Create a game with tracks from selected genres."""
+class GameCreateView(APIView):
+	"""Create a game with a name and a privacy status."""
 	permission_classes = [AllowAny]
 
 	def post(self, request: Request) -> Response:
-		"""Create a game with tracks from specified genres.
-
-		Request body:
-		{
-			"genres": ["rock", "pop"],
-			"num_tracks": 10
-		}
-
-		Returns:
-			- game_uid: UUID of the created game
-			- playlist: Playlist name with genres
-			- current_track: Current track preview URL
-			- num_tracks: Total tracks selected
-		"""
+		"""Create a game with the provided name and privacy status."""
 		try:
 			game_serializer = GameCreationSerializer(data=request.data)
 			if game_serializer.is_valid(raise_exception=True):
 				new_game = game_serializer.save()
+
+			# Allow lightweight game creation. TODO: might delete the other options later
+			if not new_game.genres:
+				return Response({'success': True, 'game_id': new_game.id}, status=status.HTTP_201_CREATED)
+
 			tracks_per_genre = new_game.num_tracks // len(new_game.genres)
 			all_tracks = list()
 			for genre in new_game.genres:
@@ -126,7 +121,8 @@ class GameView(APIView):
 			# shuffle in-place
 			random.shuffle(all_tracks)
 			playlist_uid = uuid.uuid4()
-			playlist_name = f"Game Playlist - {', '.join(new_game.genres)} ({playlist_uid})"
+			genre_str = ', '.join(new_game.genres)
+			playlist_name = f"Game Playlist - {genre_str} ({playlist_uid})"
 			playlist = Playlist.objects.create(
 				name=playlist_name,
 				uid=playlist_uid,
@@ -145,8 +141,23 @@ class GameView(APIView):
 			new_game.room = room
 			new_game.save()
 			
-			return Response(GameSendSerializer(new_game).data,
-							status=status.HTTP_201_CREATED)
+			return Response({'success': True, 'game_id': new_game.id}, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:
 			return _parse_validation_errors(e)
+
+
+class GameAccessView(APIView):
+	"""Retrieve one game by its database id."""
+	permission_classes = [AllowAny]
+
+	def get(self, request: Request, game_id: int) -> Response:
+		"""Return game data for the provided id."""
+		game = get_object_or_404(Game, id=game_id)
+		serializer = GameDetailSerializer(
+			game, context={'request': request}
+		)
+		return Response(
+			{'game': serializer.data},
+			status=status.HTTP_200_OK
+		)
 		

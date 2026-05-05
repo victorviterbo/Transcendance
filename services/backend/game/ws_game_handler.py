@@ -23,6 +23,24 @@ def _get_game(consumer: Any, game_uid: str | None, req_membership: bool = True) 
 		return Game.objects.filter(uid=game_uid, players=consumer.profile).first()
 	return Game.objects.filter(uid=game_uid).first()
 
+@database_sync_to_async
+def _add_player_to_game(game: Game, profile: Profile) -> bool:
+	"""Add a player to a game by creating UserGameStats entry."""
+	try:
+		UserGameStats.objects.get_or_create(game=game, player=profile)
+		return True
+	except Exception:
+		return False
+
+@database_sync_to_async
+def _remove_player_from_game(game: Game, profile: Profile) -> bool:
+	"""Remove a player from a game by deleting UserGameStats entry."""
+	try:
+		UserGameStats.objects.filter(game=game, player=profile).delete()
+		return True
+	except Exception:
+		return False
+
 async def handle_game_action(consumer: Any, content: dict) -> None:
 	"""Route game events to appropriate handlers."""
 	game_event = content.get('event')
@@ -60,6 +78,12 @@ async def _join_game(consumer: Any, content: dict) -> None:
 	profile_uid = str(consumer.profile.uid)
 	profile_name = consumer.profile.username
 	group_name = f'game_{consumer.current_game.uid}'
+	
+	player_added = await _add_player_to_game(consumer.current_game, consumer.profile)
+	if not player_added:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Failed to join game'})
+		return
+	
 	await consumer.add_to_layer(group_name)
 	
 	await consumer.group_send(group_name, {
@@ -175,6 +199,10 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 	profile_name = consumer.profile.username
 	game_uid = consumer.current_game.uid
 	group_name = f'game_{game_uid}'
+	
+	# Remove player from game in database
+	await _remove_player_from_game(consumer.current_game, consumer.profile)
+	
 	await consumer.remove_from_layer(group_name)
 	
 	await consumer.group_send(group_name, {
