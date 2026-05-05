@@ -1,3 +1,82 @@
+game-create:
+  post:
+    summary: Create a new game
+    description: Create a new game (with only name and privacy required) with specified settings, genres, and tracks
+    operationId: createGame
+    tags: [game]
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/GameCreationRequest
+          examples:
+            basic:
+              summary: Basic game creation
+              value:
+                game_name: "My Game"
+                public_level: "public"
+                game_mode: "armageddon"
+                num_tracks: 10
+                break_duration: 15
+                playback_duration: 30
+                fuzzy_match: false
+                answer_public: true
+            with_genres:
+              summary: Game creation with genres
+              value:
+                game_name: "Music Quiz"
+                public_level: "private"
+                genres: ["pop", "rock"]
+                game_mode: "speed"
+                num_tracks: 20
+                break_duration: 30
+                playback_duration: 15
+                fuzzy_match: true
+                answer_public: false
+    responses:
+      "201":
+        description: Game created successfully
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/GameCreationResponse
+            examples:
+              ok:
+                value:
+                  success: true
+                  game_id: 42
+      "400":
+        description: Validation error or invalid game parameters
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: object
+                  additionalProperties:
+                    oneOf:
+                      - type: string
+                      - type: array
+                        items:
+                          type: string
+            examples:
+              insufficient_tracks:
+                value:
+                  error:
+                    global: ["NOT_ENOUGH_TRACKS"]
+              invalid_genre:
+                value:
+                  error:
+                    global: ["NOT_ENOUGH_TRACKS_GENRE"]
+              no_tracks:
+                value:
+                  error:
+                    global: ["NO_TRACKS_FOUND"]
+
 game-common:
   get:
     summary: All info about current game

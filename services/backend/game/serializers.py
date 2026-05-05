@@ -56,7 +56,12 @@ class GameCreationSerializer(serializers.ModelSerializer):
                   'answer_public',
                   ]
         extra_kwargs = {
-            'game_name': {'required': False, 'allow_blank': True}
+            'game_name': {'required': True},
+            'public_level': {'required': True},
+            'game_mode': {'required': False},
+            'break_duration': {'required': False},
+            'fuzzy_match': {'required': False},
+            'answer_public': {'required': False},
         }
 
     def validate(self, data: dict) -> dict:
