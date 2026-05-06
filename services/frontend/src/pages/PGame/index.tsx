@@ -4,7 +4,7 @@ import { appColors, appPositions } from "../../styles/theme";
 import PGameLBoard from "./PGameLBoard";
 import PGameLobby from "./PGameLobby";
 import PGameChat from "./PGameChat";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { IGameData, IGameDataRes } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData, gameGetRoom } from "../../api/game";
@@ -13,6 +13,8 @@ import CText from "../../components/text/CText";
 import type { TWSRcv, TWSSend } from "../../types/websocket";
 import { API_GAME } from "../../constants";
 import {
+	gameOnMessageNew,
+	gameOnMessageUpdate,
 	gameOnPlayerJoin,
 	gameOnPlayerLeave,
 	gameOnPlayerUpdate,
@@ -39,24 +41,44 @@ function PGame() {
 	}, [setGameData, gameID]);
 
 	//====================== WS ======================
+	const sendWSMessage = useCallback((sentData: Omit<TWSSend, "target">) => {
+		if(!gameData)
+			return;
+		const retData = {
+			target: "game",
+			gameid: gameData.id,
+			gameuid: gameData.uid,
+			...sentData,
+		}
+		wsContext.sendMessage(JSON.stringify(retData));
+	}, [gameData, wsContext])
+
 	useEffect(() => {
 		if (!gameID) return;
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
 				if (!last || last.target != "game" || !gameData) return;
-				if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player);
-				if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player);
-				if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players);
+				else if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player);
+				else if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player);
+				else if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players);
+				else if (last.event == "message-new") gameOnMessageNew(gameData, last.message, setGameData);
+				else if (last.event == "message-update") gameOnMessageUpdate(gameData, last.messages);
 			}
 		});
 	}, [wsContext, gameID, gameData]);
 
 	useEffect(() => {
-		wsContext.sendMessage(
-			JSON.stringify({ target: "game", event: "join", gameid: gameID } as TWSSend),
-		);
-	}, [wsContext, gameID]);
+		if(!gameData)
+			return;
+		const nSentData: TWSSend = {
+			target: "game",
+			event: "join",
+			gameid: gameData.id,
+			gameuid: gameData.uid
+		}
+		sendWSMessage(nSentData);
+	}, [gameData, sendWSMessage]);
 
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
@@ -129,7 +151,7 @@ function PGame() {
 					<PGameLobby />
 				</Grid>
 				<Grid size={3}>
-					<PGameChat game={gameData} />
+					<PGameChat  sendWSMessage={sendWSMessage} game={gameData} />
 				</Grid>
 			</Grid>
 		</Stack>

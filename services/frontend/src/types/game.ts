@@ -28,6 +28,7 @@ export interface IGameData {
 	maxPlayers: number;
 	isHost: boolean;
 	id: string;
+	uid: string;
 }
 
 export interface IGameDataRes {
