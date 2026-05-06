@@ -5,7 +5,7 @@ import PGameLBoard from "./PGameLBoard";
 import PGameLobby from "./PGameLobby";
 import PGameChat from "./PGameChat";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import type { IGameData, IGameDataRes } from "../../types/game";
+import type { IGameChatMsg, IGameData, IGameDataRes, IGamePlayer } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData, gameGetRoom } from "../../api/game";
 import CGamePaper from "../../components/surfaces/CGamePaper";
@@ -21,10 +21,22 @@ import {
 } from "../../handlers/gameHandlers";
 
 function PGame() {
+
+	//STYLING
 	const spacing: number = appPositions.gameSpacing;
-	const [gameData, setGameData] = useState<IGameData | undefined>();
+
+	//ERROR
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
+
+	//GAME
 	const [gameID] = useState<string | undefined>(gameGetRoom());
+	const [gameData, setGameData] = useState<IGameData | undefined>();
+
+		//Updatable Data
+	const [users, setUsers] = useState<IGamePlayer[]>([]);
+	const [chat, setChat] = useState<IGameChatMsg[]>([]);
+
+	//WS
 	const wsContext = useWS("game");
 
 	//====================== HTTP ======================
@@ -37,6 +49,12 @@ function PGame() {
 			setError,
 			undefined,
 			"GAME_ERROR_GLOBAL",
+			(data: IGameData | undefined) => {
+				if(!data)
+					return;
+				setUsers(data.players)
+				setChat(data.chat)
+			},
 		);
 	}, [setGameData, gameID]);
 
@@ -59,11 +77,11 @@ function PGame() {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
 				if (!last || last.target != "game" || !gameData) return;
-				else if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player);
-				else if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player);
-				else if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players);
-				else if (last.event == "message-new") gameOnMessageNew(gameData, last.message, setGameData);
-				else if (last.event == "message-update") gameOnMessageUpdate(gameData, last.messages);
+				else if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player, setUsers);
+				else if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player, setUsers);
+				else if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players, setUsers);
+				else if (last.event == "message-new") gameOnMessageNew(gameData, last.message, setChat);
+				else if (last.event == "message-update") gameOnMessageUpdate(gameData, last.messages, setChat);
 			}
 		});
 	}, [wsContext, gameID, gameData]);
@@ -145,13 +163,13 @@ function PGame() {
 				}}
 			>
 				<Grid size={3}>
-					<PGameLBoard game={gameData} />
+					<PGameLBoard users={users} />
 				</Grid>
 				<Grid size={6}>
 					<PGameLobby />
 				</Grid>
 				<Grid size={3}>
-					<PGameChat  sendWSMessage={sendWSMessage} game={gameData} />
+					<PGameChat  sendWSMessage={sendWSMessage} users={users} chat={chat} />
 				</Grid>
 			</Grid>
 		</Stack>

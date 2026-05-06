@@ -1,43 +1,25 @@
 import { Stack } from "@mui/material";
 import CGamePaper from "../../components/surfaces/CGamePaper";
 import type { GPageProps } from "../common/GPageBases";
-import type { IGameChatMsg, IGameData, IGamePlayer } from "../../types/game";
+import type { IGameChatMsg, IGamePlayer } from "../../types/game";
 import { appTexts } from "../../styles/theme";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { PGameChatSendStack } from "../../styles/pages/game/PGameChatStyle";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import PGameChatNode from "./PGameChatNode";
 import type { TWSSend } from "../../types/websocket";
 
 interface PGameChatProps extends GPageProps {
-	game: IGameData;
+	chat: IGameChatMsg[]
+	users: IGamePlayer[];
 	sendWSMessage: (dataSent: Omit<TWSSend, "target">) => void;
 }
 
-function PGameChat({ game, sendWSMessage }: PGameChatProps) {
+function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
 	//====================== NAME ======================
-	const [users, setUsers] = useState<IGamePlayer[]>([]);
-	const [chat, setChat] = useState<IGameChatMsg[]>([]);
 	const [messageField, setMessageField] = useState<string>("")
-
-	useEffect(() => {
-		async function updatePlayers() {
-			setUsers(game.players);
-		}
-		updatePlayers();
-	}, [game.players]);
-
-	useEffect(() => {
-		console.log(game.chat);
-		async function updateChat() {
-			const copy = structuredClone(game.chat);
-			copy.reverse();
-			setChat(copy);
-		}
-		updateChat();
-	}, [game.chat]);
 
 	//====================== GETTERS ======================
 	const chatList = useMemo((): ReactNode[] =>  {
