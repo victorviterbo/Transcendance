@@ -6,10 +6,11 @@ import { colorFromID } from "../../utils/styles";
 import { appColors, appTexts } from "../../styles/theme";
 import { PGameChatNodeStyle } from "../../styles/pages/game/PGameChatStyle";
 import { ttrfn } from "../../localization/localization";
+import { memo } from "react";
 
 interface PGameChatNodeProps extends GPageProps {
 	message: IGameChatMsg;
-	user: IGamePlayer;
+	user?: IGamePlayer;
 }
 
 function PGameChatNode({ message, user }: PGameChatNodeProps) {
@@ -23,7 +24,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 					fontWeight={600}
 					size="md"
 				>
-					<span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>:{" "}
+					<span style={{ color: colorFromID(user == undefined ? -1 : user.colorid), fontWeight: 700}}>{message.username}</span>:{" "}
 					{message.message}
 				</CText>
 			</Box>
@@ -39,7 +40,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 					size="md"
 				>
 					{ttrfn(message.type  == "joined" ? "GAME_JOINED_MESSAGE" : "GAME_LEAVED_MESSAGE", {
-						PLAYER: <span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>,
+						PLAYER: <span style={{ color: colorFromID(user == undefined ? -1 : user.colorid), fontWeight: 700}}>{message.username}</span>,
 					})}
 				</CText>
 			</Box>
@@ -55,7 +56,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 					size="md"
 				>
 					{ttrfn("GAME_GUESSED_MESSAGE", {
-						PLAYER: <span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>,
+						PLAYER: <span style={{ color: colorFromID(user == undefined ? -1 : user.colorid), fontWeight: 700}}>{message.username}</span>,
 						GUESS: <span style={{ color: appColors.cancel[1], fontWeight: 500}}>{message.message}</span>,
 					})}
 				</CText>
@@ -72,7 +73,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 					size="md"
 				>
 					{ttrfn("GAME_FOUND_MESSAGE", {
-						PLAYER: <span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>,
+						PLAYER: <span style={{ color: colorFromID(user == undefined ? -1 : user.colorid), fontWeight: 700}}>{message.username}</span>,
 					})}
 				</CText>
 			</Box>
@@ -82,4 +83,4 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 	return <></>;
 }
 
-export default PGameChatNode;
+export default memo(PGameChatNode);

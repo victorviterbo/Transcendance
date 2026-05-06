@@ -7,17 +7,20 @@ import CTextField from "../../components/inputs/textFields/CTextField";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { PGameChatSendStack } from "../../styles/pages/game/PGameChatStyle";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import PGameChatNode from "./PGameChatNode";
+import type { TWSSend } from "../../types/websocket";
 
 interface PGameChatProps extends GPageProps {
 	game: IGameData;
+	sendWSMessage: (dataSent: Omit<TWSSend, "target">) => void;
 }
 
-function PGameChat({ game }: PGameChatProps) {
+function PGameChat({ game, sendWSMessage }: PGameChatProps) {
 	//====================== NAME ======================
 	const [users, setUsers] = useState<IGamePlayer[]>([]);
 	const [chat, setChat] = useState<IGameChatMsg[]>([]);
+	const [messageField, setMessageField] = useState<string>("")
 
 	useEffect(() => {
 		async function updatePlayers() {
@@ -27,21 +30,33 @@ function PGameChat({ game }: PGameChatProps) {
 	}, [game.players]);
 
 	useEffect(() => {
+		console.log(game.chat);
 		async function updateChat() {
-			setChat(game.chat.reverse());
+			const copy = structuredClone(game.chat);
+			copy.reverse();
+			setChat(copy);
 		}
 		updateChat();
 	}, [game.chat]);
 
 	//====================== GETTERS ======================
-	function getChat(): ReactNode[] {
+	const chatList = useMemo((): ReactNode[] =>  {
 		return chat.map((msg: IGameChatMsg) => {
 			const targetUser: IGamePlayer | undefined = users.find((user: IGamePlayer) => {
 				return user.user.uid == msg.userid;
 			});
-			if (!targetUser) return null;
 			return <PGameChatNode message={msg} user={targetUser} key={msg.uid}></PGameChatNode>;
 		});
+	}, [chat, users]);
+
+	//====================== EVENT ======================
+	function handleSendMessage() {
+		if (!messageField || messageField.length == 0) return;
+		sendWSMessage({
+			event: "message-send",
+			message: messageField
+		})
+		setMessageField("");
 	}
 
 	//====================== STRUCT ======================
@@ -64,10 +79,10 @@ function PGameChat({ game }: PGameChatProps) {
 					position: "absolute",
 					padding: "inherit",
 					inset: 0,
-					overflow: "auto",
+					overflow: "hidden",
 				}}
 			>
-				<Stack sx={{ flex: 1, flexDirection: "column-reverse" }}>{getChat()}</Stack>
+				<Stack sx={{ flex: 1, flexDirection: "column-reverse", overflow: "auto"}}>{chatList}</Stack>
 				<Stack direction={"row"} sx={PGameChatSendStack()}>
 					<CTextField
 						sx={{ flex: 1, m: 0 }}
@@ -76,16 +91,16 @@ function PGameChat({ game }: PGameChatProps) {
 						fontSize={appTexts.text.sizes.xs}
 						borderWidth="0px"
 						verticalPadding="10px"
-						// value={messageField}
-						// onChange={(event) => {
-						// 	setMessageField(event.target.value);
-						// }}
-						// onKeyUp={(event) => {
-						// 	if (event.code == "Enter") handleSendMessage();
-						// }}
+						value={messageField}
+						onChange={(event) => {
+							setMessageField(event.target.value);
+						}}
+						onKeyUp={(event) => {
+							if (event.code == "Enter") handleSendMessage();
+						}}
 					></CTextField>
 					<CIconButton
-						// onClick={handleSendMessage}
+						onClick={handleSendMessage}
 						sx={{ my: "auto", ml: "10px" }}
 					>
 						<SendIcon fontSize="small" />

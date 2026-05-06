@@ -7,6 +7,7 @@ import {
 	mockGameAddPlayer,
 	type IMockGameData,
 	mockPlayerLeaveRoom,
+	mockGameUserSentChatMessage,
 } from "./game_db";
 import type { TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
@@ -37,6 +38,9 @@ export function mockHandleGameMessages(Data: TWSSend, client: WebSocketClientCon
 	if (Data.event == "join") {
 		mockClientJoinRoom(Data.gameid, client);
 		mockGameSimulate(Data.gameid);
+	}
+	if (Data.event == "message-send") {
+		mockGameUserSentChatMessage(Data.gameid, Data.message)
 	}
 }
 
