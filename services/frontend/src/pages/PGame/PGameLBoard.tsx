@@ -33,7 +33,6 @@ function PGameLBoard({ users }: PGameLBoardProps) {
 				}}
 			>
 				{users.map((user: IGamePlayer, index: number) => {
-					console.log(user);
 					return (
 						<PGameLBoardNode
 							position={index}

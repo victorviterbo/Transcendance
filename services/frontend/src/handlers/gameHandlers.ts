@@ -24,7 +24,7 @@ export const gameOnPlayerUpdate = (Game: IGameData, Players: IGamePlayer[], setU
 };
 
 export const gameOnMessageNew = (Game: IGameData, Message: IGameChatMsg, setChat:  React.Dispatch<React.SetStateAction<IGameChatMsg[]>>) => {
-	if(Game.chat.find((msg: IGameChatMsg) => msg.uid == Message.uid))
+	if(Game.chat.find((msg: IGameChatMsg) => msg.messageuid == Message.messageuid))
 		return;
 	Game.chat.push(Message);
 	Game.chat = structuredClone(Game.chat);

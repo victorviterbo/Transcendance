@@ -25,36 +25,36 @@ const mockGameData: Record<string, IMockGameData> = {};
 //--------------------------------------------------
 function mockCreateChat(Room: IMockGameData) {
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "Hello everyone how are ?",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[1].uid,
+		useruid: mockSocialDB.users[1].uid,
 		username: mockSocialDB.users[1].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "Hey",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "Hey !!",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[1].uid,
+		useruid: mockSocialDB.users[1].uid,
 		username: mockSocialDB.users[1].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message:
@@ -62,27 +62,27 @@ function mockCreateChat(Room: IMockGameData) {
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "TG",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "guessed",
 		message: "o zone dragostea din tei",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "found",
 	});
@@ -111,9 +111,9 @@ export function mockCreateRoom(GameID: string) {
 		});
 
 		nRoom.chat.push({
-			userid: mockSocialDB.users[nRoom.lastId].uid,
+			useruid: mockSocialDB.users[nRoom.lastId].uid,
 			username: mockSocialDB.users[nRoom.lastId].username,
-			uid: crypto.randomUUID(),
+			messageuid: crypto.randomUUID(),
 
 			type: "joined",
 		});
@@ -133,6 +133,11 @@ export function mockGetGameData(GameID: string): IMockGameData {
 export function mockGetGameSelf(GameID: string): IGamePlayer | undefined {
 	const data: IMockGameData = mockGetGameData(GameID);
 	return data.players.find((player: IGamePlayer) => player.user.uid == mockDefaultUserUID)
+}
+
+export function mockGetGamePlayer(GameID: string, PlayerUID: string): IGamePlayer | undefined {
+	const data: IMockGameData = mockGetGameData(GameID);
+	return data.players.find((player: IGamePlayer) => player.user.uid == PlayerUID)
 }
 
 
@@ -237,9 +242,9 @@ export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean 
 export function mockPlayerSendMessage(GameID: string, Target: IGamePlayer,  Type: TGameChatType, Message?: string, Update: boolean = false) {
 	const data: IMockGameData = mockGetGameData(GameID);
 	const nMessage: IGameChatMsg  = {
-		userid: Target.user.uid,
+		useruid: Target.user.uid,
 		username: Target.user.username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 	
 		type: Type,
 		message: Message
