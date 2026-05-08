@@ -4,8 +4,8 @@ import { appColors, appPositions } from "../../styles/theme";
 import PGameLBoard from "./PGameLBoard";
 import PGameLobby from "./PGameLobby";
 import PGameChat from "./PGameChat";
-import { useEffect, useState, type ReactNode } from "react";
-import type { IGameData, IGameDataRes } from "../../types/game";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import type { IGameChatMsg, IGameData, IGameDataRes, IGamePlayer } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData, gameGetRoom } from "../../api/game";
 import CGamePaper from "../../components/surfaces/CGamePaper";
@@ -13,16 +13,29 @@ import CText from "../../components/text/CText";
 import type { TWSRcv, TWSSend } from "../../types/websocket";
 import { API_GAME } from "../../constants";
 import {
+	gameOnMessageNew,
+	gameOnMessageUpdate,
 	gameOnPlayerJoin,
 	gameOnPlayerLeave,
 	gameOnPlayerUpdate,
 } from "../../handlers/gameHandlers";
 
 function PGame() {
+	//STYLING
 	const spacing: number = appPositions.gameSpacing;
-	const [gameData, setGameData] = useState<IGameData | undefined>();
+
+	//ERROR
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
+
+	//GAME
 	const [gameID] = useState<string | undefined>(gameGetRoom());
+	const [gameData, setGameData] = useState<IGameData | undefined>();
+
+	//Updatable Data
+	const [users, setUsers] = useState<IGamePlayer[]>([]);
+	const [chat, setChat] = useState<IGameChatMsg[]>([]);
+
+	//WS
 	const wsContext = useWS("game");
 
 	//====================== HTTP ======================
@@ -35,28 +48,59 @@ function PGame() {
 			setError,
 			undefined,
 			"GAME_ERROR_GLOBAL",
+			(data: IGameData | undefined) => {
+				if (!data) return;
+				setUsers(data.players);
+				setChat(data.chat);
+			},
 		);
 	}, [setGameData, gameID]);
 
 	//====================== WS ======================
+	const sendWSMessage = useCallback(
+		(sentData: Omit<TWSSend, "target">) => {
+			if (!gameData) return;
+			const retData = {
+				target: "game",
+				gameid: gameData.id,
+				gameuid: gameData.uid,
+				...sentData,
+			};
+			wsContext.sendMessage(JSON.stringify(retData));
+		},
+		[gameData, wsContext],
+	);
+
 	useEffect(() => {
 		if (!gameID) return;
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
 				if (!last || last.target != "game" || !gameData) return;
-				if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player);
-				if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player);
-				if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players);
+				else if (last.event == "player-join")
+					gameOnPlayerJoin(gameData, last.player, setUsers);
+				else if (last.event == "player-leave")
+					gameOnPlayerLeave(gameData, last.player, setUsers);
+				else if (last.event == "players-update")
+					gameOnPlayerUpdate(gameData, last.players, setUsers);
+				else if (last.event == "message-new")
+					gameOnMessageNew(gameData, last.message, setChat);
+				else if (last.event == "message-update")
+					gameOnMessageUpdate(gameData, last.messages, setChat);
 			}
 		});
 	}, [wsContext, gameID, gameData]);
 
 	useEffect(() => {
-		wsContext.sendMessage(
-			JSON.stringify({ target: "game", event: "join", gameid: gameID } as TWSSend),
-		);
-	}, [wsContext, gameID]);
+		if (!gameData) return;
+		const nSentData: TWSSend = {
+			target: "game",
+			event: "join",
+			gameid: gameData.id,
+			gameuid: gameData.uid,
+		};
+		sendWSMessage(nSentData);
+	}, [gameData, sendWSMessage]);
 
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
@@ -123,13 +167,13 @@ function PGame() {
 				}}
 			>
 				<Grid size={3}>
-					<PGameLBoard game={gameData} />
+					<PGameLBoard users={users} />
 				</Grid>
 				<Grid size={6}>
 					<PGameLobby />
 				</Grid>
 				<Grid size={3}>
-					<PGameChat game={gameData} />
+					<PGameChat sendWSMessage={sendWSMessage} users={users} chat={chat} />
 				</Grid>
 			</Grid>
 		</Stack>

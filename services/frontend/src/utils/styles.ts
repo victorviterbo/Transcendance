@@ -34,6 +34,7 @@ export function getScaledRadius(borderRadius: number | string, divisor = 1) {
 //               COLOR MANAGEMENT
 //--------------------------------------------------
 export function colorFromID(ID: number) {
+	if (ID == -1) return appColors.greys[5];
 	const colors: string[] = [];
 	colors.push(appColors.primary[0]);
 	colors.push(appColors.primary[1]);

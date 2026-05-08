@@ -5,9 +5,9 @@ import type { IExtUserInfo } from "./user";
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
 
 export interface IGameChatMsg {
-	userid: string;
+	useruid: string;
 	username: string;
-	uid: string;
+	messageuid: string;
 
 	type: TGameChatType;
 	message?: string;
@@ -28,6 +28,7 @@ export interface IGameData {
 	maxPlayers: number;
 	isHost: boolean;
 	id: string;
+	uid: string;
 }
 
 export interface IGameDataRes {

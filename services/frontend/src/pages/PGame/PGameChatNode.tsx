@@ -6,73 +6,119 @@ import { colorFromID } from "../../utils/styles";
 import { appColors, appTexts } from "../../styles/theme";
 import { PGameChatNodeStyle } from "../../styles/pages/game/PGameChatStyle";
 import { ttrfn } from "../../localization/localization";
+import { memo } from "react";
 
 interface PGameChatNodeProps extends GPageProps {
 	message: IGameChatMsg;
-	user: IGamePlayer;
+	user?: IGamePlayer;
 }
 
 function PGameChatNode({ message, user }: PGameChatNodeProps) {
 	//====================== RETURS ======================
 	if (message.type == "message" && message.message) {
 		return (
-			<Box sx={PGameChatNodeStyle()}>
+			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
 					size="md"
+					testid={"PGameChatNode-" + message.type}
 				>
-					<span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>:{" "}
-					{message.message}
+					<span
+						style={{
+							color: colorFromID(user == undefined ? -1 : user.colorid),
+							fontWeight: 700,
+						}}
+					>
+						{message.username}
+					</span>
+					: {message.message}
 				</CText>
 			</Box>
 		);
 	} else if (message.type == "joined" || message.type == "leaved") {
 		return (
-			<Box sx={PGameChatNodeStyle()}>
+			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-					sx={{color: appColors.greys[3]}}
+					sx={{ color: appColors.greys[3] }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
 					size="md"
+					testid={"PGameChatNode-" + message.type}
 				>
-					{ttrfn(message.type  == "joined" ? "GAME_JOINED_MESSAGE" : "GAME_LEAVED_MESSAGE", {
-						PLAYER: <span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>,
-					})}
+					{ttrfn(
+						message.type == "joined" ? "GAME_JOINED_MESSAGE" : "GAME_LEAVED_MESSAGE",
+						{
+							PLAYER: (
+								<span
+									style={{
+										color: colorFromID(user == undefined ? -1 : user.colorid),
+										fontWeight: 700,
+									}}
+								>
+									{message.username}
+								</span>
+							),
+						},
+					)}
 				</CText>
 			</Box>
 		);
 	} else if (message.type == "guessed" && message.message) {
 		return (
-			<Box sx={PGameChatNodeStyle()}>
+			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-					sx={{color: appColors.greys[3]}}
+					sx={{ color: appColors.greys[3] }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
 					size="md"
+					testid={"PGameChatNode-" + message.type}
 				>
 					{ttrfn("GAME_GUESSED_MESSAGE", {
-						PLAYER: <span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>,
-						GUESS: <span style={{ color: appColors.cancel[1], fontWeight: 500}}>{message.message}</span>,
+						PLAYER: (
+							<span
+								style={{
+									color: colorFromID(user == undefined ? -1 : user.colorid),
+									fontWeight: 700,
+								}}
+							>
+								{message.username}
+							</span>
+						),
+						GUESS: (
+							<span style={{ color: appColors.cancel[1], fontWeight: 500 }}>
+								{message.message}
+							</span>
+						),
 					})}
 				</CText>
 			</Box>
 		);
 	} else if (message.type == "found") {
 		return (
-			<Box sx={PGameChatNodeStyle()}>
+			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-					sx={{color: appColors.validate[1]}}
+					sx={{ color: appColors.validate[1] }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
 					size="md"
+					testid={"PGameChatNode-" + message.type}
 				>
 					{ttrfn("GAME_FOUND_MESSAGE", {
-						PLAYER: <span style={{ color: colorFromID(user.colorid), fontWeight: 700}}>{user.user.username}</span>,
+						PLAYER: (
+							<span
+								style={{
+									color: colorFromID(user == undefined ? -1 : user.colorid),
+									fontWeight: 700,
+								}}
+							>
+								{message.username}
+							</span>
+						),
 					})}
 				</CText>
 			</Box>
@@ -82,4 +128,4 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 	return <></>;
 }
 
-export default PGameChatNode;
+export default memo(PGameChatNode);

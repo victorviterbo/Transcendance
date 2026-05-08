@@ -1,4 +1,4 @@
-import type { IGameData, IGamePlayer } from "../../../types/game";
+import type { IGameChatMsg, IGameData, IGamePlayer, TGameChatType } from "../../../types/game";
 import { mockSocialDB, mockSocialSetDB } from "../social/social_dbs";
 import { mockBadgeStrings, mockDefaultPP, mockDefaultUserUID, mockDefaultUsername } from "../../db";
 import type { IExtUserInfo } from "../../../types/user";
@@ -25,36 +25,36 @@ const mockGameData: Record<string, IMockGameData> = {};
 //--------------------------------------------------
 function mockCreateChat(Room: IMockGameData) {
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "Hello everyone how are ?",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[1].uid,
+		useruid: mockSocialDB.users[1].uid,
 		username: mockSocialDB.users[1].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "Hey",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "Hey !!",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[1].uid,
+		useruid: mockSocialDB.users[1].uid,
 		username: mockSocialDB.users[1].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message:
@@ -62,27 +62,27 @@ function mockCreateChat(Room: IMockGameData) {
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "message",
 		message: "TG",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "guessed",
 		message: "o zone dragostea din tei",
 	});
 
 	Room.chat.push({
-		userid: mockSocialDB.users[0].uid,
+		useruid: mockSocialDB.users[0].uid,
 		username: mockSocialDB.users[0].username,
-		uid: crypto.randomUUID(),
+		messageuid: crypto.randomUUID(),
 
 		type: "found",
 	});
@@ -96,6 +96,7 @@ export function mockCreateRoom(GameID: string) {
 		maxPlayers: 100,
 		isHost: false,
 		id: GameID,
+		uid: crypto.randomUUID(),
 		lastId: 0,
 		isOn: false,
 	};
@@ -110,9 +111,9 @@ export function mockCreateRoom(GameID: string) {
 		});
 
 		nRoom.chat.push({
-			userid: mockSocialDB.users[nRoom.lastId].uid,
+			useruid: mockSocialDB.users[nRoom.lastId].uid,
 			username: mockSocialDB.users[nRoom.lastId].username,
-			uid: crypto.randomUUID(),
+			messageuid: crypto.randomUUID(),
 
 			type: "joined",
 		});
@@ -127,6 +128,16 @@ export function mockCreateRoom(GameID: string) {
 export function mockGetGameData(GameID: string): IMockGameData {
 	if (!mockGameData[GameID]) mockCreateRoom(GameID);
 	return mockGameData[GameID];
+}
+
+export function mockGetGameSelf(GameID: string): IGamePlayer | undefined {
+	const data: IMockGameData = mockGetGameData(GameID);
+	return data.players.find((player: IGamePlayer) => player.user.uid == mockDefaultUserUID);
+}
+
+export function mockGetGamePlayer(GameID: string, PlayerUID: string): IGamePlayer | undefined {
+	const data: IMockGameData = mockGetGameData(GameID);
+	return data.players.find((player: IGamePlayer) => player.user.uid == PlayerUID);
 }
 
 //--------------------------------------------------
@@ -168,10 +179,12 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 			target: "game",
 			event: "player-join",
 			player: data.players[data.players.length - 1],
+			gameid: GameID,
+			gameuid: data.uid,
 		} as TWSRcv),
 	);
+	mockPlayerSendMessage(GameID, data.players[data.players.length - 1], "joined");
 }
-
 export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean = false) {
 	const data: IMockGameData = mockGetGameData(GameID);
 	const pos: number = data.players.findIndex((player: IGamePlayer) => {
@@ -202,8 +215,11 @@ export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean 
 				target: "game",
 				event: "players-update",
 				players: data.players,
+				gameid: GameID,
+				gameuid: data.uid,
 			} as TWSRcv),
 		);
+		mockPlayerSendMessage(GameID, player[0], "leaved", undefined, true);
 		return;
 	}
 	currentClient.send(
@@ -211,8 +227,61 @@ export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean 
 			target: "game",
 			event: "player-leave",
 			player: player[0],
+			gameid: GameID,
+			gameuid: data.uid,
 		} as TWSRcv),
 	);
+	mockPlayerSendMessage(GameID, player[0], "leaved");
+}
+
+//--------------------------------------------------
+//                 MESSAGE MANAGEMENT
+//--------------------------------------------------
+export function mockPlayerSendMessage(
+	GameID: string,
+	Target: IGamePlayer,
+	Type: TGameChatType,
+	Message?: string,
+	Update: boolean = false,
+) {
+	const data: IMockGameData = mockGetGameData(GameID);
+	const nMessage: IGameChatMsg = {
+		useruid: Target.user.uid,
+		username: Target.user.username,
+		messageuid: crypto.randomUUID(),
+
+		type: Type,
+		message: Message,
+	};
+	data.chat.push(nMessage);
+	if (!currentClient) return;
+	if (Update) {
+		currentClient.send(
+			JSON.stringify({
+				target: "game",
+				event: "message-update",
+				messages: data.chat,
+				gameid: GameID,
+				gameuid: data.uid,
+			} as TWSRcv),
+		);
+		return;
+	}
+	currentClient.send(
+		JSON.stringify({
+			target: "game",
+			event: "message-new",
+			message: nMessage,
+			gameid: GameID,
+			gameuid: data.uid,
+		} as TWSRcv),
+	);
+}
+
+export function mockGameUserSentChatMessage(GameID: string, Message: string) {
+	const selfUser: IGamePlayer | undefined = mockGetGameSelf(GameID);
+	if (!selfUser) return;
+	mockPlayerSendMessage(GameID, selfUser, "message", Message);
 }
 
 //--------------------------------------------------
