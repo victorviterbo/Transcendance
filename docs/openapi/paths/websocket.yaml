@@ -150,6 +150,18 @@ WS-game:
                 target: "game"
                 event: "join"
                 gameid: "123456"
+                gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+        message-send:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
+          examples:
+            join:
+              value:
+                target: "game"
+                event: "message-send"
+                gameid: "123456"
+                gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                message: "Hey everyone"
         
     responses:
       "200":
@@ -158,10 +170,12 @@ WS-game:
             schema:
               $ref: ../openapi.yaml#/components/schemas/WS - StoC - game
             examples:
-              player-join::
+              player-join:
                 value:
                   target: "game"
                   event: "player-join"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
                   player:
                     user: 
                       uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
@@ -169,11 +183,15 @@ WS-game:
                       image: "path/to/image"
                       badges: "deaf octopus"
                       relation: "incoming"
-                    points: 150
+                      points: 150
+                      host: true
+                      colorid: 5
               player-leave::
                 value:
                   target: "game"
                   event: "player-leave"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
                   player:
                     user: 
                       uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
@@ -182,10 +200,14 @@ WS-game:
                       badges: "deaf octopus"
                       relation: "incoming"
                     points: 150
+                    host: true
+                    colorid: 5
               players-update::
                 value:
                   target: "game"
                   event: "players-update"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
                   players:
                     - user: 
                         uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
@@ -194,6 +216,8 @@ WS-game:
                         badges: "deaf octopus"
                         relation: "incoming"
                       points: 150
+                      host: true
+                      colorid: 5
                     - user: 
                         uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
                         username: "john"
@@ -201,3 +225,36 @@ WS-game:
                         badges: "deaf octopus"
                         relation: "self"
                       points: 50
+                      host: false
+                      colorid: 8
+              message-new:
+                value:
+                  target: "game"
+                  event: "message-new"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  message:
+                    useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                    username: "alice"
+                    messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                    type: "message"
+                    message: "Hey everyone"
+              message-update:
+                value:
+                  target: "game"
+                  event: "message-new"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  messages:
+                    - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                      type: "message"
+                      message: "Hey everyone"
+                    - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "john"
+                      messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                      type: "joined"

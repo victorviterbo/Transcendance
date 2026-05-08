@@ -46,16 +46,26 @@ WS-StoC-Game:
     target: { type: string, fromat: "game"}
     event: 
       type: string
-      fromat: "player-join | player-leave | players-update"
+      fromat: "player-join | player-leave | players-update | message-new | message-update"
       descripion: "[player-join]: notify the user a player has joined the game room | \
         [player-leave]: notify the user a player has leaved the game room | \
-        [players-update]: ask to user to update players list using give list"
+        [players-update]: ask to user to update players list using given list | \
+        [message-new]: notify user a new message has been sent | \
+        [message-update]: ask to user to update chat list using given list"
+    gameid (all): {type: string, descripion: "Current game ID required by any ws about the game"}
+    gameuid (all): {type: string, descripion: "Current game UID required by any ws about the game"}
     player (player-join - player-leave):
       $ref: /components/schemas_game.yaml#/GamePlayer
     players (players-update):
       type: array
       items:
         $ref: /components/schemas_game.yaml#/GamePlayer
+    message (message-new):
+      $ref: /components/schemas_game.yaml#/GameChat
+    messages (message-update):
+      type: array
+      items:
+        $ref: /components/schemas_game.yaml#/GameChat
 
 
 
@@ -87,6 +97,9 @@ WS-CtoS-Game:
     target: { type: string, fromat: "game"}
     event: 
       type: string
-      fromat: "join"
-      descripion: "join: notify server user has joined the game"
+      fromat: "join | message-send"
+      descripion: "[join]: notify server user has joined the game | \
+        [message-send]: event when user is send a message"
     gameid (all): {type: string, descripion: "Current game ID required by any ws about the game"}
+    gameuid (all): {type: string, descripion: "Current game UID required by any ws about the game"}
+    message (message-send): {type: string, descripion: "Sent message by the user"}

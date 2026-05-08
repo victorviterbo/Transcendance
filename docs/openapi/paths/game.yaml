@@ -20,6 +20,8 @@ game-common:
               ok:
                 value:
                   game:
+                    id: "123456"
+                    uid: "d76c7859-14ec-474d-814d-4b9ee5fdd2dd"
                     players:
                       - user: 
                           uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
@@ -36,5 +38,33 @@ game-common:
                           relation: "self"
                         points: 50
                     maxPlayers: 100
-                    id: "123456"
+                    isHost: false
+                    chat:
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "message"
+                        message: "Hello everyone"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "joined"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "leaved"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "guessed"
+                        message: "Never fade away Samurai"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "found"
 

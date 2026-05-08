@@ -99,9 +99,9 @@ export type TWSSend =
 	| {
 			target: Extract<TWSModuleName, "game">;
 			event: "message-send";
-			message: string;
 			gameid: string;
 			gameuid: string;
+			message: string;
 	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;

@@ -111,6 +111,8 @@ components:
       $ref: ./components/schemas_game.yaml#/GameData
     Game - GamePlayer:
       $ref: ./components/schemas_game.yaml#/GamePlayer
+    Game - GameChat:
+      $ref: ./components/schemas_game.yaml#/GameChat
     WS - StoC - friend-chat:
       $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendChat
     WS - StoC - notif:
