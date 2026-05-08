@@ -132,14 +132,13 @@ export function mockGetGameData(GameID: string): IMockGameData {
 
 export function mockGetGameSelf(GameID: string): IGamePlayer | undefined {
 	const data: IMockGameData = mockGetGameData(GameID);
-	return data.players.find((player: IGamePlayer) => player.user.uid == mockDefaultUserUID)
+	return data.players.find((player: IGamePlayer) => player.user.uid == mockDefaultUserUID);
 }
 
 export function mockGetGamePlayer(GameID: string, PlayerUID: string): IGamePlayer | undefined {
 	const data: IMockGameData = mockGetGameData(GameID);
-	return data.players.find((player: IGamePlayer) => player.user.uid == PlayerUID)
+	return data.players.find((player: IGamePlayer) => player.user.uid == PlayerUID);
 }
-
 
 //--------------------------------------------------
 //                    PLAYER MANAGEMENT
@@ -182,10 +181,9 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 			player: data.players[data.players.length - 1],
 			gameid: GameID,
 			gameuid: data.uid,
-
 		} as TWSRcv),
 	);
-	mockPlayerSendMessage(GameID, data.players[data.players.length - 1], "joined")
+	mockPlayerSendMessage(GameID, data.players[data.players.length - 1], "joined");
 }
 export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean = false) {
 	const data: IMockGameData = mockGetGameData(GameID);
@@ -221,7 +219,7 @@ export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean 
 				gameuid: data.uid,
 			} as TWSRcv),
 		);
-		mockPlayerSendMessage(GameID, player[0], "leaved", undefined, true)
+		mockPlayerSendMessage(GameID, player[0], "leaved", undefined, true);
 		return;
 	}
 	currentClient.send(
@@ -233,25 +231,31 @@ export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean 
 			gameuid: data.uid,
 		} as TWSRcv),
 	);
-	mockPlayerSendMessage(GameID, player[0], "leaved")
+	mockPlayerSendMessage(GameID, player[0], "leaved");
 }
 
 //--------------------------------------------------
 //                 MESSAGE MANAGEMENT
 //--------------------------------------------------
-export function mockPlayerSendMessage(GameID: string, Target: IGamePlayer,  Type: TGameChatType, Message?: string, Update: boolean = false) {
+export function mockPlayerSendMessage(
+	GameID: string,
+	Target: IGamePlayer,
+	Type: TGameChatType,
+	Message?: string,
+	Update: boolean = false,
+) {
 	const data: IMockGameData = mockGetGameData(GameID);
-	const nMessage: IGameChatMsg  = {
+	const nMessage: IGameChatMsg = {
 		useruid: Target.user.uid,
 		username: Target.user.username,
 		messageuid: crypto.randomUUID(),
-	
+
 		type: Type,
-		message: Message
-	}
+		message: Message,
+	};
 	data.chat.push(nMessage);
 	if (!currentClient) return;
-	if(Update){
+	if (Update) {
 		currentClient.send(
 			JSON.stringify({
 				target: "game",
@@ -274,12 +278,10 @@ export function mockPlayerSendMessage(GameID: string, Target: IGamePlayer,  Type
 	);
 }
 
-export function mockGameUserSentChatMessage(GameID: string, Message: string)
-{
+export function mockGameUserSentChatMessage(GameID: string, Message: string) {
 	const selfUser: IGamePlayer | undefined = mockGetGameSelf(GameID);
-	if(!selfUser)
-		return;
-	mockPlayerSendMessage(GameID, selfUser, "message", Message)
+	if (!selfUser) return;
+	mockPlayerSendMessage(GameID, selfUser, "message", Message);
 }
 
 //--------------------------------------------------

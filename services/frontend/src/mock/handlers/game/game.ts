@@ -42,7 +42,7 @@ export function mockHandleGameMessages(Data: TWSSend, client: WebSocketClientCon
 		mockGameSimulate(Data.gameid);
 	}
 	if (Data.event == "message-send") {
-		mockGameUserSentChatMessage(Data.gameid, Data.message)
+		mockGameUserSentChatMessage(Data.gameid, Data.message);
 	}
 }
 
@@ -66,21 +66,45 @@ function mockGameSimulate(GameID: string) {
 				);
 			}
 
-			
 			if (lastID == 4) {
-				const localPlayer: IGamePlayer | undefined =  mockGetGamePlayer(GameID, mockSocialDB.users[lastID].uid)
-				if(localPlayer)
-					setTimeout(() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hey !!!" ), 1000);
+				const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
+					GameID,
+					mockSocialDB.users[lastID].uid,
+				);
+				if (localPlayer)
+					setTimeout(
+						() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hey !!!"),
+						1000,
+					);
 			}
 			if (lastID == 5) {
-				const localPlayer: IGamePlayer | undefined =  mockGetGamePlayer(GameID, mockSocialDB.users[lastID].uid)
-				if(localPlayer)
-					setTimeout(() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hello everyone" ), 1500);
+				const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
+					GameID,
+					mockSocialDB.users[lastID].uid,
+				);
+				if (localPlayer)
+					setTimeout(
+						() =>
+							mockPlayerSendMessage(GameID, localPlayer, "message", "Hello everyone"),
+						1500,
+					);
 			}
 			if (lastID == 9) {
-				const localPlayer: IGamePlayer | undefined =  mockGetGamePlayer(GameID, mockSocialDB.users[lastID].uid)
-				if(localPlayer)
-					setTimeout(() => mockPlayerSendMessage(GameID, localPlayer, "message", "Is everyone ready ?" ), 750);
+				const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
+					GameID,
+					mockSocialDB.users[lastID].uid,
+				);
+				if (localPlayer)
+					setTimeout(
+						() =>
+							mockPlayerSendMessage(
+								GameID,
+								localPlayer,
+								"message",
+								"Is everyone ready ?",
+							),
+						750,
+					);
 			}
 		}, time);
 	}

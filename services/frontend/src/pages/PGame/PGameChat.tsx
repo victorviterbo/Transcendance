@@ -12,22 +12,24 @@ import PGameChatNode from "./PGameChatNode";
 import type { TWSSend } from "../../types/websocket";
 
 interface PGameChatProps extends GPageProps {
-	chat: IGameChatMsg[]
+	chat: IGameChatMsg[];
 	users: IGamePlayer[];
 	sendWSMessage: (dataSent: Omit<TWSSend, "target">) => void;
 }
 
 function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
 	//====================== NAME ======================
-	const [messageField, setMessageField] = useState<string>("")
+	const [messageField, setMessageField] = useState<string>("");
 
 	//====================== GETTERS ======================
-	const chatList = useMemo((): ReactNode[] =>  {
+	const chatList = useMemo((): ReactNode[] => {
 		return chat.map((msg: IGameChatMsg) => {
 			const targetUser: IGamePlayer | undefined = users.find((user: IGamePlayer) => {
 				return user.user.uid == msg.useruid;
 			});
-			return <PGameChatNode message={msg} user={targetUser} key={msg.messageuid}></PGameChatNode>;
+			return (
+				<PGameChatNode message={msg} user={targetUser} key={msg.messageuid}></PGameChatNode>
+			);
 		});
 	}, [chat, users]);
 
@@ -36,8 +38,8 @@ function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
 		if (!messageField || messageField.length == 0) return;
 		sendWSMessage({
 			event: "message-send",
-			message: messageField
-		})
+			message: messageField,
+		});
 		setMessageField("");
 	}
 
@@ -64,7 +66,9 @@ function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
 					overflow: "hidden",
 				}}
 			>
-				<Stack sx={{ flex: 1, flexDirection: "column-reverse", overflow: "auto"}}>{chatList}</Stack>
+				<Stack sx={{ flex: 1, flexDirection: "column-reverse", overflow: "auto" }}>
+					{chatList}
+				</Stack>
 				<Stack direction={"row"} sx={PGameChatSendStack()}>
 					<CTextField
 						sx={{ flex: 1, m: 0 }}
@@ -80,10 +84,12 @@ function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
 						onKeyUp={(event) => {
 							if (event.code == "Enter") handleSendMessage();
 						}}
+						data-testid="PGameChat-TextField"
 					></CTextField>
 					<CIconButton
 						onClick={handleSendMessage}
 						sx={{ my: "auto", ml: "10px" }}
+						data-testid="PGameChat-SendButton"
 					>
 						<SendIcon fontSize="small" />
 					</CIconButton>
