@@ -21,7 +21,6 @@ import {
 } from "../../handlers/gameHandlers";
 
 function PGame() {
-
 	//STYLING
 	const spacing: number = appPositions.gameSpacing;
 
@@ -32,7 +31,7 @@ function PGame() {
 	const [gameID] = useState<string | undefined>(gameGetRoom());
 	const [gameData, setGameData] = useState<IGameData | undefined>();
 
-		//Updatable Data
+	//Updatable Data
 	const [users, setUsers] = useState<IGamePlayer[]>([]);
 	const [chat, setChat] = useState<IGameChatMsg[]>([]);
 
@@ -50,26 +49,27 @@ function PGame() {
 			undefined,
 			"GAME_ERROR_GLOBAL",
 			(data: IGameData | undefined) => {
-				if(!data)
-					return;
-				setUsers(data.players)
-				setChat(data.chat)
+				if (!data) return;
+				setUsers(data.players);
+				setChat(data.chat);
 			},
 		);
 	}, [setGameData, gameID]);
 
 	//====================== WS ======================
-	const sendWSMessage = useCallback((sentData: Omit<TWSSend, "target">) => {
-		if(!gameData)
-			return;
-		const retData = {
-			target: "game",
-			gameid: gameData.id,
-			gameuid: gameData.uid,
-			...sentData,
-		}
-		wsContext.sendMessage(JSON.stringify(retData));
-	}, [gameData, wsContext])
+	const sendWSMessage = useCallback(
+		(sentData: Omit<TWSSend, "target">) => {
+			if (!gameData) return;
+			const retData = {
+				target: "game",
+				gameid: gameData.id,
+				gameuid: gameData.uid,
+				...sentData,
+			};
+			wsContext.sendMessage(JSON.stringify(retData));
+		},
+		[gameData, wsContext],
+	);
 
 	useEffect(() => {
 		if (!gameID) return;
@@ -77,24 +77,28 @@ function PGame() {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
 				if (!last || last.target != "game" || !gameData) return;
-				else if (last.event == "player-join") gameOnPlayerJoin(gameData, last.player, setUsers);
-				else if (last.event == "player-leave") gameOnPlayerLeave(gameData, last.player, setUsers);
-				else if (last.event == "players-update") gameOnPlayerUpdate(gameData, last.players, setUsers);
-				else if (last.event == "message-new") gameOnMessageNew(gameData, last.message, setChat);
-				else if (last.event == "message-update") gameOnMessageUpdate(gameData, last.messages, setChat);
+				else if (last.event == "player-join")
+					gameOnPlayerJoin(gameData, last.player, setUsers);
+				else if (last.event == "player-leave")
+					gameOnPlayerLeave(gameData, last.player, setUsers);
+				else if (last.event == "players-update")
+					gameOnPlayerUpdate(gameData, last.players, setUsers);
+				else if (last.event == "message-new")
+					gameOnMessageNew(gameData, last.message, setChat);
+				else if (last.event == "message-update")
+					gameOnMessageUpdate(gameData, last.messages, setChat);
 			}
 		});
 	}, [wsContext, gameID, gameData]);
 
 	useEffect(() => {
-		if(!gameData)
-			return;
+		if (!gameData) return;
 		const nSentData: TWSSend = {
 			target: "game",
 			event: "join",
 			gameid: gameData.id,
-			gameuid: gameData.uid
-		}
+			gameuid: gameData.uid,
+		};
 		sendWSMessage(nSentData);
 	}, [gameData, sendWSMessage]);
 
@@ -169,7 +173,7 @@ function PGame() {
 					<PGameLobby />
 				</Grid>
 				<Grid size={3}>
-					<PGameChat  sendWSMessage={sendWSMessage} users={users} chat={chat} />
+					<PGameChat sendWSMessage={sendWSMessage} users={users} chat={chat} />
 				</Grid>
 			</Grid>
 		</Stack>

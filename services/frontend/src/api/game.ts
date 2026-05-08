@@ -33,7 +33,7 @@ export async function gameFetchData<
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>,
 	defaultValue: _DATA,
 	fallbackMSG: string,
-	cb: (data: _DATA) => void
+	cb: (data: _DATA) => void,
 ) {
 	try {
 		const response = await api.get<_RES_T>(Request);

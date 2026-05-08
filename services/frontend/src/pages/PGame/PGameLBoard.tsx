@@ -5,12 +5,10 @@ import PGameLBoardNode from "./PGameLBoardNode";
 import { Stack } from "@mui/material";
 
 interface PGameLBoardProps extends GPageProps {
-	users: IGamePlayer[]
+	users: IGamePlayer[];
 }
 
 function PGameLBoard({ users }: PGameLBoardProps) {
-	
-
 	return (
 		<CGamePaper
 			title={"GAME_LEADER_BOARD"}
