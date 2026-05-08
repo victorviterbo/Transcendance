@@ -25,9 +25,9 @@ function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
 	const chatList = useMemo((): ReactNode[] =>  {
 		return chat.map((msg: IGameChatMsg) => {
 			const targetUser: IGamePlayer | undefined = users.find((user: IGamePlayer) => {
-				return user.user.uid == msg.userid;
+				return user.user.uid == msg.useruid;
 			});
-			return <PGameChatNode message={msg} user={targetUser} key={msg.uid}></PGameChatNode>;
+			return <PGameChatNode message={msg} user={targetUser} key={msg.messageuid}></PGameChatNode>;
 		});
 	}, [chat, users]);
 

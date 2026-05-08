@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { API_GAME } from "../../../constants";
-import type { IGameDataRes } from "../../../types/game";
+import type { IGameDataRes, IGamePlayer } from "../../../types/game";
 import {
 	mockGetGameData,
 	mockClientJoinRoom,
@@ -8,6 +8,8 @@ import {
 	type IMockGameData,
 	mockPlayerLeaveRoom,
 	mockGameUserSentChatMessage,
+	mockGetGamePlayer,
+	mockPlayerSendMessage,
 } from "./game_db";
 import type { TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
@@ -62,6 +64,23 @@ function mockGameSimulate(GameID: string) {
 					() => mockPlayerLeaveRoom(GameID, mockSocialDB.users[lastID].uid, true),
 					6500,
 				);
+			}
+
+			
+			if (lastID == 4) {
+				const localPlayer: IGamePlayer | undefined =  mockGetGamePlayer(GameID, mockSocialDB.users[lastID].uid)
+				if(localPlayer)
+					setTimeout(() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hey !!!" ), 1000);
+			}
+			if (lastID == 5) {
+				const localPlayer: IGamePlayer | undefined =  mockGetGamePlayer(GameID, mockSocialDB.users[lastID].uid)
+				if(localPlayer)
+					setTimeout(() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hello everyone" ), 1500);
+			}
+			if (lastID == 9) {
+				const localPlayer: IGamePlayer | undefined =  mockGetGamePlayer(GameID, mockSocialDB.users[lastID].uid)
+				if(localPlayer)
+					setTimeout(() => mockPlayerSendMessage(GameID, localPlayer, "message", "Is everyone ready ?" ), 750);
 			}
 		}, time);
 	}

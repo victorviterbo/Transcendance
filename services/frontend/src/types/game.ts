@@ -5,9 +5,9 @@ import type { IExtUserInfo } from "./user";
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
 
 export interface IGameChatMsg {
-	userid: string;
+	useruid: string;
 	username: string;
-	uid: string;
+	messageuid: string;
 
 	type: TGameChatType;
 	message?: string;
