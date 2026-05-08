@@ -16,6 +16,10 @@
 - [ ] Message failed not showing 
 - [ ] useParams(); for room id;
 
+# TODO: FAB
+- [ ] Add verification on who calls for game endpoints
+- [ ] Check get_relation
+
 # BUG
 
 - [ ] BUG#0001: Web socket error when creating new account

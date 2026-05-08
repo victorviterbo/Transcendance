@@ -7,6 +7,7 @@ to JSON and vice-versa, namely:
 from datetime import timedelta
 from typing import Any
 
+from music.models import Track
 from project.defaults import get_badge, num_genres
 from rest_framework import serializers
 from stats.models import UserGameStats
@@ -16,64 +17,54 @@ from .models import Game
 
 
 class GameCreationSerializer(serializers.ModelSerializer):
-    """Set how to serialize game creation request."""
-    
-    num_tracks = serializers.IntegerField(write_only=True,
-                                         required=False,
-                                         min_value=1,
-                                         max_value=100
-                                         )
-    
-    playback_duration = serializers.DurationField(write_only=True,
-                                                 required=False,
-                                                 min_value=timedelta(seconds=5),
-                                                 max_value=timedelta(seconds=30)
-                                                 )
-    
-    genres = serializers.ListField(
-        child=serializers.CharField(),
-        required=False,
-        allow_empty=True,
-        min_length=1,
-        max_length=num_genres
-        )
-    
-    class Meta:
-        """Defines the metaclass for the GameCreationSerializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        GameCreationSerializer class itself
-        """
-        model = Game
-        fields = ['game_name',
-                  'genres',
-                  'game_mode',
-                  'public_level',
-                  'num_tracks',
-                  'break_duration',
-                  'playback_duration',
-                  'fuzzy_match',
-                  'answer_public',
-                  ]
-        extra_kwargs = {
-            'game_name': {'required': True},
-            'public_level': {'required': True},
-            'game_mode': {'required': False},
-            'break_duration': {'required': False},
-            'fuzzy_match': {'required': False},
-            'answer_public': {'required': False},
-        }
+    """Minimal serializer for creating a Game.
 
-    def validate(self, data: dict) -> dict:
-        """Perform cross-field validation for game creation."""
-        genres = data.get('genres')
-        if genres:
-            num_field = Game._meta.get_field('num_tracks')
-            num_tracks = data.get('num_tracks', num_field.default)
-            if num_tracks < len(genres):
-                raise serializers.ValidationError('Not enough tracks',
-                                                  code='NOT_ENOUGH_TRACKS')
-        return super().validate(data)
+    Only requires `game_name` and `public_level`. Other fields use model
+    defaults or are managed server-side.
+    """
+
+    class Meta:
+        model = Game
+        fields = ['game_name', 'public_level']
+
+
+class GameUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating (PATCH) game fields."""
+
+    class Meta:
+        """Meta config for GameUpdateSerializer."""
+        model = Game
+        fields = [
+            'game_name',
+            'genres',
+            'game_mode',
+            'public_level',
+            'num_tracks',
+            'break_duration',
+            'playback_duration',
+            'fuzzy_match',
+            'answer_public',
+        ]
+        read_only_fields = ['game_name']
+
+    def validate_genres(self, value : Any)-> Any:
+        """Validate that all genres are in the allowed list."""
+        valid_genres: list[str] = [
+            'pop',
+            'rock',
+            'rap',
+            'electro',
+            'r&b/soul',
+            'variété française',
+        ]
+        if value:
+            invalid = [g for g in value if g not in valid_genres]
+            if invalid:
+                raise serializers.ValidationError(
+                    f"Invalid genres: {', '.join(invalid)}.Valid: {', '.join(valid_genres)}",  # noqa: E501
+					code='invalid_genres',
+                )
+        return value
 
 
 class PlayerSerializer(serializers.Serializer):
@@ -98,9 +89,7 @@ class PlayerSerializer(serializers.Serializer):
             'relation': relation,
         }
 
-    def _get_relation(
-        self, profile: Profile, current_user: Any
-    ) -> str:
+    def _get_relation(self, profile: Profile, current_user: Any) -> str:
         """Determine if player is self or other."""
         if not current_user or not current_user.is_authenticated:
             return 'other'
@@ -114,9 +103,7 @@ class PlayerSerializer(serializers.Serializer):
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
     id = serializers.CharField(source='uid', read_only=True)
-    players = PlayerSerializer(
-        source='player_stats', many=True, read_only=True
-    )
+    players = PlayerSerializer(source='player_stats', many=True, read_only=True)
     max_players = serializers.SerializerMethodField()
 
     class Meta:

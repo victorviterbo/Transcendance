@@ -6,6 +6,7 @@ import uuid
 from datetime import timedelta
 
 from chat.models import Room
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from music.models import Playlist, Track
 from userprofile.models import Profile
@@ -14,9 +15,9 @@ from userprofile.models import Profile
 class Game(models.Model):
 	"""Define the model for a single game session."""
 
-	game_name = models.CharField(max_length=100, blank=True, default='')
+	game_name = models.CharField(max_length=100, default='Unnamed Game')
 	
-	genres = models.JSONField(default=list)
+	genres = models.JSONField(default=list, blank=True)
 	
 	players = models.ManyToManyField(Profile,
 									through='stats.UserGameStats',
@@ -42,9 +43,15 @@ class Game(models.Model):
 									],
 									default='waiting')
 	
-	playback_duration = models.DurationField(null=True,
-										blank=True,
-										default=timedelta(seconds=30))
+	playback_duration = models.DurationField(
+		null=True,
+		blank=True,
+		default=timedelta(seconds=30),
+		validators=[
+			MinValueValidator(timedelta(seconds=5)),
+			MaxValueValidator(timedelta(seconds=30)),
+		],
+	)
 
 	break_duration = models.DurationField(null=True,
                                           blank=True,
@@ -69,7 +76,10 @@ class Game(models.Model):
 										blank=True,
 										related_name='current_in_games')
 	
-	num_tracks = models.PositiveIntegerField(default=5)
+	num_tracks = models.PositiveIntegerField(
+		default=5,
+		validators=[MinValueValidator(1), MaxValueValidator(100)],
+	)
 
 	played_at = models.DateTimeField(auto_now_add=True)
 	
@@ -83,17 +93,10 @@ class Game(models.Model):
 									('friends_only', 'FRIENDS_ONLY'),
 									('invite_only', 'INVITE_ONLY'),
 									],
-								default='public')
+								)
 
 	fuzzy_match = models.BooleanField(default=True)
 
 	class Meta:
 		"""Define special behaviour of database."""
 		ordering = ['-played_at']
-
-	def save(self, *args, **kwargs):
-		"""Auto-generate game_name from genres and uid if not provided."""
-		if not self.game_name and self.genres:
-			genres_str = ' - '.join(self.genres)
-			self.game_name = f"{genres_str} - {self.uid}"
-		super().save(*args, **kwargs)

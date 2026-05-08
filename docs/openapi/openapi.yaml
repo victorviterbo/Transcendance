@@ -54,8 +54,8 @@ paths:
     $ref: ./paths/stats.yaml#/leaderboard
   /api/stats/history:
     $ref: ./paths/stats.yaml#/history
-  /api/game/create:
-    $ref: ./paths/game.yaml#/game-create
+  /api/game/:
+    $ref: ./paths/game.yaml#/game
   /api/game/{ROOMID}:
     $ref: ./paths/game.yaml#/game-common
   WS/#friend-chat:

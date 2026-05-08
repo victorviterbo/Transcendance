@@ -1,17 +1,13 @@
 """HTTP views for game management and testing."""
 
-import random
-import uuid
+from typing import Any
 
-from chat.models import Room
+from django.db import transaction
 from django.db.models import Max, Sum
-from django.shortcuts import get_object_or_404
-from music.models import Playlist, Track
-from rest_framework import serializers, status
+from rest_framework import serializers, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from stats.models import UserGameStats, UserRoundStats
 
 from game.models import Game
@@ -19,7 +15,9 @@ from game.models import Game
 from .serializers import (
 	GameCreationSerializer,
 	GameDetailSerializer,
+	GameUpdateSerializer,
 )
+from .services import setup_game_assets
 
 
 def _parse_validation_errors(val_error: serializers.ValidationError) -> Response:
@@ -89,75 +87,41 @@ def _wrapup_game_stats(game: Game) -> None:
 			total_xp_earned=xp
 		)
 
-class GameCreateView(APIView):
-	"""Create a game with a name and a privacy status."""
+class GameViewSet(viewsets.ModelViewSet):
+	"""ViewSet for managing games: create, list, retrieve, update, delete."""
+	queryset = Game.objects.all()
 	permission_classes = [AllowAny]
 
-	def post(self, request: Request) -> Response:
+	def get_serializer_class(self) -> type[serializers.Serializer]:
+		"""Return the appropriate serializer based on the action."""
+		if self.action == 'create':
+			return GameCreationSerializer
+		elif self.action in ('partial_update', 'update'):
+			return GameUpdateSerializer
+		return GameDetailSerializer
+
+	def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 		"""Create a game with the provided name and privacy status."""
 		try:
-			game_serializer = GameCreationSerializer(data=request.data)
-			if game_serializer.is_valid(raise_exception=True):
+			game_serializer = self.get_serializer(data=request.data)
+			game_serializer.is_valid(raise_exception=True)
+			with transaction.atomic():
 				new_game = game_serializer.save()
-
-			# Allow lightweight game creation. TODO: might delete the other options later
-			if not new_game.genres:
-				return Response({'success': True, 'game_id': new_game.id}, status=status.HTTP_201_CREATED)
-
-			tracks_per_genre = new_game.num_tracks // len(new_game.genres)
-			all_tracks = list()
-			for genre in new_game.genres:
-				genre_tracks = Track.objects.filter(genre__iexact=genre) \
-					.order_by('?')[:tracks_per_genre]
-				if len(genre_tracks) < tracks_per_genre:
-					raise serializers.ValidationError(
-						'Not enough tracks for genre: ' + genre,
-						code='NOT_ENOUGH_TRACKS_GENRE')
-				all_tracks.extend(genre_tracks)
-			if not all_tracks:
-				raise serializers.ValidationError(
-					'No tracks available for the selected genres',
-					code='NO_TRACKS_FOUND')
-			# shuffle in-place
-			random.shuffle(all_tracks)
-			playlist_uid = uuid.uuid4()
-			genre_str = ', '.join(new_game.genres)
-			playlist_name = f"Game Playlist - {genre_str} ({playlist_uid})"
-			playlist = Playlist.objects.create(
-				name=playlist_name,
-				uid=playlist_uid,
+				setup_game_assets(new_game)
+			return Response(
+				{'success': True, 'game_id': new_game.id},
+				status=status.HTTP_201_CREATED,
 			)
-			playlist.tracks.set(all_tracks)
-			#create room
-			room_uid = uuid.uuid4()
-			room_name = f"Game Room - {', '.join(new_game.genres)} ({room_uid})"
-			room = Room.objects.create(
-				name=room_name,
-				is_direct=False,
-				uid=room_uid
-			)
-			new_game.playlist = playlist
-			new_game.current_track = all_tracks[0]
-			new_game.room = room
-			new_game.save()
-			
-			return Response({'success': True, 'game_id': new_game.id}, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:
 			return _parse_validation_errors(e)
 
+	def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+		"""Disable full update (PUT); allow PATCH (partial_update)."""
+		from rest_framework.exceptions import MethodNotAllowed
 
-class GameAccessView(APIView):
-	"""Retrieve one game by its database id."""
-	permission_classes = [AllowAny]
+		if request.method == 'PUT':
+			raise MethodNotAllowed('PUT')
 
-	def get(self, request: Request, game_id: int) -> Response:
-		"""Return game data for the provided id."""
-		game = get_object_or_404(Game, id=game_id)
-		serializer = GameDetailSerializer(
-			game, context={'request': request}
-		)
-		return Response(
-			{'game': serializer.data},
-			status=status.HTTP_200_OK
-		)
+		# For PATCH (partial_update) delegate to the normal update logic
+		return super().update(request, *args, **kwargs)
 		
