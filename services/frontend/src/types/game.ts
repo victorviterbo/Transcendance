@@ -23,12 +23,13 @@ export interface IGamePlayer {
 
 //====================== COMMON ======================
 export interface IGameData {
+	id: string;
+	uid: string;
+	name: string;
 	chat: IGameChatMsg[];
 	players: IGamePlayer[];
 	maxPlayers: number;
 	isHost: boolean;
-	id: string;
-	uid: string;
 }
 
 export interface IGameDataRes {
