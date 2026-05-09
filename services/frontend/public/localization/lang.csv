@@ -250,3 +250,8 @@ GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,
 GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
 GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
 GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
+GAME_WAITING_START,Waiting {USER} to start the game,,,Displayed message in the game lobby
+GAME_WAITING_START_NO_HOST,Waiting to start the game,,,Displayed message in the game lobby (With no host rooms)
+GAME_PLAYER_COUNT,Players: {COUNT} / {MAX},,,Display the current connected with its maximum
+GAME_START,Start game,,,Button to start the current game
+GAME_EDIT,Edit game,,,Button to edit the current game settings
