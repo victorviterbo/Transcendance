@@ -22,14 +22,17 @@ game-common:
                   game:
                     id: "123456"
                     uid: "d76c7859-14ec-474d-814d-4b9ee5fdd2dd"
+                    name: "Sarah's game room"
                     players:
                       - user: 
                           uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                          username: "alice"
+                          username: "sarah"
                           image: "path/to/image"
                           badges: "deaf octopus"
                           relation: "incoming"
                         points: 150
+                        host: true
+                        colorid: 5
                       - user: 
                           uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
                           username: "john"
@@ -37,6 +40,8 @@ game-common:
                           badges: "deaf octopus"
                           relation: "self"
                         points: 50
+                        host: false
+                        colorid: 8
                     maxPlayers: 100
                     isHost: false
                     chat:
