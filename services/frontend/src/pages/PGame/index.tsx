@@ -2,7 +2,6 @@ import { Grid, Stack } from "@mui/material";
 import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
-import PGameLobby from "./PGameLobby";
 import PGameChat from "./PGameChat";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { IGameChatMsg, IGameData, IGameDataRes, IGamePlayer } from "../../types/game";
@@ -19,6 +18,7 @@ import {
 	gameOnPlayerLeave,
 	gameOnPlayerUpdate,
 } from "../../handlers/gameHandlers";
+import PGameViews from "./PGameViews";
 
 function PGame() {
 	//STYLING
@@ -170,7 +170,7 @@ function PGame() {
 					<PGameLBoard users={users} />
 				</Grid>
 				<Grid size={6}>
-					<PGameLobby />
+					<PGameViews players={users} game={gameData} />
 				</Grid>
 				<Grid size={3}>
 					<PGameChat sendWSMessage={sendWSMessage} users={users} chat={chat} />
