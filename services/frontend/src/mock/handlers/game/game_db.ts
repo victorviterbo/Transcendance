@@ -16,6 +16,9 @@ export interface IMockGameData extends IGameData {
 	isOn: boolean;
 }
 
+export const MOCK_JOIN_ROOM = "123456";
+export const MOCK_HOST_ROOM = "789";
+
 //====================== DATA ======================
 let currentClient: WebSocketClientConnectionProtocol | undefined = undefined;
 const mockGameData: Record<string, IMockGameData> = {};
@@ -91,35 +94,38 @@ export function mockCreateRoom(GameID: string) {
 	mockSocialSetDB();
 
 	const nRoom: IMockGameData = {
+		id: GameID,
+		uid: crypto.randomUUID(),
+		name: GameID == MOCK_HOST_ROOM ? "John's own room" : "Sarah's room",
 		players: [],
 		chat: [],
 		maxPlayers: 100,
-		isHost: false,
-		id: GameID,
-		uid: crypto.randomUUID(),
+		isHost: GameID == MOCK_HOST_ROOM,
 		lastId: 0,
 		isOn: false,
 	};
 
 	//Adding already presents players
-	for (nRoom.lastId = 0; nRoom.lastId < 4; nRoom.lastId++) {
-		nRoom.players.push({
-			points: 0,
-			user: mockSocialDB.users[nRoom.lastId],
-			host: nRoom.lastId == 0,
-			colorid: nRoom.lastId % 10,
-		});
+	if (GameID == MOCK_JOIN_ROOM) {
+		for (nRoom.lastId = 0; nRoom.lastId < 4; nRoom.lastId++) {
+			nRoom.players.push({
+				points: 0,
+				user: mockSocialDB.users[nRoom.lastId],
+				host: nRoom.lastId == 0,
+				colorid: nRoom.lastId % 10,
+			});
 
-		nRoom.chat.push({
-			useruid: mockSocialDB.users[nRoom.lastId].uid,
-			username: mockSocialDB.users[nRoom.lastId].username,
-			messageuid: crypto.randomUUID(),
+			nRoom.chat.push({
+				useruid: mockSocialDB.users[nRoom.lastId].uid,
+				username: mockSocialDB.users[nRoom.lastId].username,
+				messageuid: crypto.randomUUID(),
 
-			type: "joined",
-		});
+				type: "joined",
+			});
+		}
+
+		mockCreateChat(nRoom);
 	}
-
-	mockCreateChat(nRoom);
 
 	mockGameData[GameID] = nRoom;
 	return nRoom;
@@ -161,7 +167,7 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 	data.players.push({
 		points: 0,
 		user: User,
-		host: false,
+		host: GameID == MOCK_HOST_ROOM && User.username == mockDefaultUsername,
 		colorid: data.lastId % 10,
 	});
 
