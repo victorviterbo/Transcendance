@@ -11,9 +11,11 @@ import CButtonText from "../../../components/inputs/buttons/CButtonText";
 interface PGameLobbyProps {
 	game: IGameData;
 	players: IGamePlayer[];
+
+	onOpenSettings: () => void;
 }
 
-function PGameLobby({ players, game }: PGameLobbyProps) {
+function PGameLobby({ players, game, onOpenSettings }: PGameLobbyProps) {
 	const host: IGamePlayer | undefined = useMemo(() => {
 		const targetUser: IGamePlayer | undefined = players.find(
 			(player: IGamePlayer) => player.host,
@@ -63,8 +65,13 @@ function PGameLobby({ players, game }: PGameLobbyProps) {
 				)}
 				{game.isHost && (
 					<>
+						<CButtonText
+							sx={{ mb: "15px", minWidth: "150px" }}
+							onClick={onOpenSettings}
+						>
+							GAME_EDIT
+						</CButtonText>
 						<CButtonText sx={{ mb: "15px", minWidth: "150px" }}>GAME_START</CButtonText>
-						<CButtonText sx={{ mb: "15px", minWidth: "150px" }}>GAME_EDIT</CButtonText>
 					</>
 				)}
 				<CText align="center" size="sm">
