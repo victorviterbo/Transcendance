@@ -145,7 +145,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def remove_from_layer(self, group_name: str) -> None:
         """Remove layer from subscribed channels."""
         await self.channel_layer.group_discard(group_name, self.channel_name)
-        self.active_layers.remove(group_name)
+        # Use discard to avoid KeyError if the layer wasn't present
+        if group_name in self.active_layers:
+            self.active_layers.remove(group_name)
+        else:
+            logger.debug('ws.remove_from_layer.missing layer=%s profile_id=%s',
+                         group_name, getattr(getattr(self, 'profile', None), 'id', None))
 
     async def group_send(self, group_name: str, message: dict) -> None:
         """Send a message to the specified channel."""
@@ -337,6 +342,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     def _get_profile_by_uid(self, profile_uid: str) -> Profile | None:
         return Profile.objects.filter(uid=profile_uid).first()
 
+    # Chat event handlers
     async def chat_message(self, event: dict) -> None:
         """Forward a chat message event to the connected client."""
         await self.send_json({
@@ -384,6 +390,15 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'event': 'game_started',
             'started_by': event['started_by'],
             'room_id': event.get('room_id'),
+        })
+
+    async def game_game_settings_updated(self, event: dict) -> None:
+        """Notify clients that game settings have changed."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'settings_updated',
+            'game_uid': event.get('game_uid'),
+            'settings': event.get('settings', {}),
         })
 
     async def game_track_revealed(self, event: dict) -> None:

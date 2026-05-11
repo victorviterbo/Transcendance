@@ -15,43 +15,13 @@ from game.models import Game
 from .serializers import (
 	GameCreationSerializer,
 	GameDetailSerializer,
-	GameUpdateSerializer,
 )
-from .services import setup_game_assets
+from .services import format_validation_errors, setup_game_assets
 
 
 def _parse_validation_errors(val_error: serializers.ValidationError) -> Response:
 	"""Format the validation error structure to match the expected format."""
-	error = val_error.get_full_details()
-	error_response = {'error': {}}
-	for field, details in error.items():
-		if not isinstance(details, list) or len(details) == 0:
-			continue
-		if not isinstance(details[0], dict) or 'code' not in details[0]:
-			continue
-		error_code = details[0].get('code') if isinstance(details[0], dict) else None
-		if not error_code:
-			error_response['error'][field] = "UNKNOWN_ERROR"
-		elif field == 'non_field_errors':
-			error_response['error']['non_field'] = error_code.upper()
-		elif (error_code in [	'NOT_ENOUGH_TRACKS',
-								'NOT_ENOUGH_TRACKS_GENRE',
-								'NO_TRACKS_FOUND']):
-			if error_response['error'].get('global'):
-				error_response['error']['global'].append(error_code.upper())
-			else:
-				error_response['error']['global'] = [error_code.upper()]
-		elif error_code in ['required',
-							'invalid',
-							'empty',
-							'min_value',
-							'max_value',
-							'blank',
-							'min_length',
-							'max_length',
-							'not_a_list',
-							'invalid_choice']:
-			error_response['error'][field] = f"{error_code.upper()}_{field.upper()}"
+	error_response = format_validation_errors(val_error)
 	return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
 
 def _init_game_stats(game: Game) -> None:
@@ -88,16 +58,15 @@ def _wrapup_game_stats(game: Game) -> None:
 		)
 
 class GameViewSet(viewsets.ModelViewSet):
-	"""ViewSet for managing games: create, list, retrieve, update, delete."""
+	"""ViewSet for managing games: list, retrieve, and create only."""
 	queryset = Game.objects.all()
 	permission_classes = [AllowAny]
+	http_method_names = ['get', 'post', 'head', 'options']
 
 	def get_serializer_class(self) -> type[serializers.Serializer]:
 		"""Return the appropriate serializer based on the action."""
 		if self.action == 'create':
 			return GameCreationSerializer
-		elif self.action in ('partial_update', 'update'):
-			return GameUpdateSerializer
 		return GameDetailSerializer
 
 	def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -116,12 +85,20 @@ class GameViewSet(viewsets.ModelViewSet):
 			return _parse_validation_errors(e)
 
 	def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-		"""Disable full update (PUT); allow PATCH (partial_update)."""
+		"""Reject full updates for games."""
 		from rest_framework.exceptions import MethodNotAllowed
 
-		if request.method == 'PUT':
-			raise MethodNotAllowed('PUT')
+		raise MethodNotAllowed('PUT')
 
-		# For PATCH (partial_update) delegate to the normal update logic
-		return super().update(request, *args, **kwargs)
+	def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+		"""Reject partial updates for games."""
+		from rest_framework.exceptions import MethodNotAllowed
+
+		raise MethodNotAllowed('PATCH')
+
+	def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+		"""Reject deletes for games."""
+		from rest_framework.exceptions import MethodNotAllowed
+
+		raise MethodNotAllowed('DELETE')
 		
