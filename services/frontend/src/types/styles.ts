@@ -120,7 +120,8 @@ export interface IThemeShared {
 	bg: IThemeBGs;
 	radius: number | string;
 	paperRadius: number | string;
-	gameRadius: number | string;
+	gameRadius: string;
+	smallGameRadius: string;
 }
 
 //====================== ANIMATIONS ======================

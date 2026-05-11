@@ -52,3 +52,16 @@ export const MUSIC_TAGS = [
 export const DAY_MS = 1000 * 60 * 60 * 24;
 export const HOUR_MS = 1000 * 60 * 60;
 export const MINUTE_MS = 1000 * 60;
+
+// SETTINGS
+export const SETTINGS_NGSONGS_MIN = 5;
+export const SETTINGS_NGSONGS_MAX = 50;
+export const SETTINGS_NGSONGS_STEP = 1;
+
+export const SETTINGS_SONG_DURATION_MIN = 5;
+export const SETTINGS_SONG_DURATION_MAX = 30;
+export const SETTINGS_SONG_DURATION_STEP = 5;
+
+export const SETTINGS_BREAK_DURATION_MIN = 5;
+export const SETTINGS_BREAK_DURATION_MAX = 30;
+export const SETTINGS_BREAK_DURATION_STEP = 5;

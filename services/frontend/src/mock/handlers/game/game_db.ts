@@ -10,6 +10,7 @@ import {
 	MOCK_COLOR_NORMAL,
 	MOCK_COLOR_RED_B,
 } from "../styling";
+import { MUSIC_TAGS } from "../../../constants";
 
 export interface IMockGameData extends IGameData {
 	lastId: number;
@@ -93,10 +94,27 @@ function mockCreateChat(Room: IMockGameData) {
 export function mockCreateRoom(GameID: string) {
 	mockSocialSetDB();
 
+	//Tags
+	const tags: Record<string, boolean> = {};
+	MUSIC_TAGS.forEach((tag: string, index: number) => {
+		tags[tag] = index < 2;
+	});
+
 	const nRoom: IMockGameData = {
 		id: GameID,
 		uid: crypto.randomUUID(),
 		name: GameID == MOCK_HOST_ROOM ? "John's own room" : "Sarah's room",
+		settings: {
+			tags: tags,
+			nbMusic: 20,
+			timer: 30,
+			breakTimer: 15,
+			seeOthers: true,
+			fuzzy: true,
+			scoreOption: "speed",
+			scope: "public",
+			code: "qwertyuiop",
+		},
 		players: [],
 		chat: [],
 		maxPlayers: 100,
