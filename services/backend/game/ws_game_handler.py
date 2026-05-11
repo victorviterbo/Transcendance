@@ -50,15 +50,15 @@ async def handle_game_action(consumer: Any, content: dict) -> None:
 	game_uid = content.get('game_uid')
 	if game_event == 'join_game':
 		consumer.current_game = await _get_game(consumer, game_uid, False)
-		if not consumer.current_game:
+		if not getattr(consumer, 'current_game', None):
 			await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Game not found'})
 			return
 		await _join_game(consumer, content)
 		return
 
-	if consumer.current_game is None:
+	if getattr(consumer, 'current_game', None) is None:
 		consumer.current_game = await _get_game(consumer, game_uid, True)
-		if consumer.current_game is None:
+		if getattr(consumer, 'current_game', None) is None:
 			await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Game not found for this player'})
 			return
 
