@@ -18,7 +18,8 @@
 
 # TODO: FAB
 - [ ] Add verification on who calls for game endpoints
-- [ ] Check get_relation
+- [x] Check get_relation
+- [x] Ajouter game name au serialiser game get, ainsi que l'id plutot que l'uid + les genres et le public_level
 
 # BUG
 

@@ -135,21 +135,38 @@ WS-friend-request:
 WS-game:
   post:
     summary: WS about all game data
-    description: Websocket object for recieved data from the server about all game data
+    description: Websocket object for game lifecycle and round events.
     operationId: WSStoCGame
     tags: [websockets]
     requestBody:
       required: true
       content:
-        join:
+        application/json:
           schema:
             $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
           examples:
-            join:
+            join_game:
               value:
                 target: "game"
-                event: "join"
-                gameid: "123456"
+                event: "join_game"
+                game_uid: "123456"
+            start_game:
+              value:
+                target: "game"
+                event: "start_game"
+                game_uid: "123456"
+            submit_answer:
+              value:
+                target: "game"
+                event: "submit_answer"
+                game_uid: "123456"
+                answer: "My answer"
+                answer_time: 1.42
+            leave_game:
+              value:
+                target: "game"
+                event: "leave_game"
+                game_uid: "123456"
         
     responses:
       "200":
@@ -158,46 +175,104 @@ WS-game:
             schema:
               $ref: ../openapi.yaml#/components/schemas/WS - StoC - game
             examples:
-              player-join::
+              joined_game:
                 value:
                   target: "game"
-                  event: "player-join"
-                  player:
-                    user: 
-                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "alice"
-                      image: "path/to/image"
-                      badges: "deaf octopus"
-                      relation: "incoming"
-                    points: 150
-              player-leave::
+                  event: "joined_game"
+                  game_uid: "123456"
+              player_joined:
                 value:
                   target: "game"
-                  event: "player-leave"
-                  player:
-                    user: 
-                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "alice"
-                      image: "path/to/image"
-                      badges: "deaf octopus"
-                      relation: "incoming"
-                    points: 150
-              players-update::
+                  event: "player_joined"
+                  game_uid: "123456"
+                  player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                  player_name: "alice"
+              game_started:
                 value:
                   target: "game"
-                  event: "players-update"
-                  players:
-                    - user: 
-                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "alice"
-                        image: "path/to/image"
-                        badges: "deaf octopus"
-                        relation: "incoming"
-                      points: 150
-                    - user: 
-                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "john"
-                        image: "path/to/image"
-                        badges: "deaf octopus"
-                        relation: "self"
-                      points: 50
+                  event: "game_started"
+                  game_uid: "123456"
+                  started_by: "alice"
+              round_started:
+                value:
+                  target: "game"
+                  event: "round_started"
+                  game_uid: "123456"
+                  round_number: 1
+                  track:
+                    preview_url: "https://example.com/preview.mp3"
+              track_revealed:
+                value:
+                  target: "game"
+                  event: "track_revealed"
+                  game_uid: "123456"
+                  track:
+                    itunes_id: 123456
+                    title: "Song title"
+                    artist: "Artist name"
+                    genre: "pop"
+                    preview_url: "https://example.com/preview.mp3"
+                    artwork_url: "https://example.com/artwork.jpg"
+              round_end:
+                value:
+                  target: "game"
+                  event: "round_end"
+                  game_uid: "123456"
+                  round_number: 1
+                  next_round_in: 5
+                  results:
+                    correct_answer:
+                      artist: "Artist name"
+                      song: "Song title"
+                    answers:
+                      - player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        player_name: "alice"
+                        answer: "Song title"
+                        is_correct: true
+              answer_correct:
+                value:
+                  target: "game"
+                  event: "answer_correct"
+                  game_uid: "123456"
+                  track:
+                    itunes_id: 123456
+                    title: "Song title"
+                    artist: "Artist name"
+                    genre: "pop"
+                    preview_url: "https://example.com/preview.mp3"
+                    artwork_url: "https://example.com/artwork.jpg"
+              answer_incorrect:
+                value:
+                  target: "game"
+                  event: "answer_incorrect"
+                  message: "Wrong answer"
+              player_answered:
+                value:
+                  target: "game"
+                  event: "player_answered"
+                  game_uid: "123456"
+                  player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                  player_name: "alice"
+              player_left:
+                value:
+                  target: "game"
+                  event: "player_left"
+                  game_uid: "123456"
+                  player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                  player_name: "alice"
+              round_advanced:
+                value:
+                  target: "game"
+                  event: "round_advanced"
+                  game_uid: "123456"
+                  round_number: 2
+              game_completed:
+                value:
+                  target: "game"
+                  event: "game_completed"
+                  game_uid: "123456"
+              error:
+                value:
+                  target: "game"
+                  event: "error"
+                  message: "Game not found"

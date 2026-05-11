@@ -102,15 +102,21 @@ class PlayerSerializer(serializers.Serializer):
 
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
-    id = serializers.CharField(source='uid', read_only=True)
+    id = serializers.CharField(read_only=True)
+    game_name = serializers.CharField(read_only=True)
+    genres = serializers.ListField(read_only=True)
     players = PlayerSerializer(source='player_stats', many=True, read_only=True)
     max_players = serializers.SerializerMethodField()
+    public_level = serializers.CharField(read_only=True)
 
     class Meta:
         """Meta config for GameDetailSerializer."""
         model = Game
         fields = [
             'id',
+            'game_name',
+            'genres',
+            'public_level',
             'players',
             'max_players',
         ]
