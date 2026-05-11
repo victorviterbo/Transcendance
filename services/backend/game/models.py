@@ -97,6 +97,11 @@ class Game(models.Model):
 
 	fuzzy_match = models.BooleanField(default=True)
 
+	owned_by = models.ForeignKey(Profile,
+								on_delete=models.SET_NULL,
+								null=True,
+								related_name='owned_games')
+
 	class Meta:
 		"""Define special behaviour of database."""
 		ordering = ['-played_at']

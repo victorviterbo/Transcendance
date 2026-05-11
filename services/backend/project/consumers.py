@@ -33,6 +33,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         
         self.room = None
         self.profile = None
+        self.game = None
         self.active_layers = set()
         self.room_name = "default_room"
         self.group_name = None
@@ -47,7 +48,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                      'profile' in self.scope,
                      list(self.scope.get('session', {}).keys()) if self.scope.get('session') else 'NO_SESSION')
         
-        logger.debug('ws.connect.attempt user=%s scope_keys=%s', 
+        logger.debug('ws.connect.attempt user=%s scope_keys=%s',
                      type(getattr(self, 'user', None)).__name__,
                      list(self.scope.keys()))
         self.profile = await self._get_profile_from_scope()
@@ -155,7 +156,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     async def group_send(self, group_name: str, message: dict) -> None:
         """Send a message to the specified channel."""
         await self.channel_layer.group_send(group_name, message)
-    
+
     async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
         """Process incoming chat events from the client."""
         event = content.get('event')
@@ -379,7 +380,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'player_joined',
-            'player_name': event['player_name'],
+            'player_name': event.get('player_name'),
             'player_uid': event.get('player_uid'),
         })
 
@@ -388,8 +389,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'game_started',
-            'started_by': event['started_by'],
-            'room_id': event.get('room_id'),
+            'game_uid': event.get('game_uid'),
+            'started_by': event.get('started_by'),
         })
 
     async def game_game_settings_updated(self, event: dict) -> None:
@@ -415,9 +416,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'answer_submitted',
-            'player_name': event['player_name'],
+            'player_name': event.get('player_name'),
             'player_uid': event.get('player_uid'),
-            'answer': event['answer'],
+            'answer': event.get('answer'),
             'is_correct': event['is_correct'],
         })
 
@@ -426,19 +427,51 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'player_left',
-            'player_name': event['player_name'],
+            'player_name': event.get('player_name'),
             'player_uid': event.get('player_uid'),
             'room_id': event.get('room_id'),
         })
 
-    async def game_round_started(self, event: dict) -> None:
+    async def game_round_start(self, event: dict) -> None:
         """Broadcast round start with blind track info to all players."""
         await self.send_json({
             'target': 'game',
             'event': 'round_started',
-            'round_number': event['round_number'],
-            'track': event['track'],
-            'playback_duration': event['playback_duration'],
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'started_by': event.get('started_by'),
+            'round_number': event.get('round_number'),
+            'track': event.get('track'),
+            'playback_duration': event.get('playback_duration'),
+        })
+
+    async def game_round_end(self, event: dict) -> None:
+        """Send round results and next round timing."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_end',
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'started_by': event.get('started_by'),
+            'round_number': event.get('round_number'),
+            'track': event.get('track'),
+            'results': event.get('results'),
+            'message': event.get('message'),
+            'is_last_round': event.get('is_last_round', False),
+        })
+    
+    async def game_game_completed(self, event: dict) -> None:
+        """Broadcast final game results and leaderboard."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_completed',
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'started_by': event.get('started_by'),
+            'final_leaderboard': event['final_leaderboard'],
         })
 
     async def game_player_answered(self, event: dict) -> None:
@@ -457,31 +490,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'player_name': event.get('player_name'),
         })
 
-    async def game_round_end(self, event: dict) -> None:
-        """Send round results and next round timing."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'round_end',
-            'round_number': event['round_number'],
-            'results': event.get('results', []),
-            'next_round_in': event.get('next_round_in'),
-            'is_last_round': event.get('is_last_round', False),
-        })
-
     async def game_round_advanced(self, event: dict) -> None:
         """Notify clients that the round number advanced."""
         await self.send_json({
             'target': 'game',
             'event': 'round_advanced',
             'round_number': event.get('round_number'),
-        })
-
-    async def game_game_completed(self, event: dict) -> None:
-        """Broadcast final game results and leaderboard."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'game_completed',
-            'final_leaderboard': event['final_leaderboard'],
         })
 
     def _sender_name(self) -> str:

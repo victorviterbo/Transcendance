@@ -5,7 +5,6 @@ from __future__ import annotations
 import uuid
 
 from django.db import models
-
 from project.defaults import get_badge
 from userauth.models import SiteUser
 

@@ -52,3 +52,13 @@ class HistoryEntrySerializer(serializers.Serializer):
     tags = serializers.ListField(child=serializers.CharField())
     players = HistoryPlayerSerializer(many=True)
     rounds = HistoryRoundSerializer(many=True)
+
+
+
+class LiveRoundSerializer(serializers.Serializer):
+    #TODO: add fields if needed
+    dummy = serializers.BooleanField()
+
+class LiveGameSerializer(serializers.Serializer):
+    #TODO: add fields
+    dummy = serializers.BooleanField()

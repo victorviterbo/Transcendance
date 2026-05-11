@@ -8,9 +8,20 @@ from channels.db import database_sync_to_async
 from django.db.models import F
 from django.utils import timezone
 from music.serializers import TrackSerializer
+from project.consumers import GlobalConsumer
 from stats.models import UserGameStats, UserRoundStats
 
 from game.models import Game
+from game.ws_game_handler import (
+	_increment_game_round,
+	_init_game_stats,
+	_init_round_stats,
+	_send_game_stats,
+	_send_round_stats,
+	_send_track,
+	_compute_game_stats,
+	_compute_round_stats,
+)
 
 
 def _log(message: str) -> None:
@@ -254,3 +265,4 @@ def set_game_status(game_id: str, status: str) -> None:
 		Game.objects.filter(uid=game_id).update(status='playing', started_at=timezone.now())
 	else:
 		Game.objects.filter(uid=game_id).update(status=status)
+
