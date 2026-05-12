@@ -18,7 +18,7 @@ const textClean = (Input: string) => {
 	return Input;
 };
 
-describe("Common game page tests", () => {
+describe("Tests for chat view", () => {
 	beforeAll(() => {
 		setAccessToken("authed");
 		server.listen();

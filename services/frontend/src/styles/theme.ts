@@ -105,6 +105,7 @@ export const appSharedStyle: IThemeShared = {
 	radius: 30,
 	paperRadius: "30px",
 	gameRadius: "20px",
+	smallGameRadius: "10px",
 };
 
 export const appTexts: IThemeTexts = {

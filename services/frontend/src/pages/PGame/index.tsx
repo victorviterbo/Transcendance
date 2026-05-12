@@ -2,10 +2,15 @@ import { Grid, Stack } from "@mui/material";
 import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
-import PGameLobby from "./PGameLobby";
 import PGameChat from "./PGameChat";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import type { IGameChatMsg, IGameData, IGameDataRes, IGamePlayer } from "../../types/game";
+import type {
+	IGameChatMsg,
+	IGameData,
+	IGameDataRes,
+	IGamePlayer,
+	IGameSettings,
+} from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData, gameGetRoom } from "../../api/game";
 import CGamePaper from "../../components/surfaces/CGamePaper";
@@ -18,7 +23,9 @@ import {
 	gameOnPlayerJoin,
 	gameOnPlayerLeave,
 	gameOnPlayerUpdate,
+	gameOnSettingsChanged,
 } from "../../handlers/gameHandlers";
+import PGameViews from "./PGameViews";
 
 function PGame() {
 	//STYLING
@@ -34,6 +41,9 @@ function PGame() {
 	//Updatable Data
 	const [users, setUsers] = useState<IGamePlayer[]>([]);
 	const [chat, setChat] = useState<IGameChatMsg[]>([]);
+
+	//SETTINGS
+	const [settings, setSettings] = useState<IGameSettings | undefined>(undefined);
 
 	//WS
 	const wsContext = useWS("game");
@@ -52,6 +62,7 @@ function PGame() {
 				if (!data) return;
 				setUsers(data.players);
 				setChat(data.chat);
+				setSettings(data.settings);
 			},
 		);
 	}, [setGameData, gameID]);
@@ -102,6 +113,15 @@ function PGame() {
 		sendWSMessage(nSentData);
 	}, [gameData, sendWSMessage]);
 
+	//====================== EVENTS ======================
+	const onSettingsChanged = useCallback(
+		(newSettings: IGameSettings) => {
+			gameOnSettingsChanged(gameData, settings, setSettings, newSettings);
+			console.log(settings?.tags);
+		},
+		[gameData, settings, setSettings],
+	);
+
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
 	if (gameID == undefined || error) {
@@ -129,7 +149,7 @@ function PGame() {
 	}
 
 	//--------------------- LOADIN ---------------------
-	if (!gameData) {
+	if (!gameData || !settings) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -170,7 +190,12 @@ function PGame() {
 					<PGameLBoard users={users} />
 				</Grid>
 				<Grid size={6}>
-					<PGameLobby />
+					<PGameViews
+						onSettingsChanged={onSettingsChanged}
+						players={users}
+						game={gameData}
+						settings={settings}
+					/>
 				</Grid>
 				<Grid size={3}>
 					<PGameChat sendWSMessage={sendWSMessage} users={users} chat={chat} />

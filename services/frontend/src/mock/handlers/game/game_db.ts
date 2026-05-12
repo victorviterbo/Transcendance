@@ -10,11 +10,15 @@ import {
 	MOCK_COLOR_NORMAL,
 	MOCK_COLOR_RED_B,
 } from "../styling";
+import { MUSIC_TAGS } from "../../../constants";
 
 export interface IMockGameData extends IGameData {
 	lastId: number;
 	isOn: boolean;
 }
+
+export const MOCK_JOIN_ROOM = "123456";
+export const MOCK_HOST_ROOM = "789";
 
 //====================== DATA ======================
 let currentClient: WebSocketClientConnectionProtocol | undefined = undefined;
@@ -90,36 +94,56 @@ function mockCreateChat(Room: IMockGameData) {
 export function mockCreateRoom(GameID: string) {
 	mockSocialSetDB();
 
+	//Tags
+	const tags: Record<string, boolean> = {};
+	MUSIC_TAGS.forEach((tag: string, index: number) => {
+		tags[tag] = index < 2;
+	});
+
 	const nRoom: IMockGameData = {
+		id: GameID,
+		uid: crypto.randomUUID(),
+		name: GameID == MOCK_HOST_ROOM ? "John's own room" : "Sarah's room",
+		settings: {
+			tags: tags,
+			nbMusic: 20,
+			timer: 30,
+			breakTimer: 15,
+			seeOthers: true,
+			fuzzy: true,
+			scoreOption: "speed",
+			scope: "public",
+			code: "qwertyuiop",
+		},
 		players: [],
 		chat: [],
 		maxPlayers: 100,
-		isHost: false,
-		id: GameID,
-		uid: crypto.randomUUID(),
+		isHost: GameID == MOCK_HOST_ROOM,
 		lastId: 0,
 		isOn: false,
 	};
 
 	//Adding already presents players
-	for (nRoom.lastId = 0; nRoom.lastId < 4; nRoom.lastId++) {
-		nRoom.players.push({
-			points: 0,
-			user: mockSocialDB.users[nRoom.lastId],
-			host: nRoom.lastId == 0,
-			colorid: nRoom.lastId % 10,
-		});
+	if (GameID == MOCK_JOIN_ROOM) {
+		for (nRoom.lastId = 0; nRoom.lastId < 4; nRoom.lastId++) {
+			nRoom.players.push({
+				points: 0,
+				user: mockSocialDB.users[nRoom.lastId],
+				host: nRoom.lastId == 0,
+				colorid: nRoom.lastId % 10,
+			});
 
-		nRoom.chat.push({
-			useruid: mockSocialDB.users[nRoom.lastId].uid,
-			username: mockSocialDB.users[nRoom.lastId].username,
-			messageuid: crypto.randomUUID(),
+			nRoom.chat.push({
+				useruid: mockSocialDB.users[nRoom.lastId].uid,
+				username: mockSocialDB.users[nRoom.lastId].username,
+				messageuid: crypto.randomUUID(),
 
-			type: "joined",
-		});
+				type: "joined",
+			});
+		}
+
+		mockCreateChat(nRoom);
 	}
-
-	mockCreateChat(nRoom);
 
 	mockGameData[GameID] = nRoom;
 	return nRoom;
@@ -161,7 +185,7 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 	data.players.push({
 		points: 0,
 		user: User,
-		host: false,
+		host: GameID == MOCK_HOST_ROOM && User.username == mockDefaultUsername,
 		colorid: data.lastId % 10,
 	});
 

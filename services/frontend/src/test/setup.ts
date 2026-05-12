@@ -47,6 +47,9 @@ vi.mock("../localization/localization", () => {
 		GAME_LEAVED_MESSAGE: "{PLAYER} has left the game.",
 		GAME_GUESSED_MESSAGE: "{PLAYER} tried: {GUESS}",
 		GAME_FOUND_MESSAGE: "{PLAYER} made a correct guess",
+		GAME_WAITING_START: "Waiting {USER} to start the game",
+		GAME_WAITING_START_NO_HOST: "Waiting to start the game",
+		GAME_PLAYER_COUNT: "Players: {COUNT} / {MAX}",
 	};
 
 	const ttr = (id: string) => translations[id] ?? id;

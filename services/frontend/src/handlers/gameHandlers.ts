@@ -1,4 +1,4 @@
-import type { IGameChatMsg, IGameData, IGamePlayer } from "../types/game";
+import type { IGameChatMsg, IGameData, IGamePlayer, IGameSettings } from "../types/game";
 
 //====================== PLAYER LISTS ======================
 export const gameOnPlayerJoin = (
@@ -53,4 +53,29 @@ export const gameOnMessageUpdate = (
 ) => {
 	Game.chat = structuredClone(Message);
 	setChat(structuredClone(Game.chat).reverse());
+};
+
+//--------------------------------------------------
+//                 LOCAL EVENTS
+//--------------------------------------------------
+export const gameOnSettingsChanged = (
+	Game: IGameData | undefined,
+	Settings: IGameSettings | undefined,
+	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>,
+	NewSettings?: IGameSettings,
+) => {
+	if (!Game || !Settings) return;
+	Game.settings = NewSettings ? NewSettings : structuredClone(Settings);
+	setSettings(Game.settings);
+};
+
+//--------------------------------------------------
+//                     UTILS
+//--------------------------------------------------
+export const gameThemeCount = (tags: Record<string, boolean>): number => {
+	let count: number = 0;
+	Object.keys(tags).forEach((key: string) => {
+		if (tags[key]) count++;
+	});
+	return count;
 };

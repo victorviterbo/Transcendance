@@ -29,7 +29,7 @@ export async function gameFetchData<
 >(
 	Request: string,
 	target: Key,
-	setTarget: React.Dispatch<React.SetStateAction<_DATA>>,
+	setTarget: React.Dispatch<React.SetStateAction<_DATA>> | null,
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>,
 	defaultValue: _DATA,
 	fallbackMSG: string,
@@ -38,11 +38,11 @@ export async function gameFetchData<
 	try {
 		const response = await api.get<_RES_T>(Request);
 		gameCheckErrors(response, target);
-		setTarget(response.data[target] as _DATA);
+		if (setTarget) setTarget(response.data[target] as _DATA);
 		setError(undefined);
 		cb(response.data[target] as _DATA);
 	} catch (error) {
 		setError(getErrorNode(error, fallbackMSG));
-		setTarget(defaultValue);
+		if (setTarget) setTarget(defaultValue);
 	}
 }

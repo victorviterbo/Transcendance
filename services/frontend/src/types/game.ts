@@ -21,14 +21,32 @@ export interface IGamePlayer {
 	colorid: number;
 }
 
+//====================== SETTINGS ======================
+export type TScoreOption = "speed" | "normal";
+export type TGameScope = "public" | "private";
+
+export interface IGameSettings {
+	tags: Record<string, boolean>;
+	nbMusic: number;
+	timer: number;
+	breakTimer: number;
+	seeOthers: boolean;
+	fuzzy: boolean;
+	scoreOption: TScoreOption;
+	scope: TGameScope;
+	code: string;
+}
+
 //====================== COMMON ======================
 export interface IGameData {
+	id: string;
+	uid: string;
+	name: string;
+	settings: IGameSettings;
 	chat: IGameChatMsg[];
 	players: IGamePlayer[];
 	maxPlayers: number;
 	isHost: boolean;
-	id: string;
-	uid: string;
 }
 
 export interface IGameDataRes {

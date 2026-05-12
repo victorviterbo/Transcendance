@@ -1,5 +1,29 @@
+import type { SxProps, Theme } from "@mui/material";
 import { appColors } from "../styles/theme";
 import type { TColor, TColorAlteration, TDropShadow } from "../types/styles";
+
+//--------------------------------------------------
+//                    SX
+//--------------------------------------------------
+export function sxMerger(...sx: SxProps<Theme>[]): SxProps<Theme> | undefined {
+	if (sx.length == 0) return undefined;
+	if (sx.length == 1) return sx[0];
+	const sx0 = sx.splice(0, 1)[0];
+	const sx1 = sx.splice(0, 1)[0];
+	if (sx.length == 0)
+		return [
+			...(Array.isArray(sx0) ? sx0 : sx0 ? [sx0] : []),
+			...(Array.isArray(sx1) ? sx1 : sx1 ? [sx1] : []),
+		];
+	else
+		return sxMerger(
+			[
+				...(Array.isArray(sx0) ? sx0 : sx0 ? [sx0] : []),
+				...(Array.isArray(sx1) ? sx1 : sx1 ? [sx1] : []),
+			],
+			...sx,
+		);
+}
 
 //--------------------------------------------------
 //                    CSS

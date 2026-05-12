@@ -1,5 +1,5 @@
 import { type Theme } from "@mui/material";
-import { appAnimation, appColors, appTexts } from "../../theme";
+import { appAnimation, appColors, appSharedStyle, appTexts } from "../../theme";
 
 export interface CTextFieldStyleProps {
 	fontFamily?: string;
@@ -7,12 +7,20 @@ export interface CTextFieldStyleProps {
 	fontWeight?: number;
 
 	borderWidth?: string;
+	borderRadius?: string;
 	verticalPadding?: string;
 }
 
 export function CTextFieldStyle(
 	theme: Theme,
-	{ fontSize, fontFamily, fontWeight, borderWidth, verticalPadding }: CTextFieldStyleProps,
+	{
+		fontSize,
+		fontFamily,
+		fontWeight,
+		borderWidth,
+		borderRadius,
+		verticalPadding,
+	}: CTextFieldStyleProps,
 ) {
 	return {
 		//Label
@@ -66,6 +74,7 @@ export function CTextFieldStyle(
 		//Outline
 		"& .MuiOutlinedInput-notchedOutline": {
 			borderColor: appColors.primary[0],
+			borderRadius: borderRadius == undefined ? appSharedStyle.radius : borderRadius,
 			borderWidth: borderWidth ? borderWidth : "4px",
 			transition: theme.transitions.create(["border-color"], {
 				duration: appAnimation.timing.medium_fast,

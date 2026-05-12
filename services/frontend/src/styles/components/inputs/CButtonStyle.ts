@@ -2,7 +2,7 @@ import type { SxProps, Theme } from "@mui/material";
 import { appAnimation, appColors, appSharedStyle } from "../../theme";
 import { makeMaskTranslationAnim } from "../../animations/CommonAnimations";
 import { colorAlterColor } from "../../../utils/styles";
-const stripesIMG = "imgs/shared/BG_Lines.png";
+const stripesIMG = "/imgs/shared/BG_Lines.png";
 
 export const CButtonStyle: SxProps<Theme> = (theme) => ({
 	transition: (theme) => {
