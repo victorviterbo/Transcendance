@@ -135,17 +135,17 @@ WS-friend-request:
 WS-game:
   post:
     summary: WS about all game data
-    description: Websocket object for recieved data from the server about all game data
+    description: Websocket object for game lifecycle and round events.
     operationId: WSStoCGame
     tags: [websockets]
     requestBody:
       required: true
       content:
-        join:
+        application/json:
           schema:
             $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
           examples:
-            join:
+            join_game:
               value:
                 target: "game"
                 event: "join"

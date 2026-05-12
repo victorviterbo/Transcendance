@@ -16,6 +16,13 @@
 - [ ] Message failed not showing 
 - [ ] useParams(); for room id;
 
+# TODO: FAB
+- [ ] Add verification on who calls for game endpoints
+- [ ] Add verification for full settings before game start
+- [x] Check get_relation
+- [x] Ajouter game name au serialiser game get, ainsi que l'id plutot que l'uid + les genres et le public_level
+- [ ] Add early round end and reveal when everyone answered (voir discord Richie "self.all_answers_received = asyncio.Event()")
+
 # BUG
 
 - [ ] BUG#0001: Web socket error when creating new account

@@ -54,6 +54,8 @@ paths:
     $ref: ./paths/stats.yaml#/leaderboard
   /api/stats/history:
     $ref: ./paths/stats.yaml#/history
+  /api/game/:
+    $ref: ./paths/game.yaml#/game
   /api/game/{ROOMID}:
     $ref: ./paths/game.yaml#/game-common
   WS/#friend-chat:
@@ -113,6 +115,10 @@ components:
       $ref: ./components/schemas_game.yaml#/GamePlayer
     Game - GameChat:
       $ref: ./components/schemas_game.yaml#/GameChat
+    GameCreationRequest:
+      $ref: ./components/schemas_game.yaml#/GameCreationRequest
+    GameCreationResponse:
+      $ref: ./components/schemas_game.yaml#/GameCreationResponse
     WS - StoC - friend-chat:
       $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendChat
     WS - StoC - notif:

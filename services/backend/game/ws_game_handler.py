@@ -6,11 +6,14 @@ from typing import Any
 from channels.db import database_sync_to_async
 from music.serializers import BlindSerializer, TrackSerializer
 from project.defaults import default_pts
+from rest_framework import serializers
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from thefuzz import fuzz
 from userprofile.models import Profile
 
 from game.models import Game
+from game.serializers import GameUpdateSerializer
+from game.services import apply_game_settings, format_validation_errors
 from game.ws_game_loop import play_rounds_loop
 
 
@@ -23,27 +26,47 @@ def _get_game(consumer: Any, game_uid: str | None, req_membership: bool = True) 
 		return Game.objects.filter(uid=game_uid, players=consumer.profile).first()
 	return Game.objects.filter(uid=game_uid).first()
 
+@database_sync_to_async
+def _add_player_to_game(game: Game, profile: Profile) -> bool:
+	"""Add a player to a game by creating UserGameStats entry."""
+	try:
+		UserGameStats.objects.get_or_create(game=game, player=profile)
+		return True
+	except Exception:
+		return False
+
+@database_sync_to_async
+def _remove_player_from_game(game: Game, profile: Profile) -> bool:
+	"""Remove a player from a game by deleting UserGameStats entry."""
+	try:
+		UserGameStats.objects.filter(game=game, player=profile).delete()
+		return True
+	except Exception:
+		return False
+
 async def handle_game_action(consumer: Any, content: dict) -> None:
 	"""Route game events to appropriate handlers."""
 	game_event = content.get('event')
 	game_uid = content.get('game_uid')
 	if game_event == 'join_game':
 		consumer.current_game = await _get_game(consumer, game_uid, False)
-		if not consumer.current_game:
+		if not getattr(consumer, 'current_game', None):
 			await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Game not found'})
 			return
 		await _join_game(consumer, content)
 		return
 
-	if consumer.current_game is None:
+	if getattr(consumer, 'current_game', None) is None:
 		consumer.current_game = await _get_game(consumer, game_uid, True)
-		if consumer.current_game is None:
+		if getattr(consumer, 'current_game', None) is None:
 			await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Game not found for this player'})
 			return
 
 	match game_event:
 		case 'start_game':
 			await _start_game(consumer, content)
+		case 'update_settings':
+			await _update_game_settings(consumer, content)
 		case 'submit_answer':
 			await _submit_answer(consumer, content)
 		# case 'reveal_track':
@@ -60,6 +83,12 @@ async def _join_game(consumer: Any, content: dict) -> None:
 	profile_uid = str(consumer.profile.uid)
 	profile_name = consumer.profile.username
 	group_name = f'game_{consumer.current_game.uid}'
+	
+	player_added = await _add_player_to_game(consumer.current_game, consumer.profile)
+	if not player_added:
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Failed to join game'})
+		return
+	
 	await consumer.add_to_layer(group_name)
 	
 	await consumer.group_send(group_name, {
@@ -164,6 +193,39 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 		'player_uid': profile_uid,
 	})
 
+
+async def _update_game_settings(consumer: Any, content: dict) -> None:
+	"""Apply game settings through the shared PATCH logic and broadcast the result."""
+	if not getattr(consumer, 'current_game', None):
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'No game context'})
+		return
+
+	if consumer.current_game.status != 'waiting':
+		await consumer.send_json({'target': 'game', 'event': 'error', 'message': 'Game settings can only be changed before the game starts'})
+		return
+
+	game_uid = str(consumer.current_game.uid)
+	group_name = f'game_{game_uid}'
+	settings_payload = {key: value for key, value in content.items() if key not in {'target', 'event', 'game_uid'}}
+
+	try:
+		updated_game = await database_sync_to_async(apply_game_settings)(consumer.current_game, settings_payload, partial=True)
+	except serializers.ValidationError as exc:
+			await consumer.send_json({
+				'target': 'game',
+				'event': 'error',
+				'error': format_validation_errors(exc)['error'],
+			})
+			return
+
+	consumer.current_game = updated_game
+	settings_data = GameUpdateSerializer(updated_game).data
+	await consumer.group_send(group_name, {
+		'type': 'game.game_settings_updated',
+		'game_uid': game_uid,
+		'settings': settings_data,
+	})
+
 		
 async def _leave_game(consumer: Any, content: dict) -> None:
 	"""Leave a game group."""
@@ -175,7 +237,12 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 	profile_name = consumer.profile.username
 	game_uid = consumer.current_game.uid
 	group_name = f'game_{game_uid}'
+	
+	# Remove player from game in database
+	await _remove_player_from_game(consumer.current_game, consumer.profile)
+	
 	await consumer.remove_from_layer(group_name)
+	consumer.current_game = None
 	
 	await consumer.group_send(group_name, {
 		'type': 'game.player_left',

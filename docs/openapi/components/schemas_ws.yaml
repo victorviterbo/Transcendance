@@ -41,10 +41,9 @@ WS-StoC-FriendRequests:
 
 WS-StoC-Game:
   type: object
-  description: Websocket object for recieved data to the server about all friend chats requests
+  description: Websocket payloads sent by the server for game flow.
   properties:
-    target: { type: string, fromat: "game"}
-    event: 
+    target:
       type: string
       fromat: "player-join | player-leave | players-update | message-new | message-update"
       descripion: "[player-join]: notify the user a player has joined the game room | \
@@ -92,10 +91,9 @@ WS-CtoS-FriendChat:
 
 WS-CtoS-Game:
   type: object
-  description: Websocket object for send data to the server about the game
+  description: Websocket payloads sent by the client to control a game session.
   properties:
-    target: { type: string, fromat: "game"}
-    event: 
+    target:
       type: string
       fromat: "join | message-send"
       descripion: "[join]: notify server user has joined the game | \
