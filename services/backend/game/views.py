@@ -5,6 +5,7 @@ from typing import Any
 from django.db import transaction
 from django.db.models import Max, Sum
 from rest_framework import serializers, status, viewsets
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -86,19 +87,13 @@ class GameViewSet(viewsets.ModelViewSet):
 
 	def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 		"""Reject full updates for games."""
-		from rest_framework.exceptions import MethodNotAllowed
-
 		raise MethodNotAllowed('PUT')
 
 	def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 		"""Reject partial updates for games."""
-		from rest_framework.exceptions import MethodNotAllowed
-
 		raise MethodNotAllowed('PATCH')
 
 	def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
 		"""Reject deletes for games."""
-		from rest_framework.exceptions import MethodNotAllowed
-
 		raise MethodNotAllowed('DELETE')
 		

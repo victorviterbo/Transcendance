@@ -61,7 +61,7 @@ class GameUpdateSerializer(serializers.ModelSerializer):
             invalid = [g for g in value if g not in valid_genres]
             if invalid:
                 raise serializers.ValidationError(
-                    f"Invalid genres: {', '.join(invalid)}.Valid: {', '.join(valid_genres)}",  # noqa: E501
+                    f"Invalid genres: {', '.join(invalid)}.Valid: {', '.join(valid_genres)}",
 					code='invalid_genres',
                 )
         return value
