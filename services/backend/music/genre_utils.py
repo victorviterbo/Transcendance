@@ -1,9 +1,9 @@
 """Utilities for normalizing music genres."""
 
 GENRE_MAPPING = {
-	# Rap variants
-	"Hip-Hop/Rap": "Rap",
-	"Hip Hop/Rap": "Rap",
+	# Hip Hop variants
+	"Hip-Hop/Rap": "Hip Hop/Rap",
+	"Rap": "Hip Hop/Rap",
 
 	# Pop variants
 	"K-Pop": "Pop",
