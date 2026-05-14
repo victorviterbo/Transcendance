@@ -16,11 +16,10 @@ from chat.chat_utils import (
 from chat.models import Message, Room
 from django.core.cache import cache
 from game.models import Game
+from game.ws_game_logic import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
-
-from services.backend.game.ws_game_logic import handle_game_action
 
 logger = logging.getLogger(__name__)
 
@@ -591,19 +590,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'game': event.get('game'),
             'self': LightProfileSerializer(self.profile).data,
             'final_leaderboard': event['final_leaderboard'],
-        })
-
-    async def game_player_answered(self, event: dict) -> None:
-        """Broadcast that a player has submitted an answer."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'player_answered_incorrectly',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'answer_from_player_uid': event.get('answer_from_player_uid'),
-            'answer_from_player_name': event.get('answer_from_player_name'),
-            'answer_string': event.get('answer_string'),
         })
 
     def _sender_name(self) -> str:

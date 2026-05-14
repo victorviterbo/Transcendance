@@ -1,17 +1,17 @@
 """Tests for the game module."""
 
 from django.test import TestCase
+from music.models import Playlist, Track
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from game.models import Game
-from music.models import Playlist, Track
 
 
 class GameViewTests(TestCase):
 	"""Test cases for GameView endpoint."""
 	
-	def setUp(self):
+	def setUp(self) -> None:
 		"""Set up test client and sample tracks."""
 		self.client = APIClient()
 		self.endpoint = '/api/game/'
@@ -50,11 +50,12 @@ class GameViewTests(TestCase):
 			for i in range(5)
 		]
 	
-	def test_create_game_success(self):
+	def test_create_game_success(self) -> None:
 		"""Test successful game creation with valid genres and tracks."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock', 'pop'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -69,11 +70,12 @@ class GameViewTests(TestCase):
 		self.assertEqual(game.status, 'waiting')
 		self.assertEqual(game.current_round, 1)
 	
-	def test_playlist_created_with_correct_tracks(self):
+	def test_playlist_created_with_correct_tracks(self) -> None:
 		"""Test that playlist is created with correct number of tracks."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock', 'pop'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -88,11 +90,12 @@ class GameViewTests(TestCase):
 		self.assertEqual(rock_count, 2)
 		self.assertEqual(pop_count, 2)
 	
-	def test_room_created_for_game(self):
+	def test_room_created_for_game(self) -> None:
 		"""Test that a room is created for the game."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -102,99 +105,108 @@ class GameViewTests(TestCase):
 		self.assertIn('Game Room', game.room.name)
 		self.assertEqual(game.room.is_direct, False)
 	
-	def test_invalid_genres_empty_list(self):
+	def test_invalid_genres_empty_list(self) -> None:
 		"""Test error when genres list is empty."""
 		response = self.client.post(self.endpoint, {
 			'genres': [],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertEqual(response.data['error'], 'Invalid genres')
 	
-	def test_invalid_genres_not_list(self):
+	def test_invalid_genres_not_list(self) -> None:
 		"""Test error when genres is not a list."""
 		response = self.client.post(self.endpoint, {
 			'genres': 'rock',
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertEqual(response.data['error'], 'Invalid genres')
 	
-	def test_invalid_num_tracks_zero(self):
+	def test_invalid_num_tracks_zero(self) -> None:
 		"""Test error when num_tracks is zero."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock'],
-			'num_tracks': 0
+			'num_tracks': 0,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertEqual(response.data['error'], 'Invalid num_tracks')
 	
-	def test_invalid_num_tracks_negative(self):
+	def test_invalid_num_tracks_negative(self) -> None:
 		"""Test error when num_tracks is negative."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock'],
-			'num_tracks': -5
+			'num_tracks': -5,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertEqual(response.data['error'], 'Invalid num_tracks')
 	
-	def test_invalid_num_tracks_not_integer(self):
+	def test_invalid_num_tracks_not_integer(self) -> None:
 		"""Test error when num_tracks is not an integer."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock'],
-			'num_tracks': 'four'
+			'num_tracks': 'four',
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertEqual(response.data['error'], 'Invalid num_tracks')
 	
-	def test_not_enough_tracks_for_genre(self):
+	def test_not_enough_tracks_for_genre(self) -> None:
 		"""Test error when not enough tracks exist for a genre."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['jazz', 'rock'],
-			'num_tracks': 20  # Requests 10 per genre, but jazz only has 5
+			'num_tracks': 20,  # Requests 10 per genre, but jazz only has 5
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertIn('Not enough tracks for genre', response.data['error'])
 	
-	def test_num_tracks_less_than_genres(self):
+	def test_num_tracks_less_than_genres(self) -> None:
 		"""Test error when num_tracks < number of genres."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock', 'pop', 'jazz'],
-			'num_tracks': 2
+			'num_tracks': 2,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertEqual(response.data['error'], 'Not enough tracks')
 	
-	def test_nonexistent_genre(self):
+	def test_nonexistent_genre(self) -> None:
 		"""Test error when genre has no tracks."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['nonexistent_genre'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 		self.assertIn('error', response.data)
 		self.assertIn('Not enough tracks for genre', response.data['error'])
 	
-	def test_response_includes_current_track(self):
+	def test_response_includes_current_track(self) -> None:
 		"""Test that response includes the current track preview (blinded)."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -207,16 +219,18 @@ class GameViewTests(TestCase):
 		self.assertNotIn('title', current_track)
 		self.assertNotIn('artist', current_track)
 	
-	def test_unique_playlists_created(self):
+	def test_unique_playlists_created(self) -> None:
 		"""Test that multiple game creations create unique playlists."""
 		response1 = self.client.post(self.endpoint, {
 			'genres': ['rock', 'pop'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		response2 = self.client.post(self.endpoint, {
 			'genres': ['rock', 'pop'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
@@ -227,11 +241,12 @@ class GameViewTests(TestCase):
 		playlist2_id = response2.data['playlist']['id']
 		self.assertNotEqual(playlist1_id, playlist2_id)
 	
-	def test_game_has_all_required_fields(self):
+	def test_game_has_all_required_fields(self) -> None:
 		"""Test that created game has all required fields."""
 		response = self.client.post(self.endpoint, {
 			'genres': ['rock'],
-			'num_tracks': 4
+			'num_tracks': 4,
+			'public_level': 'public'
 		}, format='json')
 		
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)

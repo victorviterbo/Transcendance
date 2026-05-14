@@ -152,7 +152,6 @@ for g_idx in range(1, 11):
                 song_found=found_song,
                 artist_found_at=timedelta(seconds=random.randint(5, 30)),
                 song_found_at=timedelta(seconds=random.randint(5, 30)),
-                time=timedelta(seconds=random.randint(5, 30)),
                 xp_earned=xp
             )
         

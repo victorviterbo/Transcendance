@@ -1,19 +1,21 @@
 """Handle all DB hits for the game."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
 from django.db.models import Count, Max, Q, Sum
 from music.models import Track
 from music.serializers import TrackSerializer
-from project.consumers import GlobalConsumer
 from project.defaults import default_pts
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from stats.serializers import LiveGameSerializer, LiveRoundSerializer
 from thefuzz import fuzz
 
 from game.models import Game
+from game.serializers import GameUpdateSerializer
 
+if TYPE_CHECKING:
+    from project.consumers import GlobalConsumer
 
 @database_sync_to_async
 def _get_game(consumer: Any,
@@ -86,7 +88,8 @@ def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, 
 		player_answer = content.get('answer').lower().strip()
 		if not track or not time or not player_answer:
 			return False, False
-		if consumer.profile is None or consumer.profile not in consumer.current_game.players.all():
+		if (consumer.profile is None or
+				consumer.profil not in consumer.current_game.players.all()):
 			return False, False
 		player_stats = UserRoundStats.objects.filter(round__game=consumer.current_game,
 													round__round_number=consumer.current_game.current_round,
@@ -244,7 +247,7 @@ def _get_game_stats(game: Game) -> dict:
 
 
 @database_sync_to_async
-def _add_player_to_game_stats(consumer: GlobalConsumer, content: dict) -> bool:
+def _add_player_to_game_stats(consumer: 'GlobalConsumer', content: dict) -> bool:
 	"""Add a player to a game by creating UserGameStats entry."""
 	try:
 		UserGameStats.objects.get_or_create(game=consumer.current_game,
@@ -256,7 +259,7 @@ def _add_player_to_game_stats(consumer: GlobalConsumer, content: dict) -> bool:
 
 
 @database_sync_to_async
-def _remove_player_from_game_stats(consumer: GlobalConsumer, content: dict) -> bool:
+def _remove_player_from_game_stats(consumer: 'GlobalConsumer', content: dict) -> bool:
 	"""Remove a player from a game by deleting UserGameStats entry."""
 	try:
 		UserGameStats.objects.filter(game=consumer.current_game,
@@ -265,4 +268,10 @@ def _remove_player_from_game_stats(consumer: GlobalConsumer, content: dict) -> b
 		return True
 	except Exception:
 		return False
-	
+
+@database_sync_to_async
+def apply_game_settings(game: Game, data: dict[str, Any], *, partial: bool = True) -> Game:
+	"""Validate and persist game settings updates through the shared serializer."""
+	serializer = GameUpdateSerializer(instance=game, data=data, partial=partial)
+	serializer.is_valid(raise_exception=True)
+	return serializer.save()

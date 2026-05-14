@@ -5,10 +5,11 @@ from __future__ import annotations
 from datetime import timedelta
 
 from django.db import models
+from django.db.models import Sum
 from django.utils.functional import cached_property
 from game.models import Game
 from music.models import Track
-from django.db.models import Sum
+
 
 class GameRoundStats(models.Model):
     """Define the model for a single player for a single game."""
@@ -32,6 +33,7 @@ class UserRoundStats(models.Model):
     round = models.ForeignKey(GameRoundStats, on_delete=models.CASCADE)
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE)
+    time = models.DurationField(default=timedelta(seconds=30))
     artist_found = models.BooleanField(default=False)
     song_found = models.BooleanField(default=False)
     artist_found_at = models.DurationField(default=timedelta(seconds=30))
@@ -48,11 +50,11 @@ class UserRoundStats(models.Model):
     def game(self) -> Game:
         """Get the game associated with this round."""
         return self.round.game
-    
-    @property
-    def time(self) -> timedelta:
-        """Returns the time at which the player found the last element."""
-        return sum(self.song_found_at, self.artist_found_at)
+
+    def save(self, *args: tuple, **kwargs: dict) -> None:
+        """Update time to be the sum of time to find artist and song."""
+        self.time = self.song_found_at + self.artist_found_at
+        super().save(*args, **kwargs)
 
 class UserGameStats(models.Model):
     """Define the model for a single player in a single game."""

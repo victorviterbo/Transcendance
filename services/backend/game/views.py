@@ -7,7 +7,6 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
-from stats.models import UserGameStats, UserRoundStats
 
 from game.models import Game
 
@@ -42,8 +41,8 @@ class GameViewSet(viewsets.ModelViewSet):
 			game_serializer.is_valid(raise_exception=True)
 			with transaction.atomic():
 				new_game = game_serializer.save()
-				new_game.players.add(request.user.profile)
-				new_game.owned_by = request.user.profile
+				#new_game.players.add(request.user.profile) TODO
+				#new_game.owned_by = request.user.profile
 				new_game.save()
 				setup_game_assets(new_game)
 			return Response(

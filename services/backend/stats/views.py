@@ -1,6 +1,6 @@
 """Defines the views for the stats module."""
 
-from django.db.models import Avg, Sum
+from django.db.models import Avg, F, Sum
 from music.models import Track
 from project.defaults import genres, genres_to_label, get_avatar_url
 from rest_framework import status

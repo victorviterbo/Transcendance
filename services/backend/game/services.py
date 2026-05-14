@@ -9,7 +9,6 @@ from music.models import Playlist, Track
 from rest_framework import serializers
 
 from game.models import Game
-from game.serializers import GameUpdateSerializer
 
 
 def format_validation_errors(val_error: serializers.ValidationError) -> dict[str, dict[str, str | list[str]]]:
@@ -40,13 +39,6 @@ def format_validation_errors(val_error: serializers.ValidationError) -> dict[str
 		else:
 			error_response['error'][field] = error_code.upper()
 	return error_response
-
-
-def apply_game_settings(game: Game, data: dict[str, Any], *, partial: bool = True) -> Game:
-	"""Validate and persist game settings updates through the shared serializer."""
-	serializer = GameUpdateSerializer(instance=game, data=data, partial=partial)
-	serializer.is_valid(raise_exception=True)
-	return serializer.save()
 
 
 def setup_game_assets(game: Game) -> None:

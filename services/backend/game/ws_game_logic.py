@@ -1,41 +1,43 @@
 """WebSocket handlers for game module."""
 
 import asyncio
-from typing import Any
+from typing import TYPE_CHECKING
 
 from channels.db import database_sync_to_async
-from project.consumers import GlobalConsumer
 from project.defaults import answer_buffer_time, countdown_time
 from rest_framework import serializers
 from userprofile.serializers import LightProfileSerializer
 
+from game.models import Game
 from game.serializers import GameHeaderSerializer, GameUpdateSerializer
 from game.services import apply_game_settings, format_validation_errors
 
 from .ws_game_db_helpers import (
-	_add_player_to_game_stats,
-	_compute_game_stats,
-	_compute_round_stats,
-	_get_game,
-	_get_game_stats,
-	_get_round_stats,
-	_get_round_stats_completeness,
-	_get_track_reveal_data,
-	_init_game_stats,
-	_init_round_stats,
-	_remove_player_from_game_stats,
-	_set_current_round,
-	_validate_answer,
+    _add_player_to_game_stats,
+    _compute_game_stats,
+    _compute_round_stats,
+    _get_game,
+    _get_game_stats,
+    _get_round_stats,
+    _get_round_stats_completeness,
+    _get_track_reveal_data,
+    _init_game_stats,
+    _init_round_stats,
+    _remove_player_from_game_stats,
+    _set_current_round,
+    _validate_answer,
 )
 from .ws_game_send_helpers import (
-	_send_game_stats,
-	_send_new_player,
-	_send_round_stats,
-	_send_track,
+    _send_game_stats,
+    _send_new_player,
+    _send_round_stats,
+    _send_track,
 )
 
+if TYPE_CHECKING:
+    from project.consumers import GlobalConsumer
 
-async def handle_game_action(consumer: Any, content: dict) -> None:
+async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Route game events to appropriate handlers."""
 	game_event = content.get('event')
 	game_uid = content.get('game_uid')
@@ -78,8 +80,6 @@ async def handle_game_action(consumer: Any, content: dict) -> None:
 			await _update_game_settings(consumer, content)
 		case 'submit_answer':
 			await _submit_answer(consumer, content)
-		# case 'reveal_track':
-		# 	await _reveal_track(consumer, content)
 		case 'leave_game':
 			await _leave_game(consumer, content)
 		case _:
@@ -88,7 +88,7 @@ async def handle_game_action(consumer: Any, content: dict) -> None:
 							'message': f'Unknown game event: {game_event}'})
 
 
-async def run_game_loop(consumer: GlobalConsumer, content: dict) -> None:
+async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Run the main game loop, cycling through rounds and sending updates."""
 	consumer.all_answers_received = asyncio.Event()
 	await _init_game_stats(consumer.current_game)
@@ -117,7 +117,7 @@ async def run_game_loop(consumer: GlobalConsumer, content: dict) -> None:
 	await _send_game_stats(consumer, game_stats)
 
 
-async def _start_game(consumer: Any, content: dict) -> None:
+async def _start_game(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Start a game session / Begin the round loop."""
 	if not getattr(consumer, 'current_game', None):
 		await consumer.send_json({'target': 'game',
@@ -136,7 +136,7 @@ async def _start_game(consumer: Any, content: dict) -> None:
 		run_game_loop(consumer, consumer.current_game, consumer.group_name)
 		)
 
-async def _join_game(consumer: GlobalConsumer, content: dict) -> None:
+async def _join_game(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Handle the game joining process."""
 	player_added = await _add_player_to_game_stats(consumer.current_game, consumer.profile)
 	if not player_added:
@@ -151,7 +151,7 @@ async def _join_game(consumer: GlobalConsumer, content: dict) -> None:
 	await _send_new_player(consumer, serialized_game, serialized_player)
 
 
-async def _submit_answer(consumer: Any, content: dict) -> None:
+async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Submit an answer to current game question."""
 	answer = content.get('answer')
 	answer_time = content.get('answer_time')
@@ -173,11 +173,9 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 	track = await _get_track_reveal_data(consumer.current_game)
 
 	artist_correct, song_correct = await _validate_answer(consumer,
-									consumer.profile,
-									consumer.current_game,
-									answer,
-									track)
-	
+														content,
+														track)
+						
 	if any(artist_correct, song_correct) and consumer.current_game.mode == 'armagedon':
 		await check_all_answers_received(consumer, consumer.current_game)
 	
@@ -227,10 +225,8 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 				})
 
 
-async def _update_game_settings(consumer: Any, content: dict) -> None:
+async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Apply game settings through the shared PATCH logic and broadcast the result."""
-	serialized_game = GameHeaderSerializer(consumer.current_game).data
-	
 	if consumer.current_game.status != 'waiting':
 		await consumer.send_json({'target': 'game',
 							'event': 'error',
@@ -254,6 +250,7 @@ async def _update_game_settings(consumer: Any, content: dict) -> None:
 			})
 			return
 	consumer.current_game = updated_game
+	serialized_game = GameHeaderSerializer(consumer.current_game).data
 	settings_data = GameUpdateSerializer(updated_game).data
 	await consumer.group_send(consumer.group_name, {
 		'type': 'game_game_settings_updated',
@@ -262,7 +259,7 @@ async def _update_game_settings(consumer: Any, content: dict) -> None:
 	})
 
 
-async def _leave_game(consumer: Any, content: dict) -> None:
+async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Leave a game group."""
 	if not getattr(consumer, 'current_game', None):
 		await consumer.send_json({'target': 'game',
@@ -272,7 +269,6 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 	
 	await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
 	
-	await consumer.remove_from_layer(consumer.group_name)
 	serialized_game = GameHeaderSerializer(consumer.current_game).data
 	serialized_player = LightProfileSerializer(consumer.profile).data
 	await consumer.group_send(consumer.group_name, {
@@ -280,6 +276,7 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 		'game': serialized_game,
 		'player': serialized_player,
 	})
+	await consumer.remove_from_layer(consumer.group_name)
 	consumer.current_game = None
 	await consumer.send_json({
 		'target': 'game',
@@ -288,7 +285,7 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 	})
 
 
-async def check_all_answers_received(consumer: Any, game: Any) -> None:
+async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> None:
     """Unlocks the game loop if both artist and song has been found."""
     found = await _get_round_stats_completeness(game)
     game_over = found['titles'] > 0 and found['artists'] > 0

@@ -37,7 +37,7 @@ class HistoryRoundSerializer(serializers.Serializer):
     trackArtist = serializers.CharField()
     songFound = serializers.BooleanField()
     artistFound = serializers.BooleanField()
-    time = serializers.FloatField()
+    time = serializers.FloatField(read_only=True)
     ranking = serializers.IntegerField()
     previewUrl = serializers.CharField(allow_null=True)
     artworkUrl = serializers.CharField(allow_null=True)
