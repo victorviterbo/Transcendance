@@ -1,4 +1,10 @@
-import type { IGameChatMsg, IGameData, IGamePlayer, TGameChatType } from "../../../types/game";
+import type {
+	IGameChatMsg,
+	IGameData,
+	IGamePlayer,
+	IGameSettings,
+	TGameChatType,
+} from "../../../types/game";
 import { mockSocialDB, mockSocialSetDB } from "../social/social_dbs";
 import { mockBadgeStrings, mockDefaultPP, mockDefaultUserUID, mockDefaultUsername } from "../../db";
 import type { IExtUserInfo } from "../../../types/user";
@@ -306,6 +312,25 @@ export function mockGameUserSentChatMessage(GameID: string, Message: string) {
 	const selfUser: IGamePlayer | undefined = mockGetGameSelf(GameID);
 	if (!selfUser) return;
 	mockPlayerSendMessage(GameID, selfUser, "message", Message);
+}
+
+//--------------------------------------------------
+//                SETTINGS MANAGEMENT
+//--------------------------------------------------
+export function mockOnUserChangedSettings(GameID: string, Settings: IGameSettings) {
+	const data: IMockGameData = mockGetGameData(GameID);
+	data.settings = Settings;
+
+	if (!currentClient) return;
+	currentClient.send(
+		JSON.stringify({
+			target: "game",
+			event: "settings-update",
+			settings: Settings,
+			gameid: GameID,
+			gameuid: data.uid,
+		} as TWSRcv),
+	);
 }
 
 //--------------------------------------------------

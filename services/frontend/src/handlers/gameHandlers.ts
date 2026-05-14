@@ -55,17 +55,12 @@ export const gameOnMessageUpdate = (
 	setChat(structuredClone(Game.chat).reverse());
 };
 
-//--------------------------------------------------
-//                 LOCAL EVENTS
-//--------------------------------------------------
-export const gameOnSettingsChanged = (
-	Game: IGameData | undefined,
-	Settings: IGameSettings | undefined,
+export const gameOnSettingsUpdate = (
+	Game: IGameData,
+	Settings: IGameSettings,
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>,
-	NewSettings?: IGameSettings,
 ) => {
-	if (!Game || !Settings) return;
-	Game.settings = NewSettings ? NewSettings : structuredClone(Settings);
+	Game.settings = structuredClone(Settings);
 	setSettings(Game.settings);
 };
 

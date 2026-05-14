@@ -12,6 +12,7 @@ import {
 	mockPlayerSendMessage,
 	MOCK_JOIN_ROOM,
 	MOCK_HOST_ROOM,
+	mockOnUserChangedSettings,
 } from "./game_db";
 import type { TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
@@ -63,6 +64,9 @@ export function mockHandleGameMessages(Data: TWSSend, client: WebSocketClientCon
 	}
 	if (Data.event == "message-send") {
 		mockGameUserSentChatMessage(Data.gameid, Data.message);
+	}
+	if (Data.event == "settings-update") {
+		mockOnUserChangedSettings(Data.gameid, Data.settings);
 	}
 }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import CGamePaper from "../../../components/surfaces/CGamePaper";
 import type { IGameData, IGamePlayer, IGameSettings } from "../../../types/game";
 import PGameLobby from "./PGameLobby";
@@ -24,6 +24,16 @@ const ECurrentView: ECurrentViewType = {
 function PGameViews({ game, players, settings, onSettingsChanged }: PGameViewsProps) {
 	const [currentView, setCurrentView] = useState<number>(ECurrentView.LOBBY);
 
+	const currentTitle: string = useMemo(() => {
+		switch (currentView) {
+			case ECurrentView.LOBBY:
+				return "GAME_LOBBY_TITLE";
+			case ECurrentView.SETTINGS:
+				return "GAME_SETTINGS_TITLE";
+		}
+		return "GAME_LOBBY_TITLE";
+	}, [currentView]);
+
 	return (
 		<CGamePaper
 			overflow="hidden"
@@ -35,7 +45,7 @@ function PGameViews({ game, players, settings, onSettingsChanged }: PGameViewsPr
 				display: "flex",
 				overflow: "hidden",
 			}}
-			title={"GAME_LOBBY_TITLE"}
+			title={currentTitle}
 		>
 			{currentView == ECurrentView.LOBBY && (
 				<PGameLobby
@@ -50,6 +60,9 @@ function PGameViews({ game, players, settings, onSettingsChanged }: PGameViewsPr
 				<PGameSettings
 					onSettingsChanged={onSettingsChanged}
 					settings={settings}
+					onReturnToLobby={() => {
+						setCurrentView(ECurrentView.LOBBY);
+					}}
 				></PGameSettings>
 			)}
 		</CGamePaper>

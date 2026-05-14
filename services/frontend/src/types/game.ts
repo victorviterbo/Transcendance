@@ -22,7 +22,7 @@ export interface IGamePlayer {
 }
 
 //====================== SETTINGS ======================
-export type TScoreOption = "speed" | "normal";
+export type TScoreOption = "speed" | "normal" | "arma";
 export type TGameScope = "public" | "private";
 
 export interface IGameSettings {

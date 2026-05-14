@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGameChatMsg, IGamePlayer } from "./game";
+import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 
@@ -75,6 +75,13 @@ export type TWSRcv =
 			gameid: string;
 			gameuid: string;
 	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "settings-update";
+			gameid: string;
+			gameuid: string;
+			settings: IGameSettings;
+	  }
 
 	//GAME
 	| {
@@ -102,6 +109,13 @@ export type TWSSend =
 			gameid: string;
 			gameuid: string;
 			message: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "settings-update";
+			gameid: string;
+			gameuid: string;
+			settings: IGameSettings;
 	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;

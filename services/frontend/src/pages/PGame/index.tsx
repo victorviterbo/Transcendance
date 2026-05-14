@@ -23,7 +23,7 @@ import {
 	gameOnPlayerJoin,
 	gameOnPlayerLeave,
 	gameOnPlayerUpdate,
-	gameOnSettingsChanged,
+	gameOnSettingsUpdate,
 } from "../../handlers/gameHandlers";
 import PGameViews from "./PGameViews";
 
@@ -98,6 +98,8 @@ function PGame() {
 					gameOnMessageNew(gameData, last.message, setChat);
 				else if (last.event == "message-update")
 					gameOnMessageUpdate(gameData, last.messages, setChat);
+				else if (last.event == "settings-update")
+					gameOnSettingsUpdate(gameData, last.settings, setSettings);
 			}
 		});
 	}, [wsContext, gameID, gameData]);
@@ -116,10 +118,12 @@ function PGame() {
 	//====================== EVENTS ======================
 	const onSettingsChanged = useCallback(
 		(newSettings: IGameSettings) => {
-			gameOnSettingsChanged(gameData, settings, setSettings, newSettings);
-			console.log(settings?.tags);
+			sendWSMessage({
+				event: "settings-update",
+				settings: newSettings,
+			});
 		},
-		[gameData, settings, setSettings],
+		[sendWSMessage],
 	);
 
 	//====================== BUILD ======================
