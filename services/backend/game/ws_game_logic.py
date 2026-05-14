@@ -4,42 +4,36 @@ import asyncio
 from typing import Any
 
 from channels.db import database_sync_to_async
-from django.db.models import Max, Sum, Q, Count
-from music.serializers import BlindSerializer, TrackSerializer
 from project.consumers import GlobalConsumer
-from project.defaults import default_pts, countdown_time, answer_buffer_time
+from project.defaults import answer_buffer_time, countdown_time
 from rest_framework import serializers
-from stats.models import GameRoundStats, UserGameStats, UserRoundStats
-from stats.serializers import LiveGameSerializer, LiveRoundSerializer
-from thefuzz import fuzz
-from userprofile.models import Profile
-from game.models import Game
-from game.serializers import GameUpdateSerializer, GameHeaderSerializer
-from game.services import apply_game_settings, format_validation_errors
-from music.models import Track
 from userprofile.serializers import LightProfileSerializer
 
+from game.serializers import GameHeaderSerializer, GameUpdateSerializer
+from game.services import apply_game_settings, format_validation_errors
+
 from .ws_game_db_helpers import (
+	_add_player_to_game_stats,
+	_compute_game_stats,
+	_compute_round_stats,
 	_get_game,
+	_get_game_stats,
+	_get_round_stats,
+	_get_round_stats_completeness,
 	_get_track_reveal_data,
-	_set_current_round,
 	_init_game_stats,
 	_init_round_stats,
-	_compute_round_stats,
+	_remove_player_from_game_stats,
+	_set_current_round,
 	_validate_answer,
-	_compute_game_stats,
-	_get_round_stats_completeness,
-	_get_round_stats,
-	_get_game_stats,
-	_add_player_to_game_stats,
-	_remove_player_from_game_stats
+)
+from .ws_game_send_helpers import (
+	_send_game_stats,
+	_send_new_player,
+	_send_round_stats,
+	_send_track,
 )
 
-from .ws_game_send_helpers import (
-	_send_track,
-	_send_round_stats,
-	_send_game_stats
-)
 
 async def handle_game_action(consumer: Any, content: dict) -> None:
 	"""Route game events to appropriate handlers."""
@@ -49,7 +43,7 @@ async def handle_game_action(consumer: Any, content: dict) -> None:
 	if not consumer.profile:
 		await consumer.send_json({'target': 'game',
 							'event': 'error',
-							'message': f'Could not identify player'})
+							'message': 'Could not identify player'})
 	
 	if game_event == 'join_game':
 		if getattr(consumer, 'current_game', None):
@@ -103,16 +97,19 @@ async def run_game_loop(consumer: GlobalConsumer, content: dict) -> None:
 	await asyncio.sleep(buffer_time)
 	for round in range(1, consumer.current_game.num_tracks + 1):
 		consumer.all_answers_received.clear()
-		await _init_round_stats(consumer.current_game, consumer.current_game.current_round)
+		await _init_round_stats(consumer.current_game)
 		# Wait for all answers or timeout after playback duration
 		# switch buffertime to just handle lag
 		buffer_time = answer_buffer_time
 		await _send_track(consumer)
-		await asyncio.wait_for(consumer.all_answers_received.wait(),
-								timeout=consumer.current_game.playback_duration.total_seconds() + buffer_time)
-		await _compute_round_stats(consumer.current_game, consumer.current_game.current_round)
+		await asyncio.wait_for(
+			consumer.all_answers_received.wait(),
+			timeout=consumer.current_game.playback_duration.total_seconds()
+				+ buffer_time
+		)
+		await _compute_round_stats(consumer.current_game)
 		round_stats = await _get_round_stats(consumer.current_game)
-		await _send_round_stats(consumer)
+		await _send_round_stats(consumer, round_stats)
 		await _set_current_round(consumer.current_game, round)
 		await asyncio.sleep(consumer.current_game.break_duration.total_seconds())
 	await _compute_game_stats(consumer.current_game, consumer.group_name)
@@ -127,6 +124,7 @@ async def _start_game(consumer: Any, content: dict) -> None:
 							'event': 'error',
 							'message': 'No game context'})
 		return
+	# TODO transfer ownership of the game loop task from consumer object to consumer class
 	# START THE ROUND LOOP IN BACKGROUND so this client can keep receiving broadcasts
 	# (awaiting the loop here blocks the same consumer from handling group events).
 	if not hasattr(consumer, '_game_loop_tasks'):
@@ -139,8 +137,7 @@ async def _start_game(consumer: Any, content: dict) -> None:
 		)
 
 async def _join_game(consumer: GlobalConsumer, content: dict) -> None:
-	"""Join a game."""
-
+	"""Handle the game joining process."""
 	player_added = await _add_player_to_game_stats(consumer.current_game, consumer.profile)
 	if not player_added:
 		await consumer.send_json({'target': 'game',
@@ -151,11 +148,7 @@ async def _join_game(consumer: GlobalConsumer, content: dict) -> None:
 	await consumer.add_to_layer(consumer.group_name)
 	serialized_game = GameHeaderSerializer(consumer.current_game).data
 	serialized_player = LightProfileSerializer(player_added).data
-	await consumer.group_send(consumer.group_name, {
-		'type': 'game_player_joined',
-		'game': serialized_game,
-		'player': serialized_player
-	})
+	await _send_new_player(consumer, serialized_game, serialized_player)
 
 
 async def _submit_answer(consumer: Any, content: dict) -> None:
@@ -184,6 +177,7 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 									consumer.current_game,
 									answer,
 									track)
+	
 	if any(artist_correct, song_correct) and consumer.current_game.mode == 'armagedon':
 		await check_all_answers_received(consumer, consumer.current_game)
 	
@@ -194,12 +188,13 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 		if consumer.current_game.game_mode == 'armagedon':
 			# if game_mode is armagedon, send the response to everyone
 			await consumer.group_send(consumer.group_name, {
-				'target': 'game',
-				'event': 'answer_correct',
+				'event': 'game_answer_correct',
 				'game': serialized_game,
 				'senderPlayer': serialized_player,
+				'answer': answer,
 				'trackArtist': track['artist'] if artist_correct else None,
 				'trackSong': track['song'] if song_correct else None,
+				'is_correct': True
 			})
 		else:
 			# else send only to player who send the correct response
@@ -210,22 +205,27 @@ async def _submit_answer(consumer: Any, content: dict) -> None:
 				'track': track,
 				'trackArtist': track['artist'] if artist_correct else None,
 				'trackSong': track['song'] if song_correct else None,
+				'answer': answer,
 			})
 	else:
 		# Tell incorrect players their answer was wrong
 		if consumer.current_game.answer_public:
 			await consumer.group_send(consumer.group_name, {
-			'type': 'game_player_answered',
-			'game': serialized_game,
-			'senderPlayer': serialized_player,
-			'answerString': answer
-			})
+				'type': 'game_answer_incorrect',
+				'game': serialized_game,
+				'senderPlayer': serialized_player,
+				'answer': answer,
+				'is_correct': False
+				})
 		else:
 			await consumer.send_json(consumer.group_name, {
-				'type': 'game_player_answered',
+				'target': 'game',
+				'event': 'answer_incorrect',
 				'game': serialized_game,
-				'answerString': answer
+				'answerString': answer,
+				'is_correct': False
 				})
+
 
 async def _update_game_settings(consumer: Any, content: dict) -> None:
 	"""Apply game settings through the shared PATCH logic and broadcast the result."""
@@ -273,15 +273,14 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 	await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
 	
 	await consumer.remove_from_layer(consumer.group_name)
-	consumer.current_game = None
 	serialized_game = GameHeaderSerializer(consumer.current_game).data
-	serialized_player = LightProfileSerializer(consumer.profile).profile
+	serialized_player = LightProfileSerializer(consumer.profile).data
 	await consumer.group_send(consumer.group_name, {
 		'type': 'game_player_left',
 		'game': serialized_game,
 		'player': serialized_player,
 	})
-	
+	consumer.current_game = None
 	await consumer.send_json({
 		'target': 'game',
 		'event': 'left_game',
@@ -290,13 +289,8 @@ async def _leave_game(consumer: Any, content: dict) -> None:
 
 
 async def check_all_answers_received(consumer: Any, game: Any) -> None:
-    """
-    Unlocks the game loop if either:
-    1. Everyone has found both the title and artist.
-    2. At least one title AND at least one artist have been found.
-    """
+    """Unlocks the game loop if both artist and song has been found."""
     found = await _get_round_stats_completeness(game)
     game_over = found['titles'] > 0 and found['artists'] > 0
-
     if game_over:
         consumer.all_answers_received.set()

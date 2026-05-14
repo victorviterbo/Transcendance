@@ -42,6 +42,7 @@
 - Localization data is messy and order-dependent. ttr() in localization.ts (line 132) silently keeps the last matching ID, and lang.csv has duplicates like line 8 (line 8) and line 86 (line 86) for WELCOME, plus 3 (line 3) and 113 (line 113) for CHANGE_EMAIL.
 - Language switching is implemented by registering a global callback during render in CLanguageLayout.tsx (line 13) and forcing a subtree remount with key={lang} at line 18 (line 18). It’s effective, but it’s a brute-force reset, not a clean reactive localization model.
 - The frontend still has a lot of rough hygiene signals: magic-number friend tabs and the 1 -> 0 timeout hop in GPageBases.tsx (line 42), CMenu forgetting to call useId in CMenu.tsx (line 14), data-testid="hello" in CTitleBasePaper.tsx (line 54), and a lot of typo drift like WS_ADRESS, PWelcomLogin, USERS_ADD_EROOR, TAG_ELECRO, and recieved.
+- See if we need to create an 'emergency stop' in the game_loop if something went wrong elsewhere
 
 # ????
 

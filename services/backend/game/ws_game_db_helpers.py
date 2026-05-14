@@ -1,18 +1,18 @@
+"""Handle all DB hits for the game."""
 
-import asyncio
 from typing import Any
 
 from channels.db import database_sync_to_async
-from django.db.models import Max, Sum, Q, Count
+from django.db.models import Count, Max, Q, Sum
+from music.models import Track
+from music.serializers import TrackSerializer
 from project.consumers import GlobalConsumer
 from project.defaults import default_pts
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
+from stats.serializers import LiveGameSerializer, LiveRoundSerializer
 from thefuzz import fuzz
-from game.models import Game
-from music.models import Track
-from music.serializers import TrackSerializer
-from stats.serializers import LiveRoundSerializer, LiveGameSerializer
 
+from game.models import Game
 
 
 @database_sync_to_async
@@ -132,7 +132,7 @@ def _init_game_stats(game: Game) -> None:
 @database_sync_to_async
 def _init_round_stats(game: Game) -> None:
 	"""Initialize round stats for all players at the start of a round."""
-	round = GameRoundStats.objects.create(
+	GameRoundStats.objects.create(
 		game=game,
 		round_number=game.current_round,
 		track=game.current_track,
@@ -248,7 +248,7 @@ def _add_player_to_game_stats(consumer: GlobalConsumer, content: dict) -> bool:
 	"""Add a player to a game by creating UserGameStats entry."""
 	try:
 		UserGameStats.objects.get_or_create(game=consumer.current_game,
-									  player=consumer.profile)
+											player=consumer.profile)
 		consumer.current_game.player.add(consumer.profile)
 		return True
 	except Exception:
@@ -260,7 +260,7 @@ def _remove_player_from_game_stats(consumer: GlobalConsumer, content: dict) -> b
 	"""Remove a player from a game by deleting UserGameStats entry."""
 	try:
 		UserGameStats.objects.filter(game=consumer.current_game,
-									  player=consumer.profile).delete()
+									player=consumer.profile).delete()
 		consumer.current_game.player.remove(consumer.profile)
 		return True
 	except Exception:

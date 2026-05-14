@@ -132,7 +132,7 @@ class GameDetailSerializer(serializers.ModelSerializer):
 class GameHeaderSerializer(serializers.ModelSerializer):
     """Serializer for sending game data over WebSocket."""
 
-    owner = LightProfileSerializer(source='owned_by', read_only=True) #username, avatar, guest, uid
+    owner = LightProfileSerializer(source='owned_by', read_only=True)
     roomUID = serializers.CharField(source='room__uid', read_only=True)
     round = serializers.IntegerField(source='current_round')
     class Meta:

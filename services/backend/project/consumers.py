@@ -16,9 +16,11 @@ from chat.chat_utils import (
 from chat.models import Message, Room
 from django.core.cache import cache
 from game.models import Game
-from services.backend.game.ws_game_logic import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
+from userprofile.serializers import LightProfileSerializer
+
+from services.backend.game.ws_game_logic import handle_game_action
 
 logger = logging.getLogger(__name__)
 
@@ -507,12 +509,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'player_joined',
-            'game_uid': event.get('game_uid'),
-            'started_by': event.get('started_by'),
-            'room_uid': event.get('room_uid'),
-            #'player_name': event.get('player_name'),
-            #'player_uid': event.get('player_uid'),
-            'join_player': event.get('join_player')
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
+            'player': event.get('player')
         })
 
     async def game_game_settings_updated(self, event: dict) -> None:
@@ -520,27 +519,34 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'settings_updated',
-            'game_uid': event.get('game_uid'),
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
             'settings': event.get('settings', {}),
         })
 
-    """async def game_track_revealed(self, event: dict) -> None:
-        Notify of a track being revealed.
-        await self.send_json({
-            'target': 'game',
-            'event': 'track_revealed',
-            'track': event['track'],
-            'room_id': event.get('room_id'),
-        })"""
-
-    async def game_answer_validation(self, event: dict) -> None: #TODO see if needed ???
+    async def game_answer_correct(self, event: dict) -> None: #TODO see if needed ???
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
             'event': 'answer_validation',
-            'player_name': event.get('player_name'),
-            'player_uid': event.get('player_uid'),
-            'track': event.get('track'),
+            'game': event.get('game'),
+			'senderPlayer': event.get('sender_player'),
+            'self': LightProfileSerializer(self.profile).data,
+            'answer': event.get('answer'),
+            'trackArtist': event.get('trackArtist'),
+            'trackSong': event.get('trackArtist'),
+            'is_correct': event.get('is_correct', False),
+        })
+
+    async def game_answer_incorrect(self, event: dict) -> None: #TODO see if needed ???
+        """Notify of an answer submission."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'answer_validation',
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
+            'senderPlayer': event.get('senderPlayer'),
+            'answer': event.get('answer'),
             'is_correct': event.get('is_correct', False),
         })
 
@@ -559,13 +565,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'round_started',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'started_by': event.get('started_by'),
-            'round_number': event.get('round_number'),
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
             'track': event.get('track'),
-            'playback_duration': event.get('playback_duration'),
+            'playbackDuration': event.get('playbackDuration'),
         })
 
     async def game_round_end(self, event: dict) -> None:
@@ -573,14 +576,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'round_end',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'started_by': event.get('started_by'),
-            'round_number': event.get('round_number'),
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
             'track': event.get('track'),
             'results': event.get('results'),
-            'message': event.get('message'),
             'is_last_round': event.get('is_last_round', False),
         })
     
@@ -589,10 +588,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'game_completed',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'started_by': event.get('started_by'),
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
             'final_leaderboard': event['final_leaderboard'],
         })
 

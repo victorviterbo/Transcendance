@@ -1,22 +1,9 @@
-import asyncio
-from typing import Any
+"""Handle all message sending to client during game."""
 
-from channels.db import database_sync_to_async
-from django.db.models import Max, Sum, Q, Count
 from music.serializers import BlindSerializer, TrackSerializer
 from project.consumers import GlobalConsumer
-from project.defaults import default_pts, countdown_time, answer_buffer_time
-from rest_framework import serializers
-from stats.models import GameRoundStats, UserGameStats, UserRoundStats
-from stats.serializers import LiveGameSerializer, LiveRoundSerializer
-from thefuzz import fuzz
-from userprofile.models import Profile
-from game.models import Game
-from game.serializers import GameUpdateSerializer, GameHeaderSerializer
-from game.services import apply_game_settings, format_validation_errors
-from music.models import Track
-from userprofile.serializers import LightProfileSerializer
-from datetime import timedelta
+
+from game.serializers import GameHeaderSerializer
 
 
 async def _send_track(consumer: GlobalConsumer) -> None:
@@ -46,9 +33,8 @@ async def _send_round_stats(consumer: GlobalConsumer, serialized_stats: dict) ->
 			'game': serialized_game,
 			'track': serialized_track,
 			'results': serialized_stats,
-			'message': 'Round ended',
 			'is_last_round': (consumer.current_game.current_round
-					 			>= consumer.current_game.num_tracks)}
+								>= consumer.current_game.num_tracks)}
 	await consumer.group_send(consumer.group_name, event)
 
 async def _send_game_stats(consumer: GlobalConsumer, serialized_stats: dict) -> None:
@@ -59,3 +45,12 @@ async def _send_game_stats(consumer: GlobalConsumer, serialized_stats: dict) -> 
 		'game': serialized_game,
 		'leaderboard': serialized_stats
 		})
+
+async def _send_new_player(consumer: GlobalConsumer,
+							serialized_game: dict,
+							serialized_player: dict) -> None:
+	await consumer.group_send(consumer.group_name, {
+		'type': 'game_player_joined',
+		'game': serialized_game,
+		'player': serialized_player
+	})
