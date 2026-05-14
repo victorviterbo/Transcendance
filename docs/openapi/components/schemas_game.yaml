@@ -36,3 +36,61 @@ GameChat:
     messageuid: {type: string}
     type: { type: string, format: "message | joined | leaved | guessed | found"}
     message: { type: string, descripion: "message: msg content | guessed: what the user tried to guess"}
+
+GameListEntry:
+  type: object
+  description: Brief game data displayed in the home page room lists.
+  properties:
+    uid:
+      type: string
+      format: uuid
+      description: Game UID used by the frontend route `/game/{uid}`.
+    name:
+      type: string
+      description: Display name of the game room.
+    genres:
+      type: array
+      description: Selected music tag localization IDs. Can be empty when the host has not configured the room yet.
+      items:
+        type: string
+        enum: [TAG_POP, TAG_RAP, TAG_ROCK, TAG_ELECRO, TAG_FRENCH_VARIETY, TAG_RNB]
+    playerCount:
+      type: integer
+      description: Current number of players in the room.
+    playerMax:
+      type: integer
+      description: Maximum allowed number of players in the room.
+  required: [uid, name, genres, playerCount, playerMax]
+
+GameListResponse:
+  type: object
+  description: Home page game list payload.
+  properties:
+    rooms:
+      type: array
+      items:
+        $ref: "../openapi.yaml#/components/schemas/Game - GameListEntry"
+  required: [rooms]
+
+GameCreationRequest:
+  type: object
+  description: Payload used to create a game room.
+  properties:
+    name:
+      type: string
+      description: Display name of the new game room.
+    visibility:
+      type: string
+      enum: [public, private, friends]
+      description: Visibility of the new game room.
+  required: [name, visibility]
+
+GameCreationResponse:
+  type: object
+  description: Successful game creation payload.
+  properties:
+    uid:
+      type: string
+      format: uuid
+      description: Game UID used by the frontend route `/game/{uid}`.
+  required: [uid]
