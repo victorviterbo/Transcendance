@@ -123,7 +123,7 @@ class LoginView(APIView):
                 )
                 guest_id = request.session.get('guest_profile_id')
                 if guest_id:
-                    profile = Profile.objects.filter(id=guest_id, is_guest=True)
+                    profile = Profile.objects.filter(id=guest_id, guest=True)
                     if profile.exists():
                         profile.delete()
                         request.profile = user.profile

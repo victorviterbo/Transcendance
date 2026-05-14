@@ -46,7 +46,7 @@ admin_user.save()
 
 admin_profile, _ = Profile.objects.get_or_create(
     user=admin_user,
-    defaults={'username': 'admin_master', 'exp_points': 9999, 'is_guest': False}
+    defaults={'username': 'admin_master', 'exp_points': 9999, 'guest': False}
 )
 users.append(admin_user)
 profiles.append(admin_profile)
@@ -65,7 +65,7 @@ for i in range(1, 21):
         defaults={
             'username': f"Player_{i}",
             'exp_points': random.randint(100, 5000),
-            'is_guest': False
+            'guest': False
         }
     )
     profiles.append(profile)

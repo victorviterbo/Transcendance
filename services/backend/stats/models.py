@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.functional import cached_property
 from game.models import Game
 from music.models import Track
-
+from django.db.models import Sum
 
 class GameRoundStats(models.Model):
     """Define the model for a single player for a single game."""
@@ -36,7 +36,6 @@ class UserRoundStats(models.Model):
     song_found = models.BooleanField(default=False)
     artist_found_at = models.DurationField(default=timedelta(seconds=30))
     song_found_at = models.DurationField(default=timedelta(seconds=30))
-    time = models.DurationField(default=timedelta(seconds=30))
     xp_earned = models.PositiveIntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
 
@@ -49,6 +48,11 @@ class UserRoundStats(models.Model):
     def game(self) -> Game:
         """Get the game associated with this round."""
         return self.round.game
+    
+    @property
+    def time(self) -> timedelta:
+        """Returns the time at which the player found the last element."""
+        return sum(self.song_found_at, self.artist_found_at)
 
 class UserGameStats(models.Model):
     """Define the model for a single player in a single game."""
@@ -59,9 +63,18 @@ class UserGameStats(models.Model):
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE,
                                related_name='round_played')
-    total_xp_earned = models.PositiveIntegerField(default=0)
     is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def total_xp_earned(self) -> int:
+        """Dynamically sum XP from all rounds played by this player in this game."""
+        result = UserRoundStats.objects.filter(
+            round__game=self.game,
+            player=self.player
+        ).aggregate(total=Sum('xp_earned'))    
+        return result['total'] or 0
+    
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-played_at']

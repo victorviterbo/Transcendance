@@ -35,7 +35,7 @@ class Profile(models.Model):
     
     session_key = models.CharField(max_length=40, null=True, blank=True, db_index=True)
 
-    is_guest = models.BooleanField(default=True)
+    guest = models.BooleanField(default=True)
 
     is_online = models.BooleanField(default=True)
     

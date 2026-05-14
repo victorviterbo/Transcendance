@@ -16,7 +16,7 @@ from chat.chat_utils import (
 from chat.models import Message, Room
 from django.core.cache import cache
 from game.models import Game
-from game.ws_game_handler import handle_game_action
+from services.backend.game.ws_game_logic import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
@@ -64,10 +64,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                     self.profile.username,
                     self.group_name)
         await self.accept()
-        logger.info('ws.connect.accepted profile_id=%s username=%s is_guest=%s user_id=%s group=%s',
+        logger.info('ws.connect.accepted profile_id=%s username=%s guest=%s user_id=%s group=%s',
                     self.profile.id,
                     self.profile.username,
-                    self.profile.is_guest,
+                    self.profile.guest,
                     self.profile.user_id,
                     self.group_name)
         return
@@ -374,136 +374,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'friendship_uid': event.get('friendship_uid'),
         })
 
-    # Game event handlers
-    async def game_player_joined(self, event: dict) -> None:
-        """Notify of a player joining the game room."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'player_joined',
-            'player_name': event.get('player_name'),
-            'player_uid': event.get('player_uid'),
-        })
-
-    async def game_game_started(self, event: dict) -> None:
-        """Notify that the game has started."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'game_started',
-            'game_uid': event.get('game_uid'),
-            'started_by': event.get('started_by'),
-        })
-
-    async def game_game_settings_updated(self, event: dict) -> None:
-        """Notify clients that game settings have changed."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'settings_updated',
-            'game_uid': event.get('game_uid'),
-            'settings': event.get('settings', {}),
-        })
-
-    async def game_track_revealed(self, event: dict) -> None:
-        """Notify of a track being revealed."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'track_revealed',
-            'track': event['track'],
-            'room_id': event.get('room_id'),
-        })
-
-    async def game_answer_submitted(self, event: dict) -> None:
-        """Notify of an answer submission."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'answer_submitted',
-            'player_name': event.get('player_name'),
-            'player_uid': event.get('player_uid'),
-            'answer': event.get('answer'),
-            'is_correct': event['is_correct'],
-        })
-
-    async def game_player_left(self, event: dict) -> None:
-        """Notify of a player leaving the game room."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'player_left',
-            'player_name': event.get('player_name'),
-            'player_uid': event.get('player_uid'),
-            'room_id': event.get('room_id'),
-        })
-
-    async def game_round_start(self, event: dict) -> None:
-        """Broadcast round start with blind track info to all players."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'round_started',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'started_by': event.get('started_by'),
-            'round_number': event.get('round_number'),
-            'track': event.get('track'),
-            'playback_duration': event.get('playback_duration'),
-        })
-
-    async def game_round_end(self, event: dict) -> None:
-        """Send round results and next round timing."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'round_end',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'started_by': event.get('started_by'),
-            'round_number': event.get('round_number'),
-            'track': event.get('track'),
-            'results': event.get('results'),
-            'message': event.get('message'),
-            'is_last_round': event.get('is_last_round', False),
-        })
-    
-    async def game_game_completed(self, event: dict) -> None:
-        """Broadcast final game results and leaderboard."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'game_completed',
-            'game_uid': event.get('game_uid'),
-            'player_uid': self.profile.uid if self.profile else None,
-            'player_name': self.profile.username if self.profile else None,
-            'started_by': event.get('started_by'),
-            'final_leaderboard': event['final_leaderboard'],
-        })
-
-    async def game_player_answered(self, event: dict) -> None:
-        """Broadcast that a player has submitted an answer."""
-        player_uid = event.get('player_uid')
-        if player_uid is None:
-            player_name = event.get('player_name')
-            if player_name:
-                profile = await database_sync_to_async(lambda: Profile.objects.filter(username=player_name).first())()
-                player_uid = str(getattr(profile, 'uid', None)) if profile else None
-
-        await self.send_json({
-            'target': 'game',
-            'event': 'player_answered',
-            'player_uid': player_uid,
-            'player_name': event.get('player_name'),
-        })
-
-    async def game_round_advanced(self, event: dict) -> None:
-        """Notify clients that the round number advanced."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'round_advanced',
-            'round_number': event.get('round_number'),
-        })
-
-    def _sender_name(self) -> str:
-        """Return the authenticated sender username or an anonymous fallback."""
-        if self.profile:
-            return self.profile.username
-        return 'anonymous'
-
     @database_sync_to_async
     def _get_profile_from_scope(self) -> Profile | None:
         """Resolve profile from user, injected profile, or guest session."""
@@ -520,22 +390,22 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
         profile = self.scope.get("profile")
         if isinstance(profile, Profile):
-            logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s is_guest=%s',
-                         profile.id, profile.is_guest)
+            logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s guest=%s',
+                         profile.id, profile.guest)
             return profile
 
         session = self.scope.get("session", {})
         guest_uid = session.get("guest_profile_uid")
         if guest_uid:
             guest_profile = Profile.objects.filter(uid=guest_uid).first()
-            logger.debug('ws.profile_resolve.from_session_profile_uid profile_id=%s uid=%s is_guest=%s',
+            logger.debug('ws.profile_resolve.from_session_profile_uid profile_id=%s uid=%s guest=%s',
                          guest_profile.id if guest_profile else None,
                          guest_uid,
-                         guest_profile.is_guest if guest_profile else None)
+                         guest_profile.guest if guest_profile else None)
             if guest_profile and self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated and guest_profile.user_id is None:
                 guest_profile.user = self.user
-                guest_profile.is_guest = False
-                guest_profile.save(update_fields=['user', 'is_guest'])
+                guest_profile.guest = False
+                guest_profile.save(update_fields=['user', 'guest'])
                 logger.info('ws.profile_resolve.session_profile_linked user_id=%s profile_id=%s',
                             self.user.id,
                             guest_profile.id)
@@ -543,7 +413,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
         if self.create_profile_if_missing:
             guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
-            new_profile = Profile.objects.create(username=guest_username, is_guest=True)
+            new_profile = Profile.objects.create(username=guest_username, guest=True)
             logger.debug('ws.profile_resolve.created_new_guest profile_id=%s', new_profile.id)
             return new_profile
         
@@ -558,27 +428,27 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         room = None
         if event == 'direct-message':
             sender_user = None
-            logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_is_guest=%s profile_user_id=%s',
+            logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_guest=%s profile_user_id=%s',
                          getattr(self.profile, 'id', None),
                          type(getattr(self, 'user', None)).__name__,
                          bool(self.user and self.user.is_authenticated) if self.user else False,
-                         getattr(self.profile, 'is_guest', None),
+                         getattr(self.profile, 'guest', None),
                          getattr(self.profile, 'user_id', None))
             if self.user and self.user.is_authenticated:
                 sender_user = self.user
                 logger.debug('ws.direct_message.sender_resolved_from_user profile_id=%s user_id=%s',
                              getattr(self.profile, 'id', None),
                              self.user.id)
-            elif self.profile and not self.profile.is_guest and self.profile.user_id:
+            elif self.profile and not self.profile.guest and self.profile.user_id:
                 sender_user = self.profile.user
                 logger.debug('ws.direct_message.sender_resolved_from_profile profile_id=%s user_id=%s',
                              getattr(self.profile, 'id', None),
                              self.profile.user_id)
 
             if sender_user is None:
-                logger.warning('ws.direct_message.auth_failed profile_id=%s is_guest=%s user_in_scope=%s profile_user_id=%s',
+                logger.warning('ws.direct_message.auth_failed profile_id=%s guest=%s user_in_scope=%s profile_user_id=%s',
                                getattr(self.profile, 'id', None),
-                               getattr(self.profile, 'is_guest', None),
+                               getattr(self.profile, 'guest', None),
                                bool(getattr(self, 'user', None) and self.user.is_authenticated),
                                getattr(self.profile, 'user_id', None))
                 return False, {'type': 'error',
@@ -630,6 +500,120 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     def _get_direct_recipient_profile(self, message: Message) -> Profile | None:
         """Return the other participant profile for a direct-message room."""
         return message.room.participants.exclude(id=message.sender_profile.id).first()
+
+    # Game event handlers
+    async def game_player_joined(self, event: dict) -> None:
+        """Notify of a player joining the game room."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'player_joined',
+            'game_uid': event.get('game_uid'),
+            'started_by': event.get('started_by'),
+            'room_uid': event.get('room_uid'),
+            #'player_name': event.get('player_name'),
+            #'player_uid': event.get('player_uid'),
+            'join_player': event.get('join_player')
+        })
+
+    async def game_game_settings_updated(self, event: dict) -> None:
+        """Notify clients that game settings have changed."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'settings_updated',
+            'game_uid': event.get('game_uid'),
+            'settings': event.get('settings', {}),
+        })
+
+    """async def game_track_revealed(self, event: dict) -> None:
+        Notify of a track being revealed.
+        await self.send_json({
+            'target': 'game',
+            'event': 'track_revealed',
+            'track': event['track'],
+            'room_id': event.get('room_id'),
+        })"""
+
+    async def game_answer_validation(self, event: dict) -> None: #TODO see if needed ???
+        """Notify of an answer submission."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'answer_validation',
+            'player_name': event.get('player_name'),
+            'player_uid': event.get('player_uid'),
+            'track': event.get('track'),
+            'is_correct': event.get('is_correct', False),
+        })
+
+    async def game_player_left(self, event: dict) -> None:
+        """Notify of a player leaving the game room."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'player_left',
+            'game_uid': event.get('game_uid'),
+            'player_name': event.get('player_name'),
+            'player_uid': event.get('player_uid'),
+        })
+
+    async def game_round_start(self, event: dict) -> None:
+        """Broadcast round start with blind track info to all players."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_started',
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'started_by': event.get('started_by'),
+            'round_number': event.get('round_number'),
+            'track': event.get('track'),
+            'playback_duration': event.get('playback_duration'),
+        })
+
+    async def game_round_end(self, event: dict) -> None:
+        """Send round results and next round timing."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_end',
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'started_by': event.get('started_by'),
+            'round_number': event.get('round_number'),
+            'track': event.get('track'),
+            'results': event.get('results'),
+            'message': event.get('message'),
+            'is_last_round': event.get('is_last_round', False),
+        })
+    
+    async def game_game_completed(self, event: dict) -> None:
+        """Broadcast final game results and leaderboard."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_completed',
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'started_by': event.get('started_by'),
+            'final_leaderboard': event['final_leaderboard'],
+        })
+
+    async def game_player_answered(self, event: dict) -> None:
+        """Broadcast that a player has submitted an answer."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'player_answered_incorrectly',
+            'game_uid': event.get('game_uid'),
+            'player_uid': self.profile.uid if self.profile else None,
+            'player_name': self.profile.username if self.profile else None,
+            'answer_from_player_uid': event.get('answer_from_player_uid'),
+            'answer_from_player_name': event.get('answer_from_player_name'),
+            'answer_string': event.get('answer_string'),
+        })
+
+    def _sender_name(self) -> str:
+        """Return the authenticated sender username or an anonymous fallback."""
+        if self.profile:
+            return self.profile.username
+        return 'anonymous'
 
 class NotFoundConsumer(AsyncWebsocketConsumer):
     """Handle non-existant endpoint communication."""

@@ -21,12 +21,12 @@ from .serializers import (
 def _ranking(profile: Profile) -> int:
     """Return the 1-based global ranking of a profile by exp_points."""
     return (
-        Profile.objects.filter(is_guest=False, exp_points__gt=profile.exp_points).count() + 1
+        Profile.objects.filter(guest=False, exp_points__gt=profile.exp_points).count() + 1
     )
 
 def _total_players() -> int:
     """Return the total number of registered (non-guest) players."""
-    return Profile.objects.filter(is_guest=False).count()
+    return Profile.objects.filter(guest=False).count()
 
 
 class GlobalStatsView(APIView):
@@ -109,7 +109,7 @@ class LeaderboardView(APIView):
     def get(self, request: Request) -> Response:
         """Return leaderboard data."""
         top_profiles = (
-            Profile.objects.filter(is_guest=False)
+            Profile.objects.filter(guest=False)
             .order_by('-exp_points')[:10]
         )
         entries = []

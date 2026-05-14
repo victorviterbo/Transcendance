@@ -42,7 +42,7 @@ class DirectMessageView(APIView):
 
     def post(self, request: Request) -> Response:
         """Create or fetch a direct-message room shared by the current user and target user."""
-        if request.profile.is_guest:
+        if request.profile.guest:
             return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                             status=status.HTTP_401_UNAUTHORIZED)
         if not request.data.get('user_uid'):

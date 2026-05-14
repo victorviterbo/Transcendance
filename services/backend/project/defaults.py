@@ -59,3 +59,6 @@ default_pts = {
         'song': 4
     }
 }
+
+countdown_time = 3
+answer_buffer_time = 0.2

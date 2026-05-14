@@ -26,7 +26,7 @@ class ProfileMiddleware:
             guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
             request.profile = Profile.objects.create(
                 username=guest_username,
-                is_guest=True
+                guest=True
             )
             request.session['guest_profile_uid'] = str(request.profile.uid)
             request.session.modified = True

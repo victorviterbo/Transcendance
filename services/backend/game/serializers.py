@@ -12,7 +12,7 @@ from project.defaults import get_badge, num_genres
 from rest_framework import serializers
 from stats.models import UserGameStats
 from userprofile.models import Profile
-
+from userprofile.serializers import LightProfileSerializer
 from .models import Game
 
 
@@ -102,25 +102,48 @@ class PlayerSerializer(serializers.Serializer):
 
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
-    id = serializers.CharField(read_only=True)
-    game_name = serializers.CharField(read_only=True)
-    genres = serializers.ListField(read_only=True)
     players = PlayerSerializer(source='player_stats', many=True, read_only=True)
     max_players = serializers.SerializerMethodField()
-    public_level = serializers.CharField(read_only=True)
 
     class Meta:
         """Meta config for GameDetailSerializer."""
         model = Game
         fields = [
-            'id',
+            'uid',
             'game_name',
             'genres',
             'public_level',
             'players',
             'max_players',
         ]
+        read_only_fields = ['uid',
+                            'game_name',
+                            'genres',
+                            'public_level',
+                            'players',
+                            'max_players'
+                            ]
 
     def get_max_players(self, obj: Game) -> int:
         """Return max players for this game (e.g., num_tracks)."""
         return obj.num_tracks
+    
+
+class GameHeaderSerializer(serializers.ModelSerializer):
+    """Serializer for sending game data over WebSocket."""
+
+    owner = LightProfileSerializer(source='owned_by', read_only=True) #username, avatar, guest, uid
+    roomUID = serializers.CharField(source='room__uid', read_only=True)
+    round = serializers.IntegerField(source='current_round')
+    class Meta:
+        """Meta config for GameWSSerializer."""
+        model = Game
+        fields = [
+            'uid',
+            'game_name',
+            'owner',
+            'status',
+            'roomUID',
+            'round',
+        ]
+        read_only_fields = fields

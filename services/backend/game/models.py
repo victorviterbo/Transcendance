@@ -38,7 +38,8 @@ class Game(models.Model):
 	status = models.CharField(max_length=20,
 								choices=[
 									('waiting', 'Waiting for players'),
-									('playing', 'Game in progress'),
+									('playing_round', 'Game Round in progress'),
+									('playing_break', 'Game Break in progress'),
 									('finished', 'Game finished'),
 									],
 									default='waiting')
