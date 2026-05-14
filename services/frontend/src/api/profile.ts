@@ -21,9 +21,9 @@ export const getProfileLevelProgress = (
 };
 
 export const fetchProfile = async (username: string): Promise<IProfileData> => {
-	const response = await api.get<IProfileData>(
-		`${API_PROFILE}?q=${encodeURIComponent(username)}`,
-	);
+	const response = await api.get<IProfileData>(API_PROFILE, {
+		params: { q: username },
+	});
 	return response.data;
 };
 
