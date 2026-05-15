@@ -1,8 +1,15 @@
 import { http, HttpResponse } from "msw";
-import { API_PRIVATE_ROOMS, API_PUBLIC_ROOMS } from "../../constants";
-import type { IRoomInfo } from "../../types/room";
+import { API_GAME_FRIENDS, API_GAME_PUBLIC, MUSIC_TAGS } from "../../constants";
+import type { IGameListEntry, TGameGenre } from "../../types/game";
 
-function GenerateRoom(): IRoomInfo {
+let roomUidCounter = 0;
+
+function generateRoomUid(): string {
+	roomUidCounter += 1;
+	return `00000000-0000-4000-8000-${roomUidCounter.toString().padStart(12, "0")}`;
+}
+
+function GenerateRoom(): IGameListEntry {
 	const roomNames = [
 		"Sarah's room",
 		"Carl's room",
@@ -12,59 +19,25 @@ function GenerateRoom(): IRoomInfo {
 		"Public room %d",
 	];
 
-	const themeNames = [
-		"Rap",
-		"60's",
-		"70's",
-		"80's",
-		"90's",
-		"2000",
-		"Movies",
-		"Pop",
-		"Video Game",
-		"Country",
-		"French",
-		"Spanish",
-		"JPOP",
-	];
-	const albumCovers = [
-		"imgs/albums/Rap.jpg",
-		"imgs/albums/60s.png",
-		"imgs/albums/70s.jpg",
-		"imgs/albums/80s.jpg",
-		"imgs/albums/90s.png",
-		"imgs/albums/2000.jpg",
-		"imgs/albums/Movies.jpg	",
-		"imgs/albums/Pop.jpg",
-		"imgs/albums/VideoGame.jpeg",
-		"imgs/albums/Country.jpeg",
-		"imgs/albums/French.jpg",
-		"imgs/albums/Spanish.jpg",
-		"imgs/albums/Jpop.png",
-	];
-
 	let room = roomNames[Math.floor(Math.random() * roomNames.length)];
 	if (room.includes("%d")) room = room.replaceAll("%d", Math.floor(Math.random() * 1000) + "");
 
-	const themeIndex = Math.floor(Math.random() * themeNames.length);
-	const theme = themeNames[themeIndex];
-	const img = albumCovers[themeIndex];
+	const genreCount = Math.floor(Math.random() * 4);
+	const genres = [...MUSIC_TAGS]
+		.sort(() => Math.random() - 0.5)
+		.slice(0, genreCount) as TGameGenre[];
 
 	return {
+		uid: generateRoomUid(),
 		name: room,
-		theme: theme,
-		img: img,
+		genres,
 		playerCount: Math.floor(Math.random() * 100),
 		playerMax: 100,
 	};
 }
 
-/**
- * @brief Handle mock refresh.
- * @returns New access token if a mock session exists, 401 otherwise.
- */
-export const FetchPublicRoom = http.get(API_PUBLIC_ROOMS, async () => {
-	const tempRooms: IRoomInfo[] = [];
+export const FetchPublicRoom = http.get(API_GAME_PUBLIC, async () => {
+	const tempRooms: IGameListEntry[] = [];
 
 	GenerateRoom();
 	for (let i = 0; i < 15; i++) {
@@ -74,8 +47,8 @@ export const FetchPublicRoom = http.get(API_PUBLIC_ROOMS, async () => {
 	return HttpResponse.json({ rooms: tempRooms });
 });
 
-export const FetchPrivateRoom = http.get(API_PRIVATE_ROOMS, async () => {
-	const tempRooms: IRoomInfo[] = [];
+export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
+	const tempRooms: IGameListEntry[] = [];
 
 	for (let i = 0; i < 10; i++) {
 		tempRooms.push(GenerateRoom());

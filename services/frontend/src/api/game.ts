@@ -3,11 +3,25 @@ import type { IErrorStruct } from "../types/error";
 import api from "./client";
 import type { ReactNode } from "react";
 import { getErrorNode } from "../utils/error";
-import { API_CREATE_GAME } from "../constants";
-import type { IGameCreationRequest, IGameCreationResponse } from "../types/game";
+import { API_CREATE_GAME, API_GAME_FRIENDS, API_GAME_PUBLIC } from "../constants";
+import type {
+	IGameCreationRequest,
+	IGameCreationResponse,
+	IGameListResponse,
+} from "../types/game";
 
 export const createGame = async (payload: IGameCreationRequest): Promise<IGameCreationResponse> => {
 	const response = await api.post<IGameCreationResponse>(API_CREATE_GAME, payload);
+	return response.data;
+};
+
+export const fetchPublicGames = async (): Promise<IGameListResponse> => {
+	const response = await api.get<IGameListResponse>(API_GAME_PUBLIC);
+	return response.data;
+};
+
+export const fetchFriendsGames = async (): Promise<IGameListResponse> => {
+	const response = await api.get<IGameListResponse>(API_GAME_FRIENDS);
 	return response.data;
 };
 

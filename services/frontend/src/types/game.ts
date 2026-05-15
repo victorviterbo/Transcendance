@@ -1,5 +1,21 @@
+import type { MUSIC_TAGS } from "../constants";
 import type { IErrorStruct } from "./error";
 import type { IExtUserInfo } from "./user";
+
+//====================== LIST ======================
+export type TGameGenre = (typeof MUSIC_TAGS)[number];
+
+export interface IGameListEntry {
+	uid: string;
+	name: string;
+	genres: TGameGenre[];
+	playerCount: number;
+	playerMax: number;
+}
+
+export interface IGameListResponse {
+	rooms: IGameListEntry[];
+}
 
 //====================== CREATE ======================
 export type TGameVisibility = "public" | "private" | "friends";

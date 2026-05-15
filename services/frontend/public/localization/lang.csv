@@ -287,3 +287,8 @@ CREATE_GAME,Create room,Créer la salle,ルームを作成,Shown on the button t
 CREATING_GAME,Creating...,Création...,ルームを作成中...,Shown on the button to create a game room when pressed
 GAME_CREATION_FAILED,Room creation failed,Échec de la création de la salle,ルームの作成に失敗しました,Shown when a game creation fails
 ALREADY_IN_GAME,You are already in a room!,Vous êtes déjà dans une salle !,すでにルームに参加しています,Shown when a user tries to join or create a game while already being in another one
+ROOM_GENRES_EMPTY,No genres,Aucun genre,ジャンルなし,Shown when a room has no selected genres yet
+ROOMS_LOADING,Loading rooms...,Chargement des salles...,ルームを読み込み中...,Shown while home room lists are loading
+ROOMS_LOADING_FAILED,Rooms loading failed,Échec du chargement des salles,ルームの読み込みに失敗しました,Shown when home room lists fail to load
+ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルームがありません,Shown when a home room list is empty
+REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button

@@ -3,7 +3,7 @@ import GPageBase from "../common/GPageBases";
 import { appPositions } from "../../styles/theme";
 import PCreateRoom from "./PCreateRoom";
 import PJoinRoom from "./PJoinRoom";
-import PRooms from "./PRooms";
+import PRoomList from "./PRoomList";
 
 const PHomePage = () => {
 	const spacing: number = appPositions.mainSpacing;
@@ -20,10 +20,10 @@ const PHomePage = () => {
 					</Grid>
 				</Grid>
 				<Box sx={{ mt: spacing }}>
-					<PRooms isPublic={false}></PRooms>
+					<PRoomList isPublic={false}></PRoomList>
 				</Box>
 				<Box sx={{ mt: spacing }}>
-					<PRooms isPublic={true}></PRooms>
+					<PRoomList isPublic={true}></PRoomList>
 				</Box>
 			</Container>
 		</GPageBase>
