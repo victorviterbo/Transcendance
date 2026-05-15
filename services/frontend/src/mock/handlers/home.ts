@@ -9,7 +9,7 @@ function generateRoomUid(): string {
 	return `00000000-0000-4000-8000-${roomUidCounter.toString().padStart(12, "0")}`;
 }
 
-function GenerateRoom(): IGameListEntry {
+function GenerateRoom(genreCount?: number): IGameListEntry {
 	const roomNames = [
 		"Sarah's room",
 		"Carl's room",
@@ -22,10 +22,9 @@ function GenerateRoom(): IGameListEntry {
 	let room = roomNames[Math.floor(Math.random() * roomNames.length)];
 	if (room.includes("%d")) room = room.replaceAll("%d", Math.floor(Math.random() * 1000) + "");
 
-	const genreCount = Math.floor(Math.random() * 4);
 	const genres = [...MUSIC_TAGS]
 		.sort(() => Math.random() - 0.5)
-		.slice(0, genreCount) as TGameGenre[];
+		.slice(0, genreCount ?? Math.floor(Math.random() * 4)) as TGameGenre[];
 
 	return {
 		uid: generateRoomUid(),
@@ -41,7 +40,7 @@ export const FetchPublicRoom = http.get(API_GAME_PUBLIC, async () => {
 
 	GenerateRoom();
 	for (let i = 0; i < 15; i++) {
-		tempRooms.push(GenerateRoom());
+		tempRooms.push(GenerateRoom(i % 5 === 0 ? MUSIC_TAGS.length : undefined));
 	}
 
 	return HttpResponse.json({ rooms: tempRooms });
@@ -51,7 +50,7 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 	const tempRooms: IGameListEntry[] = [];
 
 	for (let i = 0; i < 10; i++) {
-		tempRooms.push(GenerateRoom());
+		tempRooms.push(GenerateRoom(i % 5 === 0 ? MUSIC_TAGS.length : undefined));
 	}
 
 	return HttpResponse.json({ rooms: tempRooms });

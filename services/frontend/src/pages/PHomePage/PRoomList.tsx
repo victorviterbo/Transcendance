@@ -1,15 +1,19 @@
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { Box, Grid, Stack } from "@mui/material";
 import { type IGameListEntry } from "../../types/game";
-import CButtonRoom from "../../components/inputs/buttons/CButtonRoom";
+import PRoomCard from "./PRoomCard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GPageProps } from "../common/GPageBases";
 import { fetchFriendsGames, fetchPublicGames } from "../../api/game";
 import CText from "../../components/text/CText";
 import { getErrorMessage } from "../../utils/error";
-import CIconButton from "../../components/inputs/buttons/CIconButton";
+import CToolButton from "../../components/inputs/buttons/CToolButton";
 import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
 import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
+import {
+	PRoomListRefreshButtonBoxStyle,
+	PRoomListTitleStyle,
+} from "../../styles/pages/home/PRoomListStyle";
 
 type RoomListStatus = "loading" | "ready" | "error";
 
@@ -106,23 +110,24 @@ function PRoomList({ isPublic }: PRoomListProps) {
 	return (
 		<CTitleBasePaper
 			titleNode={
-				<Box sx={{ position: "relative" }}>
+				<Box sx={PRoomListTitleStyle}>
 					<CText sx={CTitlePaperTitleStyle} size="lg" textAlign="center">
 						{isPublic ? "PUBLIC_ROOM" : "FRIEND_ROOM"}
 					</CText>
-					<CIconButton
-						onClick={handleRefresh}
-						disabled={status === "loading" || refreshDisabled}
-						sx={{
-							position: "absolute",
-							right: 15,
-							top: 0,
-							width: 30,
-							height: 30,
-						}}
-					>
-						<RefreshIcon fontSize="small" />
-					</CIconButton>
+					<Box sx={PRoomListRefreshButtonBoxStyle}>
+						<CToolButton
+							id={
+								isPublic
+									? "public-room-refresh-button"
+									: "friend-room-refresh-button"
+							}
+							aria-label={isPublic ? "Refresh public rooms" : "Refresh friend rooms"}
+							onClick={handleRefresh}
+							disabled={status === "loading" || refreshDisabled}
+						>
+							<RefreshIcon fontSize="small" />
+						</CToolButton>
+					</Box>
 				</Box>
 			}
 			data-testid={isPublic ? "public_room_testid" : "private_room_testid"}
@@ -143,8 +148,8 @@ function PRoomList({ isPublic }: PRoomListProps) {
 				<Stack>
 					<Grid container spacing={3}>
 						{roomList.map((item: IGameListEntry) => (
-							<Grid size={1} key={item.uid}>
-								<CButtonRoom infos={item}></CButtonRoom>
+							<Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.uid}>
+								<PRoomCard infos={item}></PRoomCard>
 							</Grid>
 						))}
 					</Grid>

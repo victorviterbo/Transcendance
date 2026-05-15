@@ -87,7 +87,7 @@ describe("Home rendering tests", () => {
 
 		await waitFor(
 			() => {
-				const rooms = screen.getAllByTestId("CButtonRoom");
+				const rooms = screen.getAllByTestId("PRoomCard");
 				expect(rooms.length).toBeGreaterThan(0);
 
 				const allTexts = within(rooms[0]).getAllByTestId("CTextBase");

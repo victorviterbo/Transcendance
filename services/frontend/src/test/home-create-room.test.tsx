@@ -74,9 +74,7 @@ describe("PCreateRoom", () => {
 			visibility: "private",
 		});
 		await waitFor(() =>
-			expect(navigateMock).toHaveBeenCalledWith(
-				"/game/87de2119-1226-479c-9261-c3c4f4b04b31",
-			),
+			expect(navigateMock).toHaveBeenCalledWith("/game/87de2119-1226-479c-9261-c3c4f4b04b31"),
 		);
 	});
 

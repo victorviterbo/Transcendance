@@ -4,11 +4,7 @@ import api from "./client";
 import type { ReactNode } from "react";
 import { getErrorNode } from "../utils/error";
 import { API_CREATE_GAME, API_GAME_FRIENDS, API_GAME_PUBLIC } from "../constants";
-import type {
-	IGameCreationRequest,
-	IGameCreationResponse,
-	IGameListResponse,
-} from "../types/game";
+import type { IGameCreationRequest, IGameCreationResponse, IGameListResponse } from "../types/game";
 
 export const createGame = async (payload: IGameCreationRequest): Promise<IGameCreationResponse> => {
 	const response = await api.post<IGameCreationResponse>(API_CREATE_GAME, payload);
