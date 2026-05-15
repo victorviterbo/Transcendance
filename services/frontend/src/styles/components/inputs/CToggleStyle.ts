@@ -68,10 +68,6 @@ export const CToggleButtonStyle: SxProps<Theme> = (_) => ({
 		zIndex: 1,
 	},
 
-	"& svg": {
-		fontSize: 18,
-	},
-
 	transition: (theme) => {
 		return theme.transitions.create(["transform", "box-shadow", "background", "color"], {
 			duration: appAnimation.timing.fast,

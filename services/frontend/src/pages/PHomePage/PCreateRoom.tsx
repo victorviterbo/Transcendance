@@ -60,9 +60,9 @@ function PCreateRoom() {
 						sx={{ height: appPositions.sizes.buttons.home }}
 						value={visibility}
 						options={[
-							{ value: "private", label: "PRIVATE", icon: <LockIcon /> },
-							{ value: "friends", label: "FRIENDS", icon: <GroupsIcon /> },
-							{ value: "public", label: "PUBLIC", icon: <PublicIcon /> },
+							{ value: "private", label: "PRIVATE", icon: <LockIcon fontSize="small" /> },
+							{ value: "friends", label: "FRIENDS", icon: <GroupsIcon fontSize="small" /> },
+							{ value: "public", label: "PUBLIC", icon: <PublicIcon fontSize="small" /> },
 						]}
 						onValueChanged={(value) => {
 							if (value) setVisibility(value as TGameVisibility);
