@@ -4,9 +4,11 @@ import { appPositions } from "../../styles/theme";
 import PCreateRoom from "./PCreateRoom";
 import PJoinRoom from "./PJoinRoom";
 import PRoomList from "./PRoomList";
+import { useAuth } from "../../components/auth/CAuthProvider";
 
 const PHomePage = () => {
 	const spacing: number = appPositions.mainSpacing;
+	const { status } = useAuth();
 
 	return (
 		<GPageBase>
@@ -19,9 +21,11 @@ const PHomePage = () => {
 						<PJoinRoom></PJoinRoom>
 					</Grid>
 				</Grid>
-				<Box sx={{ mt: spacing }}>
-					<PRoomList isPublic={false}></PRoomList>
-				</Box>
+				{status === "authed" ? (
+					<Box sx={{ mt: spacing }}>
+						<PRoomList isPublic={false}></PRoomList>
+					</Box>
+				) : null}
 				<Box sx={{ mt: spacing }}>
 					<PRoomList isPublic={true}></PRoomList>
 				</Box>
