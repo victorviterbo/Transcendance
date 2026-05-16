@@ -13,6 +13,7 @@ from rest_framework import serializers
 from stats.models import UserGameStats
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
+
 from .models import Game
 
 
@@ -35,10 +36,8 @@ class GameUpdateSerializer(serializers.ModelSerializer):
         """Meta config for GameUpdateSerializer."""
         model = Game
         fields = [
-            'game_name',
             'genres',
             'game_mode',
-            'public_level',
             'num_tracks',
             'break_duration',
             'playback_duration',
@@ -50,12 +49,12 @@ class GameUpdateSerializer(serializers.ModelSerializer):
     def validate_genres(self, value : Any)-> Any:
         """Validate that all genres are in the allowed list."""
         valid_genres: list[str] = [
-            'pop',
-            'rock',
-            'rap',
-            'electro',
-            'r&b/soul',
-            'variété française',
+            'Pop',
+            'Rock',
+            'Rap',
+            'Electro',
+            'RNB',
+            'French Variety',
         ]
         if value:
             invalid = [g for g in value if g not in valid_genres]
@@ -103,7 +102,6 @@ class PlayerSerializer(serializers.Serializer):
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
     players = PlayerSerializer(source='player_stats', many=True, read_only=True)
-    max_players = serializers.SerializerMethodField()
 
     class Meta:
         """Meta config for GameDetailSerializer."""
@@ -114,20 +112,13 @@ class GameDetailSerializer(serializers.ModelSerializer):
             'genres',
             'public_level',
             'players',
-            'max_players',
         ]
         read_only_fields = ['uid',
                             'game_name',
                             'genres',
                             'public_level',
                             'players',
-                            'max_players'
                             ]
-
-    def get_max_players(self, obj: Game) -> int:
-        """Return max players for this game (e.g., num_tracks)."""
-        return obj.num_tracks
-    
 
 class GameHeaderSerializer(serializers.ModelSerializer):
     """Serializer for sending game data over WebSocket."""

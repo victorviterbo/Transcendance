@@ -4,6 +4,10 @@ import bisect
 
 from project import settings
 
+countdown_time = 3
+answer_buffer_time = 0.2
+max_players = 20
+
 badges_strings = ['BADGE_DEAF_OCTOPUS', # <100
                   'BADGE_DAZED_JELLYFISH', # < 200 
                   'BADGE_DISTRACTED_PIGEON', # < 500 
@@ -60,5 +64,3 @@ default_pts = {
     }
 }
 
-countdown_time = 3
-answer_buffer_time = 0.2

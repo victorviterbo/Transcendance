@@ -173,16 +173,6 @@ class ChatWebsocketTests(TransactionTestCase):
 
 		self.user.friends.add(self.friend)
 		self.friend.friends.add(self.user)
-		#self.application = URLRouter(websocket_urlpatterns)
-		self.room = Room.objects.create(name='classic')
-		"""first, second = sorted([self.user.id, self.friend.id])
-		self.direct_key = f'dm_{first}_{second}'
-		self.direct_room = Room.objects.create(
-			name=self.direct_key,
-			is_direct=True,
-			direct_key=self.direct_key,
-		)
-		self.direct_room.participants.add(self.user.profile, self.friend.profile)"""
 		self.room.participants.add(self.user.profile, self.friend.profile)
 
 	def test_websocket_connects_for_existing_room(self) -> None:

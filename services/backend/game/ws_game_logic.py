@@ -4,16 +4,17 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from channels.db import database_sync_to_async
-from project.defaults import answer_buffer_time, countdown_time
+from project.defaults import answer_buffer_time, countdown_time, max_players
 from rest_framework import serializers
 from userprofile.serializers import LightProfileSerializer
 
 from game.models import Game
 from game.serializers import GameHeaderSerializer, GameUpdateSerializer
-from game.services import apply_game_settings, format_validation_errors
+from game.services import format_validation_errors
 
 from .ws_game_db_helpers import (
     _add_player_to_game_stats,
+    _apply_game_settings,
     _compute_game_stats,
     _compute_round_stats,
     _get_game,
@@ -58,6 +59,11 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 			await consumer.send_json({'target': 'game',
 									'event': 'error',
 									'message': 'Game not found'})
+			return
+		if len(consumer.current_game.players.all()) >= max_players:
+			await consumer.send_json({'target': 'game',
+									'event': 'error',
+									'message': 'Game already full'})
 			return
 		consumer.group_name = f'game_{consumer.current_game.uid}'
 		await _join_game(consumer, consumer.current_game, consumer.profile)
@@ -138,7 +144,8 @@ async def _start_game(consumer: 'GlobalConsumer', content: dict) -> None:
 
 async def _join_game(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Handle the game joining process."""
-	player_added = await _add_player_to_game_stats(consumer.current_game, consumer.profile)
+	player_added = await _add_player_to_game_stats(consumer.current_game,
+												consumer.profile)
 	if not player_added:
 		await consumer.send_json({'target': 'game',
 							'event': 'error',
@@ -238,7 +245,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 					{'target', 'event', 'game_uid'}}
 
 	try:
-		updated_game = await database_sync_to_async(apply_game_settings)(
+		updated_game = await database_sync_to_async(_apply_game_settings)(
 			consumer.current_game,
 			settings_payload,
 			partial=True)
@@ -251,7 +258,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 			return
 	consumer.current_game = updated_game
 	serialized_game = GameHeaderSerializer(consumer.current_game).data
-	settings_data = GameUpdateSerializer(updated_game).data
+	settings_data = GameUpdateSerializer(consumer.current_game).data
 	await consumer.group_send(consumer.group_name, {
 		'type': 'game_game_settings_updated',
 		'game': serialized_game,

@@ -270,7 +270,10 @@ def _remove_player_from_game_stats(consumer: 'GlobalConsumer', content: dict) ->
 		return False
 
 @database_sync_to_async
-def apply_game_settings(game: Game, data: dict[str, Any], *, partial: bool = True) -> Game:
+def _apply_game_settings(game: Game,
+						data: dict[str, Any],
+						*,
+						partial: bool = True) -> Game:
 	"""Validate and persist game settings updates through the shared serializer."""
 	serializer = GameUpdateSerializer(instance=game, data=data, partial=partial)
 	serializer.is_valid(raise_exception=True)

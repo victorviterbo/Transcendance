@@ -14,6 +14,8 @@ from game.models import Game
 def format_validation_errors(val_error: serializers.ValidationError) -> dict[str, dict[str, str | list[str]]]:
 	"""Normalize DRF validation errors to the API error contract."""
 	error = val_error.get_full_details()
+	if isinstance(error, list):
+		error = {'non_field_errors': error}
 	error_response: dict[str, dict[str, str | list[str]]] = {'error': {}}
 	for field, details in error.items():
 		if not isinstance(details, list) or len(details) == 0:
@@ -69,14 +71,14 @@ def setup_game_assets(game: Game) -> None:
 	playlist_uid = uuid.uuid4()
 	genre_str = ', '.join(game.genres)
 	playlist = Playlist.objects.create(
-		name=f'Game Playlist - {genre_str} ({playlist_uid})',
+		name=f'Playlist - {game.uid}',
 		uid=playlist_uid,
 	)
 	playlist.tracks.set(all_tracks)
 
 	room_uid = uuid.uuid4()
 	room = Room.objects.create(
-		name=f"Game Room - {', '.join(game.genres)} ({room_uid})",
+		name=f"Chat Room - {game.uid}",
 		is_direct=False,
 		uid=room_uid,
 	)

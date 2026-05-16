@@ -17,7 +17,7 @@ class Game(models.Model):
 
 	game_name = models.CharField(max_length=100, default='Unnamed Game')
 	
-	genres = models.JSONField(default=list, blank=True)
+	genres = models.JSONField(default=['Pop'], blank=True) #TODO switch default to callable
 	
 	players = models.ManyToManyField(Profile,
 									through='stats.UserGameStats',

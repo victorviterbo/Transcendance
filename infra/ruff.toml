@@ -9,6 +9,8 @@ lint.ignore = [
     "D213",
     "D206",
     "ANN401",
+    "N802",
+    "N815",
 ]
 
 [lint.pydocstyle]

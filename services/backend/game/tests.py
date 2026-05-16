@@ -1,12 +1,116 @@
 """Tests for the game module."""
 
-from django.test import TestCase
+import uuid
+
+from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
+from channels.testing import WebsocketCommunicator
+from django.test import TestCase, TransactionTestCase
+from django.urls import reverse
+from friends.models import Friendship
 from music.models import Playlist, Track
+from project.asgi import application
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APITestCase
+from userauth.serializers import RegisterSerializer
+from userprofile.serializers import ProfileSerializer
 
 from game.models import Game
 
+from .models import Room
+
+
+class GameWebsocketTests(TransactionTestCase):
+	"""Test websocket communications during the game."""
+
+	def setUp(self) -> None:
+		"""Create base objects for testcases."""
+		super().setUp()
+		serializer = RegisterSerializer(data={'email':'chat_test@mail.com',
+											'profile_username': 'chat_test_user',
+											'password':'Password123!'},
+											context={'is_creation': True})
+		if serializer.is_valid():
+			self.user = serializer.save()
+		serializer = RegisterSerializer(data={'email': 'friend@mail.com',
+											'profile_username': 'friend_user',
+											'password': 'Password123!'},
+										context={'is_creation': True})
+		if serializer.is_valid():
+			self.friend = serializer.save()
+		Friendship.objects.create(from_user=self.user,
+							to_user=self.friend,
+							status='accepted')
+		serializer = RegisterSerializer(data={'email':'other@mail.com',
+											'profile_username':'other_user',
+											'password': 'Password123!'},
+										context={'is_creation': True})
+		if serializer.is_valid():
+			self.stranger = serializer.save()
+
+		serializer = ProfileSerializer(data={'username':'guest_user'},
+										context={'is_creation': True})
+	
+		if serializer.is_valid():
+			self.guest = serializer.save()
+			
+		Room.objects.create(name='default_room', is_direct=False)
+
+		serializer = ProfileSerializer(data={'username':'guest_user'},
+										context={'is_creation': True})
+		
+		if serializer.is_valid():
+			self.anonymous = serializer.save()
+
+		self.user.friends.add(self.friend)
+		self.friend.friends.add(self.user)
+		self.room = Room.objects.create(name='classic')
+		self.room.participants.add(self.user.profile, self.friend.profile)
+		
+		game_url = '/api/game/'
+		game_payload = {
+			'game_name': 'my_game_friends_only',
+			'public_level': 'public',
+		}
+		response = self.client.post(game_url, game_payload, format='json')
+		print(response.data)
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		self.game_public = Game.objects.get(uid=response.data['uid'])
+
+		#TODO should not be needed because should be handled at game creation
+		self.game_public.players.add(self.user)
+		self.game_public.owned_by = self.user
+		self.game_public.save()
+		
+		game_payload = self.client.post(game_url, {
+			'game_name': 'my_game_friends_only',
+			'public_level': 'public'
+		}, format='json')
+		response = self.client.post(game_url, game_payload, format='json')
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+		self.game_friends_only = Game.objects.get(uid=response.data['uid'])
+
+		#TODO should not be needed because should be handled at game creation
+		self.game_friends_only.players.add(self.user)
+		self.game_friends_only.owned_by = self.user
+		self.game_friends_only.save()
+
+	def test_update_settings(self) -> None:
+		"""Test updating the game settings once created."""
+		async def scenario() -> None:
+			communicator = WebsocketCommunicator(application, '/ws/global/')
+			communicator.scope.update({'user': self.user, 'current_game': self.game_1})
+			connected, _ = await communicator.connect()
+			self.assertTrue(connected)
+			await communicator.send_json_to({'genres': 'RNB',
+									'game_mode': 'armagedon',
+									'num_tracks': 122,
+									'break_duration': 7,
+									'playback_duration': 24,
+									'fuzzy_match': True,
+									'answer_public': False})
+			response = await communicator.receive_json_from()
+			print(response)
 
 class GameViewTests(TestCase):
 	"""Test cases for GameView endpoint."""

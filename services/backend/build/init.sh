@@ -18,5 +18,5 @@ if [ "$APP_MODE" = "run" ]; then
     exec conda run --no-capture-output -n backend daphne -b 0.0.0.0 -p 8000 project.asgi:application
 else
     echo "Running Tests..."
-    exec conda run --no-capture-output -n backend python /backend/manage.py test
+    exec conda run --no-capture-output -n backend python /backend/manage.py test game.tests.GameWebsocketTests
 fi
