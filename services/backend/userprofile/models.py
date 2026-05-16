@@ -60,4 +60,5 @@ class Profile(models.Model):
     
     @property
     def badges(self) -> str:
+        """Compute the badge on the fly so we don't have to store it."""
         return get_badge(self.exp_points)

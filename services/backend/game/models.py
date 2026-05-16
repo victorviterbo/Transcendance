@@ -86,7 +86,10 @@ class Game(models.Model):
 	
 	started_at = models.DateTimeField(null=True, blank=True)
 
-	uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+	uid = models.UUIDField(default=uuid.uuid4,
+						editable=False,
+						unique=True,
+						db_index=True)
 
 	public_level = models.CharField(max_length=20,
 								choices=[

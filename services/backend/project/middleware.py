@@ -30,4 +30,5 @@ class ProfileMiddleware:
             )
             request.session['guest_profile_uid'] = str(request.profile.uid)
             request.session.modified = True
+        #TODO: add bouncing of connection if we could not create request.profile
         return self.get_response(request)

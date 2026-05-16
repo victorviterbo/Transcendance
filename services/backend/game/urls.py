@@ -1,13 +1,11 @@
 """URL routes for game API endpoints."""
 
-from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-from .views import GameViewSet
-
-router = DefaultRouter()
-router.register('', GameViewSet)
+from .views import FriendsGameView, GeneralGameView, SingleGameView
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', GeneralGameView.as_view()),
+    path('friends/', FriendsGameView.as_view()),
+    path('<uuid:uid>/', SingleGameView)
 ]

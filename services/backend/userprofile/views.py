@@ -134,6 +134,7 @@ class GuestProfileCreateView(APIView):
 
 class GuestCleanupView(APIView):
     """End point for guest cleanup."""
+    permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
         """Receive front beacon to activate guest leaving."""

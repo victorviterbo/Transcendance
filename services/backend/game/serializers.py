@@ -25,6 +25,7 @@ class GameCreationSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
+        """Define which fields are used to generate the game."""
         model = Game
         fields = ['game_name', 'public_level']
 
@@ -66,42 +67,31 @@ class GameUpdateSerializer(serializers.ModelSerializer):
         return value
 
 
-class PlayerSerializer(serializers.Serializer):
-    """Serialize player with nested user info and points."""
-    user = serializers.SerializerMethodField()
-    points = serializers.IntegerField(source='total_xp_earned')
+class GameHeaderSerializer(serializers.ModelSerializer):
+    """Serializer for sending game data over WebSocket."""
 
-    def get_user(self, obj: UserGameStats) -> dict:
-        """Serialize user info with relation to current user."""
-        profile = obj.player
-        request = self.context.get('request')
-        current_user = request.user if request else None
-
-        badge = get_badge(profile.exp_points)
-        relation = self._get_relation(profile, current_user)
-
-        return {
-            'uid': str(profile.uid),
-            'username': profile.username,
-            'image': profile.avatar.url if profile.avatar else None,
-            'badges': badge,
-            'relation': relation,
-        }
-
-    def _get_relation(self, profile: Profile, current_user: Any) -> str:
-        """Determine if player is self or other."""
-        if not current_user or not current_user.is_authenticated:
-            return 'other'
-
-        if current_user.profile.id == profile.id:
-            return 'self'
-
-        return 'other'
+    owner = LightProfileSerializer(source='owned_by', read_only=True)
+    roomUID = serializers.CharField(source='room__uid', read_only=True)
+    players = LightProfileSerializer(source='players', many=True, read_only=True)
+    round = serializers.IntegerField(source='current_round')
+    class Meta:
+        """Meta config for GameWSSerializer."""
+        model = Game
+        fields = [
+            'uid',
+            'game_name',
+            'players',
+            'owner',
+            'status',
+            'roomUID',
+            'round',
+        ]
+        read_only_fields = fields
 
 
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
-    players = PlayerSerializer(source='player_stats', many=True, read_only=True)
+    players = LightProfileSerializer(source='player_stats', many=True, read_only=True)
 
     class Meta:
         """Meta config for GameDetailSerializer."""
@@ -119,22 +109,3 @@ class GameDetailSerializer(serializers.ModelSerializer):
                             'public_level',
                             'players',
                             ]
-
-class GameHeaderSerializer(serializers.ModelSerializer):
-    """Serializer for sending game data over WebSocket."""
-
-    owner = LightProfileSerializer(source='owned_by', read_only=True)
-    roomUID = serializers.CharField(source='room__uid', read_only=True)
-    round = serializers.IntegerField(source='current_round')
-    class Meta:
-        """Meta config for GameWSSerializer."""
-        model = Game
-        fields = [
-            'uid',
-            'game_name',
-            'owner',
-            'status',
-            'roomUID',
-            'round',
-        ]
-        read_only_fields = fields
