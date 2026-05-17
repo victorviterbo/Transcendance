@@ -1,12 +1,16 @@
 """Handle all DB hits for the game."""
 
+import random
+import uuid
 from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
+from chat.models import Room
 from django.db.models import Count, Max, Q, Sum
-from music.models import Track
+from music.models import Playlist, Track
 from music.serializers import TrackSerializer
 from project.defaults import default_pts
+from rest_framework import serializers
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from stats.serializers import LiveGameSerializer, LiveRoundSerializer
 from thefuzz import fuzz
@@ -41,10 +45,55 @@ def _get_game(consumer: Any,
 
 
 @database_sync_to_async
+def _setup_game_assets(game: Game) -> None:
+	"""Create the playlist, room, and current track for a validated game."""
+	if not game.genres:
+		return #TODO handle errors here
+
+	tracks_per_genre = game.num_tracks // len(game.genres)
+	all_tracks = list()
+	for genre in game.genres:
+		genre_tracks = list(
+			Track.objects.filter(genre__iexact=genre).order_by('?')[:tracks_per_genre]
+		)
+		if len(genre_tracks) < tracks_per_genre:
+			raise serializers.ValidationError(
+				'Not enough tracks for genre: ' + genre,
+				code='NOT_ENOUGH_TRACKS_GENRE',
+			)
+		all_tracks.extend(genre_tracks)
+
+	if not all_tracks:
+		raise serializers.ValidationError(
+			'No tracks available for the selected genres',
+			code='NO_TRACKS_FOUND',
+		)
+
+	random.shuffle(all_tracks)
+	playlist_uid = uuid.uuid4()
+	playlist = Playlist.objects.create(
+		name=f'Playlist - {game.uid}',
+		uid=playlist_uid,
+	)
+	playlist.tracks.set(all_tracks)
+
+	room_uid = uuid.uuid4()
+	room = Room.objects.create(
+		name=f"Chat Room - {game.uid}",
+		is_direct=False,
+		uid=room_uid,
+	)
+	game.playlist = playlist
+	game.current_track = all_tracks[0]
+	game.room = room
+	game.status = 'playing_round'
+	game.save(update_fields=['playlist', 'current_track', 'room', 'status'])
+
+@database_sync_to_async
 def _set_current_round(game: Game, round_number: int) -> None:
 	"""Set the current round number on the Game model."""
 	game.current_round = round_number
-	if 0 <= round_number - 1 < game.num_tracks:
+	if 0 <= round_number - 1 <= game.num_tracks:
 		game.current_track = game.playlist.tracks.all()[round_number - 1]
 	else:
 		game.current_track = None
@@ -53,7 +102,7 @@ def _set_current_round(game: Game, round_number: int) -> None:
 
 
 @database_sync_to_async
-def _get_track_reveal_data(game: Game) -> dict | None:
+def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | None:
 	"""Get full track data for revealing to players.
 	
 	Args:
@@ -63,12 +112,13 @@ def _get_track_reveal_data(game: Game) -> dict | None:
 		dict with track details (title, artist, preview_url, artwork_url) or None
 	"""
 	try:
-		if not game.current_track:
+		if not consumer.current_game.current_track:
 			return None
-		track_data = TrackSerializer(game.current_track).data
-		return track_data
+		track_data = TrackSerializer(consumer.current_game.current_track).data
+		track_data_hidden = {'preview_url': track_data['preview_url']}
+		return track_data, track_data_hidden
 	except Game.DoesNotExist:
-		return None
+		return None, None
 
 @database_sync_to_async
 def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, bool]:
@@ -121,35 +171,23 @@ def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, 
 	except Game.DoesNotExist:
 		return False
 
-@database_sync_to_async
-def _init_game_stats(game: Game) -> None:
-	"""Initialize game stats for all players at the start of a game."""
-	for player in game.players.all():
-		UserGameStats.objects.create(
-			game=game,
-			player=player,
-			is_won=False,
-		)
-	game.status = 'playing_round'
-	game.save(update_fields=['status'])
-
 
 @database_sync_to_async
 def _init_round_stats(game: Game) -> None:
 	"""Initialize round stats for all players at the start of a round."""
-	GameRoundStats.objects.create(
+	game_round_stats = GameRoundStats.objects.create(
 		game=game,
 		round_number=game.current_round,
 		track=game.current_track,
-		player=game.players.all()
 	)
-
+	game_round_stats.players.set(game.players.all())
 	for player in game.players.all():
 		UserRoundStats.objects.create(
-			game=game,
 			player=player,
-			round=game.current_round,
+			round=game_round_stats,
 		)
+	game.status = 'playing_round'
+	game.save()
 
 @database_sync_to_async
 def _compute_round_stats(game: Game) -> None:
@@ -194,10 +232,11 @@ def _compute_round_stats(game: Game) -> None:
 			stat.save(update_fields=['xp_earned'])
 	game.status = 'playing_break'
 	game.save(update_fields=['status'])
+	return LiveRoundSerializer(stats, many=True).data
 
 
 @database_sync_to_async
-def _compute_game_stats(game: Game, group_name: str) -> None:
+def _compute_game_stats(game: Game) -> None:
 	"""Wrap up game stats for all players at the end of a game."""
 	player_scores = (
 		UserRoundStats.objects.filter(round__game=game)
@@ -215,13 +254,16 @@ def _compute_game_stats(game: Game, group_name: str) -> None:
 		winner_id = candidates[0]['player']
 	else:
 		winner_id = min(candidates, key=lambda x: x['total_time'])['player']
+	stats = UserGameStats.objects.filter(game=game).select_related('player').all()
 	UserGameStats.objects.filter(game=game, player_id=winner_id).update(is_won=True)
 	for player, xp in player_scores.items():
 		UserGameStats.objects.filter(game=game, player=player).update(
-			total_xp_earned=xp
+			total_xp_earned=xp,
+			is_won=(player.id==winner_id)
 		)
 	game.status = 'finished'
 	game.save(update_fields=['status'])
+	return LiveGameSerializer(stats, many=True).data
 
 
 @database_sync_to_async
@@ -235,25 +277,13 @@ def _get_round_stats_completeness(game: Game) -> dict:
         artists=Count('id', filter=Q(artist_found=True))
     )
 
-@database_sync_to_async
-def _get_round_stats(game: Game) -> dict:
-	stats = UserRoundStats.objects.filter(game=game,
-								round__round_number=game.current_round).all()
-	return LiveRoundSerializer(stats, many=True).data
-	
-
-@database_sync_to_async
-def _get_game_stats(game: Game) -> dict:
-	stats = UserGameStats.objects.filter(game=game).select_related('player').all()
-	return LiveGameSerializer(stats, many=True).data
-
 
 @database_sync_to_async
 def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 	"""Add a player to a game by creating UserGameStats entry."""
 	try:
-		UserGameStats.objects.get_or_create(game=game,
-											player=player)
+		UserGameStats.objects.create(game=game,
+									player=player)
 		game.players.add(player)
 		return True
 	except Exception as e:
@@ -293,3 +323,7 @@ def _get_game_header(consumer: 'GlobalConsumer') -> dict:
 @database_sync_to_async
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:
 	return LightProfileSerializer(consumer.profile).data
+
+@database_sync_to_async
+def _get_game_membership(game: Game, player: Profile) -> bool:
+	return (player in game.players.all())

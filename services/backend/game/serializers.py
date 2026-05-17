@@ -4,14 +4,10 @@ After validation if needed, it converts different python objects
 to JSON and vice-versa, namely:
     - Game
 """
-from datetime import timedelta
 from typing import Any
 
-from music.models import Track
-from project.defaults import get_badge, num_genres, genres
+from project.defaults import genres
 from rest_framework import serializers
-from stats.models import UserGameStats
-from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
 
 from .models import Game

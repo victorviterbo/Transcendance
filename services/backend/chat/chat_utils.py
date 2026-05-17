@@ -19,7 +19,7 @@ def direct_key_for(profile_a: Profile, profile_b: Profile) -> str:
     Returns:
         String key 'user_<min_id>_user_<max_id>'
     """
-    id_a, id_b = profile_a.id, profile_b.id
+    id_a, id_b = profile_a.uid, profile_b.uid
     min_id, max_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
     return f'user_{min_id}_user_{max_id}'
 

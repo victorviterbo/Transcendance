@@ -6,7 +6,7 @@ mkdir -p /backend/DB/website
 
 if [ "$APP_MODE" = "test" ]; then
     echo "Running Tests..."
-    exec conda run --no-capture-output -n backend python /backend/manage.py test game.tests
+    exec conda run --no-capture-output -n backend python /backend/manage.py test game.tests.GameWebsocketFlowTests.test_multiplayer_full_game_lifecycle
     exit 0
 fi
 

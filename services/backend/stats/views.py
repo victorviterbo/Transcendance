@@ -47,12 +47,12 @@ class GlobalStatsView(APIView):
 
         rounds = UserRoundStats.objects.filter(player=profile)
         total_rounds = rounds.count()
-        total_games = (GameRoundStats.objects.filter(player=profile)
+        total_games = (GameRoundStats.objects.filter(players=profile)
             .values('game')
             .distinct()
             .count()
         )
-        total_games_won = (UserGameStats.objects.filter(player=profile,
+        total_games_won = (UserGameStats.objects.filter(players=profile,
                                                        is_won=True)
             .count()
         )

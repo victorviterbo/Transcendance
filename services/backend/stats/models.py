@@ -20,7 +20,7 @@ class GameRoundStats(models.Model):
     track = models.ForeignKey(Track,
                               on_delete=models.SET_NULL,
                               null=True)
-    player = models.ManyToManyField('userprofile.Profile',
+    players = models.ManyToManyField('userprofile.Profile',
                                through='UserRoundStats',
                                related_name='played_rounds')
     class Meta:

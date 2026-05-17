@@ -57,7 +57,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             logger.warning('ws.connect.rejected unauthenticated')
             await self.close(code=4401)
             return
-        self.group_name = f"user_{self.profile.id}"
+        self.group_name = f"user_{self.profile.uid}"
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
         logger.info('ws.presence.online profile_id=%s username=%s group=%s',
@@ -182,7 +182,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                         message.uid,
                         message.room.uid)
 
-            await self.group_send(f'user_{self.profile.id}', {
+            await self.group_send(f'user_{self.profile.uid}', {
                 'type': 'chat.message',
                 'message_uid': str(message.uid),
                 'message': message.body,
