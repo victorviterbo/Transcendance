@@ -59,7 +59,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 	const lastCallBack: React.RefObject<number> = useRef(-1);
 
 	//====================== HANDLERS ======================
-	const handleSaveChanges = () => {
+	const handleSaveChanges = useCallback(() => {
 		const nSettings: IGameSettings = {
 			tags: tags,
 			nbMusic: nbSongs,
@@ -72,12 +72,25 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 			code: settings.code,
 		};
 		onSettingsChanged(nSettings);
-	};
+	}, [
+		tags,
+		nbSongs,
+		timer,
+		breakTimer,
+		seeOthers,
+		fuzzy,
+		speedMode,
+		visibilityValue,
+		onSettingsChanged,
+		settings.code,
+	]);
 
 	const handleOnReturn = () => {
 		handleSaveChanges();
 		onReturnToLobby();
 	};
+
+	//====================== EVENTS ======================
 
 	//====================== STRUCTURE ======================
 	const tagList: ReactNode | ReactNode[] = useMemo(() => {
@@ -97,6 +110,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 						nTags[key] = !nTags[key];
 						setTags(nTags);
 					}}
+					data-testid="PGameSettings_Tag"
 				>
 					<CText size="sm" sx={{ m: "0px" }}>
 						{key}
@@ -117,7 +131,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 	): ReactNode => {
 		return (
 			<>
-				<CText size="md">
+				<CText size="md" testid={"PGameSettings_SliderTitle_" + label}>
 					{ttrfn(label, {
 						COUNT: <span style={{ color: appColors.primary[0] }}>{currentValue}</span>,
 					})}
@@ -129,9 +143,13 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 					value={currentValue}
 					marks
 					onChange={(_: Event, value: number | number[]) => {
-						if (Array.isArray(value) && value.length > 0) signal(value[0]);
-						else if (typeof value == "number") signal(value);
+						let finalValue: number = Array.isArray(value) ? value[0] : value;
+						if (finalValue < min) finalValue = min;
+						else if (finalValue > max) finalValue = max;
+						else if (finalValue % step != 0) finalValue -= finalValue % step;
+						signal(finalValue);
 					}}
+					testid={"PGameSettings_Slider_" + label}
 				></CSlider>
 			</>
 		);
@@ -150,6 +168,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 				onClick={() => {
 					signal(!currentValue);
 				}}
+				data-testid={"PGameSettings_Toggle_" + label}
 			>
 				{currentValue && <DoneIcon fontSize="small" />}
 				{!currentValue && <CloseIcon fontSize="small" />}
@@ -186,9 +205,14 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 					onChange={(event) => {
 						setSearchFilter(event.target.value);
 					}}
+					data-testid="PGameSettings_TagSearch"
 				></CTextField>
 				<Stack sx={PGameSettingsTagListStyle}>{tagList}</Stack>
-				<CButton sx={{ mt: "20px", mb: "5px", minHeight: "35px" }} onClick={handleOnReturn}>
+				<CButton
+					sx={{ mt: "20px", mb: "5px", minHeight: "35px" }}
+					onClick={handleOnReturn}
+					data-testid="PGameSettings_Back"
+				>
 					<CText size="xs">GAME_SETTINGS_BACK</CText>
 				</CButton>
 			</Stack>
@@ -249,6 +273,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 								{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
 								{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMA" },
 							]}
+							data-testid={"PGameSettings_ScoreOption"}
 						></CToggle>
 					</Stack>
 				</Stack>
@@ -272,6 +297,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 							{ value: "private", label: "PRIVATE" },
 							{ value: "public", label: "PUBLIC" },
 						]}
+						data-testid={"PGameSettings_VisibilityOption"}
 					></CToggle>
 					<Stack direction={"column"} sx={PGameSettingsCodeBlockStyle}>
 						<Stack direction={"row"} sx={{ mb: "20px", alignItems: "center" }}>
@@ -292,6 +318,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 								onClick={() => {
 									setCodeVisible(!codeVisible);
 								}}
+								data-testid={"PGameSettings_SeeCode"}
 							>
 								<VisibilityIcon fontSize="small" />
 							</CButtonToggle>

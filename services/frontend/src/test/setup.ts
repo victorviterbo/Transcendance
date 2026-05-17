@@ -50,6 +50,9 @@ vi.mock("../localization/localization", () => {
 		GAME_WAITING_START: "Waiting {USER} to start the game",
 		GAME_WAITING_START_NO_HOST: "Waiting to start the game",
 		GAME_PLAYER_COUNT: "Players: {COUNT} / {MAX}",
+		GAME_SETTINGS_NB_MUSIC: "Number of musics: {COUNT}",
+		GAME_SETTINGS_MUSIC_TIMER: "Music timer: {COUNT}",
+		GAME_SETTINGS_BREAK_TIMER: "Break timer: {COUNT}s",
 	};
 
 	const ttr = (id: string) => translations[id] ?? id;
