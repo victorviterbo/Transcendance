@@ -373,12 +373,28 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
             await expect_event(owner_socket, 'player_joined')"""
-
+            await owner_socket.send_json_to(
+                {
+                    'target': 'game',
+                    'event': 'update_settings',
+                    'uid': str(game.uid),
+                    'genres': ['Pop', 'Rock'],
+                    'game_mode': 'speed',
+                    'num_tracks': 6,
+                    'playback_duration': '00:00:20',
+                    'break_duration': '00:00:05',
+                    'fuzzy_match': False,
+                    'answer_public': True,
+                }
+            )
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
             await expect_event(challenger_socket, 'player_joined')
             await expect_event(owner_socket, 'player_joined')
+
+            await expect_event(owner_socket, 'settings_updated')
+            await expect_event(challenger_socket, 'settings_updated')
 
             await owner_socket.send_json_to(
                 {'target': 'game', 'event': 'start_game', 'uid': str(game.uid)}
@@ -388,7 +404,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             challenger_round_start = await expect_event(challenger_socket, 'round_started')
             self.assertEqual(owner_round_start['game']['uid'], str(game.uid))
             self.assertEqual(challenger_round_start['game']['uid'], str(game.uid))
-            
+
             challenger_round_end = await expect_event(challenger_socket, 'round_end')
 
             owner_round_end = await expect_event(owner_socket, 'round_end')

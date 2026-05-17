@@ -314,16 +314,29 @@ def _apply_game_settings(game: Game,
 
 @database_sync_to_async
 def _get_num_curr_players(game: Game) -> int:
+	"""Retrieve current number of players."""
 	return len(game.players.all())
 
 @database_sync_to_async
-def _get_game_header(consumer: 'GlobalConsumer') -> dict:
+def _get_game_data(consumer: 'GlobalConsumer') -> dict:
+	"""Retrieve game data for header."""
 	return GameHeaderSerializer(consumer.current_game).data
 
 @database_sync_to_async
+def _get_game_settings_data(consumer: 'GlobalConsumer') -> dict:
+	"""Retrieve game setting data."""
+	return GameUpdateSerializer(consumer.current_game).data
+
+@database_sync_to_async
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:
+	"""Retrieve player data."""
 	return LightProfileSerializer(consumer.profile).data
 
 @database_sync_to_async
-def _get_game_membership(game: Game, player: Profile) -> bool:
-	return (player in game.players.all())
+def _check_game_membership(game: Game, player: Profile) -> bool:
+	"""Check if player is in a game."""
+	return Game.objects.filter(uid=game.uid, players__id=player.id).exists()
+
+def _check_game_ownership(game: Game, player: Profile) -> bool:
+	"""Check if player is in a game."""
+	return (player.id == game.owned_by.uid)

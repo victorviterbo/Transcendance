@@ -7,17 +7,18 @@ from project.defaults import answer_buffer_time, countdown_time, max_players
 from rest_framework import serializers
 
 from game.models import Game
-from game.serializers import GameUpdateSerializer
 from game.services import format_validation_errors
 
 from .ws_game_db_helpers import (
     _add_player_to_game_stats,
     _apply_game_settings,
+    _check_game_membership,
+    _check_game_ownership,
     _compute_game_stats,
     _compute_round_stats,
     _get_game,
-    _get_game_header,
-    _get_game_membership,
+    _get_game_data,
+    _get_game_settings_data,
     _get_num_curr_players,
     _get_player_data,
     _get_round_stats_completeness,
@@ -87,7 +88,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         # Wait for all answers or timeout after playback duration
         # switch buffertime to just handle lag
         buffer_time = answer_buffer_time
-        serialized_game = await _get_game_header(consumer)
+        serialized_game = await _get_game_data(consumer)
         serialized_track_full, serialized_track_blind = (
             await _get_track_reveal_data(consumer, content)
         )
@@ -98,7 +99,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 + buffer_time
         )
         round_stats = await _compute_round_stats(consumer.current_game)
-        serialized_game = await _get_game_header(consumer)
+        serialized_game = await _get_game_data(consumer)
         await _send_round_stats(consumer,
                                 round_stats,
                                 serialized_game,
@@ -140,7 +141,7 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'event': 'error',
                                 'message': 'Game already full'})
         return
-    is_already_in_game = await _get_game_membership(consumer.current_game,
+    is_already_in_game = await _check_game_membership(consumer.current_game,
                                                     consumer.profile)
     if is_already_in_game:
         await consumer.send_json({'target': 'game',
@@ -182,9 +183,10 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
                             'message': 'Failed to join game'})
         return
     await consumer.add_to_layer(consumer.group_name)
-    serialized_game = await _get_game_header(consumer)
+    serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     owner_channel = f"user_{serialized_game['owner']['uid']}"
+    print(f"serialized_data : {serialized_game} \n {serialized_player}, {owner_channel} \n")
     await _send_new_player(consumer, serialized_game, serialized_player, owner_channel)
     return
 
@@ -218,7 +220,7 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
         await check_all_answers_received(consumer, consumer.current_game)
     
     # Send response to THIS player only
-    serialized_game = await _get_game_header(consumer)
+    serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     if any(artist_correct, song_correct):
         if consumer.current_game.game_mode == 'armagedon':
@@ -271,7 +273,11 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'message': 'Game settings can only be changed before'
                             'the game starts'})
         return
-    
+    if consumer.profile.uid != consumer.current_game.owned_by.uid:
+        await consumer.send_json({'target': 'game',
+                            'event': 'error',
+                            'message': 'Only owner can edit game'})
+        return
     settings_payload = {key: value for key, value in content.items() if key not in
                         {'target', 'event'}}
     try:
@@ -286,8 +292,9 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
             })
             return
     consumer.current_game = updated_game
-    serialized_game = await _get_game_header(consumer)
-    settings_data = GameUpdateSerializer(consumer.current_game).data
+    serialized_game = await _get_game_data(consumer)
+    settings_data = await _get_game_settings_data(consumer)
+    print(f"serialized_data : {serialized_game} \n {settings_data} \n")
     await consumer.group_send(consumer.group_name, {
         'type': 'game_game_settings_updated',
         'game': serialized_game,
@@ -305,7 +312,7 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     
     await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
     
-    serialized_game = await _get_game_header(consumer)
+    serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     await consumer.group_send(consumer.group_name, {
         'type': 'game_player_left',
