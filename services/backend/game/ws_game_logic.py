@@ -18,7 +18,10 @@ from .ws_game_db_helpers import (
     _compute_game_stats,
     _compute_round_stats,
     _get_game,
+    _get_game_header,
     _get_game_stats,
+    _get_num_curr_players,
+    _get_player_data,
     _get_round_stats,
     _get_round_stats_completeness,
     _get_track_reveal_data,
@@ -41,7 +44,7 @@ if TYPE_CHECKING:
 async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Route game events to appropriate handlers."""
 	game_event = content.get('event')
-	game_uid = content.get('game_uid')
+	game_uid = content.get('uid')
 
 	if not consumer.profile:
 		await consumer.send_json({'target': 'game',
@@ -60,13 +63,14 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 									'event': 'error',
 									'message': 'Game not found'})
 			return
-		if len(consumer.current_game.players.all()) >= max_players:
+		num_current_players = await _get_num_curr_players(consumer.current_game)
+		if num_current_players >= max_players:
 			await consumer.send_json({'target': 'game',
 									'event': 'error',
 									'message': 'Game already full'})
 			return
 		consumer.group_name = f'game_{consumer.current_game.uid}'
-		await _join_game(consumer, consumer.current_game, consumer.profile)
+		await _join_game(consumer, content)
 		return
 
 	if getattr(consumer, 'current_game', None) is None:
@@ -78,6 +82,8 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 			return
 	
 	consumer.group_name = f'game_{consumer.current_game.uid}'
+	await consumer.channel_layer.group_add(consumer.group_name,
+										consumer.channel_name)
 
 	match game_event:
 		case 'start_game':
@@ -153,8 +159,8 @@ async def _join_game(consumer: 'GlobalConsumer', content: dict) -> None:
 		return
 	
 	await consumer.add_to_layer(consumer.group_name)
-	serialized_game = GameHeaderSerializer(consumer.current_game).data
-	serialized_player = LightProfileSerializer(player_added).data
+	serialized_game = await _get_game_header(consumer)
+	serialized_player = await _get_player_data(consumer)
 	await _send_new_player(consumer, serialized_game, serialized_player)
 
 
@@ -187,8 +193,8 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
 		await check_all_answers_received(consumer, consumer.current_game)
 	
 	# Send response to THIS player only
-	serialized_game = GameHeaderSerializer(consumer.current_game).data
-	serialized_player = LightProfileSerializer(consumer.profile).data
+	serialized_game = await _get_game_header(consumer)
+	serialized_player = await _get_player_data(consumer)
 	if any(artist_correct, song_correct):
 		if consumer.current_game.game_mode == 'armagedon':
 			# if game_mode is armagedon, send the response to everyone
@@ -240,15 +246,13 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 							'message': 'Game settings can only be changed before'
 							'the game starts'})
 		return
-
+	
 	settings_payload = {key: value for key, value in content.items() if key not in
-					{'target', 'event', 'game_uid'}}
-
+						{'target', 'event'}}
 	try:
-		updated_game = await database_sync_to_async(_apply_game_settings)(
-			consumer.current_game,
-			settings_payload,
-			partial=True)
+		updated_game = await _apply_game_settings(consumer.current_game,
+													settings_payload,
+													partial=True)
 	except serializers.ValidationError as exc:
 			await consumer.send_json({
 				'target': 'game',
@@ -257,7 +261,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 			})
 			return
 	consumer.current_game = updated_game
-	serialized_game = GameHeaderSerializer(consumer.current_game).data
+	serialized_game = await _get_game_header(consumer)
 	settings_data = GameUpdateSerializer(consumer.current_game).data
 	await consumer.group_send(consumer.group_name, {
 		'type': 'game_game_settings_updated',
@@ -276,8 +280,8 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
 	
 	await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
 	
-	serialized_game = GameHeaderSerializer(consumer.current_game).data
-	serialized_player = LightProfileSerializer(consumer.profile).data
+	serialized_game = await _get_game_header(consumer)
+	serialized_player = await _get_player_data(consumer)
 	await consumer.group_send(consumer.group_name, {
 		'type': 'game_player_left',
 		'game': serialized_game,

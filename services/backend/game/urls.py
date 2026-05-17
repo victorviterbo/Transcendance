@@ -7,5 +7,5 @@ from .views import FriendsGameView, GeneralGameView, SingleGameView
 urlpatterns = [
     path('', GeneralGameView.as_view()),
     path('friends/', FriendsGameView.as_view()),
-    path('<uuid:uid>/', SingleGameView)
+    path('<uuid:uid>/', SingleGameView.as_view())
 ]

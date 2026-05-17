@@ -10,9 +10,11 @@ from project.defaults import default_pts
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from stats.serializers import LiveGameSerializer, LiveRoundSerializer
 from thefuzz import fuzz
+from userprofile.models import Profile
+from userprofile.serializers import LightProfileSerializer
 
 from game.models import Game
-from game.serializers import GameUpdateSerializer
+from game.serializers import GameHeaderSerializer, GameUpdateSerializer
 
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
@@ -247,14 +249,15 @@ def _get_game_stats(game: Game) -> dict:
 
 
 @database_sync_to_async
-def _add_player_to_game_stats(consumer: 'GlobalConsumer', content: dict) -> bool:
+def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 	"""Add a player to a game by creating UserGameStats entry."""
 	try:
-		UserGameStats.objects.get_or_create(game=consumer.current_game,
-											player=consumer.profile)
-		consumer.current_game.player.add(consumer.profile)
+		UserGameStats.objects.get_or_create(game=game,
+											player=player)
+		game.players.add(player)
 		return True
-	except Exception:
+	except Exception as e:
+		print(e) #TODO handle gracefully
 		return False
 
 
@@ -278,3 +281,15 @@ def _apply_game_settings(game: Game,
 	serializer = GameUpdateSerializer(instance=game, data=data, partial=partial)
 	serializer.is_valid(raise_exception=True)
 	return serializer.save()
+
+@database_sync_to_async
+def _get_num_curr_players(game: Game) -> int:
+	return len(game.players.all())
+
+@database_sync_to_async
+def _get_game_header(consumer: 'GlobalConsumer') -> dict:
+	return GameHeaderSerializer(consumer.current_game).data
+
+@database_sync_to_async
+def _get_player_data(consumer: 'GlobalConsumer') -> dict:
+	return LightProfileSerializer(consumer.profile).data

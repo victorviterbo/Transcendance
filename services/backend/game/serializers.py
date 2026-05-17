@@ -8,7 +8,7 @@ from datetime import timedelta
 from typing import Any
 
 from music.models import Track
-from project.defaults import get_badge, num_genres
+from project.defaults import get_badge, num_genres, genres
 from rest_framework import serializers
 from stats.models import UserGameStats
 from userprofile.models import Profile
@@ -37,6 +37,7 @@ class GameUpdateSerializer(serializers.ModelSerializer):
         """Meta config for GameUpdateSerializer."""
         model = Game
         fields = [
+            'uid',
             'genres',
             'game_mode',
             'num_tracks',
@@ -49,19 +50,11 @@ class GameUpdateSerializer(serializers.ModelSerializer):
 
     def validate_genres(self, value : Any)-> Any:
         """Validate that all genres are in the allowed list."""
-        valid_genres: list[str] = [
-            'Pop',
-            'Rock',
-            'Rap',
-            'Electro',
-            'RNB',
-            'French Variety',
-        ]
         if value:
-            invalid = [g for g in value if g not in valid_genres]
+            invalid = [g for g in value if g not in genres]
             if invalid:
                 raise serializers.ValidationError(
-                    f"Invalid genres: {', '.join(invalid)}.Valid: {', '.join(valid_genres)}",  # noqa: E501
+                    f"Invalid genres: {', '.join(invalid)}.Valid: {', '.join(genres)}",  # noqa: E501
 					code='invalid_genres',
                 )
         return value
@@ -72,7 +65,7 @@ class GameHeaderSerializer(serializers.ModelSerializer):
 
     owner = LightProfileSerializer(source='owned_by', read_only=True)
     roomUID = serializers.CharField(source='room__uid', read_only=True)
-    players = LightProfileSerializer(source='players', many=True, read_only=True)
+    players = LightProfileSerializer(many=True, read_only=True)
     round = serializers.IntegerField(source='current_round')
     class Meta:
         """Meta config for GameWSSerializer."""
@@ -93,7 +86,7 @@ class GameHeaderSerializer(serializers.ModelSerializer):
 
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
-    players = LightProfileSerializer(source='player_stats', many=True, read_only=True)
+    players = LightProfileSerializer(many=True, read_only=True)
 
     class Meta:
         """Meta config for GameDetailSerializer."""

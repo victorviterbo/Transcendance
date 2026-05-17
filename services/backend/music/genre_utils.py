@@ -1,5 +1,5 @@
 """Utilities for normalizing music genres."""
-
+#TODO why the values not match with the ones elsewhere ? Like 'Latin' or 'R&B/Soul'
 GENRE_MAPPING = {
 	# Rap variants
 	"Hip-Hop/Rap": "Rap",

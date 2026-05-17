@@ -39,6 +39,7 @@ class GeneralGameView(APIView):
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
 			new_game.players.add(request.profile)
+			new_game.save()
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:

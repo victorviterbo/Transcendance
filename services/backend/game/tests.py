@@ -1,365 +1,342 @@
-"""Tests for the game module."""
+"""Tests for game HTTP endpoints and websocket flow."""
 
 import uuid
 
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
-from django.test import TestCase, TransactionTestCase
-from django.urls import reverse
+from django.test import TransactionTestCase
 from friends.models import Friendship
-from music.models import Playlist, Track
 from project.asgi import application
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from userauth.serializers import RegisterSerializer
-from userprofile.serializers import ProfileSerializer
 from userauth.models import SiteUser
-from game.models import Game
+from userauth.serializers import RegisterSerializer
 
-from .models import Room
+from .models import Game
 
 
-class GameWebsocketTests(TransactionTestCase):
-	"""Test websocket communications during the game."""
+@database_sync_to_async
+def async_update_game(game: Game) -> Game:
+	"""Update the game object with db."""
+	return Game.objects.filter(uid=game.uid).first()
+
+class GameTestDataMixin:
+	"""Shared setup and helper functions for game tests."""
+	
+	def create_user(self, email: str, username: str):
+		serializer = RegisterSerializer(
+			data={
+				'email': email,
+				'profile_username': username,
+				'password': 'Password123!',
+			},
+			context={'is_creation': True},
+		)
+		self.assertTrue(serializer.is_valid(), serializer.errors)
+		return serializer.save()
+
+	def create_game_via_http(self,
+							user: SiteUser,
+							game_name: str,
+							public_level: str = 'public',
+							) -> tuple[dict, Game]:
+		"""Create a game via a http request."""
+		client = APIClient()
+		login_url = '/api/auth/login/'
+		login_res = client.post(login_url, data={'email': user.email,
+												'password': 'Password123!'})
+		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+		access = login_res.data.get('access')
+		client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+		response = client.post('/api/game/', {'game_name': game_name,
+											'public_level': public_level,
+											},
+								format='json',
+		)
+		self.assertEqual(response.status_code,
+						status.HTTP_201_CREATED,
+						response.data)
+		game = Game.objects.get(uid=response.data['uid'])
+		self.assertEqual(user.profile, game.owned_by)
+		self.assertIn(user.profile, game.players.all())
+		return response.data, game
+
+
+class GameHTTPViewTests(GameTestDataMixin, APITestCase):
+	"""Validate game HTTP endpoints and creation contract."""
 
 	def setUp(self) -> None:
-		"""Create base objects for testcases."""
-		super().setUp()
-		response = self.client.post('/api/auth/register/',
-									{'email':'player1@mail.com',
-									'profile_username': 'player1',
-									'password':'Password123!'},
-									context={'is_creation': True})
-		self.user = SiteUser.objects.get(uid=response.get('uid'))
-		response = self.client.post('/api/auth/register/',
-									{'email': 'friend@mail.com',
-									'profile_username': 'friend_user',
-									'password': 'Password123!'},
-									context={'is_creation': True})
-		self.friend = SiteUser.objects.get(uid=response.get('uid'))
-		Friendship.objects.create(from_user=self.user,
-							to_user=self.friend,
-							status='accepted')
-		response = self.client.post('/api/auth/register/',
-									{'email':'other@mail.com',
-									'profile_username':'other_user',
-									'password': 'Password123!'},
-									context={'is_creation': True})
-		self.stranger = SiteUser.objects.get(uid=response.get('uid'))
+		"""Setup base for http tests."""
+		self.owner = self.create_user('owner@mail.com', 'game_owner')
+		self.friend = self.create_user('friend@mail.com', 'game_friend')
+		self.stranger = self.create_user('stranger@mail.com', 'game_stranger')
+		self.client.force_login(self.owner)
 
-		serializer = ProfileSerializer(data={'username':'guest_user'},
-										context={'is_creation': True})
-	
-		if serializer.is_valid():
-			self.guest = serializer.save()
-			
-		Room.objects.create(name='default_room', is_direct=False)
+	def test_create_game_with_required_payload_only(self) -> None:
+		"""Game creation should only require game_name and public_level."""
+		response = self.client.post('/api/game/', {'game_name': 'Friday Quiz',
+													'public_level': 'public'
+													},
+									format='json'
+		)
+		self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+		self.assertIn('uid', response.data)
+		self.assertEqual(response.data['game_name'], 'Friday Quiz')
+		self.assertEqual(response.data['public_level'], 'public')
 
-		serializer = ProfileSerializer(data={'username':'guest_user'},
-										context={'is_creation': True})
-		
-		if serializer.is_valid():
-			self.anonymous = serializer.save()
+		game = Game.objects.get(uid=response.data['uid'])
+		self.assertEqual(game.game_name, 'Friday Quiz')
+		self.assertEqual(game.owned_by, self.owner.profile)
+		self.assertTrue(game.players.filter(id=self.owner.profile.id).exists())
 
-		self.user.friends.add(self.friend)
-		self.friend.friends.add(self.user)
-		self.room = Room.objects.create(name='classic')
-		self.room.participants.add(self.user.profile, self.friend.profile)
-		
-		game_url = '/api/game/'
-		game_payload = {
-			'game_name': 'my_game_friends_only',
-			'public_level': 'public',
-		}
-		response = self.client.post(game_url, game_payload, format='json')
-		print(response.data)
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		self.game_public = Game.objects.get(uid=response.data['uid'])
+	def test_create_game_missing_game_name_returns_structured_error(self) -> None:
+		"""Missing required fields should use normalized error codes."""
+		response = self.client.post(
+			'/api/game/',
+			{'public_level': 'public'},
+			format='json',
+		)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertEqual(
+			response.data,
+			{'error': {'game_name': 'REQUIRED_GAME_NAME'}},
+		)
 
-		#TODO should not be needed because should be handled at game creation
-		self.game_public.players.add(self.user)
-		self.game_public.owned_by = self.user
-		self.game_public.save()
-		
-		game_payload = self.client.post(game_url, {
-			'game_name': 'my_game_friends_only',
-			'public_level': 'public'
-		}, format='json')
-		response = self.client.post(game_url, game_payload, format='json')
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		self.game_friends_only = Game.objects.get(uid=response.data['uid'])
+	def test_create_game_invalid_public_level_returns_structured_error(self) -> None:
+		"""Invalid public_level values should return an explicit validation code."""
+		response = self.client.post(
+			'/api/game/',
+			{'game_name': 'Bad Level', 'public_level': 'everyone'},
+			format='json',
+		)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+		self.assertEqual(
+			response.data,
+			{'error': {'public_level': 'INVALID_CHOICE_PUBLIC_LEVEL'}},
+		)
 
-		#TODO should not be needed because should be handled at game creation
-		self.game_friends_only.players.add(self.user)
-		self.game_friends_only.owned_by = self.user
-		self.game_friends_only.save()
+	def test_list_endpoint_returns_only_public_games(self) -> None:
+		"""General listing endpoint should expose only public games."""
+		public_game = Game.objects.create(
+			game_name='Public Match',
+			public_level='public',
+			owned_by=self.owner.profile,
+		)
+		private_game = Game.objects.create(
+			game_name='Friends Match',
+			public_level='friends_only',
+			owned_by=self.owner.profile,
+		)
 
-	def test_update_settings(self) -> None:
-		"""Test updating the game settings once created."""
+		response = self.client.get('/api/game/')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		returned_uids = {entry['uid'] for entry in response.data}
+		self.assertIn(str(public_game.uid), returned_uids)
+		self.assertNotIn(str(private_game.uid), returned_uids)
+
+	def test_friends_endpoint_returns_only_friends_owned_games(self) -> None:
+		"""Friends listing should include only friends' friends_only games."""
+		Friendship.objects.create(
+			from_user=self.owner,
+			to_user=self.friend,
+			status='accepted',
+		)
+		friend_game = Game.objects.create(
+			game_name='Friend Match',
+			public_level='friends_only',
+			owned_by=self.friend.profile,
+		)
+		stranger_game = Game.objects.create(
+			game_name='Stranger Match',
+			public_level='friends_only',
+			owned_by=self.stranger.profile,
+		)
+
+		login_url = '/api/auth/login/'
+		login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+														'password': 'Password123!'})
+		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+		access = login_res.data.get('access')
+		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+
+		response = self.client.get('/api/game/friends/')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		returned_uids = {entry['uid'] for entry in response.data}
+		self.assertIn(str(friend_game.uid), returned_uids)
+		self.assertNotIn(str(stranger_game.uid), returned_uids)
+
+	def test_single_game_get_returns_game_payload(self) -> None:
+		"""Single game endpoint should return a game by UID."""
+		game = Game.objects.create(
+			game_name='Single Lookup',
+			public_level='public',
+			owned_by=self.owner.profile,
+		)
+		response = self.client.get(f'/api/game/{game.uid}/')
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertEqual(response.data['uid'], str(game.uid))
+		self.assertEqual(response.data['game_name'], 'Single Lookup')
+
+
+class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
+	"""Validate websocket game lifecycle after HTTP creation."""
+
+	def setUp(self) -> None:
+		self.owner = self.create_user('ws-owner@mail.com', 'ws_owner')
+		self.challenger = self.create_user('ws-challenger@mail.com', 'ws_challenger')
+
+	def _connect_socket(self, user) -> WebsocketCommunicator:
+		communicator = WebsocketCommunicator(application, '/ws/global/')
+		communicator.scope['user'] = user
+		return communicator
+
+	def test_join_game_rejects_unknown_uid(self) -> None:
+		"""join_game should fail when the target game does not exist."""
+
 		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope.update({'user': self.user, 'current_game': self.game_1})
+			communicator = self._connect_socket(self.challenger)
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
-			await communicator.send_json_to({'genres': 'RNB',
-									'game_mode': 'armagedon',
-									'num_tracks': 122,
-									'break_duration': 7,
-									'playback_duration': 24,
-									'fuzzy_match': True,
-									'answer_public': False})
-			response = await communicator.receive_json_from()
-			print(response)
 
-class GameViewTests(TestCase):
-	"""Test cases for GameView endpoint."""
-	
-	def setUp(self) -> None:
-		"""Set up test client and sample tracks."""
-		self.client = APIClient()
-		self.endpoint = '/api/game/'
-		
-		# Create sample tracks for testing
-		self.rock_tracks = [
-			Track.objects.create(
-				itunes_id=1000 + i,
-				title=f"Rock Song {i}",
-				artist=f"Rock Artist {i}",
-				genre="rock",
-				preview_url="https://example.com/preview1.mp3"
+			await communicator.send_json_to(
+				{
+					'target': 'game',
+					'event': 'join_game',
+					'uid': str(uuid.uuid4()),
+				}
 			)
-			for i in range(10)
-		]
-		
-		self.pop_tracks = [
-			Track.objects.create(
-				itunes_id=2000 + i,
-				title=f"Pop Song {i}",
-				artist=f"Pop Artist {i}",
-				genre="pop",
-				preview_url="https://example.com/preview2.mp3"
+			response = await communicator.receive_json_from()
+			self.assertEqual(response['target'], 'game')
+			self.assertEqual(response['event'], 'error')
+			self.assertEqual(response['message'], 'Game not found')
+			await communicator.disconnect()
+
+		async_to_sync(scenario)()
+
+	def test_http_creation_then_websocket_settings_update(self) -> None:
+		"""A game created by HTTP should be configurable through websocket."""
+		response, game = self.create_game_via_http(self.owner, game_name='WS Settings')
+		async def scenario() -> None:
+			communicator = self._connect_socket(self.owner)
+			connected, _ = await communicator.connect()
+			self.assertTrue(connected)
+
+			await communicator.send_json_to(
+				{
+					'target': 'game',
+					'event': 'update_settings',
+					'uid': str(game.uid),
+					'genres': ['Pop', 'Rock'],
+					'game_mode': 'speed',
+					'num_tracks': 6,
+					'playback_duration': '00:00:20',
+					'break_duration': '00:00:05',
+					'fuzzy_match': False,
+					'answer_public': True,
+				}
 			)
-			for i in range(10)
-		]
-		
-		self.jazz_tracks = [
-			Track.objects.create(
-				itunes_id=3000 + i,
-				title=f"Jazz Song {i}",
-				artist=f"Jazz Artist {i}",
-				genre="jazz",
-				preview_url="https://example.com/preview3.mp3"
+			response = await communicator.receive_json_from()
+			self.assertEqual(response['target'], 'game')
+			self.assertEqual(response['event'], 'settings_updated')
+			self.assertEqual(response['settings']['genres'], ['Pop', 'Rock'])
+			self.assertEqual(response['settings']['game_mode'], 'speed')
+			self.assertEqual(response['settings']['num_tracks'], 6)
+			await communicator.disconnect()
+
+		async_to_sync(scenario)()
+
+		game.refresh_from_db()
+		self.assertEqual(game.genres, ['Pop', 'Rock'])
+		self.assertEqual(game.game_mode, 'speed')
+		self.assertEqual(game.num_tracks, 6)
+		self.assertEqual(game.fuzzy_match, False)
+		self.assertEqual(game.answer_public, True)
+
+	def test_websocket_settings_validation_error_is_structured(self) -> None:
+		"""Invalid settings over websocket should return the normalized error format."""
+		response, game = self.create_game_via_http(self.owner, game_name='WS Validation')
+
+		async def scenario() -> None:
+			communicator = self._connect_socket(self.owner)
+			connected, _ = await communicator.connect()
+			self.assertTrue(connected)
+
+			await communicator.send_json_to(
+				{
+					'target': 'game',
+					'event': 'update_settings',
+					'uid': str(game.uid),
+					'genres': ['Metal'],
+				}
 			)
-			for i in range(5)
-		]
-	
-	def test_create_game_success(self) -> None:
-		"""Test successful game creation with valid genres and tracks."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock', 'pop'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		self.assertIn('game_uid', response.data)
-		self.assertIn('playlist', response.data)
-		self.assertIn('current_track', response.data)
-		self.assertEqual(response.data['num_tracks'], 4)
-		
-		# Verify game was created
-		game = Game.objects.get(uid=response.data['game_uid'])
-		self.assertEqual(game.num_tracks, 4)
-		self.assertEqual(game.status, 'waiting')
-		self.assertEqual(game.current_round, 1)
-	
-	def test_playlist_created_with_correct_tracks(self) -> None:
-		"""Test that playlist is created with correct number of tracks."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock', 'pop'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		playlist = Playlist.objects.get(id=response.data['playlist']['id'])
-		
-		# Should have 2 rock + 2 pop = 4 tracks
-		self.assertEqual(playlist.tracks.count(), 4)
-		
-		# Verify genre distribution
-		rock_count = playlist.tracks.filter(genre='rock').count()
-		pop_count = playlist.tracks.filter(genre='pop').count()
-		self.assertEqual(rock_count, 2)
-		self.assertEqual(pop_count, 2)
-	
-	def test_room_created_for_game(self) -> None:
-		"""Test that a room is created for the game."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		game = Game.objects.get(uid=response.data['game_uid'])
-		
-		self.assertIsNotNone(game.room)
-		self.assertIn('Game Room', game.room.name)
-		self.assertEqual(game.room.is_direct, False)
-	
-	def test_invalid_genres_empty_list(self) -> None:
-		"""Test error when genres list is empty."""
-		response = self.client.post(self.endpoint, {
-			'genres': [],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertEqual(response.data['error'], 'Invalid genres')
-	
-	def test_invalid_genres_not_list(self) -> None:
-		"""Test error when genres is not a list."""
-		response = self.client.post(self.endpoint, {
-			'genres': 'rock',
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertEqual(response.data['error'], 'Invalid genres')
-	
-	def test_invalid_num_tracks_zero(self) -> None:
-		"""Test error when num_tracks is zero."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock'],
-			'num_tracks': 0,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertEqual(response.data['error'], 'Invalid num_tracks')
-	
-	def test_invalid_num_tracks_negative(self) -> None:
-		"""Test error when num_tracks is negative."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock'],
-			'num_tracks': -5,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertEqual(response.data['error'], 'Invalid num_tracks')
-	
-	def test_invalid_num_tracks_not_integer(self) -> None:
-		"""Test error when num_tracks is not an integer."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock'],
-			'num_tracks': 'four',
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertEqual(response.data['error'], 'Invalid num_tracks')
-	
-	def test_not_enough_tracks_for_genre(self) -> None:
-		"""Test error when not enough tracks exist for a genre."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['jazz', 'rock'],
-			'num_tracks': 20,  # Requests 10 per genre, but jazz only has 5
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertIn('Not enough tracks for genre', response.data['error'])
-	
-	def test_num_tracks_less_than_genres(self) -> None:
-		"""Test error when num_tracks < number of genres."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock', 'pop', 'jazz'],
-			'num_tracks': 2,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertEqual(response.data['error'], 'Not enough tracks')
-	
-	def test_nonexistent_genre(self) -> None:
-		"""Test error when genre has no tracks."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['nonexistent_genre'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-		self.assertIn('error', response.data)
-		self.assertIn('Not enough tracks for genre', response.data['error'])
-	
-	def test_response_includes_current_track(self) -> None:
-		"""Test that response includes the current track preview (blinded)."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		self.assertIn('current_track', response.data)
-		current_track = response.data['current_track']
-		
-		# BlindSerializer intentionally hides title/artist from players
-		# Only preview_url should be included for guessing
-		self.assertIn('preview_url', current_track)
-		self.assertNotIn('title', current_track)
-		self.assertNotIn('artist', current_track)
-	
-	def test_unique_playlists_created(self) -> None:
-		"""Test that multiple game creations create unique playlists."""
-		response1 = self.client.post(self.endpoint, {
-			'genres': ['rock', 'pop'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		response2 = self.client.post(self.endpoint, {
-			'genres': ['rock', 'pop'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
-		self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
-		
-		# Both should have different playlist IDs
-		playlist1_id = response1.data['playlist']['id']
-		playlist2_id = response2.data['playlist']['id']
-		self.assertNotEqual(playlist1_id, playlist2_id)
-	
-	def test_game_has_all_required_fields(self) -> None:
-		"""Test that created game has all required fields."""
-		response = self.client.post(self.endpoint, {
-			'genres': ['rock'],
-			'num_tracks': 4,
-			'public_level': 'public'
-		}, format='json')
-		
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		game = Game.objects.get(uid=response.data['game_uid'])
-		
-		self.assertIsNotNone(game.game_name)
-		self.assertIsNotNone(game.playlist)
-		self.assertIsNotNone(game.room)
-		self.assertIsNotNone(game.current_track)
-		self.assertEqual(game.current_round, 1)
-		self.assertEqual(game.num_tracks, 4)
-		self.assertEqual(game.status, 'waiting')
+			response = await communicator.receive_json_from()
+			self.assertEqual(response['target'], 'game')
+			self.assertEqual(response['event'], 'error')
+			self.assertEqual(response['error'], {'genres': 'INVALID_GENRES'})
+			await communicator.disconnect()
+
+		async_to_sync(scenario)()
+
+	def test_join_game_broadcasts_new_player(self) -> None:
+		"""A challenger joining should notify existing members and persist membership."""
+		response, game = self.create_game_via_http(self.owner, game_name='WS Join')
+
+		async def scenario() -> None:
+			owner_socket = self._connect_socket(self.owner)
+			owner_connected, _ = await owner_socket.connect()
+			self.assertTrue(owner_connected)
+
+			challenger_socket = self._connect_socket(self.challenger)
+			challenger_connected, _ = await challenger_socket.connect()
+			self.assertTrue(challenger_connected)
+
+			await owner_socket.send_json_to(
+				{'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+			)
+			owner_first_message = await owner_socket.receive_json_from()
+			self.assertEqual(owner_first_message['event'], 'player_joined')
+
+			await challenger_socket.send_json_to(
+				{'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+			)
+			challenger_ack = await challenger_socket.receive_json_from()
+			owner_broadcast = await owner_socket.receive_json_from()
+
+			self.assertEqual(challenger_ack['target'], 'game')
+			self.assertEqual(challenger_ack['event'], 'player_joined')
+			self.assertEqual(owner_broadcast['target'], 'game')
+			self.assertEqual(owner_broadcast['event'], 'player_joined')
+			self.assertEqual(owner_broadcast['player']['uid'], str(self.challenger.profile.uid))
+
+			await challenger_socket.disconnect()
+			await owner_socket.disconnect()
+
+		async_to_sync(scenario)()
+
+		game.refresh_from_db()
+		self.assertTrue(game.players.filter(id=self.challenger.profile.id).exists())
+
+	def test_unknown_websocket_game_event_returns_error(self) -> None:
+		"""Unknown game events should return an explicit websocket error."""
+		response, game = self.create_game_via_http(self.owner, game_name='WS Unknown Event')
+
+		async def scenario() -> None:
+			communicator = self._connect_socket(self.owner)
+			connected, _ = await communicator.connect()
+			self.assertTrue(connected)
+
+			await communicator.send_json_to(
+				{
+					'target': 'game',
+					'event': 'does_not_exist',
+					'uid': str(game.uid),
+				}
+			)
+			response = await communicator.receive_json_from()
+			self.assertEqual(response['target'], 'game')
+			self.assertEqual(response['event'], 'error')
+			self.assertEqual(response['message'], 'Unknown game event: does_not_exist')
+			await communicator.disconnect()
+
+		async_to_sync(scenario)()
