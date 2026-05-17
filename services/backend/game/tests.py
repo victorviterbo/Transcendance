@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
-
+from userauth.models import SiteUser
 from game.models import Game
 
 from .models import Room
@@ -26,27 +26,27 @@ class GameWebsocketTests(TransactionTestCase):
 	def setUp(self) -> None:
 		"""Create base objects for testcases."""
 		super().setUp()
-		serializer = RegisterSerializer(data={'email':'chat_test@mail.com',
-											'profile_username': 'chat_test_user',
-											'password':'Password123!'},
-											context={'is_creation': True})
-		if serializer.is_valid():
-			self.user = serializer.save()
-		serializer = RegisterSerializer(data={'email': 'friend@mail.com',
-											'profile_username': 'friend_user',
-											'password': 'Password123!'},
-										context={'is_creation': True})
-		if serializer.is_valid():
-			self.friend = serializer.save()
+		response = self.client.post('/api/auth/register/',
+									{'email':'player1@mail.com',
+									'profile_username': 'player1',
+									'password':'Password123!'},
+									context={'is_creation': True})
+		self.user = SiteUser.objects.get(uid=response.get('uid'))
+		response = self.client.post('/api/auth/register/',
+									{'email': 'friend@mail.com',
+									'profile_username': 'friend_user',
+									'password': 'Password123!'},
+									context={'is_creation': True})
+		self.friend = SiteUser.objects.get(uid=response.get('uid'))
 		Friendship.objects.create(from_user=self.user,
 							to_user=self.friend,
 							status='accepted')
-		serializer = RegisterSerializer(data={'email':'other@mail.com',
-											'profile_username':'other_user',
-											'password': 'Password123!'},
-										context={'is_creation': True})
-		if serializer.is_valid():
-			self.stranger = serializer.save()
+		response = self.client.post('/api/auth/register/',
+									{'email':'other@mail.com',
+									'profile_username':'other_user',
+									'password': 'Password123!'},
+									context={'is_creation': True})
+		self.stranger = SiteUser.objects.get(uid=response.get('uid'))
 
 		serializer = ProfileSerializer(data={'username':'guest_user'},
 										context={'is_creation': True})

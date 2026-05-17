@@ -12,10 +12,13 @@ from music.models import Playlist, Track
 from userprofile.models import Profile
 
 
+def _default_genres():
+	return ['Pop']
+
 class Game(models.Model):
 	"""Define the model for a single game session."""
 
-	game_name = models.CharField(max_length=100, default='Unnamed Game')
+	game_name = models.CharField(max_length=100)
 	
 	genres = models.JSONField(default=['Pop'], blank=True) #TODO switch default to callable
 	
@@ -82,7 +85,7 @@ class Game(models.Model):
 		validators=[MinValueValidator(1), MaxValueValidator(100)],
 	)
 
-	played_at = models.DateTimeField(auto_now_add=True)
+	created_at = models.DateTimeField(auto_now_add=True)
 	
 	started_at = models.DateTimeField(null=True, blank=True)
 
@@ -108,4 +111,4 @@ class Game(models.Model):
 
 	class Meta:
 		"""Define special behaviour of database."""
-		ordering = ['-played_at']
+		ordering = ['-created_at']

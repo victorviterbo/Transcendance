@@ -40,10 +40,10 @@ class GameUpdateSerializer(serializers.ModelSerializer):
             'genres',
             'game_mode',
             'num_tracks',
-            'break_duration',
             'playback_duration',
-            'fuzzy_match',
+            'break_duration',
             'answer_public',
+            'fuzzy_match',
         ]
         read_only_fields = ['game_name']
 
@@ -85,6 +85,8 @@ class GameHeaderSerializer(serializers.ModelSerializer):
             'status',
             'roomUID',
             'round',
+            'genres',
+            'public_level',
         ]
         read_only_fields = fields
 
