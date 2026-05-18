@@ -22,6 +22,7 @@ class GameTestDataMixin:
     """Shared setup and helper functions for game tests."""
 
     def create_user(self, email: str, username: str):
+        """Create a new user for tests."""
         serializer = RegisterSerializer(
             data={
                 'email': email,
@@ -33,10 +34,19 @@ class GameTestDataMixin:
         self.assertTrue(serializer.is_valid(), serializer.errors)
         return serializer.save()
 
-    def create_game_via_http(self, user: SiteUser, game_name: str, public_level: str = 'public',
-                            ) -> tuple[dict, Game]:
+    def create_game_via_http(self,
+                             user: SiteUser,
+                             game_name: str,
+                             public_level: str = 'public',
+                             ) -> tuple[dict, Game]:
+        """self.owner will create a new game via http."""
         client = APIClient()
-        client.force_login(user)
+        login_url = '/api/auth/login/'
+        login_res = client.post(login_url, data={'email': user.email,
+                                                 'password': 'Password123!'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access = login_res.data.get('access')
+        client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
         response = client.post(
             '/api/game/',
             {
@@ -59,13 +69,13 @@ class GameTestDataMixin:
                 genre=random.choice(genres),
                 preview_url='https://example.com/track.mp3',
             )
-        game.genres = ['Pop']
+        """game.genres = ['Pop']
         game.num_tracks = 1
         game.playback_duration = 5
         game.break_duration = 0
         game.save(
             update_fields=['genres', 'num_tracks', 'playback_duration', 'break_duration']
-        )
+        )"""
         #_setup_game_assets(game)
 
 
@@ -76,10 +86,21 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
         self.owner = self.create_user('owner@mail.com', 'game_owner')
         self.friend = self.create_user('friend@mail.com', 'game_friend')
         self.stranger = self.create_user('stranger@mail.com', 'game_stranger')
-        self.client.force_login(self.owner)
+        login_url = '/api/auth/login/'
+        login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+                                                 'password': 'Password123!'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
 
     def test_create_game_with_required_payload_only(self) -> None:
         """Game creation should only require game_name and public_level."""
+        login_url = '/api/auth/login/'
+        login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+                                                 'password': 'Password123!'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
         response = self.client.post(
             '/api/game/',
             {
@@ -95,7 +116,7 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
 
         game = Game.objects.get(uid=response.data['uid'])
         self.assertEqual(game.game_name, 'Friday Quiz')
-        self.assertEqual(game.owned_by, self.owner.profile)
+        self.assertEqual(game.owned_by.uid, self.owner.profile.uid)
         self.assertTrue(game.players.filter(id=self.owner.profile.id).exists())
 
     def test_create_game_missing_game_name_returns_structured_error(self) -> None:
@@ -157,6 +178,12 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
             public_level='friends_only',
             owned_by=self.stranger.profile,
         )
+        login_url = '/api/auth/login/'
+        login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+                                                 'password': 'Password123!'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        access = login_res.data.get('access')
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
 
         response = self.client.get('/api/game/friends/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -300,11 +327,11 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            challenger_ack = await challenger_socket.receive_json_from()
+            challenger_join_response = await challenger_socket.receive_json_from()
             owner_broadcast = await owner_socket.receive_json_from()
 
-            self.assertEqual(challenger_ack['target'], 'game')
-            self.assertEqual(challenger_ack['event'], 'player_joined')
+            self.assertEqual(challenger_join_response['target'], 'game')
+            self.assertEqual(challenger_join_response['event'], 'player_joined')
             self.assertEqual(owner_broadcast['target'], 'game')
             self.assertEqual(owner_broadcast['event'], 'player_joined')
             self.assertEqual(owner_broadcast['player']['uid'],
@@ -353,8 +380,6 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                                    timeout: int = 35
 									) -> dict:
                 payload = await communicator.receive_json_from(timeout=timeout)
-                print("PAYLOAD")
-                print(payload)
                 self.assertEqual(payload.get('target'), 'game')
                 self.assertEqual(payload.get('event'), event_name)
                 return payload
@@ -367,10 +392,6 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             challenger_connected, _ = await challenger_socket.connect()
             self.assertTrue(challenger_connected)
 
-            """await owner_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
-            )
-            await expect_event(owner_socket, 'player_joined')"""
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
@@ -384,7 +405,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'uid': str(game.uid),
                     'genres': ['Rock'],
                     'game_mode': 'speed',
-                    'num_tracks': 3,
+                    'num_tracks': 4,
                     'playback_duration': '10',
                     'break_duration': '5',
                     'fuzzy_match': True,
@@ -398,16 +419,17 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                 {'target': 'game', 'event': 'start_game', 'uid': str(game.uid)}
             )
 
-            owner_round_start = await expect_event(owner_socket,
-                                                   'round_started')
-            challenger_round_start = await expect_event(challenger_socket,
-                                                        'round_started')
+            await expect_event(owner_socket, 'start_signal')
+            await expect_event(challenger_socket, 'start_signal')
+            # ROUND 1 - No one answers
+            owner_round_start = await expect_event(owner_socket, 'round_started')
+            challenger_round_start = await expect_event(challenger_socket, 'round_started')
             self.assertEqual(owner_round_start['game']['uid'], str(game.uid))
             self.assertEqual(challenger_round_start['game']['uid'], str(game.uid))
 
             owner_round_end = await expect_event(owner_socket, 'round_end')
             challenger_round_end = await expect_event(challenger_socket, 'round_end')
-            # ROUND 1
+            # ROUND 2 - owner give right track
             owner_round_start = await expect_event(owner_socket,
                                                    'round_started')
             challenger_round_start = await expect_event(challenger_socket,
@@ -418,43 +440,37 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                                        'answer': 'Test Track 12',
                                        'answer_time': 2,
                                        })
-            result = await expect_event(owner_socket, 'answer_correct')
-            #await expect_event(challenger_socket, 'answer_validation')
+            await expect_event(owner_socket, 'answer_correct')
 
             owner_round_end = await expect_event(owner_socket, 'round_end')
             challenger_round_end = await expect_event(challenger_socket, 'round_end')
 
-            # ROUND 2
+            # ROUND 3 - challenger gives right artist, and right title
             owner_round_start = await expect_event(owner_socket,
                                                    'round_started')
             challenger_round_start = await expect_event(challenger_socket,
-                                                        'round_started')
+                                                    'round_started')
 
             await challenger_socket.send_json_to({'target': 'game',
                                        'event': 'submit_answer',
                                        'uid': str(game.uid),
-                                       'answer': 'The Tester',
+                                       'answer': 'Test Artist 12',
                                        'answer_time': 3,
                                        })
-            
-            #await expect_event(owner_socket, 'answer_validation')
             await expect_event(challenger_socket, 'answer_correct')
             await challenger_socket.send_json_to({'target': 'game',
                                        'event': 'submit_answer',
                                        'uid': str(game.uid),
-                                       'answer': 'Shallow Water',
+                                       'answer': 'Test Track 12',
                                        'answer_time': 4,
                                        })
-            #await expect_event(owner_socket, 'answer_validation')
             await expect_event(challenger_socket, 'answer_correct')
             owner_round_end = await expect_event(owner_socket, 'round_end')
             challenger_round_end = await expect_event(challenger_socket, 'round_end')
 
-            # ROUND 3
-            owner_round_start = await expect_event(owner_socket,
-                                                   'round_started')
-            challenger_round_start = await expect_event(challenger_socket,
-                                                        'round_started')
+            # ROUND 4
+            owner_round_start = await expect_event(owner_socket, 'round_started')
+            challenger_round_start = await expect_event(challenger_socket, 'round_started')
 
             await challenger_socket.send_json_to({'target': 'game',
                                        'event': 'submit_answer',
@@ -468,19 +484,17 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             await owner_socket.send_json_to({'target': 'game',
                                        'event': 'submit_answer',
                                        'uid': str(game.uid),
-                                       'answer': 'The Testers',
+                                       'answer': 'Test Artist 12',
                                        'answer_time': 3,
                                        })
-            await expect_event(owner_socket, 'answer_validation')
-            #await expect_event(challenger_socket, 'answer_validation')
+            await expect_event(owner_socket, 'answer_correct')
             await owner_socket.send_json_to({'target': 'game',
                                        'event': 'submit_answer',
                                        'uid': str(game.uid),
-                                       'answer': 'The Testers',
+                                       'answer': 'Test Track 12',
                                        'answer_time': 2,
                                        })
-            await expect_event(owner_socket, 'answer_validation')
-            #await expect_event(challenger_socket, 'answer_validation')
+            await expect_event(owner_socket, 'answer_correct')
             owner_round_end = await expect_event(owner_socket, 'round_end')
             challenger_round_end = await expect_event(challenger_socket, 'round_end')
             self.assertTrue(owner_round_end['is_last_round'])

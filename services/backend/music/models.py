@@ -10,7 +10,7 @@ class Playlist(models.Model):
 	rss_url = models.URLField(max_length=500, default='')
 	uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
-	def __str__(self):
+	def __str__(self) -> str:
 		"""Define Playlist format for printing."""
 		return self.name
 
@@ -28,6 +28,6 @@ class Track(models.Model):
 		# This links the track to the playlist(s)
 	playlists = models.ManyToManyField(Playlist, related_name='tracks')
 
-	def __str__(self):
+	def __str__(self) -> str:
 		"""Define Track format for printing."""
 		return f"{self.title} by {self.artist}"

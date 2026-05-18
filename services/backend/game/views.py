@@ -81,7 +81,6 @@ class SingleGameView(APIView):
 		if queried_game.status != 'waiting':
 			return Response({'error': {'status': 'GAME_ALREADY_STARTED'}},
 							status=status.HTTP_400_BAD_REQUEST)
-		#TODO : are we sure we want this endpoint ?
 		return Response({}, status=status.HTTP_200_OK)
 	
 	def delete(self, request: Request, uid: uuid.UUID) -> Response:

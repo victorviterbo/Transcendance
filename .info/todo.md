@@ -1,3 +1,15 @@
+
+# TODO:
+- [ ] Review Game HTTP endpoints to see if they are needed (like what is the point of the patch ?)
+- [ ] Transfer the game_loop_tasks ownership from owner's consumer instance to consumer class to ensure persistance
+- [ ] Handle exceptions in _add_player_to_game_stats
+- [ ] Handle exceptions in _setup_game_assets
+- [ ] Harmonize naming conventions (like song/title)
+- [ ] What the f is 'Latin' genre in the music/genre_utils
+- [ ] In stats, do we stick to 'time' or do we completely swap it with song_found_at and artist_found_at
+- [ ] In create register, remove Profile creation security (investigate what path can lead to this happening if needed)
+- [ ] All times are currently as Floats in seconds: check with front if it is ok
+
 # TODO: KRIS
 
 - [ ] Better localization for notification times: remove the (s)

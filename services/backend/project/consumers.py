@@ -1,4 +1,5 @@
 """WebSocket consumer logic for public rooms and private direct messages."""
+import asyncio
 
 import logging
 import uuid
@@ -27,6 +28,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
 
     create_profile_if_missing = True
+    game_loop_tasks: dict[str, asyncio.Task] = {}
     
     def __init__(self, *args: tuple, **kwargs: dict) -> None:
         """Define initialisation of consumer class."""
@@ -40,6 +42,21 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.group_name = None
         self.chat_group_name = f"chat_{self.room_name}"
         self.open_direct_chat_profile_ids = set() #tracker when frontend send open/ close so can mark seen
+
+    @classmethod
+    def get_game_loop_task(cls, game_uid: str) -> asyncio.Task | None:
+        """Return a running game loop task for this game UID if it exists."""
+        return cls.game_loop_tasks.get(game_uid)
+
+    @classmethod
+    def set_game_loop_task(cls, game_uid: str, task: asyncio.Task) -> None:
+        """Store a game loop task in the class-level registry."""
+        cls.game_loop_tasks[game_uid] = task
+
+    @classmethod
+    def clear_game_loop_task(cls, game_uid: str) -> None:
+        """Remove a game loop task from the class-level registry."""
+        cls.game_loop_tasks.pop(game_uid, None)
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
@@ -513,7 +530,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'player': event.get('player')
         })
 
-    async def game_game_settings_updated(self, event: dict) -> None:
+    async def game_settings_updated(self, event: dict) -> None:
         """Notify clients that game settings have changed."""
         await self.send_json({
             'target': 'game',
@@ -523,7 +540,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'settings': event.get('settings', {}),
         })
 
-    async def game_answer_correct(self, event: dict) -> None: #TODO see if needed ???
+    async def game_answer_correct(self, event: dict) -> None:
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
@@ -533,20 +550,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': LightProfileSerializer(self.profile).data,
             'answer': event.get('answer'),
             'trackArtist': event.get('trackArtist'),
-            'trackSong': event.get('trackArtist'),
-            'is_correct': event.get('is_correct', False),
+            'trackSong': event.get('trackSong'),
+            'correct': event.get('is_correct', False),
         })
 
-    async def game_answer_incorrect(self, event: dict) -> None: #TODO see if needed ???
+    async def game_answer_incorrect(self, event: dict) -> None:
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
             'event': 'answer_validation',
             'game': event.get('game'),
-            'self': LightProfileSerializer(self.profile).data,
             'senderPlayer': event.get('senderPlayer'),
+            'self': LightProfileSerializer(self.profile).data,
             'answer': event.get('answer'),
-            'is_correct': event.get('is_correct', False),
+            'correct': event.get('is_correct', False),
         })
 
     async def game_player_left(self, event: dict) -> None:
@@ -582,14 +599,23 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'is_last_round': event.get('is_last_round', False),
         })
     
-    async def game_game_completed(self, event: dict) -> None:
+    async def game_start_signal(self, event: dict) -> None:
+        """Broadcast final game results and leaderboard."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'start_signal',
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
+        })
+
+    async def game_completed(self, event: dict) -> None:
         """Broadcast final game results and leaderboard."""
         await self.send_json({
             'target': 'game',
             'event': 'game_completed',
             'game': event.get('game'),
             'self': LightProfileSerializer(self.profile).data,
-            'leaderboard': event['leaderboard'],
+            'leaderboard': event.get('leaderboard'),
         })
 
     def _sender_name(self) -> str:

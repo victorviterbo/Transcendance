@@ -2,6 +2,8 @@
 
 from typing import TYPE_CHECKING
 
+from project.defaults import countdown_time
+
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
 
@@ -42,7 +44,7 @@ async def _send_game_stats(consumer: 'GlobalConsumer',
                            serialized_game: dict) -> None:
     """Send final game stats to players at the end of a game."""
     await consumer.group_send(consumer.game_group_name, {
-        'type': 'game_game_completed',
+        'type': 'game_completed',
         'game': serialized_game,
         'leaderboard': serialized_stats
         })
@@ -62,3 +64,9 @@ async def _send_new_player(consumer: 'GlobalConsumer',
         'player': serialized_player
     })
 
+async def _send_start_signal(consumer: 'GlobalConsumer', serialized_game: dict) -> None:
+    await consumer.group_send(consumer.game_group_name, {
+        'type': 'game_start_signal',
+        'game': serialized_game,
+        'delay': countdown_time,
+    })

@@ -67,7 +67,6 @@ def _setup_game_assets(game: Game) -> None:
 			'Error in playlist creation process',
 			code='NO_TRACKS_FOUND',
 		)
-	print(f"TRACK_len = {len(all_tracks)}, should be {game.num_tracks}")
 	if not all_tracks:
 		raise serializers.ValidationError(
 			'No tracks available for the selected genres',
@@ -102,9 +101,7 @@ def _set_current_round(game: Game, round_number: int) -> None:
 	if 0 <= idx < len(game.playlist.tracks.all()):
 		game.current_track = game.playlist.tracks.all()[idx]
 	else:
-		print("Playlist too short\n")
 		game.current_track = None
-	print(f"game update is now {game.current_round}, {game.current_track}\n")
 	game.save(update_fields=['current_round', 'current_track'])
 	return
 
@@ -146,7 +143,6 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 	try:
 		time = content.get('answer_time')
 		player_answer = content.get('answer').lower().strip()
-		print(f"received = {player_answer}, artist = {track['artist'].lower().strip()}, title = {track['title'].lower().strip()}\n")
 		if track is None or time is None or player_answer is None:
 			return False, False
 		if (consumer.profile is None or
@@ -160,7 +156,6 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 			return False, False
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
-			print(f"Artist fuzz ratio = {fuzz.partial_ratio(player_answer, track_artist)}\n")
 			if ((fuzz.partial_ratio(player_answer, track_artist) >= 80
 		and consumer.current_game.fuzzy_match)
 				or player_answer == track_artist):
@@ -170,7 +165,6 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				return True, False
 		if not player_stats.song_found:
 			track_title = track['title'].lower().strip()
-			print(f"Title fuzz ratio = {fuzz.partial_ratio(player_answer, track_title)}\n")
 			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
 		and consumer.current_game.fuzzy_match)
 				or player_answer == track_title):
@@ -178,9 +172,9 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				player_stats.song_found_at = time
 				player_stats.save(update_fields=['song_found'])
 				return False, True
-		return False
+		return False, False
 	except Game.DoesNotExist:
-		return False
+		return False, False
 
 
 @database_sync_to_async

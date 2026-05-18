@@ -13,7 +13,7 @@ conda run -n backend python /backend/manage.py collectstatic --noinput
 
 if [ "$APP_MODE" = "test" ]; then
     echo "Running Tests..."
-    exec conda run --no-capture-output -n backend python /backend/manage.py test game.tests.GameWebsocketFlowTests.test_multiplayer_full_game_lifecycle
+    exec conda run --no-capture-output -n backend python /backend/manage.py test game
     exit 0
 fi
 
