@@ -11,6 +11,7 @@ import PGameBase from "../../pages/PGame/PGameBase";
 import userEvent from "@testing-library/user-event";
 import { mockGetGameData, type IMockGameData } from "../../mock/handlers/game/game_db";
 import { ttr } from "../../localization/localization";
+import { vitestCheckSettings } from "./game-shared";
 
 const renderPage = () => {
 	render(
@@ -414,6 +415,10 @@ describe("Tests for settings view", () => {
 			expect(data.settings.fuzzy).toEqual(false);
 			expect(data.settings.scoreOption).toEqual("normal");
 			expect(data.settings.scope).toEqual("public");
+		});
+
+		await waitFor(() => {
+			vitestCheckSettings(data.settings);
 		});
 	});
 });

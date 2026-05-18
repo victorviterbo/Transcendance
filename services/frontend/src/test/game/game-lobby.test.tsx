@@ -7,8 +7,14 @@ import { mockSetGameError } from "../../mock/handlers/game/game";
 import { CAuthProvider } from "../../components/auth/CAuthProvider";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import PGameBase from "../../pages/PGame/PGameBase";
-import { MOCK_HOST_ROOM, MOCK_JOIN_ROOM, mockGetGameData } from "../../mock/handlers/game/game_db";
-import type { IGameData, IGamePlayer } from "../../types/game";
+import {
+	MOCK_HOST_ROOM,
+	MOCK_JOIN_ROOM,
+	mockGetGameData,
+	mockResetGames,
+} from "../../mock/handlers/game/game_db";
+import type { IGameData, IGamePlayer, IGameSettings } from "../../types/game";
+import { vitestCheckSettings } from "./game-shared";
 
 const textClean = (Input: string) => {
 	Input = Input.replaceAll(/<.+?>/gi, "");
@@ -22,6 +28,7 @@ describe("Tests for lobby view", () => {
 		mockSocialResetDB();
 	});
 	beforeEach(() => {
+		mockResetGames();
 		mockSetGameError(false);
 		mockSocialResetDB();
 	});
@@ -30,7 +37,7 @@ describe("Tests for lobby view", () => {
 	});
 	afterAll(() => server.close());
 
-	it("Checking all information in lobby view", { timeout: 20000 }, async () => {
+	it("Checking Base informations in lobby view", { timeout: 20000 }, async () => {
 		window.history.pushState({}, "", "/game/" + MOCK_JOIN_ROOM);
 
 		render(
@@ -85,7 +92,7 @@ describe("Tests for lobby view", () => {
 		);
 	});
 
-	it("Checking all information in lobby view (As host)", { timeout: 10000 }, async () => {
+	it("Checking base information in lobby view (As host)", { timeout: 10000 }, async () => {
 		window.history.pushState({}, "", "/game/" + MOCK_HOST_ROOM);
 
 		render(
@@ -132,6 +139,41 @@ describe("Tests for lobby view", () => {
 				expect(within(lobbyView).getByText("Players: 14 / 100")).toBeInTheDocument();
 			},
 			{ timeout: 8000 },
+		);
+	});
+
+	it("Checking settings informations (and changes)", { timeout: 10000 }, async () => {
+		window.history.pushState({}, "", "/game/" + MOCK_JOIN_ROOM);
+
+		render(
+			<CAuthProvider>
+				<MemoryRouter initialEntries={["/game/" + MOCK_JOIN_ROOM]}>
+					<Routes>
+						<Route path="/game/*" element={<PGameBase />} />
+					</Routes>
+				</MemoryRouter>
+			</CAuthProvider>,
+		);
+
+		const settings: IGameSettings = structuredClone(mockGetGameData(MOCK_JOIN_ROOM).settings);
+
+		//CHECKING ALL SETTINGS
+		await waitFor(() => {
+			vitestCheckSettings(settings);
+		});
+
+		settings.tags["TAG_RNB"] = true;
+		settings.scoreOption = "normal";
+		settings.seeOthers = false;
+		settings.nbMusic = 40;
+		settings.timer = 15;
+		settings.breakTimer = 5;
+
+		await waitFor(
+			() => {
+				vitestCheckSettings(settings);
+			},
+			{ timeout: 6000 },
 		);
 	});
 });
