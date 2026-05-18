@@ -136,6 +136,21 @@ function mockGameSimulateJoin(GameID: string) {
 			}
 		}, time);
 	}
+
+	setTimeout(() => {
+		data.settings.tags["TAG_RNB"] = true;
+		mockOnUserChangedSettings(GameID, {
+			tags: data.settings.tags,
+			nbMusic: 40,
+			timer: 15,
+			breakTimer: 5,
+			seeOthers: false,
+			fuzzy: true,
+			scoreOption: "normal",
+			scope: "public",
+			code: data.settings.code,
+		});
+	}, 5000);
 }
 
 function mockGameSimulateHost(GameID: string) {

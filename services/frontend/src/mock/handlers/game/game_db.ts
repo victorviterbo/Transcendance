@@ -28,7 +28,7 @@ export const MOCK_HOST_ROOM = "789";
 
 //====================== DATA ======================
 let currentClient: WebSocketClientConnectionProtocol | undefined = undefined;
-const mockGameData: Record<string, IMockGameData> = {};
+let mockGameData: Record<string, IMockGameData> = {};
 
 //--------------------------------------------------
 //                      MANAGE
@@ -158,6 +158,10 @@ export function mockCreateRoom(GameID: string) {
 export function mockGetGameData(GameID: string): IMockGameData {
 	if (!mockGameData[GameID]) mockCreateRoom(GameID);
 	return mockGameData[GameID];
+}
+
+export function mockResetGames() {
+	mockGameData = {};
 }
 
 export function mockGetGameSelf(GameID: string): IGamePlayer | undefined {

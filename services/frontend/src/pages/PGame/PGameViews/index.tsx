@@ -50,6 +50,7 @@ function PGameViews({ game, players, settings, onSettingsChanged }: PGameViewsPr
 			{currentView == ECurrentView.LOBBY && (
 				<PGameLobby
 					players={players}
+					settings={settings}
 					game={game}
 					onOpenSettings={() => {
 						setCurrentView(ECurrentView.SETTINGS);
