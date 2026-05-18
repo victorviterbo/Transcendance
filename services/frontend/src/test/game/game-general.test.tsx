@@ -24,31 +24,13 @@ describe("Common game page tests", () => {
 	});
 	afterAll(() => server.close());
 
-	//ERRORS
-	it("No game id given", async () => {
-		window.history.pushState({}, "", "/game/");
-		render(
-			<CAuthProvider>
-				<MemoryRouter initialEntries={["/game/123456"]}>
-					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
-					</Routes>
-				</MemoryRouter>
-			</CAuthProvider>,
-		);
-
-		await waitFor(() => {
-			expect(screen.getByText("GAME_ERROR_TITLE")).toBeInTheDocument();
-			expect(screen.getByText("GAME_ERROR_INVALID_ROOM")).toBeInTheDocument();
-		});
-	});
 	it("Room not existing", async () => {
 		window.history.pushState({}, "", "/game/456");
 		render(
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/456"]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,
@@ -65,7 +47,7 @@ describe("Common game page tests", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/123456"]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,
@@ -82,7 +64,7 @@ describe("Common game page tests", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/123456"]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,

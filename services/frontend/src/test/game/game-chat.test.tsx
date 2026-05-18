@@ -216,7 +216,7 @@ describe("Tests for chat view", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/123456"]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,

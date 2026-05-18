@@ -18,7 +18,7 @@ const renderPage = () => {
 		<CAuthProvider>
 			<MemoryRouter initialEntries={["/game/789"]}>
 				<Routes>
-					<Route path="/game/*" element={<PGameBase />} />
+					<Route path="/game/:gameid" element={<PGameBase />} />
 				</Routes>
 			</MemoryRouter>
 		</CAuthProvider>,

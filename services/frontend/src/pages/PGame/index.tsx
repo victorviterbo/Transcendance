@@ -12,7 +12,7 @@ import type {
 	IGameSettings,
 } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
-import { gameFetchData, gameGetRoom } from "../../api/game";
+import { gameFetchData } from "../../api/game";
 import CGamePaper from "../../components/surfaces/CGamePaper";
 import CText from "../../components/text/CText";
 import type { TWSRcv, TWSSend } from "../../types/websocket";
@@ -26,6 +26,7 @@ import {
 	gameOnSettingsUpdate,
 } from "../../handlers/gameHandlers";
 import PGameViews from "./PGameViews";
+import { useParams } from "react-router-dom";
 
 function PGame() {
 	//STYLING
@@ -35,7 +36,7 @@ function PGame() {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 
 	//GAME
-	const [gameID] = useState<string | undefined>(gameGetRoom());
+	const { gameid } = useParams();
 	const [gameData, setGameData] = useState<IGameData | undefined>();
 
 	//Updatable Data
@@ -50,9 +51,9 @@ function PGame() {
 
 	//====================== HTTP ======================
 	useEffect(() => {
-		if (gameID == undefined) return;
+		if (gameid == undefined) return;
 		gameFetchData<IGameData | undefined, IGameDataRes, "game">(
-			API_GAME.replaceAll("{ROOMID}", gameID),
+			API_GAME.replaceAll("{ROOMID}", gameid),
 			"game",
 			setGameData,
 			setError,
@@ -65,7 +66,7 @@ function PGame() {
 				setSettings(data.settings);
 			},
 		);
-	}, [setGameData, gameID]);
+	}, [setGameData, gameid]);
 
 	//====================== WS ======================
 	const sendWSMessage = useCallback(
@@ -83,7 +84,7 @@ function PGame() {
 	);
 
 	useEffect(() => {
-		if (!gameID) return;
+		if (!gameid) return;
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | undefined = wsContext.getLast();
@@ -102,7 +103,7 @@ function PGame() {
 					gameOnSettingsUpdate(gameData, last.settings, setSettings);
 			}
 		});
-	}, [wsContext, gameID, gameData]);
+	}, [wsContext, gameid, gameData]);
 
 	useEffect(() => {
 		if (!gameData) return;
@@ -128,7 +129,7 @@ function PGame() {
 
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
-	if (gameID == undefined || error) {
+	if (gameid == undefined || error) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -141,7 +142,7 @@ function PGame() {
 				}}
 				title={"GAME_ERROR_TITLE"}
 			>
-				{gameID == undefined ? (
+				{gameid == undefined ? (
 					<CText align="center" sx={{ my: "auto", color: appColors.cancel[0] }}>
 						GAME_ERROR_INVALID_ROOM
 					</CText>

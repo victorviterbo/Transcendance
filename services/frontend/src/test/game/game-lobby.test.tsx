@@ -44,7 +44,7 @@ describe("Tests for lobby view", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/" + MOCK_JOIN_ROOM]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,
@@ -99,7 +99,7 @@ describe("Tests for lobby view", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/" + MOCK_HOST_ROOM]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,
@@ -149,7 +149,7 @@ describe("Tests for lobby view", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/" + MOCK_JOIN_ROOM]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,

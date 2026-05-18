@@ -4,13 +4,6 @@ import api from "./client";
 import type { ReactNode } from "react";
 import { getErrorNode } from "../utils/error";
 
-export function gameGetRoom(): string | undefined {
-	const reg = /game\/(\d+)/gm;
-	const res = reg.exec(location.href);
-	if (!res || res.length < 2) return undefined;
-	return res[1];
-}
-
 export function gameCheckErrors<_RES_T extends { error?: IErrorStruct }, Key extends keyof _RES_T>(
 	res: AxiosResponse<_RES_T, unknown, {}>,
 	target: Key,
