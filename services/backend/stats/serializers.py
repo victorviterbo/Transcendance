@@ -67,8 +67,9 @@ class HistoryEntrySerializer(serializers.Serializer):
 class LiveRoundSerializer(serializers.ModelSerializer):
     """Serialize the results of the round to be sent as the game progress."""
     track = TrackSerializer(source='round.track', read_only=True)
-    player = LightProfileSerializer(source='player')
-    totalGameXp = serializers.SerializerMethodField()
+    player = LightProfileSerializer()
+    totalXpEarned = serializers.IntegerField(source='game_stats.total_xp_earned')
+
     class Meta:
         """Define on what is the model based."""
         model = UserRoundStats
@@ -81,7 +82,7 @@ class LiveRoundSerializer(serializers.ModelSerializer):
                 'song_found_at',
                 'time',
                 'xp_earned',
-                'totalGameXp',
+                'totalXpEarned',
                 ]
         read_only_fields = [
                 'player',
@@ -92,19 +93,16 @@ class LiveRoundSerializer(serializers.ModelSerializer):
                 'song_found_at',
                 'time',
                 'xp_earned',
-                'totalGameXp',
+                'totalXpEarned',
                 ]
-    
-    def get_totalXpEarned(self, obj: UserRoundStats) -> int:
-        """Get total number of points earned in the game as of now."""
-        stats = UserGameStats.objects.filter(game=obj.game, player=obj.player).first()
-        return stats.total_xp_earned if stats else 0
 
 class LiveGameSerializer(serializers.ModelSerializer):
     """Serialize all the rounds as a list for end-of-game summary."""
     rounds = LiveRoundSerializer(source='player_stats', many=True, read_only=True)
-
+    uid = serializers.CharField(source='game.uid')
+    game_name = serializers.CharField(source='game.game_name')
+    
     class Meta:
         """Define the fields in the game stats serializer."""
-        model = Game
+        model = UserGameStats
         fields = ['uid', 'game_name', 'rounds']

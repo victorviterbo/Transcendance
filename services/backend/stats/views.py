@@ -60,7 +60,7 @@ class GlobalStatsView(APIView):
         agg = rounds.aggregate(avg_score=Avg('xp_earned'), avg_time=Avg('time'))
         avg_score = round(agg['avg_score'] or 0.0, 2)
         avg_time_duration = agg['avg_time']
-        avg_time = round(avg_time_duration.total_seconds(), 2) if avg_time_duration else 0.0
+        avg_time = round(avg_time_duration, 2) if avg_time_duration else 0.0
 
         if total_rounds > 0:
             artist_rate = round(
@@ -203,7 +203,7 @@ class HistoryView(APIView):
                     'trackArtist': track.artist if track else '',
                     'songFound': urs.song_found,
                     'artistFound': urs.artist_found,
-                    'time': round(urs.time.total_seconds(), 2),
+                    'time': round(urs.time, 2),
                     'ranking': round_rank,
                     'previewUrl': track.preview_url if track else None,
                     'artworkUrl': track.artwork_url if track else None,

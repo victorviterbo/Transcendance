@@ -58,7 +58,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=4401)
             return
         self.group_name = f"user_{self.profile.uid}"
-        print(f"group name = {self.group_name}")
         await self.add_to_layer(self.group_name)
         await self._update_online_status(is_online=True)
         logger.info('ws.presence.online profile_id=%s username=%s group=%s',
@@ -590,7 +589,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'event': 'game_completed',
             'game': event.get('game'),
             'self': LightProfileSerializer(self.profile).data,
-            'final_leaderboard': event['final_leaderboard'],
+            'leaderboard': event['leaderboard'],
         })
 
     def _sender_name(self) -> str:

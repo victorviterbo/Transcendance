@@ -1,6 +1,5 @@
 """Seed the database with initial data for testing purposes."""
 import random
-from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from friends.models import Friendship
@@ -119,7 +118,7 @@ for g_idx in range(1, 11):
     
     # Create UserGameStats (Overall Game Results)
     for player in game_players:
-        UserGameStats.objects.create(
+        game_stats = UserGameStats.objects.create(
             game=game,
             player=player,
             is_won=(player == game_winner)
@@ -148,10 +147,11 @@ for g_idx in range(1, 11):
             UserRoundStats.objects.create(
                 player=player,
                 round=game_round,
+                game_stats=game_stats,
                 artist_found=found_artist,
                 song_found=found_song,
-                artist_found_at=timedelta(seconds=random.randint(5, 30)),
-                song_found_at=timedelta(seconds=random.randint(5, 30)),
+                artist_found_at=random.randint(5, 30),
+                song_found_at=random.randint(5, 30),
                 xp_earned=xp
             )
         

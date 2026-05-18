@@ -11,6 +11,7 @@ class Playlist(models.Model):
 	uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
 	def __str__(self):
+		"""Define Playlist format for printing."""
 		return self.name
 
 class Track(models.Model):
@@ -28,4 +29,5 @@ class Track(models.Model):
 	playlists = models.ManyToManyField(Playlist, related_name='tracks')
 
 	def __str__(self):
+		"""Define Track format for printing."""
 		return f"{self.title} by {self.artist}"

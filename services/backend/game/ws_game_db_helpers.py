@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
 from chat.models import Room
-from django.db.models import Count, Max, Q, Sum
+from django.db.models import Count, Q, Sum
 from music.models import Playlist, Track
 from music.serializers import TrackSerializer
 from project.defaults import default_pts
@@ -62,7 +62,12 @@ def _setup_game_assets(game: Game) -> None:
 				code='NOT_ENOUGH_TRACKS_GENRE',
 			)
 		all_tracks.extend(genre_tracks)
-
+	if not len(all_tracks) == game.num_tracks:
+		raise serializers.ValidationError(
+			'Error in playlist creation process',
+			code='NO_TRACKS_FOUND',
+		)
+	print(f"TRACK_len = {len(all_tracks)}, should be {game.num_tracks}")
 	if not all_tracks:
 		raise serializers.ValidationError(
 			'No tracks available for the selected genres',
@@ -93,10 +98,13 @@ def _setup_game_assets(game: Game) -> None:
 def _set_current_round(game: Game, round_number: int) -> None:
 	"""Set the current round number on the Game model."""
 	game.current_round = round_number
-	if 0 <= round_number - 1 <= game.num_tracks:
-		game.current_track = game.playlist.tracks.all()[round_number - 1]
+	idx = round_number - 1
+	if 0 <= idx < len(game.playlist.tracks.all()):
+		game.current_track = game.playlist.tracks.all()[idx]
 	else:
+		print("Playlist too short\n")
 		game.current_track = None
+	print(f"game update is now {game.current_round}, {game.current_track}\n")
 	game.save(update_fields=['current_round', 'current_track'])
 	return
 
@@ -113,7 +121,7 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 	"""
 	try:
 		if not consumer.current_game.current_track:
-			return None
+			return None, None
 		track_data = TrackSerializer(consumer.current_game.current_track).data
 		track_data_hidden = {'preview_url': track_data['preview_url']}
 		return track_data, track_data_hidden
@@ -121,7 +129,7 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 		return None, None
 
 @database_sync_to_async
-def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, bool]:
+def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, bool]:
 	"""Validate answer against current track and return correctness.
 	
 	Args:
@@ -136,12 +144,13 @@ def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, 
 		bool: Whether the song is correct
 	"""
 	try:
-		time = content.get('timedelta')
+		time = content.get('answer_time')
 		player_answer = content.get('answer').lower().strip()
-		if not track or not time or not player_answer:
+		print(f"received = {player_answer}, artist = {track['artist'].lower().strip()}, title = {track['title'].lower().strip()}\n")
+		if track is None or time is None or player_answer is None:
 			return False, False
 		if (consumer.profile is None or
-				consumer.profil not in consumer.current_game.players.all()):
+				consumer.profile not in consumer.current_game.players.all()):
 			return False, False
 		player_stats = UserRoundStats.objects.filter(round__game=consumer.current_game,
 													round__round_number=consumer.current_game.current_round,
@@ -150,7 +159,8 @@ def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, 
 		if not player_stats:
 			return False, False
 		if not player_stats.artist_found:
-			track_artist = track.artist.lower().strip()
+			track_artist = track['artist'].lower().strip()
+			print(f"Artist fuzz ratio = {fuzz.partial_ratio(player_answer, track_artist)}\n")
 			if ((fuzz.partial_ratio(player_answer, track_artist) >= 80
 		and consumer.current_game.fuzzy_match)
 				or player_answer == track_artist):
@@ -159,7 +169,8 @@ def _validate_answer(consumer: Any, content: dict, track: Track) -> tuple[bool, 
 				player_stats.save(update_fields=['artist_found'])
 				return True, False
 		if not player_stats.song_found:
-			track_title = track.title.lower().strip()
+			track_title = track['title'].lower().strip()
+			print(f"Title fuzz ratio = {fuzz.partial_ratio(player_answer, track_title)}\n")
 			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
 		and consumer.current_game.fuzzy_match)
 				or player_answer == track_title):
@@ -180,14 +191,17 @@ def _init_round_stats(game: Game) -> None:
 		round_number=game.current_round,
 		track=game.current_track,
 	)
-	game_round_stats.players.set(game.players.all())
+	#game_round_stats.players.set(game.players.all())
 	for player in game.players.all():
+		game_stats = UserGameStats.objects.filter(game=game, player=player).first()
 		UserRoundStats.objects.create(
 			player=player,
 			round=game_round_stats,
+			game_stats=game_stats
 		)
 	game.status = 'playing_round'
-	game.save()
+	game.save(update_fields=['status'])
+	return
 
 @database_sync_to_async
 def _compute_round_stats(game: Game) -> None:
@@ -236,33 +250,26 @@ def _compute_round_stats(game: Game) -> None:
 
 
 @database_sync_to_async
-def _compute_game_stats(game: Game) -> None:
+def _compute_game_stats(game: Game) -> dict:
 	"""Wrap up game stats for all players at the end of a game."""
 	player_scores = (
 		UserRoundStats.objects.filter(round__game=game)
-		.values('player')
-		.annotate(
-			total_points=Sum('xp_earned'),
-			total_time=Sum('time'))
-		.order_by()
+			.values('player')
+			.annotate(
+				total_points=Sum('xp_earned'),
+				total_time=Sum('time')
+			)
+			.order_by('-total_points', 'total_time')
 	)
-	highest_score = player_scores.aggregate(max_score=Max('total_points'))['max_score']
-	candidates = list(player_scores.filter(total_points=highest_score))
-	if not candidates:
-		return
-	if len(candidates) == 1:
-		winner_id = candidates[0]['player']
-	else:
-		winner_id = min(candidates, key=lambda x: x['total_time'])['player']
-	stats = UserGameStats.objects.filter(game=game).select_related('player').all()
-	UserGameStats.objects.filter(game=game, player_id=winner_id).update(is_won=True)
-	for player, xp in player_scores.items():
-		UserGameStats.objects.filter(game=game, player=player).update(
-			total_xp_earned=xp,
-			is_won=(player.id==winner_id)
-		)
+	winner_stats = player_scores.first()
+	if winner_stats:
+		UserGameStats.objects.filter(
+            game=game, 
+            player_id=winner_stats['player']
+        ).update(is_won=True)
 	game.status = 'finished'
 	game.save(update_fields=['status'])
+	stats = UserGameStats.objects.filter(game=game).select_related('player').all()
 	return LiveGameSerializer(stats, many=True).data
 
 
@@ -336,7 +343,3 @@ def _get_player_data(consumer: 'GlobalConsumer') -> dict:
 def _check_game_membership(game: Game, player: Profile) -> bool:
 	"""Check if player is in a game."""
 	return Game.objects.filter(uid=game.uid, players__id=player.id).exists()
-
-def _check_game_ownership(game: Game, player: Profile) -> bool:
-	"""Check if player is in a game."""
-	return (player.id == game.owned_by.uid)
