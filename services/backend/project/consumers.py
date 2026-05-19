@@ -571,9 +571,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'player_left',
-            'game_uid': event.get('game_uid'),
-            'player_name': event.get('player_name'),
-            'player_uid': event.get('player_uid'),
+            'game': event.get('game'),
+            'self': LightProfileSerializer(self.profile).data,
+            'player': event.get('player'),
         })
 
     async def game_round_start(self, event: dict) -> None:

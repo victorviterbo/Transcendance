@@ -15,6 +15,8 @@
 - [ ] Review middleware and consumer to bounce connection if we cannot retrieve profile (check also with incognito mode)
 - [ ] Handle in-game disconnect (remove player, find new owner if player was owner)
 - [ ] Redo the serializers for game (first 3)
+- [ ] Receive leave_game explicit signal or should disconect kick the player out
+- [ ] Gerer le link invite
 
 # TODO: KRIS
 

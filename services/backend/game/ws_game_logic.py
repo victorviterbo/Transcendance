@@ -83,7 +83,6 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 
 async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     """Run the main game loop, cycling through rounds and sending updates."""
-    consumer.all_answers_received = asyncio.Event()
     try:
         await _setup_game_assets(consumer.current_game)
         serialized_game = await _get_game_data(consumer)
@@ -91,7 +90,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         buffer_time = countdown_time + answer_buffer_time
         await asyncio.sleep(buffer_time)
         for round in range(1, consumer.current_game.num_tracks + 1):
-            consumer.all_answers_received.clear()
+            ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].clear()
             await _set_current_round(consumer.current_game, round)
             await _init_round_stats(consumer.current_game)
             buffer_time = answer_buffer_time
@@ -102,7 +101,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
             await _send_track(consumer, serialized_game, serialized_track_blind)
             with suppress(TimeoutError):
                 await asyncio.wait_for(
-                    consumer.all_answers_received.wait(),
+                    ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].wait(),
                     timeout=consumer.current_game.playback_duration
                         + buffer_time
                 )
@@ -121,9 +120,8 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'message': str(e)})
     except asyncio.CancelledError:
         await consumer.group_send()
-    #finally:
-
-        #destroy game_loop
+    finally:
+        ACTIVE_GAMES.pop(consumer.current_game.uid, None)
 
 async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
@@ -177,13 +175,14 @@ async def _start_game(consumer: 'GlobalConsumer', content: dict) -> None:
                             'message': 'No game context'})
         return
     if (consumer.current_game.uid in ACTIVE_GAMES):
-        await consumer.send_json({'target': 'gamee',
+        await consumer.send_json({'target': 'game',
                                   'event': 'error',
                                   'message': 'Game already started'})
         return
-    ACTIVE_GAMES[consumer.current_game.uid] = asyncio.create_task(
-        run_game_loop(consumer, content)
-        )
+    ACTIVE_GAMES[consumer.current_game.uid] = {
+            "task": asyncio.create_task(run_game_loop(consumer, content)),
+            "all_answers_received": asyncio.Event(),
+        }
 
 async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
     """Handle the game joining process."""
@@ -344,5 +343,5 @@ async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> 
     found = await _get_round_stats_completeness(game)
     game_over = found['titles'] > 0 and found['artists'] > 0
     if game_over:
-        consumer.all_answers_received.set()
+        ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].set()
 
