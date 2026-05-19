@@ -1,6 +1,4 @@
 """Handle all DB hits for the game."""
-
-import random
 import uuid
 from typing import TYPE_CHECKING, Any
 
@@ -75,8 +73,6 @@ def _setup_game_assets(game: Game) -> None:
 			'No tracks available for the selected genres',
 			code='NO_TRACKS_FOUND',
 		)
-
-	random.shuffle(all_tracks)
 	playlist_uid = uuid.uuid4()
 	playlist = Playlist.objects.create(
 		name=f'Playlist - {game.uid}',

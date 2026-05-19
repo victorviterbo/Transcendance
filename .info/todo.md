@@ -1,16 +1,20 @@
 
 # TODO:
 - [ ] Review Game HTTP endpoints to see if they are needed (like what is the point of the patch ?)
-- [ ] Transfer the game_loop_tasks ownership from owner's consumer instance to consumer class to ensure persistance
+- [~] Transfer the game_loop_tasks ownership from owner's consumer instance to consumer class to ensure persistance
+- [ ] Handle game termination end task, etc.
 - [X] Handle exceptions in _add_player_to_game_stats
 - [X] Handle exceptions in _setup_game_assets
-- [ ] Harmonize naming conventions (like song/title)
+- [~] Harmonize naming conventions (like song/title)
+- [~] Harmonize the use of id vs uid
 - [ ] What is 'Latin' genre in the music/genre_utils ? Also other genre names dont match with the rest
 - [ ] In stats, do we stick to 'time' or do we completely swap it with song_found_at and artist_found_at
 - [ ] In register endpoint, remove Profile creation security (investigate what path can lead to this happening if needed)
 - [ ] All times are currently as Floats in seconds: check with front if it is ok
 - [ ] Fix the chat tests
 - [ ] Review middleware and consumer to bounce connection if we cannot retrieve profile (check also with incognito mode)
+- [ ] Handle in-game disconnect (remove player, find new owner if player was owner)
+- [ ] Redo the serializers for game (first 3)
 
 # TODO: KRIS
 

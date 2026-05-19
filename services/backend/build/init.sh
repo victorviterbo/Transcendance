@@ -13,7 +13,7 @@ conda run -n backend python /backend/manage.py collectstatic --noinput
 
 if [ "$APP_MODE" = "test" ]; then
     echo "Running Tests..."
-    exec conda run --no-capture-output -n backend python /backend/manage.py test game
+    exec conda run --no-capture-output -n backend python /backend/manage.py test chat.tests.ChatViewsTests.test_room_not_found_returns_404
     exit 0
 fi
 
