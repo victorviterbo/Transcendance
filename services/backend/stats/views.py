@@ -65,20 +65,20 @@ class GlobalStatsView(APIView):
         if total_rounds > 0:
             artist_rate = round(
                 rounds.filter(artist_found=True).count() / total_rounds * 100, 2)
-            song_rate = round(
-                rounds.filter(song_found=True).count() / total_rounds * 100, 2)
+            title_rate = round(
+                rounds.filter(title_found=True).count() / total_rounds * 100, 2)
             complete_rate = round(
-                rounds.filter(artist_found=True, song_found=True).count() /
+                rounds.filter(artist_found=True, title_found=True).count() /
                                                             total_rounds * 100, 2)
         else:
-            artist_rate = song_rate = complete_rate = 0.0
+            artist_rate = title_rate = complete_rate = 0.0
         tag_rates = {}
         for tag in genres:
             tag_rounds = rounds.filter(round__track__genre=tag)
             tag_total = tag_rounds.count()
             if tag_total > 0:
                 tag_complete = tag_rounds.filter(artist_found=True,
-                                                 song_found=True).count()
+                                                 title_found=True).count()
                 tag_rates[genres_to_label.get(tag, tag)] = round(tag_complete
                                                                  / tag_total * 100, 2)
             else:
@@ -87,13 +87,13 @@ class GlobalStatsView(APIView):
                                     'averageScore': avg_score,
                                     'xp': profile.exp_points,
                                     'totalGamesPlayed': total_games,
-                                    'totalSongsPlayed': total_rounds,
+                                    'totaltitlesPlayed': total_rounds,
                                     'totalGamesWon': total_games_won,
                                     'ranking': _ranking(profile),
                                     'totalPlayers': _total_players(),
                                     'averageTime': avg_time,
                                     'successRateArtist': artist_rate,
-                                    'successRateSong': song_rate,
+                                    'successRatetitle': title_rate,
                                     'successRateComplete': complete_rate,
                                     'successRatesCompleteByTag': tag_rates,
         })
@@ -201,7 +201,7 @@ class HistoryView(APIView):
                 rounds_data.append({
                     'trackName': track.title if track else '',
                     'trackArtist': track.artist if track else '',
-                    'songFound': urs.song_found,
+                    'titleFound': urs.title_found,
                     'artistFound': urs.artist_found,
                     'time': round(urs.time, 2),
                     'ranking': round_rank,

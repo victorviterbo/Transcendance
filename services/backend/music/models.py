@@ -16,7 +16,7 @@ class Playlist(models.Model):
 
 class Track(models.Model):
 	"""Stores the music tracks."""
-	# Using the iTunes trackId to ensures we never save the same song twice
+	# Using the iTunes trackId to ensures we never save the same title twice
 	itunes_id = models.IntegerField(unique=True, primary_key=True) 
 	title = models.CharField(max_length=255)
 	artist = models.CharField(max_length=255)

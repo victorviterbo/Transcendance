@@ -13,13 +13,13 @@ class GlobalStatsSerializer(serializers.Serializer):
     averageScore = serializers.FloatField()
     xp = serializers.IntegerField()
     totalGamesPlayed = serializers.IntegerField()
-    totalSongsPlayed = serializers.IntegerField()
+    totaltitlesPlayed = serializers.IntegerField()
     totalGamesWon = serializers.IntegerField()
     ranking = serializers.IntegerField()
     totalPlayers = serializers.IntegerField()
     averageTime = serializers.FloatField()
     successRateArtist = serializers.FloatField()
-    successRateSong = serializers.FloatField()
+    successRatetitle = serializers.FloatField()
     successRateComplete = serializers.FloatField()
     successRatesCompleteByTag = serializers.DictField()
 
@@ -44,9 +44,9 @@ class HistoryRoundSerializer(serializers.Serializer):
     """Serialize a single round to be displayed in the game history."""
     trackName = serializers.CharField()
     trackArtist = serializers.CharField()
-    songFound = serializers.BooleanField()
+    titleFound = serializers.BooleanField()
     artistFound = serializers.BooleanField()
-    time = serializers.FloatField(read_only=True) #TODO : do we keep this like that or switch to song_found_at and artist_found_at
+    time = serializers.FloatField(read_only=True) #TODO : do we keep this like that or switch to title_found_at and artist_found_at
     ranking = serializers.IntegerField()
     previewUrl = serializers.CharField(allow_null=True)
     artworkUrl = serializers.CharField(allow_null=True)
@@ -77,9 +77,9 @@ class LiveRoundSerializer(serializers.ModelSerializer):
                 'player',
                 'track',
                 'artist_found',
-                'song_found',
+                'title_found',
                 'artist_found_at',
-                'song_found_at',
+                'title_found_at',
                 'time',
                 'xp_earned',
                 'totalXpEarned',
@@ -88,9 +88,9 @@ class LiveRoundSerializer(serializers.ModelSerializer):
                 'player',
                 'track',
                 'artist_found',
-                'song_found',
+                'title_found',
                 'artist_found_at',
-                'song_found_at',
+                'title_found_at',
                 'time',
                 'xp_earned',
                 'totalXpEarned',
@@ -101,7 +101,7 @@ class LiveGameSerializer(serializers.ModelSerializer):
     rounds = LiveRoundSerializer(source='player_stats', many=True, read_only=True)
     uid = serializers.CharField(source='game.uid')
     game_name = serializers.CharField(source='game.game_name')
-    
+
     class Meta:
         """Define the fields in the game stats serializer."""
         model = UserGameStats

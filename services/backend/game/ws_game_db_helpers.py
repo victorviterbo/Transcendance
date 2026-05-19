@@ -48,7 +48,10 @@ def _get_game(consumer: Any,
 def _setup_game_assets(game: Game) -> None:
 	"""Create the playlist, room, and current track for a validated game."""
 	if not game.genres:
-		return #TODO handle errors here
+		raise serializers.ValidationError(
+				'No genre found',
+				code='MISSING_FIELD_GENRE',
+			)
 
 	tracks_per_genre = game.num_tracks // len(game.genres)
 	all_tracks = list()
@@ -58,7 +61,7 @@ def _setup_game_assets(game: Game) -> None:
 		)
 		if len(genre_tracks) < tracks_per_genre:
 			raise serializers.ValidationError(
-				'Not enough tracks for genre: ' + genre,
+				f'Not enough tracks for genre: {genre}',
 				code='NOT_ENOUGH_TRACKS_GENRE',
 			)
 		all_tracks.extend(genre_tracks)
@@ -133,12 +136,12 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		consumer: The WebSocket consumer instance
 		player: The player profile
 		game: The game instance
-		answer: Player's answer (song title or artist name)
+		answer: Player's answer (title title or artist name)
 		track: The current track instance
 	
 	Returns:
 		bool: Whether the artist is correct
-		bool: Whether the song is correct
+		bool: Whether the title is correct
 	"""
 	try:
 		time = content.get('answer_time')
@@ -163,14 +166,14 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				player_stats.artist_found_at = time
 				player_stats.save(update_fields=['artist_found'])
 				return True, False
-		if not player_stats.song_found:
+		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
 		and consumer.current_game.fuzzy_match)
 				or player_answer == track_title):
-				player_stats.song_found = True
-				player_stats.song_found_at = time
-				player_stats.save(update_fields=['song_found'])
+				player_stats.title_found = True
+				player_stats.title_found_at = time
+				player_stats.save(update_fields=['title_found'])
 				return False, True
 		return False, False
 	except Game.DoesNotExist:
@@ -204,17 +207,17 @@ def _compute_round_stats(game: Game) -> None:
 										round__game=game)
 	if game.game_mode == 'armagedon':
 		first_artist = stats.filter(artist_found=True).order_by('artist_found_at').first()
-		first_song = stats.filter(song_found=True).order_by('song_found_at').first()
-		if first_artist and first_song and first_artist.player == first_song.player:
+		first_title = stats.filter(title_found=True).order_by('title_found_at').first()
+		if first_artist and first_title and first_artist.player == first_title.player:
 			first_artist.xp_earned += default_pts['armagedon']['both']
 			first_artist.save(update_fields=['xp_earned'])
 		else:
 			if first_artist:
 				first_artist.xp_earned += default_pts['armagedon']['artist']
 				first_artist.save(update_fields=['xp_earned'])
-			if first_song:
-				first_song.xp_earned += default_pts['armagedon']['song']
-				first_song.save(update_fields=['xp_earned'])
+			if first_title:
+				first_title.xp_earned += default_pts['armagedon']['title']
+				first_title.save(update_fields=['xp_earned'])
 	elif game.game_mode == 'speed':
 		xp_to_add = {}
 		artist_pts = default_pts['speed']['artist']
@@ -222,20 +225,20 @@ def _compute_round_stats(game: Game) -> None:
 			bonus = max(artist_pts, 2)
 			xp_to_add[stat.pk] = bonus
 			artist_pts -= 1
-		song_pts = default_pts['speed']['song']
-		for stat in stats.filter(song_found=True).order_by('song_found_at'):
-			bonus = max(song_pts, 2)
+		title_pts = default_pts['speed']['title']
+		for stat in stats.filter(title_found=True).order_by('title_found_at'):
+			bonus = max(title_pts, 2)
 			xp_to_add[stat.pk] = xp_to_add.get(stat.pk, 0) + bonus
-			song_pts -= 1
+			title_pts -= 1
 		for stat in stats:
 			if stat.pk in xp_to_add:
 				stat.xp_earned += xp_to_add[stat.pk]
 				stat.save(update_fields=['xp_earned'])
 	elif game.game_mode == 'normal':
 		for stat in stats:
-			if stat.artist_found and stat.song_found:
+			if stat.artist_found and stat.title_found:
 				stat.xp_earned += default_pts['normal']['both']
-			elif stat.artist_found or stat.song_found:
+			elif stat.artist_found or stat.title_found:
 				stat.xp_earned += default_pts['normal']['partial']
 			stat.save(update_fields=['xp_earned'])
 	game.status = 'playing_break'
@@ -269,12 +272,12 @@ def _compute_game_stats(game: Game) -> dict:
 
 @database_sync_to_async
 def _get_round_stats_completeness(game: Game) -> dict:
-    """Performs a single database query to count artist_fount and song_found."""
+    """Performs a single database query to count artist_fount and title_found."""
     return UserRoundStats.objects.filter(
         round__game=game,
         round__round_number=game.current_round
     ).aggregate(
-        titles=Count('id', filter=Q(song_found=True)),
+        titles=Count('id', filter=Q(title_found=True)),
         artists=Count('id', filter=Q(artist_found=True))
     )
 
@@ -283,13 +286,10 @@ def _get_round_stats_completeness(game: Game) -> dict:
 def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 	"""Add a player to a game by creating UserGameStats entry."""
 	try:
-		UserGameStats.objects.create(game=game,
-									player=player)
-		game.players.add(player)
+		UserGameStats.objects.create(game=game, player=player)
 		return True
-	except Exception as e:
-		print(e) #TODO handle gracefully
-		return False
+	except Exception:
+		raise
 
 
 @database_sync_to_async

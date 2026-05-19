@@ -136,22 +136,22 @@ for g_idx in range(1, 11):
         for player in game_players:
             # Add some randomness to how they performed
             found_artist = random.choice([True, False])
-            found_song = random.choice([True, False])
+            found_title = random.choice([True, False])
             
             # Base XP logic
             xp = 0
             if found_artist:
                 xp += 10
-            if found_song:
+            if found_title:
                 xp += 10
             UserRoundStats.objects.create(
                 player=player,
                 round=game_round,
                 game_stats=game_stats,
                 artist_found=found_artist,
-                song_found=found_song,
+                title_found=found_title,
                 artist_found_at=random.randint(5, 30),
-                song_found_at=random.randint(5, 30),
+                title_found_at=random.randint(5, 30),
                 xp_earned=xp
             )
         

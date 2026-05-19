@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from stats.models import UserGameStats
 
 from game.models import Game
 
@@ -38,8 +39,7 @@ class GeneralGameView(APIView):
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
-			new_game.players.add(request.profile)
-			new_game.save()
+			UserGameStats.objects.create(game=new_game, player=request.profile)
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:

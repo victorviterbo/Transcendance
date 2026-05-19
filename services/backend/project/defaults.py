@@ -51,16 +51,16 @@ default_pts = {
     'armagedon': {
         'both': 10,
         'artist': 4,
-        'song': 4
+        'title': 4
     },
     'speed': {
         'artist': 5,
-        'song': 5
+        'title': 5
     },
     'normal': {
         'both': 10,
         'artist': 4,
-        'song': 4
+        'title': 4
     }
 }
 

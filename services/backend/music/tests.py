@@ -20,9 +20,9 @@ class MusicModelsTests(TestCase):
 		pop = Playlist.objects.create(name='Pop', rss_url='https://example.org/pop')
 		track = Track.objects.create(
 			itunes_id=1234,
-			title='Song',
+			title='title',
 			artist='Artist',
-			genre='song',
+			genre='title',
 			preview_url='https://example.org/preview.m4a',
 			artwork_url='https://example.org/artwork.jpg',
 		)
@@ -47,9 +47,9 @@ class ITunesClientTests(TestCase):
 				'entry': [
 					{
 						'id': {'attributes': {'im:id': '111'}},
-						'im:name': {'label': 'Song 1'},
+						'im:name': {'label': 'title 1'},
 						'im:artist': {'label': 'Artist 1'},
-						'category': {'attributes': {'term': 'song'}},
+						'category': {'attributes': {'term': 'title'}},
 						'im:image': [
 							{'label': 'small'},
 							{'label': 'medium'},
@@ -69,9 +69,9 @@ class ITunesClientTests(TestCase):
 
 		self.assertEqual(len(tracks), 1)
 		self.assertEqual(tracks[0]['track_id'], 111)
-		self.assertEqual(tracks[0]['title'], 'Song 1')
+		self.assertEqual(tracks[0]['title'], 'title 1')
 		self.assertEqual(tracks[0]['artist'], 'Artist 1')
-		self.assertEqual(tracks[0]['genre'], 'song')
+		self.assertEqual(tracks[0]['genre'], 'title')
 		self.assertEqual(tracks[0]['artwork_url'], 'https://img.example/500x500bb.jpg')
 
 	@patch('music.itunes_client.requests.get')
@@ -118,7 +118,7 @@ class ITunesClientTests(TestCase):
 					'trackId': 333,
 					'trackName': 'Track 333',
 					'artistName': 'Artist 333',
-					'primaryGenreName': 'song',
+					'primaryGenreName': 'title',
 					'artworkUrl100': 'https://img.example/100x100bb.jpg',
 					'previewUrl': 'https://example.org/333.m4a',
 				}
@@ -131,7 +131,7 @@ class ITunesClientTests(TestCase):
 		self.assertIn(333, metadata)
 		self.assertEqual(metadata[333]['title'], 'Track 333')
 		self.assertEqual(metadata[333]['artist'], 'Artist 333')
-		self.assertEqual(metadata[333]['genre'], 'song')
+		self.assertEqual(metadata[333]['genre'], 'title')
 		self.assertEqual(metadata[333]['artwork_url'], 'https://img.example/500x500bb.jpg')
 		self.assertEqual(metadata[333]['preview_url'], 'https://example.org/333.m4a')
 
@@ -188,7 +188,7 @@ class MusicManagementCommandsTests(TestCase):
 			itunes_id=1001,
 			title='Old Title',
 			artist='Old Artist',
-			genre='song',
+			genre='title',
 			preview_url='https://example.org/old.m4a',
 			artwork_url='old_image.jpg',
 		)
@@ -197,7 +197,7 @@ class MusicManagementCommandsTests(TestCase):
 				'track_id': 1001,
 				'title': 'New Title',
 				'artist': 'New Artist',
-				'genre': 'song',
+				'genre': 'title',
 				'artwork_url': 'new_image.jpg',
 			},
 		]
@@ -235,7 +235,7 @@ class MusicManagementCommandsTests(TestCase):
 				'track_id': 4242,
 				'title': 'Shared Hit',
 				'artist': 'Shared Artist',
-				'genre': 'song',
+				'genre': 'title',
 				'artwork_url': 'https://img.example/shared.jpg',
 			},
 		]
@@ -267,7 +267,7 @@ class MusicManagementCommandsTests(TestCase):
 				'track_id': track_id,
 				'title': f'Track {track_id}',
 				'artist': f'Artist {track_id}',
-				'genre': 'song',
+				'genre': 'title',
 				'artwork_url': f'https://img.example/{track_id}.jpg',
 			}
 			for track_id in track_ids
@@ -295,9 +295,9 @@ class MusicManagementCommandsTests(TestCase):
 
 		mock_full_lookup.return_value = {
 			track_id: {
-				'title': f'Static Song {index}',
+				'title': f'Static title {index}',
 				'artist': f'Static Artist {index}',
-				'genre': 'song',
+				'genre': 'title',
 				'artwork_url': f'https://img.example/static{index}.jpg',
 				'preview_url': f'https://example.org/static{index}.m4a',
 			}
@@ -320,9 +320,9 @@ class MusicSerializersTests(TestCase):
 		"""Track serializer should expose expected public fields."""
 		track = Track.objects.create(
 			itunes_id=9001,
-			title='Serializer Song',
+			title='Serializer title',
 			artist='Serializer Artist',
-			genre='song',
+			genre='title',
 			preview_url='https://example.org/preview.m4a',
 			artwork_url='https://example.org/artwork.jpg',
 		)
@@ -330,9 +330,9 @@ class MusicSerializersTests(TestCase):
 		data = TrackSerializer(track).data
 
 		self.assertEqual(data['itunes_id'], 9001)
-		self.assertEqual(data['title'], 'Serializer Song')
+		self.assertEqual(data['title'], 'Serializer title')
 		self.assertEqual(data['artist'], 'Serializer Artist')
-		self.assertEqual(data['genre'], 'song')
+		self.assertEqual(data['genre'], 'title')
 		self.assertEqual(data['preview_url'], 'https://example.org/preview.m4a')
 		self.assertEqual(data['artwork_url'], 'https://example.org/artwork.jpg')
 
@@ -346,7 +346,7 @@ class MusicSerializersTests(TestCase):
 			itunes_id=111,
 			title='Track One',
 			artist='Artist One',
-			genre='song',
+			genre='title',
 			preview_url='https://example.org/1.m4a',
 			artwork_url='https://example.org/1.jpg',
 		)
@@ -354,7 +354,7 @@ class MusicSerializersTests(TestCase):
 			itunes_id=222,
 			title='Track Two',
 			artist='Artist Two',
-			genre='song',
+			genre='title',
 			preview_url='https://example.org/2.m4a',
 			artwork_url='https://example.org/2.jpg',
 		)

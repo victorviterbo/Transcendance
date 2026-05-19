@@ -38,9 +38,9 @@ class UserRoundStats(models.Model):
                                on_delete=models.CASCADE)
     time = models.FloatField(default=30)
     artist_found = models.BooleanField(default=False)
-    song_found = models.BooleanField(default=False)
+    title_found = models.BooleanField(default=False)
     artist_found_at = models.FloatField(default=30)
-    song_found_at = models.FloatField(default=30)
+    title_found_at = models.FloatField(default=30)
     xp_earned = models.PositiveIntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
 
@@ -55,8 +55,8 @@ class UserRoundStats(models.Model):
         return self.round.game
 
     def save(self, *args: tuple, **kwargs: dict) -> None:
-        """Update time to be the sum of time to find artist and song."""
-        self.time = (self.song_found_at + self.artist_found_at) / 2
+        """Update time to be the sum of time to find artist and title."""
+        self.time = (self.title_found_at + self.artist_found_at) / 2
         super().save(*args, **kwargs)
 
 class UserGameStats(models.Model):

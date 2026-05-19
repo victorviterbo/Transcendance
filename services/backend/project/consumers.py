@@ -550,7 +550,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': LightProfileSerializer(self.profile).data,
             'answer': event.get('answer'),
             'trackArtist': event.get('trackArtist'),
-            'trackSong': event.get('trackSong'),
+            'tracktitle': event.get('tracktitle'),
             'correct': event.get('is_correct', False),
         })
 

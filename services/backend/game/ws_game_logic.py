@@ -216,17 +216,17 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
 
     track_data, _ = await _get_track_reveal_data(consumer, content)
     assert track_data is not None
-    artist_correct, song_correct = await _validate_answer(consumer,
+    artist_correct, title_correct = await _validate_answer(consumer,
                                                         content,
                                                         track_data)
                         
-    if ((artist_correct or song_correct)
+    if ((artist_correct or title_correct)
         and consumer.current_game.game_mode == 'armagedon'):
         await check_all_answers_received(consumer, consumer.current_game)
     
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
-    if artist_correct or song_correct:
+    if artist_correct or title_correct:
         if consumer.current_game.game_mode == 'armagedon':
             # if game_mode is armagedon, send the response to everyone
             await consumer.group_send(consumer.game_group_name, {
@@ -235,7 +235,7 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
                 'senderPlayer': serialized_player,
                 'answer': answer,
                 'trackArtist': track_data['artist'] if artist_correct else None,
-                'trackSong': track_data['title'] if song_correct else None,
+                'tracktitle': track_data['title'] if title_correct else None,
                 'is_correct': True
             })
         else:
@@ -244,8 +244,8 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
                 'target': 'game',
                 'event': 'answer_correct',
                 'game': serialized_game,
-                'trackArtist': track_data['artist'] if artist_correct else None, #TODO : harmonize naming between 'song' and 'title'
-                'trackSong': track_data['title'] if song_correct else None,
+                'trackArtist': track_data['artist'] if artist_correct else None,
+                'tracktitle': track_data['title'] if title_correct else None,
                 'answer': answer,
                 'is_correct': True,
             })
@@ -334,7 +334,7 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
 
 
 async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> None:
-    """Unlocks the game loop if both artist and song has been found."""
+    """Unlocks the game loop if both artist and title has been found."""
     found = await _get_round_stats_completeness(game)
     game_over = found['titles'] > 0 and found['artists'] > 0
     if game_over:
