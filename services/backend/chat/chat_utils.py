@@ -3,11 +3,11 @@
 from chat.models import Message
 from friends.models import Friendship
 from userprofile.models import Profile
+from userauth.models import SiteUser
 
 from .models import Room
 
-
-def direct_key_for(profile_a: Profile, profile_b: Profile) -> str:
+def direct_key(profile_a: Profile, profile_b: Profile) -> str:
     """Return the canonical key for a private direct-message room."""
     """Generate a stable, unique key for a direct message room between two users.
 
@@ -23,8 +23,7 @@ def direct_key_for(profile_a: Profile, profile_b: Profile) -> str:
     min_id, max_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
     return f'user_{min_id}_user_{max_id}'
 
-
-def accepted_friendship_exists(profile_a: Profile, profile_b: Profile) -> bool:
+def accepted_friendship(profile_a: Profile, profile_b: Profile) -> bool:
     """Return whether the two users are connected by an accepted friendship."""
     user_a = profile_a.user
     user_b = profile_b.user
@@ -34,29 +33,31 @@ def accepted_friendship_exists(profile_a: Profile, profile_b: Profile) -> bool:
         to_user__in=[user_a, user_b],
     ).exists()
 
-
-def get_or_create_direct_room(profile_a: Profile, profile_b: Profile) -> tuple[Room, bool]:
-    """Get or create the canonical direct room for two profiles."""
-    direct_key = direct_key_for(profile_a, profile_b)
+def create_direct_room(profile_a: Profile, profile_b: Profile) -> tuple[Room, bool]:
+    """Create direct room for two profiles."""
+    key = direct_key(profile_a, profile_b)
     return Room.objects.get_or_create(
-        direct_key=direct_key,
+        direct_key=key,
         defaults={
-            'name': direct_key,
+            'name': key,
             'is_direct': True,
         },
     )
 
+def resolve_recipient_user(recipient_uid: str | None) -> SiteUser | None:
+    """Resolve a recipient user from either SiteUser.uid or Profile.uid.
 
-def serialize_friend_chat_message(message: Message, target_profile: Profile, direction: str) -> dict[str, object]:
-    """Build the frontend chat contract for a persisted direct message."""
-    payload: dict[str, object] = {
-        'message': message.body,
-        'date': message.created.isoformat(),
-        'direction': direction,
-        'target-id': str(target_profile.uid),
-        'target': target_profile.username,
-        'uid': str(message.uid),
-    }
-    if direction == 'outgoing':
-        payload['status'] = 'read' if message.seen else ('recieved' if message.delivered else 'sent')
-    return payload
+    Returns a SiteUser if found, otherwise None. This centralises lookup logic
+    used by HTTP views and other callers.
+    """
+    if recipient_uid is None:
+        return None
+
+    user = SiteUser.objects.filter(uid=recipient_uid).select_related('profile').first()
+    if user:
+        return user
+
+    profile = Profile.objects.filter(uid=recipient_uid).select_related('user').first()
+    if not profile:
+        return None
+    return profile.user
