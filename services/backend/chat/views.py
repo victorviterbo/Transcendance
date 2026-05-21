@@ -138,7 +138,7 @@ class FriendMessageFeed(APIView):
                         ).data,
                     }
                     async_to_sync(channel_layer.group_send)(
-                        f'user_{m.sender_profile_id}',
+                        f'user_{m.sender_profile.uid}',
                         {
                             'type': 'send.notification',
                             'payload': payload,

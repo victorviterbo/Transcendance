@@ -162,7 +162,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 						message.uid,
 						message.room.uid)
 
-			await self.group_send(f'user_{self.profile.id}', {
+			await self.group_send(f'user_{self.profile.uid}', {
 				'type': 'chat.message',
 				'message_uid': str(message.uid),
 				'message': message.body,
@@ -220,8 +220,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 				'delivered': message.delivered,
 				'seen': message.seen,
 			}
-			await self.group_send(f'user_{recipient_profile.id}', event_payload)
-			await self.group_send(f'user_{self.profile.id}', event_payload)
+			await self.group_send(f'user_{recipient_profile.uid}', event_payload)
+			await self.group_send(f'user_{self.profile.uid}', event_payload)
 
 			sender_payload = {
 				'target': 'friend-chat',
@@ -239,12 +239,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 					context={'recipient_profile': self.profile, 'direction': 'incoming'},
 				).data,
 			}
-			await self.group_send(f'user_{self.profile.id}', {
+			await self.group_send(f'user_{self.profile.uid}', {
 				'type': 'send.notification',
 				'payload': sender_payload,
 			})
 			if recipient_profile.is_online:
-				await self.group_send(f'user_{recipient_profile.id}', {
+				await self.group_send(f'user_{recipient_profile.uid}', {
 					'type': 'send.notification',
 					'payload': recipient_payload,
 				})
@@ -254,7 +254,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			if not recipient_uid:
 				await self.send_json({'type': 'error', 'message': 'target_uid is required'})
 				return
-			recipient_profile = await self.cget_profile_by_uid(recipient_uid)
+			recipient_profile = await self.get_profile_by_uid(recipient_uid)
 			if not recipient_profile:
 				await self.send_json({'type': 'error', 'message': 'target_not_found'})
 				return
