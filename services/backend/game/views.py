@@ -39,7 +39,7 @@ class GeneralGameView(APIView):
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
-			UserGameStats.objects.create(game=new_game, player=request.profile)
+			#UserGameStats.objects.create(game=new_game, player=request.profile)
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:
@@ -58,8 +58,10 @@ class FriendsGameView(APIView):
 		to_ids = Friendship.objects.filter(
 			to_user=request.user, status='accepted'
 		).values_list('from_user_id', flat=True)
-		friends_games = Game.objects.filter(visibility='friends_only', #TODO switch to 'not_invite_only'
-											owned_by__user_id__in=from_ids.union(to_ids))
+		friends_games = (
+			Game.objects.filter(owned_by__user_id__in=from_ids.union(to_ids))
+			.exclude(visibility='invite_only')
+		)
 		serialized_games = GameDetailSerializer(friends_games, many=True)
 		return Response(serialized_games.data, status=status.HTTP_200_OK)
 

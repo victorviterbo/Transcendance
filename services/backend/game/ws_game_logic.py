@@ -57,15 +57,15 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     if game_event == 'join_game':
         await join_game(consumer, content)
         return
-    #if getattr(consumer, 'current_game', None) is None:
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'Game not found for this player'})
         return
-    consumer.game_group_name = f'game_{consumer.current_game.uid}'
-    await consumer.add_to_layer(consumer.game_group_name)
+    if getattr(consumer, 'game_group_name', None) is None:
+        consumer.game_group_name = f'game_{consumer.current_game.uid}'
+        await consumer.add_to_layer(consumer.game_group_name)
     match game_event:
         case 'start_game':
             await _start_game(consumer, content)
@@ -161,14 +161,15 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'event': 'player_joined',
                                 'message': 'Already in game.'})
         return
-    consumer.game_group_name = f'game_{consumer.current_game.uid}'
-    await _add_user_to_players(consumer, content)
+    if getattr(consumer, 'game_group_name', None) is None:
+        consumer.game_group_name = f'game_{consumer.current_game.uid}'
+        await _add_user_to_players(consumer, content)
     return
 
 
 async def _start_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Start a game session / Begin the round loop."""
-    await consumer.add_to_layer(consumer.game_group_name)
+    #await consumer.add_to_layer(consumer.game_group_name)
     if not getattr(consumer, 'current_game', None):
         await consumer.send_json({'target': 'game',
                             'event': 'error',
@@ -196,8 +197,7 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
     await consumer.add_to_layer(consumer.game_group_name)
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
-    owner_channel = f"user_{serialized_game['owner']['uid']}"
-    await _send_new_player(consumer, serialized_game, serialized_player, owner_channel)
+    await _send_new_player(consumer, serialized_game, serialized_player)
     return
 
 

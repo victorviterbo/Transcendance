@@ -57,8 +57,10 @@ class GameTestDataMixin:
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
+
         game = Game.objects.get(uid=response.data['uid'])
         return response.data, game
+    
 
     def seed_game_assets_for_single_round(self, game: Game) -> None:
         """Attach one playable track, room, and playlist so a full game loop can run."""
@@ -113,13 +115,10 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
         self.assertIn('uid', response.data)
         self.assertEqual(response.data['name'], 'Friday Quiz')
-        #print(response.data)
-        #self.assertEqual(response.data['visibility'], 'public')
 
         game = Game.objects.get(uid=response.data['uid'])
         self.assertEqual(game.name, 'Friday Quiz')
         self.assertEqual(game.owned_by.uid, self.owner.profile.uid)
-        self.assertTrue(game.players.filter(id=self.owner.profile.id).exists())
 
     def test_create_game_missing_name_returns_structured_error(self) -> None:
         """Missing required fields should use normalized error codes."""
@@ -252,6 +251,12 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             self.assertTrue(connected)
 
             await communicator.send_json_to(
+                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+            )
+            response = await communicator.receive_json_from()
+            self.assertEqual(response['event'], 'player_joined')
+
+            await communicator.send_json_to(
                 {
                     'target': 'game',
                     'event': 'update_settings',
@@ -290,6 +295,14 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             communicator = self._connect_socket(self.owner)
             connected, _ = await communicator.connect()
             self.assertTrue(connected)
+
+            await communicator.send_json_to(
+                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+            )
+            response = await communicator.receive_json_from()
+            print("lala")
+            print(response)
+            self.assertEqual(response['event'], 'player_joined')
 
             await communicator.send_json_to(
                 {
@@ -357,6 +370,12 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             self.assertTrue(connected)
 
             await communicator.send_json_to(
+                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+            )
+            response = await communicator.receive_json_from()
+            self.assertEqual(response['event'], 'player_joined')
+
+            await communicator.send_json_to(
                 {
                     'target': 'game',
                     'event': 'does_not_exist',
@@ -417,6 +436,11 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             owner_connected, _ = await owner_socket.connect()
             self.assertTrue(owner_connected)
 
+            await owner_socket.send_json_to(
+                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+            )
+            await expect_event(owner_socket, 'player_joined')
+            
             challenger_socket = self._connect_socket(self.challenger)
             challenger_connected, _ = await challenger_socket.connect()
             self.assertTrue(challenger_connected)
@@ -442,7 +466,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                 }
             )
             settings = await expect_event(owner_socket, 'settings_updated')
-            print(json.dumps(settings, indent=4))
+            #print(json.dumps(settings, indent=4))
             await expect_event(challenger_socket, 'settings_updated')
 
             await owner_socket.send_json_to(
@@ -503,7 +527,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                 },
             ]
             payloads = await play_round(players, answers, owner_socket,True, False)
-            print(json.dumps(payloads, indent=4))
+            #print(json.dumps(payloads, indent=4))
             # ROUND 4
             print("################# ROUND 4 #################")
             answers = [
