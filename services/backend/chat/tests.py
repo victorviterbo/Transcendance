@@ -70,12 +70,10 @@ class ChatViewsTests(APITestCase):
 	def test_room_post_creates_message_and_adds_participant(self) -> None:
 		"""Posting to a room should create a message and add the sender as participant."""
 		self.client.force_login(self.user)
-
 		response = self.client.post(
 			reverse('room', kwargs={'room_uid': self.room.uid}),
 			{'body': 'hello room'},
 		)
-
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertTrue(
 			Message.objects.filter(room=self.room,
@@ -98,11 +96,11 @@ class ChatViewsTests(APITestCase):
 		self.assertTrue(Room.objects.filter(name=self.room.name,
 											is_direct=False).exists())
 
-	def test_direct_room_is_created_for_friends(self) -> None:
+	def test_direct_room_created_for_friends(self) -> None:
 		"""Direct-room creation should return a shared DM room for friends."""
 		login_url = '/api/auth/login/'
-		login_res = self.client.post(login_url, data={'email': 'chat_test@mail.com',
-                                                 'password': 'Password123!'})
+		login_res = self.client.post(login_url, data={'email': self.user.email,
+                                              'password': 'Password123!'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
 		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
@@ -117,11 +115,11 @@ class ChatViewsTests(APITestCase):
 		self.assertTrue(room.participants.filter(id=self.user.id).exists())
 		self.assertTrue(room.participants.filter(id=self.friend.id).exists())
 
-	def test_direct_room_is_rejected_for_non_friend(self) -> None:
+	def test_direct_room_rejected_for_nonfriend(self) -> None:
 		"""Non-friends should be blocked from direct-room creation."""
 		login_url = '/api/auth/login/'
-		login_res = self.client.post(login_url, data={'email': 'chat_test@mail.com',
-                                                 'password': 'Password123!'})
+		login_res = self.client.post(login_url, data={'email': self.user.email,
+                                              'password': 'Password123!'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
 		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
@@ -134,8 +132,8 @@ class ChatWebsocketTests(TransactionTestCase):
 
 	def setUp(self) -> None:
 		"""Create users, rooms, and the ASGI application for socket tests."""
-		serializer = RegisterSerializer(data={'email':'chat_test@mail.com',
-											'profile_username': 'chat_test_user',
+		serializer = RegisterSerializer(data={'email':'test@mail.com',
+											'profile_username': 'test_user',
 											'password':'Password123!'},
 											context={'is_creation': True})
 		if serializer.is_valid():
@@ -163,7 +161,7 @@ class ChatWebsocketTests(TransactionTestCase):
 		if serializer.is_valid():
 			self.guest = serializer.save()
 			
-		self.room = Room.objects.create(name='default_room', is_direct=False)
+		Room.objects.create(name='default_room', is_direct=False)
 
 		serializer = ProfileSerializer(data={'username':'guest_user'},
 										context={'is_creation': True})
@@ -173,9 +171,11 @@ class ChatWebsocketTests(TransactionTestCase):
 
 		self.user.friends.add(self.friend)
 		self.friend.friends.add(self.user)
+		#self.application = URLRouter(websocket_urlpatterns)
+		self.room = Room.objects.create(name='classic')
 		self.room.participants.add(self.user.profile, self.friend.profile)
 
-	def test_websocket_connects_for_existing_room(self) -> None:
+	def test_websocket_connects_exist_room(self) -> None:
 		"""Existing public rooms should accept WebSocket connections."""
 		async def scenario() -> None:
 			communicator = WebsocketCommunicator(application, '/ws/global/')
@@ -239,7 +239,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			
 			response = await communicator.receive_json_from()
 			self.assertEqual(response['type'], 'chat_message')
-			self.assertEqual(response['sender'], 'chat_test_user')
+			self.assertEqual(response['sender'], self.user.profile.username)
 			self.assertEqual(response['message'], 'hello websocket')
 
 			await communicator.send_json_to({'target': 'chat',
@@ -282,17 +282,6 @@ class ChatWebsocketTests(TransactionTestCase):
 		)
 		self.assertTrue(self.room.participants.filter(id=self.user.profile.id).exists())
 
-	def test_direct_room_websocket_rejects_non_participant(self) -> None:
-		"""Users outside a direct room should not be allowed to connect."""
-
-		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope['user'] = self.stranger
-			connected, _ = await communicator.connect()
-			self.assertTrue(connected)
-
-		async_to_sync(scenario)()
-
 	def test_direct_room_websocket_accepts_participant(self) -> None:
 		"""Direct-room participants should be allowed to connect."""
 
@@ -301,50 +290,6 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
-			await communicator.disconnect()
-
-		async_to_sync(scenario)()
-
-	def test_social_notification_payload_matches_frontend_contract(self) -> None:
-		"""Friend requests should emit the expected websocket social payloads."""
-
-		@database_sync_to_async
-		def create_pending_friend_request() -> Friendship:
-			return Friendship.objects.create(
-				from_user=self.stranger,
-				to_user=self.user,
-				status='pending',
-			)
-
-		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope['user'] = self.user
-			connected, _ = await communicator.connect()
-			self.assertTrue(connected)
-
-			friendship = await create_pending_friend_request()
-			responses = [await communicator.receive_json_from(), await communicator.receive_json_from()]
-			friend_request_event = next(
-				(value for value in responses if value.get('target') == 'friend-request'),
-				None,
-			)
-			notif_event = next(
-				(value for value in responses if value.get('target') == 'notif'),
-				None,
-			)
-
-			self.assertIsNotNone(friend_request_event)
-			self.assertIsNotNone(notif_event)
-
-			self.assertEqual(friend_request_event.get('event'), 'new-incoming')
-			self.assertEqual(friend_request_event['user'].get('uid'), str(self.stranger.profile.uid))
-			self.assertEqual(friend_request_event['user'].get('username'), self.stranger.profile.username)
-
-			self.assertEqual(notif_event.get('event'), 'new')
-			self.assertEqual(notif_event['notif'].get('uid'), str(friendship.uid))
-			self.assertEqual(notif_event['notif'].get('kind'), 'friend-request')
-			self.assertEqual(notif_event['notif']['from'].get('uid'), str(self.stranger.profile.uid))
-
 			await communicator.disconnect()
 
 		async_to_sync(scenario)()

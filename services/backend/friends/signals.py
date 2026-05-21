@@ -9,53 +9,54 @@ from django.dispatch import receiver
 
 from friends.models import Friendship
 from friends.serializers import FriendUserSerializer
+from django.utils import timezone
 
 
-def _profile_group_name(user) -> str | None:
+def notif_payload(*, friendship=None, uid=None, kind, profile, relation,
+                  request=None, date=None, read=False):
+    """Compact notification builder.
+    Accepts either a `friendship` object or explicit `uid`/`date`/`read`.
+    """
+    if friendship is not None:
+        uid_val = str(friendship.uid)
+        date_val = friendship.created_at.isoformat()
+        read_val = friendship.read
+    else:
+        uid_val = uid
+        date_val = date or timezone.now().isoformat()
+        read_val = bool(read)
+
+    ctx = {'relation': relation}
+    if request is not None:
+        ctx['request'] = request
+
+    return {
+        'uid': uid_val,
+        'kind': kind,
+        'from': FriendUserSerializer(profile, context=ctx).data,
+        'date': date_val,
+        'read': read_val,
+    }
+
+
+def profile_group_name(user) -> str | None:
     """Return the websocket group name for a user profile if available."""
     profile = getattr(user, 'profile', None)
     if profile is None:
         return None
-    return f'user_{profile.uid}'
+    return f'user_{profile.id}'
 
 
-def _profile_payload(profile, relation: str) -> dict[str, Any]:
-    """Return a frontend-shaped user payload for realtime social events."""
-    serializer = FriendUserSerializer(profile, context={'relation': relation})
-    return serializer.data
-
-
-def _notif_payload(from_profile, relation: str, kind: str, uid: str) -> dict[str, Any]:
-    """Return a frontend-shaped notification payload."""
-    return {
-        'uid': uid,
-        'kind': kind,
-        'from': _profile_payload(from_profile, relation),
-        'date': friendship_timestamp(),
-        'read': False,
-    }
-
-
-def friendship_timestamp() -> str:
-    """Return an ISO timestamp string for websocket notification events."""
-    from django.utils import timezone
-
-    return timezone.now().isoformat()
-
-
-def _group_send_safe(group_name: str | None, payload: dict[str, Any]) -> None:
+def group_send_safe(group_name: str | None, payload: dict[str, Any]) -> None:
     """Best-effort websocket broadcast that never breaks API writes."""
     if not group_name:
         return
-
     channel_layer = get_channel_layer()
     if channel_layer is None:
         return
-
     try:
         async_to_sync(channel_layer.group_send)(group_name, payload)
     except Exception:
-        # Realtime delivery must not fail the HTTP friendship lifecycle.
         return
 
 
@@ -68,29 +69,27 @@ def save_profile(sender: type[Friendship],
     """Trigger sending of notifications when friendship is saved."""
     if created:
         sender_profile = instance.from_user.profile
-        recipient_group = _profile_group_name(instance.to_user)
-
-        _group_send_safe(
+        recipient_group = profile_group_name(instance.to_user)
+        group_send_safe(
             recipient_group,
             {
                 'type': 'send_notification',
                 'payload': {
                     'target': 'friend-request',
                     'event': 'new-incoming',
-                    'user': _profile_payload(sender_profile, relation='incoming'),
+                    'user': FriendUserSerializer(sender_profile, context={'relation': 'incoming'}).data,
                 },
             },
         )
-
-        _group_send_safe(
+        group_send_safe(
             recipient_group,
             {
                 'type': 'send_notification',
                 'payload': {
                     'target': 'notif',
                     'event': 'new',
-                    'notif': _notif_payload(
-                        sender_profile,
+                    'notif': notif_payload(
+                        profile=sender_profile,
                         relation='incoming',
                         kind='friend-request',
                         uid=str(instance.uid),
@@ -100,21 +99,20 @@ def save_profile(sender: type[Friendship],
         )
         return
 
-    # Accept event: notify requester only when the status field was updated.
     if not update_fields or 'status' not in update_fields or instance.status != 'accepted':
         return
 
     accepter_profile = instance.to_user.profile
-    requester_group = _profile_group_name(instance.from_user)
-    _group_send_safe(
+    requester_group = profile_group_name(instance.from_user)
+    group_send_safe(
         requester_group,
         {
             'type': 'send_notification',
             'payload': {
                 'target': 'notif',
                 'event': 'new',
-                'notif': _notif_payload(
-                    accepter_profile,
+                'notif': notif_payload(
+                    profile=accepter_profile,
                     relation='friends',
                     kind='friend-accepted',
                     uid=str(instance.uid),
