@@ -5,12 +5,14 @@ import logging
 from channels.db import database_sync_to_async
 from chat.models import Message
 from django.core.cache import cache
+from django.db import models
 from userprofile.models import Profile
 
 logger = logging.getLogger(__name__)
 
 async def update_online_status(consumer, current_profile_id: int, is_online: bool) -> bool:
-    """Update online status for a profile and refresh delivery status."""
+    """Update online status for a profile and refresh delivery status.
+    Use uid for wedsocket and use `id` for backend hat open close check"""
     if current_profile_id is None:
         return False
     updated_row = await set_online_status(current_profile_id, is_online)
@@ -25,8 +27,9 @@ async def update_online_status(consumer, current_profile_id: int, is_online: boo
 
         for ref in pending_message:
             sender_profile_id = ref.get('sender_profile_id')
-            if sender_profile_id and await is_chat_open(sender_profile_id, current_profile_id):
-                await consumer.group_send(f'user_{sender_profile_id}', {
+            sender_profile_uid = ref.get('sender_profile_uid')
+            if sender_profile_id and sender_profile_uid and await is_chat_open(sender_profile_id, current_profile_id):
+                await consumer.group_send(f'user_{sender_profile_uid}', {
                     'type': 'send.notification',
                     'payload': {
                         'target': 'friend-chat',
@@ -53,6 +56,7 @@ def get_pending_message(recipient_profile_id: int) -> list[dict[str, int]]:
             room__participants__id=recipient_profile_id,
             delivered=False,
         ).exclude(sender_profile__id=recipient_profile_id).values('uid', 'sender_profile_id')
+        .annotate(sender_profile_uid=models.F('sender_profile__uid'))
     )
 @database_sync_to_async
 def mark_pendmessage_delivered(recipient_profile_id: int) -> int:

@@ -138,8 +138,6 @@ class FriendSearch(APIView):
         users = []
         for profile in profiles:
             rel = friendship_relation(request.user, profile)
-            if rel != 'not-friends':
-                continue
             users.append(
                 FriendUserSerializer(
                     profile,
