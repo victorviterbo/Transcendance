@@ -18,7 +18,7 @@ def _default_genres() -> list:
 class Game(models.Model):
     """Define the model for a single game session."""
 
-    game_name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
     
     genres = models.JSONField(default=_default_genres, blank=True)
     
@@ -28,7 +28,7 @@ class Game(models.Model):
                                     )
     
     room = models.OneToOneField(Room,
-                                on_delete=models.SET_NULL,
+                                on_delete=models.CASCADE,
                                 null=True)
     
     
@@ -98,7 +98,7 @@ class Game(models.Model):
                         unique=True,
                         db_index=True)
 
-    public_level = models.CharField(max_length=20,
+    visibility = models.CharField(max_length=20,
                                 choices=[
                                     ('public', 'PUBLIC'),
                                     ('friends_only', 'FRIENDS_ONLY'),

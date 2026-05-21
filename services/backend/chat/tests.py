@@ -163,7 +163,7 @@ class ChatWebsocketTests(TransactionTestCase):
 		if serializer.is_valid():
 			self.guest = serializer.save()
 			
-		Room.objects.create(name='default_room', is_direct=False)
+		self.room = Room.objects.create(name='default_room', is_direct=False)
 
 		serializer = ProfileSerializer(data={'username':'guest_user'},
 										context={'is_creation': True})

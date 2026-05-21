@@ -100,9 +100,9 @@ class LiveGameSerializer(serializers.ModelSerializer):
     """Serialize all the rounds as a list for end-of-game summary."""
     rounds = LiveRoundSerializer(source='player_stats', many=True, read_only=True)
     uid = serializers.CharField(source='game.uid')
-    game_name = serializers.CharField(source='game.game_name')
+    name = serializers.CharField(source='game.name')
 
     class Meta:
         """Define the fields in the game stats serializer."""
         model = UserGameStats
-        fields = ['uid', 'game_name', 'rounds']
+        fields = ['uid', 'name', 'rounds']

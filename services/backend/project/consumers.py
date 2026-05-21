@@ -43,21 +43,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.chat_group_name = f"chat_{self.room_name}"
         self.open_direct_chat_profile_ids = set() #tracker when frontend send open/ close so can mark seen
 
-    @classmethod
-    def get_game_loop_task(cls, game_uid: str) -> asyncio.Task | None:
-        """Return a running game loop task for this game UID if it exists."""
-        return cls.game_loop_tasks.get(game_uid)
-
-    @classmethod
-    def set_game_loop_task(cls, game_uid: str, task: asyncio.Task) -> None:
-        """Store a game loop task in the class-level registry."""
-        cls.game_loop_tasks[game_uid] = task
-
-    @classmethod
-    def clear_game_loop_task(cls, game_uid: str) -> None:
-        """Remove a game loop task from the class-level registry."""
-        cls.game_loop_tasks.pop(game_uid, None)
-    
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
         logger.info('ws.connect.start channel_name=%s', self.channel_name)
@@ -405,7 +390,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             except Profile.DoesNotExist:
                 logger.warning('ws.profile_resolve.authenticated_user_no_profile user_id=%s',
                                self.user.id)
-
         profile = self.scope.get("profile")
         if isinstance(profile, Profile):
             logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s guest=%s',

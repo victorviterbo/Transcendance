@@ -213,7 +213,7 @@ class HistoryView(APIView):
                 'playedAt': ugs.played_at,
                 'xpEarned': my_xp,
                 'ranking': my_rank,
-                'roomTitle': game.game_name,
+                'roomTitle': game.name,
                 'tags': [genres_to_label.get(t, t) for t in tags],
                 'players': players_data,
                 'rounds': rounds_data,

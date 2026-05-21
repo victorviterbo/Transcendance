@@ -16,18 +16,18 @@ from .models import Game
 class GameCreationSerializer(serializers.ModelSerializer):
     """Minimal serializer for creating a Game.
 
-    Only requires `game_name` and `public_level`. Other fields use model
+    Only requires `name` and `visibility`. Other fields use model
     defaults or are managed server-side.
     """
 
     class Meta:
         """Define which fields are used to generate the game."""
         model = Game
-        fields = ['game_name', 'public_level']
+        fields = ['name', 'visibility']
 
 
 class GameUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for updating (PATCH) game fields."""
+    """Serializer for updating updating game fields through websocket."""
 
     class Meta:
         """Meta config for GameUpdateSerializer."""
@@ -42,7 +42,7 @@ class GameUpdateSerializer(serializers.ModelSerializer):
             'answer_public',
             'fuzzy_match',
         ]
-        read_only_fields = ['game_name']
+        read_only_fields = ['name']
 
     def validate_genres(self, value : Any)-> Any:
         """Validate that all genres are in the allowed list."""
@@ -54,6 +54,26 @@ class GameUpdateSerializer(serializers.ModelSerializer):
 					code='invalid_genres',
                 )
         return value
+
+
+class GameDetailSerializer(serializers.ModelSerializer):
+    """Full game serializer including player list."""
+    players = LightProfileSerializer(many=True, read_only=True) # TODO : remove players, playerCount and playerMax instead
+
+    class Meta:
+        """Meta config for GameDetailSerializer."""
+        model = Game
+        fields = [
+            'uid',
+            'name',
+            'genres',
+            'players',
+        ]
+        read_only_fields = ['uid',
+                            'name',
+                            'genres',
+                            'players',
+                            ]
 
 
 class GameHeaderSerializer(serializers.ModelSerializer):
@@ -68,35 +88,14 @@ class GameHeaderSerializer(serializers.ModelSerializer):
         model = Game
         fields = [
             'uid',
-            'game_name',
+            'name',
             'players',
             'owner',
             'status',
             'roomUID',
             'round',
             'genres',
-            'public_level',
+            'visibility',
         ]
         read_only_fields = fields
 
-
-class GameDetailSerializer(serializers.ModelSerializer):
-    """Full game serializer including player list."""
-    players = LightProfileSerializer(many=True, read_only=True)
-
-    class Meta:
-        """Meta config for GameDetailSerializer."""
-        model = Game
-        fields = [
-            'uid',
-            'game_name',
-            'genres',
-            'public_level',
-            'players',
-        ]
-        read_only_fields = ['uid',
-                            'game_name',
-                            'genres',
-                            'public_level',
-                            'players',
-                            ]

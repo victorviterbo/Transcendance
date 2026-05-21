@@ -26,7 +26,7 @@ class GeneralGameView(APIView):
 
 	def get(self, request: Request) -> Response:
 		"""Handles the listing of all games."""
-		all_public_games = Game.objects.filter(public_level='public')
+		all_public_games = Game.objects.filter(visibility='public') #TODO filter to remove game_started
 		serialized_games = GameDetailSerializer(all_public_games, many=True)
 		return Response(serialized_games.data, status=status.HTTP_200_OK)
 		
@@ -58,7 +58,7 @@ class FriendsGameView(APIView):
 		to_ids = Friendship.objects.filter(
 			to_user=request.user, status='accepted'
 		).values_list('from_user_id', flat=True)
-		friends_games = Game.objects.filter(public_level='friends_only',
+		friends_games = Game.objects.filter(visibility='friends_only', #TODO switch to 'not_invite_only'
 											owned_by__user_id__in=from_ids.union(to_ids))
 		serialized_games = GameDetailSerializer(friends_games, many=True)
 		return Response(serialized_games.data, status=status.HTTP_200_OK)
@@ -74,18 +74,4 @@ class SingleGameView(APIView):
 		serialized_queried_game = GameDetailSerializer(queried_game)
 		return Response(serialized_queried_game.data,
 						status=status.HTTP_200_OK)
-	
-	def patch(self, request: Request, uid: uuid.UUID) -> Response:
-		"""Change the game setting on one specific game."""
-		queried_game = get_object_or_404(Game, uid=uid)
-		if queried_game.status != 'waiting':
-			return Response({'error': {'status': 'GAME_ALREADY_STARTED'}},
-							status=status.HTTP_400_BAD_REQUEST)
-		return Response({}, status=status.HTTP_200_OK)
-	
-	def delete(self, request: Request, uid: uuid.UUID) -> Response:
-		"""Change the game setting on one specific game."""
-		queried_game = get_object_or_404(Game, uid=uid)
-		queried_game.delete()
-		return Response(status=status.HTTP_204_NO_CONTENT)
 	
