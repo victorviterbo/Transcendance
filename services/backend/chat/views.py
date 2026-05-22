@@ -10,8 +10,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from userprofile.models import Profile
-
 from .chat_utils import accepted_friendship, create_direct_room, resolve_recipient_user
 from .models import Message, Room
 from .serializers import MessageSerializer, RoomSerializer, FriendChatMessageSerializer
@@ -59,26 +57,28 @@ class DirectMessageView(APIView):
 
     def post(self, request: Request) -> Response:
         """Create or fetch a direct-message room shared by the current user and target user."""
-        if request.profile.guest:
+        current_profile = request.profile
+        if current_profile.guest:
             return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
                             status=status.HTTP_401_UNAUTHORIZED)
         if not request.data.get('user_uid'):
             return Response({'error': {'user_uid': 'MISSING_FIELD'}},
                                 status=status.HTTP_400_BAD_REQUEST)
-        recipient_profile = Profile.objects.filter(user__uid=self.request.data['user_uid']).first()
-        if not recipient_profile:
+        recipient_user = resolve_recipient_user(request.data['user_uid'])
+        if recipient_user is None:
             return Response({'error': {'user_uid': 'USER_NOT_FOUND'}},
                                 status=status.HTTP_400_BAD_REQUEST)
-        if request.profile.uid == recipient_profile.uid:
+        recipient_profile = recipient_user.profile
+        if current_profile.uid == recipient_profile.uid:
             return Response({'error': {'user_uid': 'CANNOT_SELF_DM'}},
                                 status=status.HTTP_400_BAD_REQUEST)
-        if not accepted_friendship(request.profile, recipient_profile):
+        if not accepted_friendship(current_profile, recipient_profile):
             return Response({'error': {'user_uid': 'USER_NOT_FRIEND'}},
                                 status=status.HTTP_403_FORBIDDEN)
 
-        room, created = create_direct_room(request.profile, recipient_profile)
+        room, created = create_direct_room(current_profile, recipient_profile)
         if created:
-            room.participants.add(request.profile, recipient_profile)
+            room.participants.add(current_profile, recipient_profile)
         return Response({
             'room_uid': room.uid,
             'room_name': room.name,
@@ -92,6 +92,7 @@ class FriendMessageFeed(APIView):
 
     def post(self, request: Request) -> Response:
         """Fetch a friend chat feed in the frontend contract shape."""
+        current_profile = request.profile
         recipient_uid = request.data.get('uid') or request.data.get('user_uid') or request.data.get('target-uid')
         if recipient_uid is None:
             return Response(
@@ -107,18 +108,18 @@ class FriendMessageFeed(APIView):
         if recipient_user == request.user:
             return Response({'error': {'uid': 'CANNOT_SELF_DM'}}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not accepted_friendship(request.user.profile, recipient_user.profile):
+        if not accepted_friendship(current_profile, recipient_user.profile):
             return Response({'error': {'uid': 'USER_NOT_FRIEND'}}, status=status.HTTP_403_FORBIDDEN)
 
-        room, created = create_direct_room(request.user.profile, recipient_user.profile)
+        room, created = create_direct_room(current_profile, recipient_user.profile)
         if created:
-            room.participants.add(request.user.profile, recipient_user.profile)
+            room.participants.add(current_profile, recipient_user.profile)
 
         channel_layer = get_channel_layer()
         feed: list[dict[str, object]] = []
         messages = Message.objects.filter(room=room).select_related('sender_profile').order_by('created')
         for m in messages:
-            is_outgoing = m.sender_profile_id == request.user.profile.id
+            is_outgoing = m.sender_profile_id == current_profile.id
             if not is_outgoing and not m.seen:
                 update_fields: list[str] = []
                 if not m.delivered:
@@ -134,7 +135,7 @@ class FriendMessageFeed(APIView):
                         'event': 'update_status',
                         'message': FriendChatMessageSerializer(
                             m,
-                            context={'recipient_profile': request.user.profile, 'direction': 'outgoing'},
+                            context={'recipient_profile': current_profile, 'direction': 'outgoing'},
                         ).data,
                     }
                     async_to_sync(channel_layer.group_send)(

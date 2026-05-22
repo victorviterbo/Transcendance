@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 async def update_online_status(consumer, current_profile_id: int, is_online: bool) -> bool:
     """Update online status for a profile and refresh delivery status.
-    Use uid for wedsocket and use `id` for backend hat open close check"""
+    uid used at wedsocket and API, `id` stay for internal database backend check open close messg"""
     if current_profile_id is None:
         return False
     updated_row = await set_online_status(current_profile_id, is_online)
@@ -55,7 +55,9 @@ def get_pending_message(recipient_profile_id: int) -> list[dict[str, int]]:
             room__is_direct=True,
             room__participants__id=recipient_profile_id,
             delivered=False,
-        ).exclude(sender_profile__id=recipient_profile_id).values('uid', 'sender_profile_id')
+        )
+        .exclude(sender_profile__id=recipient_profile_id)
+        .values('uid', 'sender_profile_id')
         .annotate(sender_profile_uid=models.F('sender_profile__uid'))
     )
 @database_sync_to_async
