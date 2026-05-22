@@ -13,6 +13,7 @@ import {
 	MOCK_JOIN_ROOM,
 	MOCK_HOST_ROOM,
 	mockOnUserChangedSettings,
+	MOCK_PLAYING_ROOM,
 } from "./game_db";
 import type { TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
@@ -54,6 +55,21 @@ export const gameRequestHandlerHost = http.get(
 		return HttpResponse.json({ game: mockGetGameData(MOCK_HOST_ROOM) } as IGameDataRes);
 	},
 );
+export const gameRequestHandlerPlaying = http.get(
+	API_GAME.replaceAll("{ROOMID}", MOCK_PLAYING_ROOM),
+	async () => {
+		if (mockGameError)
+			return HttpResponse.json(
+				{
+					error: {
+						default: [{ message: "Game is disabled", code: "GAME_ERROR_GLOBAL" }],
+					},
+				},
+				{ status: mockGameError ? 400 : 200 },
+			);
+		return HttpResponse.json({ game: mockGetGameData(MOCK_PLAYING_ROOM) } as IGameDataRes);
+	},
+);
 
 //====================== WS ======================
 export function mockHandleGameMessages(Data: TWSSend, client: WebSocketClientConnectionProtocol) {
@@ -73,7 +89,8 @@ export function mockHandleGameMessages(Data: TWSSend, client: WebSocketClientCon
 //--------------------- SIMULATION ---------------------
 function mockGameSimulate(GameID: string) {
 	if (GameID == MOCK_JOIN_ROOM) mockGameSimulateJoin(GameID);
-	if (GameID == MOCK_HOST_ROOM) mockGameSimulateHost(GameID);
+	else if (GameID == MOCK_HOST_ROOM) mockGameSimulateHost(GameID);
+	else if (GameID == MOCK_PLAYING_ROOM) mockGameSimulatePlaying(GameID);
 }
 function mockGameSimulateJoin(GameID: string) {
 	const data: IMockGameData = mockGetGameData(GameID);
@@ -205,4 +222,10 @@ function mockGameSimulateHost(GameID: string) {
 			}
 		}, time);
 	}
+}
+
+function mockGameSimulatePlaying(GameID: string) {
+	const data: IMockGameData = mockGetGameData(GameID);
+	if (data.isOn) return;
+	data.isOn = true;
 }

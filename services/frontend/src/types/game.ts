@@ -37,15 +37,45 @@ export interface IGameSettings {
 	code: string;
 }
 
+//====================== STATUS ======================
+export type TGamePhase = "waiting" | "playing_round" | "playing_break" | "finish";
+export interface IGameStatus {
+	phase: TGamePhase;
+	round: number;
+	keyTime: number;
+}
+
+export interface IGamePlayerAnswer {
+	message: string;
+	time: number;
+	titleFound: boolean;
+	artistFound: boolean;
+}
+
+export type TRoundPhase = "not-done" | "playing" | "break" | "done";
+export interface IGameRound {
+	previewLink: string;
+	titleFound: number;
+	artistFound: number;
+	points: number;
+	time: number;
+	phase: TRoundPhase;
+}
+
 //====================== COMMON ======================
 export interface IGameData {
 	id: string;
 	uid: string;
 	name: string;
+
 	settings: IGameSettings;
+	status: IGameStatus;
+	rounds: IGameRound[];
+
 	chat: IGameChatMsg[];
 	players: IGamePlayer[];
 	maxPlayers: number;
+
 	isHost: boolean;
 }
 

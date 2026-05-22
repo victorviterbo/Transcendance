@@ -23,8 +23,16 @@ export interface IMockGameData extends IGameData {
 	isOn: boolean;
 }
 
-export const MOCK_JOIN_ROOM = "123456";
-export const MOCK_HOST_ROOM = "789";
+const EMockRoundResolvType: Record<string, number> = {
+	NONE: 0,
+	ARTIST: 1,
+	MUSIC: 2,
+	FULL: 3,
+};
+
+export const MOCK_JOIN_ROOM = "join";
+export const MOCK_HOST_ROOM = "host";
+export const MOCK_PLAYING_ROOM = "playing";
 
 //====================== DATA ======================
 let currentClient: WebSocketClientConnectionProtocol | undefined = undefined;
@@ -97,6 +105,42 @@ function mockCreateChat(Room: IMockGameData) {
 		type: "found",
 	});
 }
+function mockCreateRounds(Room: IMockGameData) {
+	for (let i = 0; i < Room.settings.nbMusic; i++) {
+		let points: number = 0;
+		let titleFound: number = -1;
+		let artistFound: number = -1;
+
+		if (i < Room.status.round) {
+			const type: number = Math.trunc(Math.random() * 4);
+			if (type == EMockRoundResolvType.ARTIST || type == EMockRoundResolvType.FULL) {
+				points += 5;
+				artistFound = Math.round(Math.random() * Room.settings.timer - 5);
+			}
+			if (type == EMockRoundResolvType.MUSIC || type == EMockRoundResolvType.FULL) {
+				points += 5;
+				titleFound = Math.round(Math.random() * Room.settings.timer - 5);
+			}
+		}
+
+		if (i == Room.status.round) {
+			points += 10;
+			artistFound = 5;
+			titleFound = 15;
+		}
+
+		Room.rounds.push({
+			previewLink:
+				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/b6/a0/35b6a026-26bc-cfb1-30d3-9c3c1820c63f/mzaf_8281785747956416426.plus.aac.p.m4a",
+			titleFound,
+			artistFound,
+			points,
+			time: 0.0,
+			phase: i < Room.status.round ? "done" : Room.status.round == i ? "playing" : "not-done",
+		});
+	}
+}
+
 export function mockCreateRoom(GameID: string) {
 	mockSocialSetDB();
 
@@ -121,6 +165,12 @@ export function mockCreateRoom(GameID: string) {
 			scope: "public",
 			code: "qwertyuiop",
 		},
+		status: {
+			phase: "waiting",
+			round: 0,
+			keyTime: 0,
+		},
+		rounds: [],
 		players: [],
 		chat: [],
 		maxPlayers: 100,
@@ -129,7 +179,7 @@ export function mockCreateRoom(GameID: string) {
 		isOn: false,
 	};
 
-	//Adding already presents players
+	//UNIQUE CONF
 	if (GameID == MOCK_JOIN_ROOM) {
 		for (nRoom.lastId = 0; nRoom.lastId < 4; nRoom.lastId++) {
 			nRoom.players.push({
@@ -149,6 +199,29 @@ export function mockCreateRoom(GameID: string) {
 		}
 
 		mockCreateChat(nRoom);
+	} else if (GameID == MOCK_PLAYING_ROOM) {
+		for (nRoom.lastId = 0; nRoom.lastId < 15; nRoom.lastId++) {
+			nRoom.players.push({
+				points: 0,
+				user: mockSocialDB.users[nRoom.lastId],
+				host: nRoom.lastId == 0,
+				colorid: nRoom.lastId % 10,
+			});
+
+			nRoom.chat.push({
+				useruid: mockSocialDB.users[nRoom.lastId].uid,
+				username: mockSocialDB.users[nRoom.lastId].username,
+				messageuid: crypto.randomUUID(),
+
+				type: "joined",
+			});
+		}
+
+		nRoom.status.phase = "playing_round";
+		nRoom.status.round = 5;
+		nRoom.status.keyTime = Date.now() - 5 * 1000;
+
+		mockCreateRounds(nRoom);
 	}
 
 	mockGameData[GameID] = nRoom;
@@ -182,7 +255,6 @@ export function mockGameAddPlayer(GameID: string) {
 	mockPlayerJoinRoom(GameID, mockSocialDB.users[data.lastId]);
 	data.lastId++;
 }
-
 export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 	const data: IMockGameData = mockGetGameData(GameID);
 	if (

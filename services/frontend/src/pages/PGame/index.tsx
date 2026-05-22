@@ -9,7 +9,9 @@ import type {
 	IGameData,
 	IGameDataRes,
 	IGamePlayer,
+	IGameRound,
 	IGameSettings,
+	IGameStatus,
 } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData } from "../../api/game";
@@ -38,6 +40,8 @@ function PGame() {
 	//GAME
 	const { gameid } = useParams();
 	const [gameData, setGameData] = useState<IGameData | undefined>();
+	const [status, setStatus] = useState<IGameStatus | undefined>();
+	const [rounds, setRounds] = useState<IGameRound[]>([]);
 
 	//Updatable Data
 	const [users, setUsers] = useState<IGamePlayer[]>([]);
@@ -61,6 +65,8 @@ function PGame() {
 			"GAME_ERROR_GLOBAL",
 			(data: IGameData | undefined) => {
 				if (!data) return;
+				setStatus(data.status);
+				setRounds(data.rounds);
 				setUsers(data.players);
 				setChat(data.chat);
 				setSettings(data.settings);
@@ -154,7 +160,7 @@ function PGame() {
 	}
 
 	//--------------------- LOADIN ---------------------
-	if (!gameData || !settings) {
+	if (!gameData || !settings || !status) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -197,6 +203,8 @@ function PGame() {
 				<Grid size={6}>
 					<PGameViews
 						onSettingsChanged={onSettingsChanged}
+						status={status}
+						rounds={rounds}
 						players={users}
 						game={gameData}
 						settings={settings}
