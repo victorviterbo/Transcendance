@@ -169,7 +169,6 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
 
 async def _start_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Start a game session / Begin the round loop."""
-    #await consumer.add_to_layer(consumer.game_group_name)
     if not getattr(consumer, 'current_game', None):
         await consumer.send_json({'target': 'game',
                             'event': 'error',
