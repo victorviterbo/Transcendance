@@ -35,7 +35,7 @@ class GameUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'uid',
             'genres',
-            'game_mode',
+            'mode',
             'num_tracks',
             'playback_duration',
             'break_duration',

@@ -155,7 +155,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'event': 'update_settings',
                     'uid': str(game.uid),
                     'genres': ['Rock'],
-                    'game_mode': 'speed',
+                    'mode': 'speed',
                     'num_tracks': 4,
                     'playback_duration': '10',
                     'break_duration': '5',

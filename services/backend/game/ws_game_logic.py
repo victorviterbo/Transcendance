@@ -225,14 +225,14 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
                                                         track_data)
                         
     if ((artist_correct or title_correct)
-        and consumer.current_game.game_mode == 'armagedon'):
+        and consumer.current_game.mode == 'armagedon'):
         await check_all_answers_received(consumer, consumer.current_game)
     
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     if artist_correct or title_correct:
-        if consumer.current_game.game_mode == 'armagedon':
-            # if game_mode is armagedon, send the response to everyone
+        if consumer.current_game.mode == 'armagedon':
+            # if mode is armagedon, send the response to everyone
             await consumer.group_send(consumer.game_group_name, {
                 'event': 'game_answer_correct',
                 'game': serialized_game,

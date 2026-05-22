@@ -262,7 +262,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'event': 'update_settings',
                     'uid': str(game.uid),
                     'genres': ['Pop', 'Rock'],
-                    'game_mode': 'speed',
+                    'mode': 'speed',
                     'num_tracks': 6,
                     'playback_duration': '20',
                     'break_duration': '05',
@@ -274,7 +274,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             self.assertEqual(response['target'], 'game')
             self.assertEqual(response['event'], 'settings_updated')
             self.assertEqual(response['settings']['genres'], ['Pop', 'Rock'])
-            self.assertEqual(response['settings']['game_mode'], 'speed')
+            self.assertEqual(response['settings']['mode'], 'speed')
             self.assertEqual(response['settings']['num_tracks'], 6)
             await communicator.disconnect()
 
@@ -282,7 +282,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
 
         game.refresh_from_db()
         self.assertEqual(game.genres, ['Pop', 'Rock'])
-        self.assertEqual(game.game_mode, 'speed')
+        self.assertEqual(game.mode, 'speed')
         self.assertEqual(game.num_tracks, 6)
         self.assertEqual(game.fuzzy_match, False)
         self.assertEqual(game.answer_public, True)

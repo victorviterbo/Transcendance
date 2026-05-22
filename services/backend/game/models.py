@@ -68,7 +68,7 @@ class Game(models.Model):
 
     answer_public = models.BooleanField(default=False)
 
-    game_mode = models.CharField(max_length=20,
+    mode = models.CharField(max_length=20,
                                 choices=[
                                     ('normal', 'GAME_MODE_NORMAL'),
                                     ('speed', 'GAME_MODE_SPEED'),
