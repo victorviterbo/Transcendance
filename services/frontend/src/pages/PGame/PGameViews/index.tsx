@@ -96,7 +96,13 @@ function PGameViews({
 				/>
 			)}
 			{currentView == ECurrentView.PLAYING && (
-				<PGameRound game={game} status={status} settings={settings} rounds={rounds} />
+				<PGameRound
+					game={game}
+					status={status}
+					settings={settings}
+					rounds={rounds}
+					players={players}
+				/>
 			)}
 		</CGamePaper>
 	);

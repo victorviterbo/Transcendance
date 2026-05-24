@@ -14,11 +14,18 @@ export interface IGameChatMsg {
 }
 
 //====================== PLAYER ======================
+export interface IGamePlayerRoundStatus {
+	lastestTime: number;
+	artistFound: boolean;
+	titleFound: boolean;
+}
+
 export interface IGamePlayer {
 	user: IExtUserInfo;
 	points: number;
 	host: boolean;
 	colorid: number;
+	current: IGamePlayerRoundStatus;
 }
 
 //====================== SETTINGS ======================
@@ -60,6 +67,7 @@ export interface IGameRound {
 	points: number;
 	time: number;
 	phase: TRoundPhase;
+	answers: IGamePlayerAnswer[];
 }
 
 //====================== COMMON ======================

@@ -137,7 +137,48 @@ function mockCreateRounds(Room: IMockGameData) {
 			points,
 			time: 0.0,
 			phase: i < Room.status.round ? "done" : Room.status.round == i ? "playing" : "not-done",
+			answers: [],
 		});
+	}
+}
+
+function mockCreateAnswers(Room: IMockGameData) {
+	Room.rounds[Room.status.round].answers.push({
+		message: "Joe dassin - coline",
+		time: 2.56,
+		titleFound: false,
+		artistFound: false,
+	});
+
+	Room.rounds[Room.status.round].answers.push({
+		message: "Gold - laisser moi",
+		time: 5,
+		titleFound: false,
+		artistFound: true,
+	});
+
+	Room.rounds[Room.status.round].answers.push({
+		message: "Joe dassin - Capitaine abandonné",
+		time: 15,
+		titleFound: true,
+		artistFound: false,
+	});
+
+	Room.rounds[Room.status.round].answers.push({
+		message: "Gold - Capitaine abandonné",
+		time: 20.589,
+		titleFound: true,
+		artistFound: true,
+	});
+}
+
+function mockCreateOtherDone(Room: IMockGameData) {
+	for (let i = 0; i < 3; i++) {
+		Room.players[i].current = {
+			lastestTime: 5.25 + 5.1 * i,
+			artistFound: i == 0 || i == 2,
+			titleFound: i == 0 || i == 1,
+		};
 	}
 }
 
@@ -187,6 +228,11 @@ export function mockCreateRoom(GameID: string) {
 				user: mockSocialDB.users[nRoom.lastId],
 				host: nRoom.lastId == 0,
 				colorid: nRoom.lastId % 10,
+				current: {
+					lastestTime: -1,
+					artistFound: false,
+					titleFound: false,
+				},
 			});
 
 			nRoom.chat.push({
@@ -206,6 +252,11 @@ export function mockCreateRoom(GameID: string) {
 				user: mockSocialDB.users[nRoom.lastId],
 				host: nRoom.lastId == 0,
 				colorid: nRoom.lastId % 10,
+				current: {
+					lastestTime: -1,
+					artistFound: false,
+					titleFound: false,
+				},
 			});
 
 			nRoom.chat.push({
@@ -222,6 +273,8 @@ export function mockCreateRoom(GameID: string) {
 		nRoom.status.keyTime = Date.now() - 5 * 1000;
 
 		mockCreateRounds(nRoom);
+		mockCreateAnswers(nRoom);
+		mockCreateOtherDone(nRoom);
 	}
 
 	mockGameData[GameID] = nRoom;
@@ -269,6 +322,11 @@ export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
 		user: User,
 		host: GameID == MOCK_HOST_ROOM && User.username == mockDefaultUsername,
 		colorid: data.lastId % 10,
+		current: {
+			lastestTime: -1,
+			artistFound: false,
+			titleFound: false,
+		},
 	});
 
 	console.log(
