@@ -1,4 +1,4 @@
-game-public-list:
+game:
   get:
     summary: List public games
     description: Return public games visible on the home page.
@@ -27,38 +27,6 @@ game-public-list:
                       playerCount: 0
                       playerMax: 16
 
-game-friends-list:
-  get:
-    summary: List friends games
-    description: Return friend games visible on the home page.
-    operationId: listFriendsGames
-    tags: [game]
-    security:
-      - bearerAuth: []
-    responses:
-      "200":
-        description: Friends game list
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/Game - GameListResponse
-            examples:
-              friends_rooms:
-                summary: Home friends rooms
-                value:
-                  rooms:
-                    - uid: "f860530f-0211-4548-8e98-31fea4f5f8cb"
-                      name: "Sarah's room"
-                      genres: ["TAG_ROCK"]
-                      playerCount: 3
-                      playerMax: 4
-                    - uid: "87de2119-1226-479c-9261-c3c4f4b04b31"
-                      name: "John's room"
-                      genres: ["TAG_RAP", "TAG_RNB"]
-                      playerCount: 1
-                      playerMax: 4
-
-game:
   post:
     summary: Create a new game
     description: Create a new game with the given name and visibility
@@ -139,6 +107,37 @@ game:
                 value:
                   error:
                     game: "ALREADY_IN_GAME"
+
+game-friends-list:
+  get:
+    summary: List friends games
+    description: Return friend games visible on the home page.
+    operationId: listFriendsGames
+    tags: [game]
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: Friends game list
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/Game - GameListResponse
+            examples:
+              friends_rooms:
+                summary: Home friends rooms
+                value:
+                  rooms:
+                    - uid: "f860530f-0211-4548-8e98-31fea4f5f8cb"
+                      name: "Sarah's room"
+                      genres: ["TAG_ROCK"]
+                      playerCount: 3
+                      playerMax: 4
+                    - uid: "87de2119-1226-479c-9261-c3c4f4b04b31"
+                      name: "John's room"
+                      genres: ["TAG_RAP", "TAG_RNB"]
+                      playerCount: 1
+                      playerMax: 4
 
 game-common:
   get:

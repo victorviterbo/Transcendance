@@ -54,8 +54,6 @@ paths:
     $ref: ./paths/stats.yaml#/leaderboard
   /api/stats/history:
     $ref: ./paths/stats.yaml#/history
-  /api/game/public:
-    $ref: ./paths/game.yaml#/game-public-list
   /api/game/friends:
     $ref: ./paths/game.yaml#/game-friends-list
   /api/game/:

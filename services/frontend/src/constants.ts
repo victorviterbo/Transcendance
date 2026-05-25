@@ -31,7 +31,7 @@ export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read";
 //GAME
 export const API_CREATE_GAME = "/api/game/";
 export const API_GAME_FRIENDS = "/api/game/friends/";
-export const API_GAME_PUBLIC = "/api/game/public/";
+export const API_GAME_PUBLIC = "/api/game/";
 export const API_GAME = "/api/game/{ROOMID}";
 
 // WS
