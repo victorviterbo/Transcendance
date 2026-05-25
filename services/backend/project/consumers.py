@@ -303,6 +303,17 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		})
 
 	# Game event handlers
+
+	async def global_error_mssg(self, event: dict) -> None:
+		"""Notify all players of an error."""
+		await self.send_json({
+			'target': 'game',
+			'event': 'player_joined',
+			'game': event.get('game'),
+			'self': LightProfileSerializer(self.profile).data,
+			'error_mssg': event.get('error_mssg')
+		})
+	
 	async def game_player_joined(self, event: dict) -> None:
 		"""Notify of a player joining the game room."""
 		await self.send_json({

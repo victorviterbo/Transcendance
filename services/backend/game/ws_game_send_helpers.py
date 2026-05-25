@@ -14,9 +14,9 @@ async def _send_track(consumer: 'GlobalConsumer',
     track = consumer.current_game.current_track
     if not track:
         await consumer.group_send(consumer.game_group_name,{
-                        'target': 'game',
-                        'event': 'error',
-                        'message': 'No track to send'
+                        'type': 'global_error_mssg',
+                        'game': serialized_game,
+                        'error_mssg': 'No track to send'
         })
         return
     event = {'type': 'game_round_start',

@@ -155,12 +155,12 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'event': 'update_settings',
                     'uid': str(game.uid),
                     'genres': ['Rock'],
-                    'mode': 'speed',
+                    'mode': 'armagedon',
                     'num_tracks': 4,
                     'playback_duration': '10',
                     'break_duration': '5',
                     'fuzzy_match': True,
-                    'answer_public': True,
+                    'answer_public': False,
                 }
             )
             settings = await expect_event(owner_socket, 'settings_updated')
@@ -176,7 +176,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             players = [owner_socket, challenger_socket]
             # ROUND 1 - No one answers
             print("################# ROUND 1 #################")
-            payloads = await play_round(players, [], owner_socket,True, False)
+            payloads = await play_round(players, [], owner_socket, False, True)
             self.assertTrue(payloads['end'])
             #print(json.dumps(payloads, indent=4))
             for i in range(len(players)):
@@ -194,11 +194,11 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                             'answer': 'Test Track 12',
                             'answer_time': 2,
                             },
-                 'expected_response': 'answer_correct',
+                 'expected_response': 'answer_validation',
                  'is_correct' : True
                 },
             ]
-            payloads = await play_round(players, answers, owner_socket,True, False)
+            payloads = await play_round(players, answers, owner_socket, False, True)
             #print(json.dumps(payloads, indent=4))
             # ROUND 3 - challenger gives right artist, and right title
             print("################# ROUND 3 #################")
@@ -210,7 +210,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                             'answer': 'Test Track 12',
                             'answer_time': 3,
                             },
-                 'expected_response': 'answer_correct',
+                 'expected_response': 'answer_validation',
                  'is_correct' : True
                 },
                 {'socket': challenger_socket,
@@ -220,11 +220,11 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                             'answer': 'Test Artist 12',
                             'answer_time': 3,
                             },
-                 'expected_response': 'answer_correct',
+                 'expected_response': 'answer_validation',
                  'is_correct' : True
                 },
             ]
-            payloads = await play_round(players, answers, owner_socket,True, False)
+            payloads = await play_round(players, answers, owner_socket, False, True)
             #print(json.dumps(payloads, indent=4))
             # ROUND 4
             print("################# ROUND 4 #################")
@@ -236,7 +236,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                             'answer': 'wrong answer...',
                             'answer_time': 1,
                             },
-                 'expected_response': 'answer_validation',
+                 'expected_response': 'answer_incorrect',
                  'is_correct' : False
                 },
                 {'socket': owner_socket,
@@ -246,7 +246,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                             'answer': 'Test Artist 12',
                             'answer_time': 3,
                             },
-                 'expected_response': 'answer_correct',
+                 'expected_response': 'answer_validation',
                  'is_correct' : True
                 },
                 {'socket': owner_socket,
@@ -256,11 +256,11 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                             'answer': 'Test Track 12',
                             'answer_time': 3,
                             },
-                 'expected_response': 'answer_correct',
+                 'expected_response': 'answer_validation',
                  'is_correct' : True
                 },
             ]
-            payloads = await play_round(players, answers, owner_socket,True, False)
+            payloads = await play_round(players, answers, owner_socket, False, True)
             #print(json.dumps(payloads, indent=4))
 
             #self.assertTrue(payloads['end']['is_last_round'])

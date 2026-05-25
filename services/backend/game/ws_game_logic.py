@@ -119,7 +119,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'event': 'error',
                                 'message': str(e)})
     except asyncio.CancelledError:
-        await consumer.group_send()
+        pass
     finally:
         ACTIVE_GAMES.pop(consumer.current_game.uid, None)
 
@@ -234,7 +234,7 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
         if consumer.current_game.mode == 'armagedon':
             # if mode is armagedon, send the response to everyone
             await consumer.group_send(consumer.game_group_name, {
-                'event': 'game_answer_correct',
+                'type': 'game_answer_correct',
                 'game': serialized_game,
                 'senderPlayer': serialized_player,
                 'answer': answer,

@@ -56,7 +56,10 @@ class UserRoundStats(models.Model):
 
     def save(self, *args: tuple, **kwargs: dict) -> None:
         """Update time to be the sum of time to find artist and title."""
-        self.time = (self.title_found_at + self.artist_found_at) / 2
+        if self.title_found and self.artist_found:
+            self.time = max(self.title_found_at, self.artist_found_at)
+        else:
+            self.time = -1
         super().save(*args, **kwargs)
 
 class UserGameStats(models.Model):
