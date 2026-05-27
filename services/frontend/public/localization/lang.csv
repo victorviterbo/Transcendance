@@ -47,6 +47,7 @@ PASSWORD_NUMBER,Include at least 1 number,Incluez au moins 1 chiffre,数字を1�
 PASSWORD_SPECIAL,Include at least 1 special character,Incluez au moins 1 caractère spécial,特殊文字を1つ以上含めてください,Shown when password has no special character
 PASSWORD_UPPERCASE,Include at least 1 uppercase letter,Incluez au moins 1 lettre majuscule,大文字を1つ以上含めてください,Shown when password has no uppercase
 PLAY_GAME,Play,Jouer,プレイ,Primary action to start
+FRIENDS,Friends,Amis,フレンド,Just the word friends
 PRIVATE,Private,Privée,非公開,Refers to a private room
 PROFILE_SETTINGS,Settings,Paramètres,設定,Shown in the user profile
 PROFILE_LOADING,Loading profile...,Chargement du profil...,プロフィールを読み込み中...,Shown while a profile is loading
@@ -280,3 +281,9 @@ GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
 GAME_ROUND_SPEED,Speed:,,,Label for the number of point for speeding
 GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
 SECONDS,{COUNT}s,,,Seconds suffix (If applicable)
+GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Code associated with a game room
+GAME_NAME,Room name,Nom de la salle,ルーム名,"Name of a game room, shown when creating one"
+CREATE_GAME,Create room,Créer la salle,ルームを作成,Shown on the button to create a game room
+CREATING_GAME,Creating...,Création...,ルームを作成中...,Shown on the button to create a game room when pressed
+GAME_CREATION_FAILED,Room creation failed,Échec de la création de la salle,ルームの作成に失敗しました,Shown when a game creation fails
+ALREADY_IN_GAME,You are already in a room!,Vous êtes déjà dans une salle !,すでにルームに参加しています,Shown when a user tries to join or create a game while already being in another one

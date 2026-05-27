@@ -3,6 +3,13 @@ import type { IErrorStruct } from "../types/error";
 import api from "./client";
 import type { ReactNode } from "react";
 import { getErrorNode } from "../utils/error";
+import { API_CREATE_GAME } from "../constants";
+import type { IGameCreationRequest, IGameCreationResponse } from "../types/game";
+
+export const createGame = async (payload: IGameCreationRequest): Promise<IGameCreationResponse> => {
+	const response = await api.post<IGameCreationResponse>(API_CREATE_GAME, payload);
+	return response.data;
+};
 
 export function gameCheckErrors<_RES_T extends { error?: IErrorStruct }, Key extends keyof _RES_T>(
 	res: AxiosResponse<_RES_T, unknown, {}>,

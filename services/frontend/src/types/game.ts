@@ -1,6 +1,18 @@
 import type { IErrorStruct } from "./error";
 import type { IExtUserInfo } from "./user";
 
+//====================== CREATE ======================
+export type TGameVisibility = "public" | "private" | "friends";
+
+export interface IGameCreationRequest {
+	name: string;
+	visibility: TGameVisibility;
+}
+
+export interface IGameCreationResponse {
+	uid: string;
+}
+
 //====================== CHAT ======================
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
 
