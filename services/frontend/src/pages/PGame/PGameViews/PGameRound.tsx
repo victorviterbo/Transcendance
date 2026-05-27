@@ -20,6 +20,7 @@ import CCounterCircular from "../../../components/feedback/loading/CCounterCircu
 import PGameRoundTracker from "./PGameRoundTracker";
 import PGameRoundAnswer from "./PGameRoundAnswer";
 import { PGameRoundStyle, type IGameRoundStyle } from "../../../styles/pages/game/PGameRoundStyle";
+import PGameRoundReveal from "./PGameRoundReveal";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
@@ -53,7 +54,6 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 	}, [rounds, status]);
 
 	const playerTimes = useMemo((): ReactNode[] => {
-		console.log(players);
 		const answeredPlayers = players.filter((player: IGamePlayer) => {
 			return (
 				(player.current.artistFound || player.current.titleFound) &&
@@ -90,14 +90,16 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 		>
 			<Box sx={style.progressBox}>
 				<Stack direction={"column"}>
-					<Stack direction={"row"}>
-						<CText>
+					<Stack direction={"row"} sx={{ alignItems: "center" }}>
+						<CText sx={{ m: 0, mr: "15px", textAlign: "center" }}>
 							{ttrfn("GAME_ROUND_INDICATOR", {
 								CURRENT: <span>{status.round + 1}</span>,
 								MAX: <span>{settings.nbMusic}</span>,
 							})}
 						</CText>
-						<Stack direction={"row"}>{roundHistory}</Stack>
+						<Stack direction={"row"} sx={{ flexWrap: "wrap" }}>
+							{roundHistory}
+						</Stack>
 					</Stack>
 					<PGameRoundTracker
 						settings={settings}
@@ -106,12 +108,14 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 					/>
 				</Stack>
 			</Box>
-			<Box></Box>
 			<Stack direction={"row"} sx={{ flex: 1, overflow: "hidden" }}>
 				<Stack
 					sx={{ flex: 0.7, my: "10px", p: "5px", overflowX: "hidden", overflowY: "auto" }}
 					direction={"column"}
 				>
+					<Box>
+						<PGameRoundReveal title={rounds[status.round].title}></PGameRoundReveal>
+					</Box>
 					<Grid container spacing={"5px"}>
 						{answerHistory}
 					</Grid>
@@ -141,7 +145,7 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 					</Stack>
 				</Stack>
 			</Stack>
-			<Stack direction={"row"}>
+			<Stack direction={"row"} sx={{ alignItems: "flex-start" }}>
 				<CTextField
 					sx={{ flex: 1, m: 0 }}
 					fontWeight={500}
@@ -160,12 +164,18 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 				></CTextField>
 				<CIconButton
 					//onClick={handleSendMessage}
-					sx={{ my: "auto", ml: "10px" }}
+					sx={{ ml: "5px", mr: "20px" }}
 					data-testid="PGameChat-SendButton"
 				>
 					<SendIcon fontSize="small" />
 				</CIconButton>
-				<CCounterCircular min={0} max={30} variant="determinate" value={25} />
+				<CCounterCircular
+					stackSx={{ transform: "translateY(-5px)" }}
+					min={0}
+					max={30}
+					variant="determinate"
+					value={25}
+				/>
 			</Stack>
 		</Stack>
 	);

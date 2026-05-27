@@ -279,3 +279,4 @@ GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
 GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
 GAME_ROUND_SPEED,Speed:,,,Label for the number of point for speeding
 GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
+SECONDS,{COUNT}s,,,Seconds suffix (If applicable)

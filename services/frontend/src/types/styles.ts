@@ -55,6 +55,8 @@ export interface IThemeColor {
 	greys: string[];
 	cancel: string[];
 	validate: string[];
+	white: string;
+	black: string;
 	text: IThemeTextColor;
 }
 

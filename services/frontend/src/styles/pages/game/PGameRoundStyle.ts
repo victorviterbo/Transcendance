@@ -70,7 +70,7 @@ export interface IGameRoundStateNodeStyle {
 
 export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNodeStyle => {
 	let bgColor = appColors.greys[7];
-	if (round.phase == "done") {
+	if (round.phase == "done" || round.phase == "break") {
 		if (round.points == 0) bgColor = appColors.cancel[0];
 		if (round.points == 5) bgColor = appColors.secondary[0];
 		if (round.points == 10) bgColor = appColors.primary[0];
@@ -78,13 +78,17 @@ export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNode
 
 	return {
 		main: {
-			height: "100%",
-			px: "10px",
+			width: "30px",
+			height: "30px",
+			ml: "4px",
+			mb: "5px",
 
 			justifyContent: "center",
 
 			backgroundColor: bgColor,
 			borderRadius: "100px",
+			border: round.phase == "playing" ? "solid 2px " + appColors.tertiary[0] : undefined,
+			boxShadow: round.phase == "done" ? "0px 2px 0px 0px white" : undefined,
 		},
 	};
 };
@@ -92,6 +96,30 @@ export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNode
 //--------------------------------------------------
 //                       TRACKER
 //--------------------------------------------------
+export interface IGameRoundTrackerStyle {
+	pinbox: SxProps<Theme>;
+	bar: SxProps<Theme>;
+}
+
+export const PGameRoundTrackerStyle = (): IGameRoundTrackerStyle => {
+	return {
+		pinbox: {
+			position: "relative",
+			height: "55px",
+		},
+		bar: {
+			height: "7px",
+			borderRadius: appSharedStyle.gameRadius,
+
+			background: appColors.greys[5],
+
+			"& .MuiLinearProgress-bar": {
+				borderRadius: appSharedStyle.gameRadius,
+			},
+		},
+	};
+};
+
 export interface IGameRoundTrackerPinStyle {
 	top: SxProps<Theme>;
 	bottom: SxProps<Theme>;
@@ -108,8 +136,8 @@ export const PGameRoundTrackerPinStyle = (): IGameRoundTrackerPinStyle => {
 		},
 		bottom: {
 			width: "3px",
-			height: "25px",
-			backgroundColor: appColors.primary[0],
+			height: "20px",
+			backgroundColor: appColors.primary[1],
 		},
 	};
 };
@@ -179,6 +207,38 @@ export const PGameRoundAnswerStyle = (
 			flex: 0.075,
 			zIndex: 1,
 			color: answer.titleFound ? appColors.greys[4] : appColors.primary[0],
+		},
+	};
+};
+
+//--------------------------------------------------
+//                       REVEAL
+//--------------------------------------------------
+export interface IGameRoundRevealStyle {
+	main: SxProps<Theme>;
+}
+
+export const PGameRoundRevealStyle = (): IGameRoundRevealStyle => {
+	const bgColors = [appColors.primary[1], appColors.tertiary[1]];
+
+	return {
+		main: {
+			mb: "10px",
+			py: "15px",
+			px: "20px",
+
+			position: "relative",
+
+			flexShrink: 0,
+
+			overflow: "hidden",
+			alignItems: "center",
+			justifyContent: "center",
+
+			background: colorGetBackground(bgColors, undefined, "linear", 305),
+
+			borderRadius: appSharedStyle.gameRadius,
+			//border: "solid 2px " + appColors.quinary[2]
 		},
 	};
 };

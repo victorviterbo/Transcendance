@@ -4,6 +4,11 @@ import type { IGameRound, IGameSettings, IGameStatus } from "../../../types/game
 import { timeGetElapse } from "../../../utils/time";
 import PGameRoundTrackerPin from "./PGameRoundTrackerPin";
 import type { GPageProps } from "../../common/GPageBases";
+import {
+	PGameRoundTrackerStyle,
+	type IGameRoundTrackerStyle,
+} from "../../../styles/pages/game/PGameRoundStyle";
+import { useMemo } from "react";
 
 interface PGameRoundTrackerProps extends GPageProps {
 	settings: IGameSettings;
@@ -12,11 +17,13 @@ interface PGameRoundTrackerProps extends GPageProps {
 }
 
 function PGameRoundTracker({ settings, status, round }: PGameRoundTrackerProps) {
-	console.log(round);
+	const style: IGameRoundTrackerStyle = useMemo(() => {
+		return PGameRoundTrackerStyle();
+	}, []);
 
 	return (
-		<Stack direction={"column"}>
-			<Box sx={{ position: "relative", height: "60px", mt: "10px" }}>
+		<Stack direction={"column"} sx={{ mb: "10px", mt: "20px" }}>
+			<Box sx={style.pinbox}>
 				<PGameRoundTrackerPin
 					type="artist"
 					percent={(round.artistFound / settings.timer) * 100}
@@ -27,6 +34,7 @@ function PGameRoundTracker({ settings, status, round }: PGameRoundTrackerProps) 
 				/>
 			</Box>
 			<CLinearProgress
+				sx={style.bar}
 				value={timeGetElapse(status.keyTime, "miliseconds") / 1000}
 				min={0}
 				max={settings.timer}

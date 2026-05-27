@@ -19,7 +19,9 @@ function PGameRoundStateNode({ round }: PGameRoundStateNodeProps) {
 
 	return (
 		<Stack sx={style.main}>
-			<CText size="2xs">{round.points}</CText>
+			<CText size="2xs" sx={{ textAlign: "center" }}>
+				{round.points}
+			</CText>
 		</Stack>
 	);
 }

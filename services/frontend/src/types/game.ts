@@ -59,9 +59,16 @@ export interface IGamePlayerAnswer {
 	artistFound: boolean;
 }
 
+export interface IGameTitle {
+	title?: string;
+	artist?: string;
+	preview: string;
+	artwork?: string;
+}
+
 export type TRoundPhase = "not-done" | "playing" | "break" | "done";
 export interface IGameRound {
-	previewLink: string;
+	title: IGameTitle;
 	titleFound: number;
 	artistFound: number;
 	points: number;

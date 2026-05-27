@@ -78,7 +78,7 @@ export function colorGetBackground(
 	colors: string | string[],
 	positions?: number[],
 	type?: "linear" | "radial",
-	angle?: number,
+	angle?: number | string,
 ): string {
 	if (typeof colors == "string") return colors;
 
@@ -92,7 +92,7 @@ export function colorGetBackground(
 	}
 
 	let finalStr = type + "-gradient(";
-	if (type == "linear") finalStr += angle + "deg";
+	if (type == "linear") finalStr += typeof angle == "string" ? angle : angle + "deg";
 	colors.forEach((item, index) => {
 		if (finalStr.lastIndexOf("(") != finalStr.length - 1) finalStr += ", ";
 		finalStr += item + " " + positions[index] + "%";

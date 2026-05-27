@@ -130,8 +130,14 @@ function mockCreateRounds(Room: IMockGameData) {
 		}
 
 		Room.rounds.push({
-			previewLink:
-				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/b6/a0/35b6a026-26bc-cfb1-30d3-9c3c1820c63f/mzaf_8281785747956416426.plus.aac.p.m4a",
+			title: {
+				title: "Capitain abandonné",
+				artist: "Gold",
+				preview:
+					"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/b6/a0/35b6a026-26bc-cfb1-30d3-9c3c1820c63f/mzaf_8281785747956416426.plus.aac.p.m4a",
+				artwork:
+					"https://a1.mzstatic.com/r40/Music211/v4/ed/e8/1c/ede81c4b-593d-913a-cfe4-3b12496f67e5/5021732254870.jpg",
+			},
 			titleFound,
 			artistFound,
 			points,
@@ -197,7 +203,7 @@ export function mockCreateRoom(GameID: string) {
 		name: GameID == MOCK_HOST_ROOM ? "John's own room" : "Sarah's room",
 		settings: {
 			tags: tags,
-			nbMusic: 20,
+			nbMusic: 15,
 			timer: 30,
 			breakTimer: 15,
 			seeOthers: true,

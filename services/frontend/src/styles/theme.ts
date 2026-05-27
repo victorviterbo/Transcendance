@@ -51,6 +51,9 @@ export const appColors: IThemeColor = {
 		"#191919",
 	],
 
+	white: "#ffffff",
+	black: "#000000",
+
 	text: {
 		dark: "#000",
 		light: "#fff",

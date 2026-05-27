@@ -9,6 +9,7 @@ import {
 	PGameRoundAnswerStyle,
 	type IGameRoundAnswerStyle,
 } from "../../../styles/pages/game/PGameRoundStyle";
+import { ttrf } from "../../../localization/localization";
 
 interface PGameRoundAnswerProps extends GPageProps {
 	answer: IGamePlayerAnswer;
@@ -27,7 +28,7 @@ function PGameRoundAnswer({ answer, variant }: PGameRoundAnswerProps) {
 				{answer.message}
 			</CText>
 			<CText size="2xs" sx={style.time}>
-				{Math.round(answer.time * 100) / 100}
+				{ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" })}
 			</CText>
 			<MicExternalOnIcon sx={style.artist} />
 			<AudiotrackIcon sx={style.title} />
