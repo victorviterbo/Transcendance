@@ -11,6 +11,9 @@ import { useNavigate } from "react-router-dom";
 import { createGame } from "../../api";
 import CText from "../../components/text/CText";
 import { getErrorMessage } from "../../utils/error";
+import LockIcon from "@mui/icons-material/Lock";
+import GroupsIcon from "@mui/icons-material/Groups";
+import PublicIcon from "@mui/icons-material/Public";
 
 function PCreateRoom() {
 	const [name, setName] = useState("");
@@ -57,9 +60,9 @@ function PCreateRoom() {
 						sx={{ height: appPositions.sizes.buttons.home }}
 						value={visibility}
 						options={[
-							{ value: "private", label: "PRIVATE" },
-							{ value: "friends", label: "FRIENDS" },
-							{ value: "public", label: "PUBLIC" },
+							{ value: "private", label: "PRIVATE", icon: <LockIcon /> },
+							{ value: "friends", label: "FRIENDS", icon: <GroupsIcon /> },
+							{ value: "public", label: "PUBLIC", icon: <PublicIcon /> },
 						]}
 						onValueChanged={(value) => {
 							if (value) setVisibility(value as TGameVisibility);

@@ -5,6 +5,9 @@ import { colorAlterColor } from "../../../utils/styles";
 const stripesIMG = "/imgs/shared/BG_Lines.png";
 
 export const CToggleButtonStyle: SxProps<Theme> = (_) => ({
+	display: "flex",
+	alignItems: "center",
+	gap: 0.75,
 	backgroundColor: appColors.tertiary[0],
 	color: appColors.text.light,
 	boxShadow: "0px 5px 0px 0px " + appColors.greys[0],
@@ -63,6 +66,10 @@ export const CToggleButtonStyle: SxProps<Theme> = (_) => ({
 
 	"& > *": {
 		zIndex: 1,
+	},
+
+	"& svg": {
+		fontSize: 18,
 	},
 
 	transition: (theme) => {

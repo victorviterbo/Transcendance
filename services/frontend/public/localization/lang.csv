@@ -283,7 +283,7 @@ GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanj
 SECONDS,{COUNT}s,,,Seconds suffix (If applicable)
 GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Code associated with a game room
 GAME_NAME,Room name,Nom de la salle,ルーム名,"Name of a game room, shown when creating one"
-CREATE_GAME,Create room,Créer la salle,ルームを作成,Shown on the button to create a game room
+CREATE_GAME,Create,Créer,ルームを作成,Shown on the button to create a game room
 CREATING_GAME,Creating...,Création...,ルームを作成中...,Shown on the button to create a game room when pressed
 GAME_CREATION_FAILED,Room creation failed,Échec de la création de la salle,ルームの作成に失敗しました,Shown when a game creation fails
 ALREADY_IN_GAME,You are already in a room!,Vous êtes déjà dans une salle !,すでにルームに参加しています,Shown when a user tries to join or create a game while already being in another one

@@ -30,6 +30,12 @@ export const CButtonStyle: SxProps<Theme> = (theme) => ({
 		color: theme.palette.grey[900],
 	},
 
+	"&.Mui-disabled": {
+		background: appColors.greys[6],
+		boxShadow: "0px 5px 0px 0px " + appColors.greys[4],
+		color: appColors.greys[0],
+	},
+
 	"&::before": appAnimation.bg.buttonHover?.active
 		? {
 				content: '""',
