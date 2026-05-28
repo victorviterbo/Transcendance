@@ -33,13 +33,12 @@ class GameUpdateSerializer(serializers.ModelSerializer):
         """Meta config for GameUpdateSerializer."""
         model = Game
         fields = [
-            'uid',
             'genres',
             'mode',
             'trackCount',
             'playbackDuration',
             'breakDuration',
-            'answer_public',
+            'reveal',
             'fuzzy',
         ]
         read_only_fields = ['name']

@@ -55,7 +55,7 @@ GameCreationRequest:
     fuzzy:
       type: boolean
       description: Whether to enable fuzzy matching for answers (optional)
-    answer_public:
+    reveal:
       type: boolean
       description: Whether answers should be public (optional)
 

@@ -54,7 +54,7 @@ async def _send_new_player(consumer: 'GlobalConsumer',
                             serialized_player: dict) -> None:
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_joined',
-        'game': serialized_game,
+        'uid': serialized_game.get('uid'),
         'player': serialized_player
     })
 

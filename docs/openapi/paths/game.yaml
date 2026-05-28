@@ -23,7 +23,7 @@ game-create:
                 breakDuration: 15
                 playbackDuration: 30
                 fuzzy: false
-                answer_public: true
+                reveal: true
             with_genres:
               summary: Game creation with genres
               value:
@@ -35,7 +35,7 @@ game-create:
                 breakDuration: 30
                 playbackDuration: 15
                 fuzzy: true
-                answer_public: false
+                reveal: false
             party_mode:
               summary: Public party setup
               value:
@@ -47,7 +47,7 @@ game-create:
                 breakDuration: 12
                 playbackDuration: 18
                 fuzzy: true
-                answer_public: true
+                reveal: true
     responses:
       "201":
         description: Game created successfully
@@ -258,7 +258,7 @@ game:
                 breakDuration: 10
                 playbackDuration: 10
                 fuzzy: false
-                answer_public: true
+                reveal: true
     responses:
       "201":
         description: Game created successfully
@@ -434,7 +434,7 @@ game-common:
               fuzzy:
                 type: boolean
                 description: Enable fuzzy answer matching
-              answer_public:
+              reveal:
                 type: boolean
                 description: Whether answers are visible to all players
           examples:
@@ -452,7 +452,7 @@ game-common:
                 breakDuration: 8
                 playbackDuration: 12
                 fuzzy: false
-                answer_public: true
+                reveal: true
             chill_long_session:
               summary: Relaxed long session
               value:
@@ -463,7 +463,7 @@ game-common:
                 breakDuration: 20
                 playbackDuration: 25
                 fuzzy: true
-                answer_public: false
+                reveal: false
     responses:
       "200":
         description: Game updated

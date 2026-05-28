@@ -254,7 +254,7 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
                 'is_correct': True,
             })
     else:
-        if consumer.current_game.answer_public:
+        if consumer.current_game.reveal:
             #Broadcast wrong answer to everyone
             await consumer.group_send(consumer.game_group_name, {
                 'type': 'game_answer_incorrect',
@@ -305,7 +305,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
     settings_data = await _get_game_settings_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_settings_updated',
-        'game': serialized_game,
+        'uid': serialized_game.get('uid'),
         'settings': settings_data,
     })
 

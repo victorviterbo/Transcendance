@@ -319,7 +319,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		await self.send_json({
 			'target': 'game',
 			'event': 'player_joined',
-			'game': event.get('game'),
+			'uid': event.get('uid'),
 			'self': LightProfileSerializer(self.profile).data,
 			'player': event.get('player')
 		})
@@ -329,7 +329,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		await self.send_json({
 			'target': 'game',
 			'event': 'settings_updated',
-			'game': event.get('game'),
+			'uid': event.get('uid'),
 			'self': LightProfileSerializer(self.profile).data,
 			'settings': event.get('settings', {}),
 		})

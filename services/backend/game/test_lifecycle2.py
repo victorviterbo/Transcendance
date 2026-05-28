@@ -160,7 +160,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'playbackDuration': '10',
                     'breakDuration': '5',
                     'fuzzy': True,
-                    'answer_public': False,
+                    'reveal': False,
                 }
             )
             settings = await expect_event(owner_socket, 'settings_updated')

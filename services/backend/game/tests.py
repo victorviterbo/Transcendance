@@ -267,7 +267,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'playbackDuration': '20',
                     'breakDuration': '05',
                     'fuzzy': False,
-                    'answer_public': True,
+                    'reveal': True,
                 }
             )
             response = await communicator.receive_json_from()
@@ -285,7 +285,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
         self.assertEqual(game.mode, 'speed')
         self.assertEqual(game.trackCount, 6)
         self.assertEqual(game.fuzzy, False)
-        self.assertEqual(game.answer_public, True)
+        self.assertEqual(game.reveal, True)
 
     def test_websocket_settings_validation_error_is_structured(self) -> None:
         """Invalid settings over websocket should return the normalized error format."""
