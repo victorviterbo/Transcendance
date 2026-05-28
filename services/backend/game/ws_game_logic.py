@@ -11,6 +11,7 @@ from rest_framework import serializers
 
 from game.models import Game
 from game.services import format_validation_errors
+from chat.ws_game_chat import add_gameroom_participant, send_join_chatroom
 
 from .ws_game_db_helpers import (
     _add_player_to_game_stats,
@@ -194,9 +195,11 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
                             'message': 'Failed to join game'})
         return
     await consumer.add_to_layer(consumer.game_group_name)
+    await add_gameroom_participant(consumer.current_game, consumer.profile)
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     owner_channel = f"user_{serialized_game['owner']['uid']}"
+    await send_join_chatroom(consumer) #linked game and chat room 
     await _send_new_player(consumer, serialized_game, serialized_player, owner_channel)
     return
 

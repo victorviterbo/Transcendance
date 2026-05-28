@@ -2,6 +2,7 @@
 
 import uuid
 
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from friends.models import Friendship
 from rest_framework import serializers, status
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from stats.models import UserGameStats
 
+from chat.ws_game_chat import create_gamechat_room
 from game.models import Game
 
 from .serializers import (
@@ -36,10 +38,14 @@ class GeneralGameView(APIView):
 			return Response({'error': {'profile': 'PROFILE_NOT_FOUND'}},
 							status=status.HTTP_400_BAD_REQUEST)
 		try:
-			new_game_serializer = GameCreationSerializer(data=request.data)
-			new_game_serializer.is_valid(raise_exception=True)
-			new_game = new_game_serializer.save(owned_by=request.profile)
-			UserGameStats.objects.create(game=new_game, player=request.profile)
+			with transaction.atomic(): #atomic make sure game and room created succefuly bfr websocket join
+				new_game_serializer = GameCreationSerializer(data=request.data)
+				new_game_serializer.is_valid(raise_exception=True)
+				new_game = new_game_serializer.save(owned_by=request.profile)
+				room = create_gamechat_room(new_game)
+				new_game.room = room
+				new_game.save(update_fields=['room'])
+				UserGameStats.objects.create(game=new_game, player=request.profile)
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:
