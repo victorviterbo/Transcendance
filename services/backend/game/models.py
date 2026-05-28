@@ -47,7 +47,7 @@ class Game(models.Model):
                                     ],
                                     default='waiting')
     
-    playback_duration = models.FloatField(
+    playbackDuration = models.FloatField(
         null=True,
         blank=True,
         default=30,
@@ -57,7 +57,7 @@ class Game(models.Model):
         ],
     )
 
-    break_duration = models.FloatField(null=True,
+    breakDuration = models.FloatField(null=True,
                                         blank=True,
                                         default=10,
                                         validators=[
@@ -72,7 +72,7 @@ class Game(models.Model):
                                 choices=[
                                     ('normal', 'GAME_MODE_NORMAL'),
                                     ('speed', 'GAME_MODE_SPEED'),
-                                    ('armagedon', 'GAME_MODE_ARMAGEDON'),
+                                    ('armageddon', 'GAME_MODE_ARMAGEDDON'),
                                     ],
                                 default='normal')
     
@@ -84,7 +84,7 @@ class Game(models.Model):
                                         blank=True,
                                         related_name='current_in_games')
     
-    num_tracks = models.PositiveIntegerField(
+    trackCount = models.PositiveIntegerField(
         default=5,
         validators=[MinValueValidator(1), MaxValueValidator(100)],
     )
@@ -101,12 +101,12 @@ class Game(models.Model):
     visibility = models.CharField(max_length=20,
                                 choices=[
                                     ('public', 'PUBLIC'),
-                                    ('friends_only', 'FRIENDS_ONLY'),
-                                    ('invite_only', 'INVITE_ONLY'),
+                                    ('friends', 'FRIENDS'),
+                                    ('private', 'PRIVATE'),
                                     ],
                                 )
 
-    fuzzy_match = models.BooleanField(default=True)
+    fuzzy = models.BooleanField(default=True)
 
     owned_by = models.ForeignKey(Profile,
                                 on_delete=models.SET_NULL,

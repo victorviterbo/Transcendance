@@ -48,7 +48,7 @@ genres_to_label = {
 }
 
 default_pts = {
-    'armagedon': {
+    'armageddon': {
         'both': 10,
         'artist': 4,
         'title': 4

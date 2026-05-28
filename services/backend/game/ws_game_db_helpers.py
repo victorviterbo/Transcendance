@@ -51,7 +51,7 @@ def _setup_game_assets(game: Game) -> None:
 				code='MISSING_FIELD_GENRE',
 			)
 
-	tracks_per_genre = game.num_tracks // len(game.genres)
+	tracks_per_genre = game.trackCount // len(game.genres)
 	all_tracks = list()
 	for genre in game.genres:
 		genre_tracks = list(
@@ -63,7 +63,7 @@ def _setup_game_assets(game: Game) -> None:
 				code='NOT_ENOUGH_TRACKS_GENRE',
 			)
 		all_tracks.extend(genre_tracks)
-	if not len(all_tracks) == game.num_tracks:
+	if not len(all_tracks) == game.trackCount:
 		raise serializers.ValidationError(
 			'Error in playlist creation process',
 			code='NO_TRACKS_FOUND',
@@ -156,7 +156,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_artist) >= 80
-		and consumer.current_game.fuzzy_match)
+		and consumer.current_game.fuzzy)
 				or player_answer == track_artist):
 				player_stats.artist_found = True
 				player_stats.artist_found_at = time
@@ -165,7 +165,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
-		and consumer.current_game.fuzzy_match)
+		and consumer.current_game.fuzzy)
 				or player_answer == track_title):
 				player_stats.title_found = True
 				player_stats.title_found_at = time
@@ -201,18 +201,18 @@ def _compute_round_stats(game: Game) -> None:
 	"""Collect and store game statistics after a round finishes."""
 	stats = UserRoundStats.objects.filter(round__round_number=game.current_round,
 										round__game=game)
-	if game.mode == 'armagedon':
+	if game.mode == 'armageddon':
 		first_artist = stats.filter(artist_found=True).order_by('artist_found_at').first()
 		first_title = stats.filter(title_found=True).order_by('title_found_at').first()
 		if first_artist and first_title and first_artist.player == first_title.player:
-			first_artist.xp_earned += default_pts['armagedon']['both']
+			first_artist.xp_earned += default_pts['armageddon']['both']
 			first_artist.save(update_fields=['xp_earned'])
 		else:
 			if first_artist:
-				first_artist.xp_earned += default_pts['armagedon']['artist']
+				first_artist.xp_earned += default_pts['armageddon']['artist']
 				first_artist.save(update_fields=['xp_earned'])
 			if first_title:
-				first_title.xp_earned += default_pts['armagedon']['title']
+				first_title.xp_earned += default_pts['armageddon']['title']
 				first_title.save(update_fields=['xp_earned'])
 	elif game.mode == 'speed':
 		xp_to_add = {}

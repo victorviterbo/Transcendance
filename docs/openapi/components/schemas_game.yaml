@@ -38,21 +38,21 @@ GameCreationRequest:
       description: Game mode (optional)
     public_level:
       type: string
-      description: Privacy level of the game (required) - public, friends_only, or invite_only
-    num_tracks:
+      description: Privacy level of the game (required) - public, friends, or private
+    trackCount:
       type: integer
       minimum: 1
       maximum: 100
       description: Number of tracks to include in the game (optional)
-    break_duration:
+    breakDuration:
       type: integer
       description: Duration of break between rounds in seconds (optional)
-    playback_duration:
+    playbackDuration:
       type: integer
       minimum: 5
       maximum: 30
       description: Duration for track playback in seconds (optional)
-    fuzzy_match:
+    fuzzy:
       type: boolean
       description: Whether to enable fuzzy matching for answers (optional)
     answer_public:

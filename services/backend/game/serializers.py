@@ -36,11 +36,11 @@ class GameUpdateSerializer(serializers.ModelSerializer):
             'uid',
             'genres',
             'mode',
-            'num_tracks',
-            'playback_duration',
-            'break_duration',
+            'trackCount',
+            'playbackDuration',
+            'breakDuration',
             'answer_public',
-            'fuzzy_match',
+            'fuzzy',
         ]
         read_only_fields = ['name']
 

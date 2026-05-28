@@ -89,7 +89,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         await _send_start_signal(consumer, serialized_game)
         buffer_time = countdown_time + answer_buffer_time
         await asyncio.sleep(buffer_time)
-        for round in range(1, consumer.current_game.num_tracks + 1):
+        for round in range(1, consumer.current_game.trackCount + 1):
             ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].clear()
             await _set_current_round(consumer.current_game, round)
             await _init_round_stats(consumer.current_game)
@@ -102,7 +102,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
             with suppress(TimeoutError):
                 await asyncio.wait_for(
                     ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].wait(),
-                    timeout=consumer.current_game.playback_duration
+                    timeout=consumer.current_game.playbackDuration
                         + buffer_time
                 )
             round_stats = await _compute_round_stats(consumer.current_game)
@@ -111,7 +111,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                                     round_stats,
                                     serialized_game,
                                     serialized_track_full)
-            await asyncio.sleep(consumer.current_game.break_duration)
+            await asyncio.sleep(consumer.current_game.breakDuration)
         game_stats = await _compute_game_stats(consumer.current_game)
         await _send_game_stats(consumer, game_stats, serialized_game)
     except serializers.ValidationError as e:
@@ -225,14 +225,14 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
                                                         track_data)
                         
     if ((artist_correct or title_correct)
-        and consumer.current_game.mode == 'armagedon'):
+        and consumer.current_game.mode == 'armageddon'):
         await check_all_answers_received(consumer, consumer.current_game)
     
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     if artist_correct or title_correct:
-        if consumer.current_game.mode == 'armagedon':
-            # if mode is armagedon, send the response to everyone
+        if consumer.current_game.mode == 'armageddon':
+            # if mode is armageddon, send the response to everyone
             await consumer.group_send(consumer.game_group_name, {
                 'type': 'game_answer_correct',
                 'game': serialized_game,

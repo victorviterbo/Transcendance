@@ -107,7 +107,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                                 player_answer: list,
                                 owner: dict,
                                 public: bool=False,
-                                armagedon: bool=False
+                                armageddon: bool=False
 								) -> dict:
                 payloads = {'start': [],
                             'in_game': [],
@@ -117,7 +117,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     payloads['start'].append(payload)
                 for answers in player_answer:
                     await answers['socket'].send_json_to(answers['payload'])
-                    if (answers['is_correct'] and armagedon) or (not answers['is_correct'] and public):
+                    if (answers['is_correct'] and armageddon) or (not answers['is_correct'] and public):
                         for p in players:
                             payload = await expect_event(p, answers['expected_response'])
                             payloads['in_game'].append(payload)
@@ -155,11 +155,11 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'event': 'update_settings',
                     'uid': str(game.uid),
                     'genres': ['Rock'],
-                    'mode': 'armagedon',
-                    'num_tracks': 4,
-                    'playback_duration': '10',
-                    'break_duration': '5',
-                    'fuzzy_match': True,
+                    'mode': 'armageddon',
+                    'trackCount': 4,
+                    'playbackDuration': '10',
+                    'breakDuration': '5',
+                    'fuzzy': True,
                     'answer_public': False,
                 }
             )

@@ -73,11 +73,11 @@ class GameTestDataMixin:
                 preview_url='https://example.com/track.mp3',
             )
         """game.genres = ['Pop']
-        game.num_tracks = 1
-        game.playback_duration = 5
-        game.break_duration = 0
+        game.trackCount = 1
+        game.playbackDuration= 5
+        game.breakDuration= 0
         game.save(
-            update_fields=['genres', 'num_tracks', 'playback_duration', 'break_duration']
+            update_fields=['genres', 'trackCount', 'playbackDuration', 'breakDuration']
         )"""
         #_setup_game_assets(game)
 
@@ -152,7 +152,7 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
         )
         private_game = Game.objects.create(
             name='Friends Match',
-            visibility='friends_only',
+            visibility='friends',
             owned_by=self.owner.profile,
         )
 
@@ -163,7 +163,7 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
         self.assertNotIn(str(private_game.uid), returned_uids)
 
     def test_friends_endpoint_returns_only_friends_owned_games(self) -> None:
-        """Friends listing should include only friends' friends_only games."""
+        """Friends listing should include only friends' friends games."""
         Friendship.objects.create(
             from_user=self.owner,
             to_user=self.friend,
@@ -171,12 +171,12 @@ class GameHTTPViewTests(GameTestDataMixin, APITestCase):
         )
         friend_game = Game.objects.create(
             name='Friend Match',
-            visibility='friends_only',
+            visibility='friends',
             owned_by=self.friend.profile,
         )
         stranger_game = Game.objects.create(
             name='Stranger Match',
-            visibility='friends_only',
+            visibility='friends',
             owned_by=self.stranger.profile,
         )
         login_url = '/api/auth/login/'
@@ -263,10 +263,10 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                     'uid': str(game.uid),
                     'genres': ['Pop', 'Rock'],
                     'mode': 'speed',
-                    'num_tracks': 6,
-                    'playback_duration': '20',
-                    'break_duration': '05',
-                    'fuzzy_match': False,
+                    'trackCount': 6,
+                    'playbackDuration': '20',
+                    'breakDuration': '05',
+                    'fuzzy': False,
                     'answer_public': True,
                 }
             )
@@ -275,7 +275,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             self.assertEqual(response['event'], 'settings_updated')
             self.assertEqual(response['settings']['genres'], ['Pop', 'Rock'])
             self.assertEqual(response['settings']['mode'], 'speed')
-            self.assertEqual(response['settings']['num_tracks'], 6)
+            self.assertEqual(response['settings']['trackCount'], 6)
             await communicator.disconnect()
 
         async_to_sync(scenario)()
@@ -283,8 +283,8 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
         game.refresh_from_db()
         self.assertEqual(game.genres, ['Pop', 'Rock'])
         self.assertEqual(game.mode, 'speed')
-        self.assertEqual(game.num_tracks, 6)
-        self.assertEqual(game.fuzzy_match, False)
+        self.assertEqual(game.trackCount, 6)
+        self.assertEqual(game.fuzzy, False)
         self.assertEqual(game.answer_public, True)
 
     def test_websocket_settings_validation_error_is_structured(self) -> None:
