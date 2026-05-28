@@ -11,6 +11,7 @@ from channels.generic.websocket import (
 from chat.chat_utils import accepted_friendship, create_direct_room
 from chat.models import Message, Room
 from chat.serializers import FriendChatMessageSerializer
+from chat.ws_game_chat import broadcast_message, chat_message_payload
 from chat.ws_direct_message import (
 	get_recipient_profile,
 	handle_chat_payload,
@@ -42,6 +43,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		self.active_layers = set()
 		self.group_name = None
 		self.game = None
+		self.current_game = None
 		self.game_group_name = None
 		self.open_chat_recipient = set() # tracker when frontend sends open/close so can mark as seen
 	
@@ -162,15 +164,10 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 						message.uid,
 						message.room.uid)
 
-			await self.group_send(f'user_{self.profile.uid}', {
-				'type': 'chat.message',
-				'message_uid': str(message.uid),
-				'message': message.body,
-				'sender': self._sender_name(),
-				'created': message.created.isoformat(),
-				'delivered': message.delivered,
-				'seen': message.seen,
-			})
+			if self.current_game and not message.room.is_direct:
+				await broadcast_message(self, message)
+			else:
+				await self.group_send(f'user_{self.profile.uid}', chat_message_payload(message, self._sender_name()))
 			return
 		elif event == 'direct-message':
 			body = str(content.get('message', '')).strip()
@@ -211,15 +208,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 						recipient_profile.id,
 						message.uid)
 
-			event_payload = {
-				'type': 'chat.message',
-				'message_uid': str(message.uid),
-				'message': message.body,
-				'sender': self._sender_name(),
-				'created': message.created.isoformat(),
-				'delivered': message.delivered,
-				'seen': message.seen,
-			}
+			event_payload = chat_message_payload(message, self._sender_name())
 			await self.group_send(f'user_{recipient_profile.uid}', event_payload)
 			await self.group_send(f'user_{self.profile.uid}', event_payload)
 
@@ -273,13 +262,14 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		return Profile.objects.filter(uid=profile_uid).first()
 
 	async def chat_message(self, event: dict) -> None:
-		"""Forward a chat message event to the connected client."""
+		"""Forward a chat message event to the connected client.
+		So its final output formattes for each connected socket"""
 		await self.send_json({
 			'type': 'chat_message',
 			'group': self.group_name,
 			'sender': event['sender'],
 			'message': event['message'],
-			'message_id': event.get('message_id'),
+			'message_uid': event.get('message_uid'),
 			'created': event.get('created'),
 			'delivered': event.get('delivered'),
 			'seen': event.get('seen'),
@@ -518,6 +508,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			if content.get('room_uid'):
 				room = Room.objects.filter(uid=content['room_uid']).first()
 				self.room = room
+			elif getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
+				room = self.current_game.room
+				self.room = room
 			elif self.room:
 				room = self.room
 			else:
@@ -531,7 +524,13 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			return False, {'type': 'error',
 						   'message': 'An unexpected error occured'}
 		if not room.participants.filter(uid=self.profile.uid).exists():
-			return False, {'type': 'error',
+			is_game_room = (
+				not room.is_direct
+				and getattr(self, 'current_game', None) is not None
+				and getattr(self.current_game, 'room_id', None) == room.id
+			)
+			if not is_game_room:
+				return False, {'type': 'error',
 						   'message': 'Not a chat member'}
 		message = Message.objects.create(
 			sender_profile=self.profile,

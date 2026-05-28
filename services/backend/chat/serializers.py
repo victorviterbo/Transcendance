@@ -1,16 +1,9 @@
-"""This module implements the serialization the backend.
-
-After validation if needed, it converts different python objects
-to JSON and vice-versa, namely:
-    - Room
-"""
+"""Implements the serialization the backend. it converts different python objects to JSON """
 
 from rest_framework import serializers
 
 from userprofile.serializers import LightProfileSerializer
-
 from .models import Message, Room
-
 
 class RoomSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""
@@ -47,6 +40,23 @@ class MessageSerializer(serializers.ModelSerializer):
                   'updated',
                   'created',
                   'uid']
+
+
+class RoomHistorySerializer(serializers.ModelSerializer):
+    """Serialize persisted game room messages for history replay."""
+    sender_profile = LightProfileSerializer(read_only=True)
+    class Meta:
+        """Define the message fields exposed to history consumers from game players."""
+
+        model = Message
+        fields = [
+            'sender_profile',
+            'body',
+            'delivered',
+            'seen',
+            'created',
+            'uid',
+        ]
 
 class FriendChatMessageSerializer(serializers.Serializer):
     """Serialize a direct-message `Message` into the frontend friend-chat contract.

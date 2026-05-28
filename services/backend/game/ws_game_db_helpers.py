@@ -80,12 +80,14 @@ def _setup_game_assets(game: Game) -> None:
 	)
 	playlist.tracks.set(all_tracks)
 
-	room_uid = uuid.uuid4()
-	room = Room.objects.create(
-		name=f"Chat Room - {game.uid}",
-		is_direct=False,
-		uid=room_uid,
-	)
+	if getattr(game, 'room', None):# reuse existing room if already created at HTTP creation
+		room = game.room
+	else:
+		room_uid = uuid.uuid4()
+		room, _created = Room.objects.get_or_create(
+			name=f"Chat Room - {game.uid}",
+			defaults={'is_direct': False, 'uid': room_uid},
+		)
 	game.playlist = playlist
 	game.current_track = all_tracks[0]
 	game.room = room

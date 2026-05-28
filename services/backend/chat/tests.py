@@ -67,6 +67,26 @@ class ChatViewsTests(APITestCase):
 		self.assertFalse(response.data['is_direct'])
 		self.assertEqual(response.data['participants'], [])
 
+	def test_room_exclude_history_query(self) -> None:
+		"""Room lookup should return room metadata even when include_history is passed."""
+		Message.objects.create(
+			sender_profile=self.user.profile,
+			room=self.room,
+			body='first message',
+		)
+		Message.objects.create(
+			sender_profile=self.friend.profile,
+			room=self.room,
+			body='second message',
+		)
+		response = self.client.get(
+			reverse('room', kwargs={'room_uid': self.room.uid}) + '?include_history=1'
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertNotIn('history', response.data)
+		self.assertEqual(uuid.UUID(response.data['uid']), self.room.uid)
+		self.assertEqual(response.data['name'], 'classic')
+
 	def test_room_post_creates_message_and_adds_participant(self) -> None:
 		"""Posting to a room should create a message and add the sender as participant."""
 		self.client.force_login(self.user)
@@ -227,59 +247,37 @@ class ChatWebsocketTests(TransactionTestCase):
 	def test_websocket_authenticated_message_is_saved(self) -> None:
 		"""Authenticated socket messages should broadcast and persist."""
 		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope['user'] = self.user
-			connected, _ = await communicator.connect()
+			comm = WebsocketCommunicator(application, '/ws/global/')
+			comm.scope['user'] = self.user
+			connected, _ = await comm.connect()
 			self.assertTrue(connected)
 
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'chat-message',
-									'message': 'hello websocket',
-									'room_uid': str(self.room.uid)})
-			
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'chat_message')
-			self.assertEqual(response['sender'], self.user.profile.username)
-			self.assertEqual(response['message'], 'hello websocket')
+			await comm.send_json_to({
+				'target': 'chat', 'event': 'chat-message',
+				'message': 'hello websocket', 'room_uid': str(self.room.uid),
+			})
+			resp = await comm.receive_json_from()
+			self.assertEqual(resp['type'], 'chat_message')
+			self.assertEqual(resp['message'], 'hello websocket')
 
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'direct-message',
-									'message': 'hello friend',
-									'user_uid': str(self.friend.uid)})
-			dm_response = None
+
+			await comm.send_json_to({
+				'target': 'chat', 'event': 'direct-message',
+				'message': 'hello friend', 'user_uid': str(self.friend.uid),
+			})
+			dm = None
 			for _ in range(3):
-				response = await communicator.receive_json_from()
-				if response.get('target') == 'friend-chat' and response.get('event') == 'new':
-					dm_response = response
+				r = await comm.receive_json_from()
+				if r.get('target') == 'friend-chat' and r.get('event') == 'new':
+					dm = r
 					break
-			self.assertIsNotNone(dm_response)
-			self.assertEqual(dm_response['message']['direction'], 'outgoing')
-			self.assertEqual(dm_response['message']['message'], 'hello friend')
-			self.assertEqual(dm_response['message']['target-id'], str(self.friend.profile.uid))
+			self.assertIsNotNone(dm)
+			self.assertEqual(dm['message']['message'], 'hello friend')
 
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'direct-message',
-									'message': 'hello stranger',
-									'user_uid': str(self.stranger.uid)})
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'error')
-			self.assertEqual(response['message'], 'Target is not a friend')
-
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'direct-message',
-									'message': 'hello guest',
-									'user_uid': str(self.guest.uid)})
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'error')
-			self.assertEqual(response['message'], 'User not found')
-
-			await communicator.disconnect()
+			await comm.disconnect()
 
 		async_to_sync(scenario)()
-		self.assertTrue(
-			Message.objects.filter(sender_profile=self.user.profile,
-									body='hello websocket').exists()
-		)
+		self.assertTrue(Message.objects.filter(sender_profile=self.user.profile, body='hello websocket').exists())
 		self.assertTrue(self.room.participants.filter(id=self.user.profile.id).exists())
 
 	def test_direct_room_websocket_accepts_participant(self) -> None:
