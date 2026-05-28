@@ -21,6 +21,7 @@ import PGameRoundTracker from "./PGameRoundTracker";
 import PGameRoundAnswer from "./PGameRoundAnswer";
 import { PGameRoundStyle, type IGameRoundStyle } from "../../../styles/pages/game/PGameRoundStyle";
 import PGameRoundReveal from "./PGameRoundReveal";
+import CVolumeSilder from "../../../components/inputs/slider/CVolumeSilder";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
@@ -176,6 +177,7 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 					variant="determinate"
 					value={25}
 				/>
+				<CVolumeSilder></CVolumeSilder>
 			</Stack>
 		</Stack>
 	);
