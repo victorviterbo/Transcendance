@@ -177,7 +177,7 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 					variant="determinate"
 					value={25}
 				/>
-				<CVolumeSilder></CVolumeSilder>
+				<CVolumeSilder onVolumeChanged={(_) => {}}></CVolumeSilder>
 			</Stack>
 		</Stack>
 	);

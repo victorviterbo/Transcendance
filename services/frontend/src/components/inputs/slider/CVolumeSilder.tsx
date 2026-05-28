@@ -12,7 +12,7 @@ interface CVolumeSilderProps extends GCompProps {
 	onVolumeChanged: (volume: number) => void;
 }
 
-function CVolumeSilder() {
+function CVolumeSilder({onVolumeChanged}: CVolumeSilderProps) {
 
 	const [volume, setVolume] = useState<number>(50);
 
@@ -24,6 +24,7 @@ function CVolumeSilder() {
 						if (finalValue < 0) finalValue = 0;
 						else if (finalValue > 100) finalValue = 100;
 						setVolume(finalValue);
+						onVolumeChanged(finalValue);
 					}}></CSlider>
 		{volume == 0 && <VolumeOffIcon sx={{color: appColors.cancel[0]}} />}
 		{volume > 0 && volume <= 25 && <VolumeMuteIcon/>}
