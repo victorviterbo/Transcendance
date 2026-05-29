@@ -268,10 +268,11 @@ GAME_SETTINGS_MUSIC_TIMER,Music timer: {COUNT}s,,,INformations about the time al
 GAME_SETTINGS_BREAK_TIMER,Break timer: {COUNT}s,,,INformations about the time btw Rounds (in seconds)
 GAME_SETTINGS_SEE_OTHERS,See others answer: ,,,Setting to display other people answers in the chat
 GAME_SETTINGS_FUZZY,Fuzzy match: ,,,Allow fuzzy match for answer
+GAME_SETTINGS_NOTAG,No tag,,,Used when no tag has been set
 GAME_SETTINGS_SCORE_OPTION,Score options: ,,,Scoring system option title
 GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,,,Scoring system option (Speed: option)
 GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,,,Scoring system option (Speed: Normal)
-GAME_SETTINGS_SCORE_OPTION_ARMA,Armagedon,,,Scoring system option (Speed: Armagedon)
+GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armagedon,,,Scoring system option (Speed: Armagedon)
 GAME_SETTINGS_CODE,Code: ,,,Title placed before the code
 GAME_SETTINGS_CB,Copy to clipboard,,,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,,,Button to copy to the clipboard (when pressed)

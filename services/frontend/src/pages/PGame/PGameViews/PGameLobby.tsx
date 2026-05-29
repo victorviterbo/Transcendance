@@ -34,8 +34,14 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 
 	//====================== COMPONENTS ======================
 	const genreTags: ReactNode[] = useMemo(() => {
+		if(!settings.tags)
+			return [<CText key={"no_tag"} sx={PGameLobbyTagStyle}>
+						GAME_SETTINGS_NOTAG
+					</CText>]
 		const out: ReactNode[] = Object.keys(settings.tags)
 			.filter((key: string) => {
+				if(!settings.tags)
+					return false;
 				return settings.tags[key];
 			})
 			.map((key: string) => {
@@ -51,8 +57,8 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 
 	const scoreText: ReactNode = useMemo(() => {
 		return (
-			<CText size="sm" sx={PGameLobbyScoreTypeStyle(settings.scoreOption)}>
-				{"GAME_SETTINGS_SCORE_OPTION_" + settings.scoreOption.toUpperCase()}
+			<CText size="sm" sx={PGameLobbyScoreTypeStyle(settings.mode)}>
+				{"GAME_SETTINGS_SCORE_OPTION_" + settings.mode.toUpperCase()}
 			</CText>
 		);
 	}, [settings]);
@@ -168,7 +174,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 						}}
 					>
 						<CText size="sm">GAME_SETTINGS_SEE_OTHERS</CText>
-						{toggleSetting(settings.seeOthers, "GAME_SETTINGS_SEE_OTHERS")}
+						{toggleSetting(settings.reveal, "GAME_SETTINGS_SEE_OTHERS")}
 					</Stack>
 					<Stack
 						direction={"row"}
@@ -189,7 +195,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 							mb: "10px",
 						}}
 					>
-						{sliderValue("GAME_SETTINGS_NB_MUSIC", settings.nbMusic)}
+						{sliderValue("GAME_SETTINGS_NB_MUSIC", settings.trackCount)}
 					</Stack>
 					<Stack
 						direction={"row"}
@@ -198,7 +204,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 							mb: "10px",
 						}}
 					>
-						{sliderValue("GAME_SETTINGS_MUSIC_TIMER", settings.timer)}
+						{sliderValue("GAME_SETTINGS_MUSIC_TIMER", settings.playbackDuration)}
 					</Stack>
 					<Stack
 						direction={"row"}
@@ -207,7 +213,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 							mb: "10px",
 						}}
 					>
-						{sliderValue("GAME_SETTINGS_BREAK_TIMER", settings.breakTimer)}
+						{sliderValue("GAME_SETTINGS_BREAK_TIMER", settings.breakDuration)}
 					</Stack>
 				</Stack>
 			</Stack>

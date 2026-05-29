@@ -14,7 +14,7 @@ import {
 	MOCK_HOST_ROOM,
 	mockOnUserChangedSettings,
 	MOCK_PLAYING_ROOM,
-} from "./game_db";
+} from "./game_old_db";
 import type { TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 import { mockSocialDB } from "../social/social_dbs";

@@ -29,9 +29,18 @@ export interface IGameCreationResponse {
 	uid: string;
 }
 
+//====================== USER ======================
+export interface IGameUser {
+	username: string;
+	avatar: string;
+	guest: boolean;
+	uid: string;
+}
+
+
+
 //====================== CHAT ======================
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
-
 export interface IGameChatMsg {
 	useruid: string;
 	username: string;
@@ -57,23 +66,23 @@ export interface IGamePlayer {
 }
 
 //====================== SETTINGS ======================
-export type TScoreOption = "speed" | "normal" | "arma";
-export type TGameScope = "public" | "private";
+export type TScoreOption = "speed" | "normal" | "armageddon";
 
 export interface IGameSettings {
-	tags: Record<string, boolean>;
-	nbMusic: number;
-	timer: number;
-	breakTimer: number;
-	seeOthers: boolean;
+	tags?: Record<string, boolean>;
+	genres: string[]
+	mode: TScoreOption;
+	trackCount: number;
+	playbackDuration: number;
+	breakDuration: number;
+	reveal: boolean;
 	fuzzy: boolean;
-	scoreOption: TScoreOption;
-	scope: TGameScope;
-	code: string;
 }
 
 //====================== STATUS ======================
 export type TGamePhase = "waiting" | "playing_round" | "playing_break" | "finish";
+export type TGameVisibility = "public" | "private" | "friends";
+
 export interface IGameStatus {
 	phase: TGamePhase;
 	round: number;

@@ -3,7 +3,7 @@ import CText from "../../../components/text/CText";
 import CTextField from "../../../components/inputs/textFields/CTextField";
 import CSlider from "../../../components/inputs/slider/CSlider";
 import type { GPageProps } from "../../common/GPageBases";
-import type { IGameSettings, TGameScope, TScoreOption } from "../../../types/game";
+import type { IGameSettings, TGameVisibility, TScoreOption } from "../../../types/game";
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import CButtonToggle from "../../../components/inputs/buttons/CButtonToggle";
 import CToggle from "../../../components/inputs/toggle/CToggle";
@@ -52,7 +52,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 	const [fuzzy, setFuzzy] = useState<boolean>(settings.fuzzy);
 	const [speedMode, setSpeedMode] = useState<TScoreOption>(settings.scoreOption);
 
-	const [visibilityValue, setVisibilityValue] = useState<TGameScope>("private");
+	const [visibilityValue, setVisibilityValue] = useState<TGameVisibility>("private");
 	const [codeVisible, setCodeVisible] = useState<boolean>(false);
 
 	const [copied, setCopied] = useState<boolean>(false);
@@ -271,7 +271,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 							options={[
 								{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
 								{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
-								{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMA" },
+								{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
 							]}
 							data-testid={"PGameSettings_ScoreOption"}
 						></CToggle>
@@ -291,7 +291,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 						padding="7px"
 						value={visibilityValue}
 						onValueChanged={(value: string) => {
-							setVisibilityValue(value as TGameScope);
+							setVisibilityValue(value as TGameVisibility);
 						}}
 						options={[
 							{ value: "private", label: "PRIVATE" },
