@@ -44,7 +44,7 @@ genres_to_label = {
     'Rap': 'TAG_RAP',
     'Electro': 'TAG_ELECRO',
     'French Variety': 'TAG_FRENCH_VARIETY',
-    'RNB': 'TAG_RNB'
+    'R&B/Soul': 'TAG_RNB'
 }
 
 default_pts = {

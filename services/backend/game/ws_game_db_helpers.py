@@ -16,7 +16,7 @@ from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
 
 from game.models import Game
-from game.serializers import GameHeaderSerializer, GameUpdateSerializer
+from game.serializers import GameHeaderSerializer, GameSettingsSerializer
 
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
@@ -119,7 +119,7 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 		if not consumer.current_game.current_track:
 			return None, None
 		track_data = TrackSerializer(consumer.current_game.current_track).data
-		track_data_hidden = {'preview_url': track_data['preview_url']}
+		track_data_hidden = {'preview': track_data['preview_url']}
 		return track_data, track_data_hidden
 	except Game.DoesNotExist:
 		return None, None
@@ -140,7 +140,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		bool: Whether the title is correct
 	"""
 	try:
-		time = content.get('answer_time')
+		time = content.get('answerTime')
 		player_answer = content.get('answer').lower().strip()
 		if track is None or time is None or player_answer is None:
 			return False, False
@@ -305,7 +305,7 @@ def _apply_game_settings(game: Game,
 						*,
 						partial: bool = True) -> Game:
 	"""Validate and persist game settings updates through the shared serializer."""
-	serializer = GameUpdateSerializer(instance=game, data=data, partial=partial)
+	serializer = GameSettingsSerializer(instance=game, data=data, partial=partial)
 	serializer.is_valid(raise_exception=True)
 	return serializer.save()
 
@@ -322,7 +322,7 @@ def _get_game_data(consumer: 'GlobalConsumer') -> dict:
 @database_sync_to_async
 def _get_game_settings_data(consumer: 'GlobalConsumer') -> dict:
 	"""Retrieve game setting data."""
-	return GameUpdateSerializer(consumer.current_game).data
+	return GameSettingsSerializer(consumer.current_game).data
 
 @database_sync_to_async
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:

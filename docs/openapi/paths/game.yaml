@@ -456,7 +456,7 @@ game-common:
             chill_long_session:
               summary: Relaxed long session
               value:
-                genres: ["pop", "r&b/soul", "variété française"]
+                genres: ["pop", "r&b/soul", "French Variety"]
                 game_mode: "normal"
                 public_level: "public"
                 trackCount: 30

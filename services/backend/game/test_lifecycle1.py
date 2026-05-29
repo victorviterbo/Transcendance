@@ -125,7 +125,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                                                      answers['expected_response'])
                         payloads['in_game'].append(payload)
                 for p in players:
-                    payload = await expect_event(p, 'round_end')
+                    payload = await expect_event(p, 'round_ended')
                     payloads['end'].append(payload)
                 return payloads
 
@@ -170,8 +170,8 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                 {'target': 'game', 'event': 'start_game', 'uid': str(game.uid)}
             )
 
-            await expect_event(owner_socket, 'start_signal')
-            await expect_event(challenger_socket, 'start_signal')
+            await expect_event(owner_socket, 'game_started')
+            await expect_event(challenger_socket, 'game_started')
             players = [owner_socket, challenger_socket]
             # ROUND 1 - No one answers
             print("################# ROUND 1 #################")
@@ -179,19 +179,18 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             self.assertTrue(payloads['end'])
             #print(json.dumps(payloads, indent=4))
             for i in range(len(players)):
-                self.assertEqual(payloads['start'][i]['game']['name'], "WS Full Lifecycle")
-                self.assertEqual(len(payloads['start'][i]['game']['players']), 2)
-                self.assertEqual(payloads['start'][i]['game']['owner']['username'], "ws_owner")
-                self.assertEqual(payloads['start'][i]['game']['status'], "playing_round")
+                self.assertEqual(payloads['start'][i]['uid'], str(game.uid))
+                self.assertEqual(payloads['start'][i]['playbackDuration'], 10)
+                self.assertIsNotNone(payloads['start'][i]['preview'])
             # ROUND 2 - owner give right track
             print("################# ROUND 2 #################")
             answers = [
                 {'socket': owner_socket,
                  'payload':{'target': 'game',
-                            'event': 'submit_answer',
+                            'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answer_time': 2,
+                            'answerTime': 2,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
@@ -204,20 +203,20 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             answers = [
                 {'socket': challenger_socket,
                  'payload':{'target': 'game',
-                            'event': 'submit_answer',
+                            'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answer_time': 3,
+                            'answerTime': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
                 },
                 {'socket': challenger_socket,
                  'payload':{'target': 'game',
-                            'event': 'submit_answer',
+                            'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Artist 12',
-                            'answer_time': 3,
+                            'answerTime': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
@@ -230,30 +229,30 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             answers = [
                 {'socket': challenger_socket,
                  'payload':{'target': 'game',
-                            'event': 'submit_answer',
+                            'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'wrong answer...',
-                            'answer_time': 1,
+                            'answerTime': 1,
                             },
                  'expected_response': 'answer_validation',
                  'is_correct' : False
                 },
                 {'socket': owner_socket,
                  'payload':{'target': 'game',
-                            'event': 'submit_answer',
+                            'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Artist 12',
-                            'answer_time': 3,
+                            'answerTime': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
                 },
                 {'socket': owner_socket,
                  'payload':{'target': 'game',
-                            'event': 'submit_answer',
+                            'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answer_time': 3,
+                            'answerTime': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True

@@ -339,7 +339,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		await self.send_json({
 			'target': 'game',
 			'event': 'answer_validation',
-			'game': event.get('game'),
+			'uid': event.get('uid'),
 			'senderPlayer': event.get('sender_player'),
 			'self': LightProfileSerializer(self.profile).data,
 			'answer': event.get('answer'),
@@ -353,7 +353,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		await self.send_json({
 			'target': 'game',
 			'event': 'answer_validation',
-			'game': event.get('game'),
+			'uid': event.get('uid'),
 			'senderPlayer': event.get('senderPlayer'),
 			'self': LightProfileSerializer(self.profile).data,
 			'answer': event.get('answer'),
@@ -375,9 +375,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		await self.send_json({
 			'target': 'game',
 			'event': 'round_started',
-			'game': event.get('game'),
+			'uid': event.get('uid'),
 			'self': LightProfileSerializer(self.profile).data,
-			'track': event.get('track'),
+			'preview': event.get('preview'),
 			'playbackDuration': event.get('playbackDuration'),
 		})
 
@@ -385,10 +385,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		"""Send round results and next round timing."""
 		await self.send_json({
 			'target': 'game',
-			'event': 'round_end',
-			'game': event.get('game'),
+			'event': 'round_ended',
+			'uid': event.get('uid'),
 			'self': LightProfileSerializer(self.profile).data,
 			'track': event.get('track'),
+			#TODO: add leaderboard
 			'results': event.get('results'),
 			'is_last_round': event.get('is_last_round', False),
 		})
@@ -397,9 +398,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		"""Broadcast final game results and leaderboard."""
 		await self.send_json({
 			'target': 'game',
-			'event': 'start_signal',
-			'game': event.get('game'),
+			'event': 'game_started',
+			'uid': event.get('uid'),
 			'self': LightProfileSerializer(self.profile).data,
+			'settings': event.get('settings'),
+			'delay': event.get('delay'),
 		})
 
 	async def game_completed(self, event: dict) -> None:

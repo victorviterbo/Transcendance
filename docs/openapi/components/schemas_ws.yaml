@@ -159,7 +159,7 @@ WS-CtoS-Game:
       enum:
         - join_game
         - start_game
-        - submit_answer
+        - answer_submit
         - leave_game
     game_uid:
       type: string
@@ -167,7 +167,7 @@ WS-CtoS-Game:
     answer:
       type: string
       description: Player answer submitted during a round.
-    answer_time:
+    answerTime:
       type: number
       format: float
       description: Time taken by the player to answer.
