@@ -1,6 +1,9 @@
+import type { ReactNode } from "react";
+
 export type TOption = {
 	value: string;
 	label: string;
+	icon?: ReactNode;
 };
 
 export type TMenuOption = {

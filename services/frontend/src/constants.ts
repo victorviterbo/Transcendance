@@ -17,10 +17,6 @@ export const API_STATS_GLOBAL = "/api/stats/global";
 export const API_STATS_LEADERBOARD = "/api/stats/leaderboard";
 export const API_STATS_HISTORY = "/api/stats/history";
 
-// HOME ENDPOINTS
-export const API_PUBLIC_ROOMS = "/api/public/rooms";
-export const API_PRIVATE_ROOMS = "/api/private/rooms";
-
 // SOCIAL ENDPOINTS
 export const API_SOCIAL_FRIENDS = "/api/social/friends";
 export const API_SOCIAL_FRIENDS_SEARCH = "/api/social/friends-search";
@@ -33,6 +29,9 @@ export const API_SOCIAL_NOTIFS = "/api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read";
 
 //GAME
+export const API_CREATE_GAME = "/api/game/";
+export const API_GAME_FRIENDS = "/api/game/friends/";
+export const API_GAME_PUBLIC = "/api/game/";
 export const API_GAME = "/api/game/{ROOMID}";
 
 // WS

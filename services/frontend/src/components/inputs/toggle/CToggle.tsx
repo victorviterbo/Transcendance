@@ -43,6 +43,7 @@ function CToggle({ options, value, onValueChanged, fontSize, padding, ...other }
 						value={item.value}
 						key={localID + "-" + index}
 					>
+						{item.icon}
 						<CText size={fontSize}>{item.label}</CText>
 					</ToggleButton>
 				);

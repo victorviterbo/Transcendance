@@ -54,6 +54,10 @@ paths:
     $ref: ./paths/stats.yaml#/leaderboard
   /api/stats/history:
     $ref: ./paths/stats.yaml#/history
+  /api/game/friends:
+    $ref: ./paths/game.yaml#/game-friends-list
+  /api/game/:
+    $ref: ./paths/game.yaml#/game
   /api/game/{ROOMID}:
     $ref: ./paths/game.yaml#/game-common
   WS/#friend-chat:
@@ -103,7 +107,7 @@ components:
       $ref: ./components/schemas_social.yaml#/FriendInfo
     Message:
       $ref: ./components/schemas_social.yaml#/Message
-    Notif - Requests: 
+    Notif - Requests:
       $ref: ./components/schemas_social.yaml#/NotifRequests
     Notif - Accepted:
       $ref: ./components/schemas_social.yaml#/NotifAccepted
@@ -113,6 +117,14 @@ components:
       $ref: ./components/schemas_game.yaml#/GamePlayer
     Game - GameChat:
       $ref: ./components/schemas_game.yaml#/GameChat
+    Game - GameListEntry:
+      $ref: ./components/schemas_game.yaml#/GameListEntry
+    Game - GameListResponse:
+      $ref: ./components/schemas_game.yaml#/GameListResponse
+    GameCreationRequest:
+      $ref: ./components/schemas_game.yaml#/GameCreationRequest
+    GameCreationResponse:
+      $ref: ./components/schemas_game.yaml#/GameCreationResponse
     WS - StoC - friend-chat:
       $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendChat
     WS - StoC - notif:
@@ -125,7 +137,7 @@ components:
       $ref: ./components/schemas_ws.yaml#/WS-CtoS-FriendChat
     WS - CtoS - game:
       $ref: ./components/schemas_ws.yaml#/WS-CtoS-Game
-    
+
   securitySchemes:
     bearerAuth:
       type: http
