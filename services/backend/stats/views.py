@@ -52,14 +52,15 @@ class GlobalStatsView(APIView):
             .distinct()
             .count()
         )
-        total_games_won = (UserGameStats.objects.filter(players=profile,
+        total_games_won = (UserGameStats.objects.filter(player=profile,
                                                        is_won=True)
             .count()
         )
-
-        agg = rounds.aggregate(avg_score=Avg('xp_earned'), avg_time=Avg('time'))
-        avg_score = round(agg['avg_score'] or 0.0, 2)
-        avg_time_duration = agg['avg_time']
+        avg_score = round(rounds.aggregate(avg_score=Avg('xp_earned'))['avg_score'] or 0.0, 2)
+        avg_time_duration = (
+            rounds.filter(artist_found=True, title_found=True)
+            .aggregate(avg_time=Avg('time'))['avg_time']
+        )
         avg_time = round(avg_time_duration, 2) if avg_time_duration else 0.0
 
         if total_rounds > 0:

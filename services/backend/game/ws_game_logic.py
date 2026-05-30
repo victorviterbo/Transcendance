@@ -80,7 +80,6 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
                             'event': 'error',
                             'message': f'Unknown game event: {game_event}'})
 
-
 async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     """Run the main game loop, cycling through rounds and sending updates."""
     try:
@@ -141,12 +140,6 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'Game not found'})
-        return
-    num_current_players = await _get_num_curr_players(consumer.current_game)
-    if num_current_players >= max_players:
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'Game already full'})
         return
     num_current_players = await _get_num_curr_players(consumer.current_game)
     if num_current_players >= max_players:

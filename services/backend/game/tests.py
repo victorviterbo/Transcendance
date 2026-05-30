@@ -300,8 +300,6 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
             response = await communicator.receive_json_from()
-            print("lala")
-            print(response)
             self.assertEqual(response['event'], 'player_joined')
 
             await communicator.send_json_to(

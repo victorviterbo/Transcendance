@@ -22,7 +22,7 @@ from .models import Game
 class GameTestDataMixin:
     """Shared setup and helper functions for game tests."""
 
-    def create_user(self, email: str, username: str):
+    def create_user(self, email: str, username: str) -> SiteUser:
         """Create a new user for tests."""
         serializer = RegisterSerializer(
             data={

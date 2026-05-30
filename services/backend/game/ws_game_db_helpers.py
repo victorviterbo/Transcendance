@@ -80,15 +80,17 @@ def _setup_game_assets(game: Game) -> None:
 	)
 	playlist.tracks.set(all_tracks)
 
+	"""
 	room_uid = uuid.uuid4()
 	room = Room.objects.create(
 		name=f"Chat Room - {game.uid}",
 		is_direct=False,
 		uid=room_uid,
 	)
+	#game.room = room
+	# """ # TODO : check that the room is created in view ok
 	game.playlist = playlist
 	game.current_track = all_tracks[0]
-	game.room = room
 	game.status = 'playing_round'
 	game.save(update_fields=['playlist', 'current_track', 'room', 'status'])
 

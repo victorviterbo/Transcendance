@@ -26,10 +26,10 @@ class GeneralGameView(APIView):
 
 	def get(self, request: Request) -> Response:
 		"""Handles the listing of all games."""
-		all_public_games = Game.objects.filter(visibility='public') #TODO filter to remove game_started
+		all_public_games = Game.objects.filter(visibility='public', status='waiting')
 		serialized_games = GameDetailSerializer(all_public_games, many=True)
 		return Response(serialized_games.data, status=status.HTTP_200_OK)
-		
+	
 	def post(self, request: Request) -> Response:
 		"""Handle the creation of a new game."""
 		if not getattr(request, 'profile', None):
@@ -39,7 +39,6 @@ class GeneralGameView(APIView):
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
-			#UserGameStats.objects.create(game=new_game, player=request.profile)
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:
