@@ -11,24 +11,24 @@ import {
 } from "../../styles/pages/game/PGameLBoardNodeStyle";
 
 interface PGameLBoardNodeProps extends GPageProps {
-	user: IGamePlayer;
+	player: IGamePlayer;
 	position: number;
 }
 
 //TODO: REMEMBER TO PUT THE NO TR
-function PGameLBoardNode({ user, position }: PGameLBoardNodeProps) {
+function PGameLBoardNode({ player, position }: PGameLBoardNodeProps) {
 	return (
 		<Stack
 			direction={"row"}
-			sx={PGameLBoardNodeStyle(position, user.user.relation == "self", user.host)}
+			sx={PGameLBoardNodeStyle(position, player.self ? true : false, player.host ? true : false)}
 			data-testid="PGameLBoardNode"
 		>
 			<CText sx={PGameLBoardNodePosStyle}>{position + 1 + "."}</CText>
-			<CAvatar src={user.user.image} />
+			<CAvatar src={player.user.avatar} />
 			<CText noTr={true} sx={PGameLBoardNodeUsernameStyle}>
-				{user.user.username}
+				{player.user.username}
 			</CText>
-			<CText sx={PGameLBoardNodePtsStyle}>{user.points}</CText>
+			<CText sx={PGameLBoardNodePtsStyle}>{player.points}</CText>
 		</Stack>
 	);
 }

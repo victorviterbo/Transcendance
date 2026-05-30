@@ -13,25 +13,25 @@ import type { TWSSend } from "../../types/websocket";
 
 interface PGameChatProps extends GPageProps {
 	chat: IGameChatMsg[];
-	users: IGamePlayer[];
+	players: IGamePlayer[];
 	sendWSMessage: (dataSent: Omit<TWSSend, "target">) => void;
 }
 
-function PGameChat({ chat, users, sendWSMessage }: PGameChatProps) {
+function PGameChat({ chat, players, sendWSMessage }: PGameChatProps) {
 	//====================== NAME ======================
 	const [messageField, setMessageField] = useState<string>("");
 
 	//====================== GETTERS ======================
 	const chatList = useMemo((): ReactNode[] => {
 		return chat.map((msg: IGameChatMsg) => {
-			const targetUser: IGamePlayer | undefined = users.find((user: IGamePlayer) => {
+			const targetUser: IGamePlayer | undefined = players.find((user: IGamePlayer) => {
 				return user.user.uid == msg.useruid;
 			});
 			return (
 				<PGameChatNode message={msg} user={targetUser} key={msg.messageuid}></PGameChatNode>
 			);
 		});
-	}, [chat, users]);
+	}, [chat, players]);
 
 	//====================== EVENT ======================
 	function handleSendMessage() {

@@ -1,6 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
 import type { IGameChatMsg, IGameData, IGamePlayer, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameSendEvent, IWSGameSendEventGameInfo } from "../types/websocket";
+import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerJoined } from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS } from "../constants";
 
@@ -10,6 +10,7 @@ export interface IGameInstanceCallbacks {
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>;
 	setStatus: React.Dispatch<React.SetStateAction<IGameStatus | undefined>>;
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>
+	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>
 	sendMessage: SendMessage;
 }
 
@@ -35,7 +36,9 @@ export class GameInstance {
 	uid: string;
 	name: string = "N/A";
 	host?: IGameUser;
+	isHost: boolean = false;
 	visibility: TGameVisibility = "public";
+	maxPlayers: number = 0;
 
 		//--------------------- Status ---------------------
 	status?: IGameStatus;
@@ -43,23 +46,46 @@ export class GameInstance {
 		//--------------------- Settings ---------------------
 	settings?: IGameSettings;
 
+		//--------------------- PLayers ---------------------
+	players: IGamePlayer[] = [];
+
 		//--------------------- Callbacks ---------------------
 	callbacks: IGameInstanceCallbacks;
+	
+		//--------------------- Other ---------------------
+	self?: IGameUser ;
+	lastColorId: number = 0;
 
 
 	//====================== EVENTS ======================
+	onPlayerJoined(data: IWSGameSendEventPlayerJoined) {
+		this.log("Player: '" + data.player.user.username + "' has joined");
+		this.players.push(data.player);
+		this.updatePlayers();
+	}
 	onGameJoined(data: IWSGameSendEventGameInfo) {
+		this.log("Game joined");
+		this.log("Parsing data");
 		this.name = data.game.name;
 		this.host = data.game.owner;
+		this.isHost = data.game.owner.uid == data.self.uid
 		this.status = {
 			phase: data.game.status,
 			round: data.game.round,
 			keyTime: 0,
 		};
-		this.visibility = data.game.visibility;
 		this.settings = data.settings;
+
+		this.maxPlayers= data.game.maxPlayers
+		this.visibility = data.game.visibility;
+
+		this.players = data.leaderboard;
+
+		this.self = data.self;
+
 		this.updateAll();
 		this.callbacks.setReady(true);
+		this.log("Game ready");
 	}
 
 
@@ -68,6 +94,7 @@ export class GameInstance {
 	updateAll() {
 		this.updateStatus();
 		this.updateSettings();
+		this.updatePlayers();
 	}
 	updateStatus() {
 		this.status = structuredClone(this.status);
@@ -93,6 +120,19 @@ export class GameInstance {
 		this.settings = structuredClone(this.settings);
 		this.callbacks.setSettings(this.settings);
 	}
+	updatePlayers() {
+		this.players.forEach((player: IGamePlayer) => {
+			if(player.colorid == undefined)
+			{
+				player.colorid = this.lastColorId % 10
+				this.lastColorId++;
+			}
+			player.host = player.user.uid == this.host?.uid
+			player.self = player.user.uid == this.self?.uid
+		})
+		this.players = structuredClone(this.players);
+		this.callbacks.setPlayers(this.players);
+	}
 
 		//--------------------- WS ---------------------
 	send(event: IWSGameEventRcvList) {
@@ -107,9 +147,11 @@ export class GameInstance {
 		}
 		this.callbacks.sendMessage(JSON.stringify(data));
 	}
-	rcv(event: IWSGameSendEvent | IWSGameSendEventGameInfo) {
+	rcv(event: IWSGameSendEvent) {
 		if(event.target != "game")
 			return;
+		if(event.event == "player_joined")
+			this.onPlayerJoined(event as IWSGameSendEventPlayerJoined)
 		if(event.event == "game_info")
 			this.onGameJoined(event as IWSGameSendEventGameInfo)
 	}

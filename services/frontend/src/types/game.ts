@@ -58,11 +58,12 @@ export interface IGamePlayerRoundStatus {
 }
 
 export interface IGamePlayer {
-	user: IExtUserInfo;
+	user: IGameUser;
 	points: number;
-	host: boolean;
-	colorid: number;
-	current: IGamePlayerRoundStatus;
+	host?: boolean;
+	self?: boolean;
+	colorid?: number;
+	//current: IGamePlayerRoundStatus;
 }
 
 //====================== SETTINGS ======================

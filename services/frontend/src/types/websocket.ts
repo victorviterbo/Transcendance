@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGameSettings, IGameUser, TGamePhase, TGameVisibility } from "./game";
+import type { IGamePlayer, IGameSettings, IGameUser, TGamePhase, TGameVisibility } from "./game";
 //import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
@@ -137,11 +137,12 @@ export interface TWSGameInfo {
     status: TGamePhase,
     round: number,
     visibility: TGameVisibility,
+	maxPlayers: number;
 }
 
 	  //--------------------- EVENTS ---------------------
 export type IWSGameEventRcvList = "game_join"
-export type IWSGameEventSndList = "game_info"
+export type IWSGameEventSndList = "player_joined" | "game_info"
 
 
 export interface IWSGameEvent {
@@ -163,9 +164,15 @@ export interface IWSGameSendEvent extends IWSGameEvent {
 	self: IGameUser;
 }
 
-export interface IWSGameSendEventGameInfo extends IWSGameEvent {
+export interface IWSGameSendEventPlayerJoined extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "player_joined">;
+	player: IGamePlayer;
+}
+
+export interface IWSGameSendEventGameInfo extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "game_info">;
 	game: TWSGameInfo;
 	settings: IGameSettings;
+	leaderboard: IGamePlayer[];
 }
 
