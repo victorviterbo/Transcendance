@@ -7,7 +7,6 @@ import { appColors, appTexts } from "../../../styles/theme";
 import { ttrfn } from "../../../localization/localization";
 import type { GPageProps } from "../../common/GPageBases";
 import type {
-	IGameData,
 	IGamePlayer,
 	IGamePlayerAnswer,
 	IGameRound,
@@ -22,10 +21,11 @@ import PGameRoundAnswer from "./PGameRoundAnswer";
 import { PGameRoundStyle, type IGameRoundStyle } from "../../../styles/pages/game/PGameRoundStyle";
 import PGameRoundReveal from "./PGameRoundReveal";
 import CVolumeSilder from "../../../components/inputs/slider/CVolumeSilder";
+import type { GameInstance } from "../../../handlers/gameHandlers";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
-	game: IGameData;
+	game:  React.RefObject<GameInstance | undefined>;
 	status: IGameStatus;
 	settings: IGameSettings;
 	rounds: IGameRound[];

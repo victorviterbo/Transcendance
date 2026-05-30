@@ -47,7 +47,7 @@ function PGame() {
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 
 	//Updatable Data
-	const [users, setUsers] = useState<IGamePlayer[]>([]);
+	const [players, setPlayers] = useState<IGamePlayer[]>([]);
 	const [chat, setChat] = useState<IGameChatMsg[]>([]);
 
 	//SETTINGS
@@ -79,6 +79,7 @@ function PGame() {
 			setError,
 			setStatus,
 			setSettings,
+			setPlayers,
 			sendMessage: wsContext.sendMessage,
 		})
 
@@ -93,6 +94,7 @@ function PGame() {
 			setError,
 			setStatus,
 			setSettings,
+			setPlayers,
 			sendMessage: wsContext.sendMessage,
 		}
 
@@ -231,20 +233,20 @@ function PGame() {
 				}}
 			>
 				<Grid size={3}>
-					<PGameLBoard users={users} />
+					<PGameLBoard players={players} />
 				</Grid>
 				<Grid size={6}>
 					<PGameViews
 						onSettingsChanged={(_: IGameSettings) => {}/* onSettingsChanged*/}
 						status={status}
 						rounds={rounds}
-						players={users}
-						game={{} as IGameData}
+						players={players}
+						game={game}
 						settings={settings}
 					/>
 				</Grid>
 				<Grid size={3}>
-					<PGameChat sendWSMessage={(_: Omit<TWSSend, "target">) => {}/*sendWSMessage*/} users={users} chat={chat} />
+					<PGameChat sendWSMessage={(_: Omit<TWSSend, "target">) => {}/*sendWSMessage*/} players={players} chat={chat} />
 				</Grid>
 			</Grid>
 		</Stack>

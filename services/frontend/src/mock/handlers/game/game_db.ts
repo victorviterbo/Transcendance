@@ -1,4 +1,4 @@
-import type { IGameSettings } from "../../../types/game";
+import type { IGameSettings, IGameUser } from "../../../types/game";
 import type { IExtUserInfo } from "../../../types/user";
 import { mockDefaultPP, mockDefaultUsername, mockDefaultUserUID } from "../../db";
 import { mockSocialSetDB } from "../social/social_dbs";
@@ -61,6 +61,14 @@ export class MockGameDB {
 		
 			badges: "",
 			relation: "self",
+		}
+	}
+	getSelf(): IGameUser {
+		return  {
+			uid: mockDefaultUserUID,
+			username: mockDefaultUsername,
+			avatar: mockDefaultPP,
+			guest: false
 		}
 	}
 

@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import type { IGameData, IGamePlayer, IGameSettings } from "../../../types/game";
+import type { IGamePlayer, IGameSettings } from "../../../types/game";
 import CTitle from "../../../components/text/CTitle";
 import CText from "../../../components/text/CText";
 import { ttrf, ttrfn, ttrn } from "../../../localization/localization";
@@ -14,9 +14,10 @@ import {
 } from "../../../styles/pages/game/PGameLobbyStyle";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
+import type { GameInstance } from "../../../handlers/gameHandlers";
 
 interface PGameLobbyProps {
-	game: IGameData;
+	game:  React.RefObject<GameInstance | undefined>;
 	settings: IGameSettings;
 	players: IGamePlayer[];
 
@@ -85,6 +86,9 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 		);
 	}, []);
 
+	if(!game.current)
+		return <></>;
+
 	//====================== STRUCTURE ======================
 	return (
 		<Box data-testid="PGameLobby">
@@ -95,7 +99,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 					align="center"
 					size="xl"
 				>
-					{game.name}
+					{game.current.name}
 				</CTitle>
 				<Stack sx={{ mt: 0, mb: 0, justifyContent: "center" }} direction={"row"}>
 					{genreTags}
@@ -111,7 +115,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 					zIndex: 1,
 				}}
 			>
-				{!game.isHost && (
+				{!game.current.isHost && (
 					<CText size="lg" align="center" testid="PGameLobby-Waiting">
 						{host
 							? ttrfn("GAME_WAITING_START", {
@@ -126,7 +130,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 							: "GAME_WAITING_START_NO_HOST"}
 					</CText>
 				)}
-				{game.isHost && (
+				{game.current.isHost && (
 					<>
 						<CButtonText
 							sx={{ mb: "15px", minWidth: "150px" }}
@@ -140,7 +144,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 				<CText align="center" size="sm">
 					{ttrf("GAME_PLAYER_COUNT", {
 						COUNT: ttrn(players.length),
-						MAX: ttrn(game.maxPlayers),
+						MAX: ttrn(game.current.maxPlayers),
 					})}
 				</CText>
 			</Stack>

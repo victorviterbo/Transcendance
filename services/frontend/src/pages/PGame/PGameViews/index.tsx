@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import CGamePaper from "../../../components/surfaces/CGamePaper";
 import type {
-	IGameData,
 	IGamePlayer,
 	IGameRound,
 	IGameSettings,
@@ -10,9 +9,10 @@ import type {
 import PGameLobby from "./PGameLobby";
 import PGameSettings from "./PGameSettings";
 import PGameRound from "./PGameRound";
+import type { GameInstance } from "../../../handlers/gameHandlers";
 
 interface PGameViewsProps {
-	game: IGameData;
+	game:  React.RefObject<GameInstance | undefined>;
 	status: IGameStatus;
 	players: IGamePlayer[];
 	settings: IGameSettings;
