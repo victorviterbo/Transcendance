@@ -6,6 +6,15 @@
 - [ ] Message notifications
 - [ ] Change notification message to accept coloring and {username}
 - [ ] Maybe switch to websockets for friends?
+- [ ] Redo search timeout
+- [ ] Index-derived keys are used in: 
+	- `services/frontend/src/pages/PSocial/PFriendAdd.tsx`
+	- `services/frontend/src/pages/PSocial/PFriendList.tsx`
+	- `services/frontend/src/pages/PSocial/PFriendReq.tsx`
+	- `services/frontend/src/pages/PNotif/index.tsx`
+- [ ] Modify API images in IExtUser and IFriendInfo:
+- [ ] Message failed not showing 
+- [ ] useParams(); for room id;
 
 # BUG
 
@@ -18,6 +27,7 @@
 - [~] BUG#0007: Usernames can trigger ttr();
 - [ ] BUG#0008: default profile picture is not the same from friends list and profile page;
 - [ ] BUG#0009: When loging / lougout an error is triggered on the backend logs;
+- [ ] BUG#0010: Error in page console logs (front): duplicated ID;
 
 # TO CHECK
 

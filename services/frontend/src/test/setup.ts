@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { server } from "../mock/server";
 import { resetMockDb } from "../mock/db";
+import type { ReactNode } from "react";
 
 vi.mock("../localization/localization", () => {
 	const translations: Record<string, string> = {
@@ -42,6 +43,16 @@ vi.mock("../localization/localization", () => {
 		NOTIF_AGO_DAYS: "NOTIF_AGO_DAYS COUNT: {COUNT}",
 		NOTIF_AGO_HOURS: "NOTIF_AGO_HOURS COUNT: {COUNT}",
 		NOTIF_AGO_MINUTES: "NOTIF_AGO_MINUTES COUNT: {COUNT}",
+		GAME_JOINED_MESSAGE: "{PLAYER} has joined the game.",
+		GAME_LEAVED_MESSAGE: "{PLAYER} has left the game.",
+		GAME_GUESSED_MESSAGE: "{PLAYER} tried: {GUESS}",
+		GAME_FOUND_MESSAGE: "{PLAYER} made a correct guess",
+		GAME_WAITING_START: "Waiting {USER} to start the game",
+		GAME_WAITING_START_NO_HOST: "Waiting to start the game",
+		GAME_PLAYER_COUNT: "Players: {COUNT} / {MAX}",
+		GAME_SETTINGS_NB_MUSIC: "Number of musics: {COUNT}",
+		GAME_SETTINGS_MUSIC_TIMER: "Music timer: {COUNT}s",
+		GAME_SETTINGS_BREAK_TIMER: "Break timer: {COUNT}s",
 	};
 
 	const ttr = (id: string) => translations[id] ?? id;
@@ -58,6 +69,20 @@ vi.mock("../localization/localization", () => {
 		new Intl.DateTimeFormat("en-US", options).format(
 			value instanceof Date ? value : new Date(value),
 		);
+	const ttrfn = (id: string, params: Record<string, ReactNode>): ReactNode[] => {
+		const text: string = ttr(id);
+		const reg: RegExp = new RegExp(/([^{}]*)\{(.+?)\}([^{}]*)/gm);
+		const out: ReactNode[] = [];
+
+		let array: RegExpExecArray | null = null;
+		while ((array = reg.exec(text)) !== null) {
+			if (array.length != 4) continue;
+			out.push(array[1]);
+			out.push(params[array[2]]);
+			out.push(array[3]);
+		}
+		return out;
+	};
 
 	return {
 		langData: {
@@ -75,6 +100,7 @@ vi.mock("../localization/localization", () => {
 		ttrf,
 		ttrd,
 		ttrn,
+		ttrfn,
 	};
 });
 

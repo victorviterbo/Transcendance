@@ -1,0 +1,75 @@
+game-common:
+  get:
+    summary: All info about current game
+    description: Return all data about the current status of the game
+    operationId: getGame
+    tags: [game]
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: All game data
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                game:
+                  $ref: ../openapi.yaml#/components/schemas/Game - GameData
+            examples:
+              ok:
+                value:
+                  game:
+                    id: "123456"
+                    uid: "d76c7859-14ec-474d-814d-4b9ee5fdd2dd"
+                    name: "Sarah's game room"
+                    players:
+                      - user: 
+                          uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                          username: "sarah"
+                          image: "path/to/image"
+                          badges: "deaf octopus"
+                          relation: "incoming"
+                        points: 150
+                        host: true
+                        colorid: 5
+                      - user: 
+                          uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                          username: "john"
+                          image: "path/to/image"
+                          badges: "deaf octopus"
+                          relation: "self"
+                        points: 50
+                        host: false
+                        colorid: 8
+                    maxPlayers: 100
+                    isHost: false
+                    chat:
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "message"
+                        message: "Hello everyone"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "joined"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "leaved"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "guessed"
+                        message: "Never fade away Samurai"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "found"
+

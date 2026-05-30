@@ -1,0 +1,38 @@
+#GLOBAL
+GameData:
+  type: object
+  description:  All data about the current game
+  properties:
+    id: { type: string, descripion: "Current game / room id"}
+    uid: { type: string, descripion: "Current game / room uid"}
+    name: { type: string, descripion: "Current game / room name"}
+    maxPlayers: { type: int, descripion: "Maximum allowed player in that game"}
+    players: 
+      type: array
+      items:
+        $ref: "../openapi.yaml#/components/schemas/Game - GamePlayer"
+    chat:
+      type: array
+      items:
+        $ref: "../openapi.yaml#/components/schemas/Game - GameChat"
+    isHost: {type: boolean, descripion: "define if current  user is host"}
+
+GamePlayer:
+  type: object
+  description:  Data about one of the player in the game
+  properties:
+    user:
+      $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
+    points: { type: int, descripion: "Current player points"}
+    host: {type: boolean, descripion: "define if target user is host"}
+    colorid: {type: int, descripion: "define the session color id of that user", format: "0-9"}
+
+GameChat:
+  type: object
+  description:  Data about a chat message
+  properties:
+    useruid: {type: string}
+    username: {type: string}
+    messageuid: {type: string}
+    type: { type: string, format: "message | joined | leaved | guessed | found"}
+    message: { type: string, descripion: "message: msg content | guessed: what the user tried to guess"}

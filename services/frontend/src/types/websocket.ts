@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
+import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 
@@ -9,6 +10,7 @@ export type TWSModuleName =
 	| "friend-chat"
 	| "friend-request"
 	| "notif"
+	| "game"
 	| "test_counter_event"
 	| "test_counter";
 
@@ -43,6 +45,45 @@ export type TWSRcv =
 			event: "new-incoming";
 			user: IExtUserInfo;
 	  }
+
+	//GAME
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "player-join" | "player-leave";
+			player: IGamePlayer;
+			gameid: string;
+			gameuid: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "players-update";
+			players: IGamePlayer[];
+			gameid: string;
+			gameuid: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "message-new";
+			message: IGameChatMsg;
+			gameid: string;
+			gameuid: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "message-update";
+			messages: IGameChatMsg[];
+			gameid: string;
+			gameuid: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "settings-update";
+			gameid: string;
+			gameuid: string;
+			settings: IGameSettings;
+	  }
+
+	//GAME
 	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
@@ -55,6 +96,26 @@ export type TWSSend =
 			message?: IFriendMessage;
 			to?: string;
 			toUid?: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "join";
+			gameid: string;
+			gameuid: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "message-send";
+			gameid: string;
+			gameuid: string;
+			message: string;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "settings-update";
+			gameid: string;
+			gameuid: string;
+			settings: IGameSettings;
 	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;

@@ -5,7 +5,10 @@ export const CMenuStyle: SxProps<Theme> = (_) => ({
 	"& .MuiMenu-paper": {
 		mt: "10px",
 		background: appSharedStyle.bg.menu,
-		borderRadius: appSharedStyle.radius / 2 + "px",
+		borderRadius:
+			typeof appSharedStyle.radius == "string"
+				? appSharedStyle.radius
+				: appSharedStyle.radius / 2 + "px",
 		border: "solid 2px white",
 	},
 

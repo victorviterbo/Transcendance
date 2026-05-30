@@ -1,4 +1,29 @@
+import type { SxProps, Theme } from "@mui/material";
+import { appColors } from "../styles/theme";
 import type { TColor, TColorAlteration, TDropShadow } from "../types/styles";
+
+//--------------------------------------------------
+//                    SX
+//--------------------------------------------------
+export function sxMerger(...sx: SxProps<Theme>[]): SxProps<Theme> | undefined {
+	if (sx.length == 0) return undefined;
+	if (sx.length == 1) return sx[0];
+	const sx0 = sx.splice(0, 1)[0];
+	const sx1 = sx.splice(0, 1)[0];
+	if (sx.length == 0)
+		return [
+			...(Array.isArray(sx0) ? sx0 : sx0 ? [sx0] : []),
+			...(Array.isArray(sx1) ? sx1 : sx1 ? [sx1] : []),
+		];
+	else
+		return sxMerger(
+			[
+				...(Array.isArray(sx0) ? sx0 : sx0 ? [sx0] : []),
+				...(Array.isArray(sx1) ? sx1 : sx1 ? [sx1] : []),
+			],
+			...sx,
+		);
+}
 
 //--------------------------------------------------
 //                    CSS
@@ -32,11 +57,28 @@ export function getScaledRadius(borderRadius: number | string, divisor = 1) {
 //--------------------------------------------------
 //               COLOR MANAGEMENT
 //--------------------------------------------------
+export function colorFromID(ID: number) {
+	if (ID == -1) return appColors.greys[5];
+	const colors: string[] = [];
+	colors.push(appColors.primary[0]);
+	colors.push(appColors.primary[1]);
+	colors.push(appColors.secondary[0]);
+	colors.push(appColors.secondary[1]);
+	colors.push(appColors.tertiary[0]);
+	colors.push(appColors.tertiary[1]);
+	colors.push(appColors.quaternary[0]);
+	colors.push(appColors.quaternary[1]);
+	colors.push(appColors.quinary[0]);
+	colors.push(appColors.quinary[1]);
+
+	return colors[ID % colors.length];
+}
+
 export function colorGetBackground(
 	colors: string | string[],
 	positions?: number[],
 	type?: "linear" | "radial",
-	angle?: number,
+	angle?: number | string,
 ): string {
 	if (typeof colors == "string") return colors;
 
@@ -50,7 +92,7 @@ export function colorGetBackground(
 	}
 
 	let finalStr = type + "-gradient(";
-	if (type == "linear") finalStr += angle + "deg";
+	if (type == "linear") finalStr += typeof angle == "string" ? angle : angle + "deg";
 	colors.forEach((item, index) => {
 		if (finalStr.lastIndexOf("(") != finalStr.length - 1) finalStr += ", ";
 		finalStr += item + " " + positions[index] + "%";

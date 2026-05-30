@@ -32,6 +32,9 @@ export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "/api/social/message";
 export const API_SOCIAL_NOTIFS = "/api/social/notifs";
 export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read";
 
+//GAME
+export const API_GAME = "/api/game/{ROOMID}";
+
 // WS
 export const WS_ADRESS_WMS = "ws://localhost:5173/";
 export const WS_ADRESS = "ws://localhost:8000/ws/global/";
@@ -49,3 +52,16 @@ export const MUSIC_TAGS = [
 export const DAY_MS = 1000 * 60 * 60 * 24;
 export const HOUR_MS = 1000 * 60 * 60;
 export const MINUTE_MS = 1000 * 60;
+
+// SETTINGS
+export const SETTINGS_NGSONGS_MIN = 5;
+export const SETTINGS_NGSONGS_MAX = 50;
+export const SETTINGS_NGSONGS_STEP = 1;
+
+export const SETTINGS_SONG_DURATION_MIN = 5;
+export const SETTINGS_SONG_DURATION_MAX = 30;
+export const SETTINGS_SONG_DURATION_STEP = 5;
+
+export const SETTINGS_BREAK_DURATION_MIN = 5;
+export const SETTINGS_BREAK_DURATION_MAX = 30;
+export const SETTINGS_BREAK_DURATION_STEP = 5;

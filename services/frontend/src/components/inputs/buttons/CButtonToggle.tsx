@@ -1,4 +1,4 @@
-import { Box, ToggleButton, type ToggleButtonProps } from "@mui/material";
+import { Box, ToggleButton, type SxProps, type Theme, type ToggleButtonProps } from "@mui/material";
 import type { GCompProps } from "../../common/GProps";
 import {
 	CToggleButtonNotif,
@@ -6,15 +6,25 @@ import {
 } from "../../../styles/components/inputs/CToggleStyle";
 import CText from "../../text/CText";
 import type { ReactNode } from "react";
+import { ttr } from "../../../localization/localization";
+import { sxMerger } from "../../../utils/styles";
 
 export interface CButtonToggleProps extends GCompProps, ToggleButtonProps {
 	notifCount?: number;
+	boxSx?: SxProps<Theme>;
 
 	//DEBUG
 	parentid?: string;
 }
 
-function CButtonToggle({ notifCount, sx, parentid, ...other }: CButtonToggleProps) {
+function CButtonToggle({
+	notifCount,
+	sx,
+	boxSx,
+	parentid,
+	children,
+	...other
+}: CButtonToggleProps) {
 	function getNotif(): ReactNode | undefined {
 		if (!notifCount) return;
 		if (notifCount <= 0) return;
@@ -26,12 +36,17 @@ function CButtonToggle({ notifCount, sx, parentid, ...other }: CButtonToggleProp
 	}
 
 	return (
-		<Box data-testid={parentid} sx={{ position: "relative" }}>
+		<Box
+			data-testid={parentid}
+			sx={boxSx ? sxMerger(boxSx, { position: "relative" }) : { position: "relative" }}
+		>
 			{getNotif()}
 			<ToggleButton
 				sx={[CToggleButtonStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 				{...other}
-			></ToggleButton>
+			>
+				{typeof children == "string" ? <span>{ttr(children)}</span> : children}
+			</ToggleButton>
 		</Box>
 	);
 }

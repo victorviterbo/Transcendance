@@ -238,3 +238,45 @@ NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Di
 NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Displayed when loading notifications fails
 NOTIF_FRIEND_ACCEPTED,Friend request accepted:,Demande d'ami acceptée:,さんがあなたのフレンド申請を承認しました,Displayed after the highlighted username when someone accepts your friend request
 NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallback notification message
+GAME_LEADER_BOARD,Leaderboard,Classement,リーダーボード,In game leaderboard title
+GAME_LOBBY_TITLE,Lobby,Salon,ロビー,Lobby category in the game infrastructure
+GAME_SETTINGS_TITLE,Game settings,,,Settings view title
+GAME_CHAT_TITLE,Chat,Discussion,チャット,Chat title in the game infrastructure
+GAME_ERROR_GLOBAL,Failed to fetch game data,Impossible de récupérer les données du jeu,ゲームデータの取得に失敗しました,Error message whenever game couldn't be loaded.
+GAME_ERROR_TITLE,Error,Erreur,エラー,Title for error in game
+GAME_ERROR_INVALID_ROOM,Room is not valid,La salle n’est pas valide,ルームが無効です,Error when room number is not valid
+GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Title of the loading message paper
+GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Content of the loading message paper
+GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
+GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
+GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
+GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
+GAME_WAITING_START,Waiting {USER} to start the game,,,Displayed message in the game lobby
+GAME_WAITING_START_NO_HOST,Waiting to start the game,,,Displayed message in the game lobby (With no host rooms)
+GAME_PLAYER_COUNT,Players: {COUNT} / {MAX},,,Display the current connected with its maximum
+GAME_START,Start game,,,Button to start the current game
+GAME_EDIT,Edit game,,,Button to edit the current game settings
+GAME_SETTINGS_PLAYLIST,Playlists,,,Information text about the fact bellow there is the sleection of plalist
+GAME_SETTINGS_NB_MUSIC,Number of musics: {COUNT},,,INformations about the number of musics
+GAME_SETTINGS_MUSIC_TIMER,Music timer: {COUNT}s,,,INformations about the time allowed for the music (in seconds)
+GAME_SETTINGS_BREAK_TIMER,Break timer: {COUNT}s,,,INformations about the time btw Rounds (in seconds)
+GAME_SETTINGS_SEE_OTHERS,See others answer: ,,,Setting to display other people answers in the chat
+GAME_SETTINGS_FUZZY,Fuzzy match: ,,,Allow fuzzy match for answer
+GAME_SETTINGS_SCORE_OPTION,Score options: ,,,Scoring system option title
+GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,,,Scoring system option (Speed: option)
+GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,,,Scoring system option (Speed: Normal)
+GAME_SETTINGS_SCORE_OPTION_ARMA,Armagedon,,,Scoring system option (Speed: Armagedon)
+GAME_SETTINGS_CODE,Code: ,,,Title placed before the code
+GAME_SETTINGS_CB,Copy to clipboard,,,Button to copy to the clipboard
+GAME_SETTINGS_CB_COPIED,Copied...,,,Button to copy to the clipboard (when pressed)
+GAME_SETTINGS_GAME,Game settings,,,Title for game settings
+GAME_SETTINGS_VISIBILITY,Game visibility,,,Title for game visibility
+GAME_SETTINGS_BACK,Return to lobby,,,Button to return into the lobby
+GAME_NO_GENRE,No genre selected,,,Shown when no genre has been selected
+GAME_PLAYING_TITLE,Playing,,,Title of the view when the music is playing
+GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
+GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
+GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
+GAME_ROUND_SPEED,Speed:,,,Label for the number of point for speeding
+GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
+SECONDS,{COUNT}s,,,Seconds suffix (If applicable)

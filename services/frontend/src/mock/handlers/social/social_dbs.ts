@@ -26,7 +26,7 @@ export const mockSocialDB: mockISocialDB = {
 
 const socialDBUsernames = [
 	"Sarah is the best",
-	"John",
+	"Johnny",
 	"Marc",
 	"Ava",
 	"由美子",

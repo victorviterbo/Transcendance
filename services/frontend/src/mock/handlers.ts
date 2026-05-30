@@ -20,6 +20,11 @@ import {
 } from "./handlers/social/social";
 import { friendMessageHandler } from "./handlers/social/socialChat";
 import { socketConnHandler } from "./handlers/ws/websocket";
+import {
+	gameRequestHandlerHost,
+	gameRequestHandlerJoin,
+	gameRequestHandlerPlaying,
+} from "./handlers/game/game";
 
 export const handlers = [
 	LoginHandler,
@@ -48,4 +53,8 @@ export const handlers = [
 	friendMessageHandler,
 	notifRequestHandler,
 	notifRequestHandlerRead,
+
+	gameRequestHandlerJoin,
+	gameRequestHandlerHost,
+	gameRequestHandlerPlaying,
 ];

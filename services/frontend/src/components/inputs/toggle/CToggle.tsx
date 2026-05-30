@@ -1,20 +1,24 @@
 import { ToggleButton, ToggleButtonGroup, type ToggleButtonGroupProps } from "@mui/material";
 import type { GCompProps } from "../../common/GProps";
 import type { TOption } from "../../../types/data";
-import React, { useId, useState } from "react";
-import { ttr } from "../../../localization/localization";
+import React, { useId } from "react";
 import { CToggleButtonStyle } from "../../../styles/components/inputs/CToggleStyle";
+import CText from "../../text/CText";
+import type { TSize } from "../../../types/string";
 
 interface CToggleProps extends GCompProps, ToggleButtonGroupProps {
 	options: TOption[];
+	value: string;
+	onValueChanged?: (value: string) => void;
+	fontSize?: TSize;
+	padding?: string;
 }
 
-function CToggle({ options, ...other }: CToggleProps) {
+function CToggle({ options, value, onValueChanged, fontSize, padding, ...other }: CToggleProps) {
 	const localID: string = useId();
-	const [value, setValue] = useState<string>(options.length > 0 ? options[0].value : "");
 
 	const handleChange = (_: React.MouseEvent<HTMLElement>, nValue: string) => {
-		if (nValue) setValue(nValue);
+		if (onValueChanged) onValueChanged(nValue);
 	};
 
 	return (
@@ -28,11 +32,18 @@ function CToggle({ options, ...other }: CToggleProps) {
 			{options.map((item: TOption, index: number) => {
 				return (
 					<ToggleButton
-						sx={CToggleButtonStyle}
+						sx={[
+							{ padding: padding },
+							...(Array.isArray(CToggleButtonStyle)
+								? CToggleButtonStyle
+								: CToggleButtonStyle
+									? [CToggleButtonStyle]
+									: []),
+						]}
 						value={item.value}
 						key={localID + "-" + index}
 					>
-						<span>{ttr(item.label)}</span>
+						<CText size={fontSize}>{item.label}</CText>
 					</ToggleButton>
 				);
 			})}

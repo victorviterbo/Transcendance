@@ -79,6 +79,7 @@ function GPageBase({ children }: GPageProps) {
 									duration: appAnimation.timing.enteringScreen,
 								}),
 								flex: 1,
+								position: "relative",
 								width:
 									friendOpen || notifOpen
 										? "calc( 100% - " +

@@ -37,6 +37,36 @@ WS-StoC-FriendRequests:
     user:
       $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
 
+      
+
+WS-StoC-Game:
+  type: object
+  description: Websocket object for recieved data to the server about all friend chats requests
+  properties:
+    target: { type: string, fromat: "game"}
+    event: 
+      type: string
+      fromat: "player-join | player-leave | players-update | message-new | message-update"
+      descripion: "[player-join]: notify the user a player has joined the game room | \
+        [player-leave]: notify the user a player has leaved the game room | \
+        [players-update]: ask to user to update players list using given list | \
+        [message-new]: notify user a new message has been sent | \
+        [message-update]: ask to user to update chat list using given list"
+    gameid (all): {type: string, descripion: "Current game ID required by any ws about the game"}
+    gameuid (all): {type: string, descripion: "Current game UID required by any ws about the game"}
+    player (player-join - player-leave):
+      $ref: /components/schemas_game.yaml#/GamePlayer
+    players (players-update):
+      type: array
+      items:
+        $ref: /components/schemas_game.yaml#/GamePlayer
+    message (message-new):
+      $ref: /components/schemas_game.yaml#/GameChat
+    messages (message-update):
+      type: array
+      items:
+        $ref: /components/schemas_game.yaml#/GameChat
+
 
 
 #CLIENT TO SERVER
@@ -59,3 +89,17 @@ WS-CtoS-FriendChat:
     toUid (open | close):
       type: string
       descripion: "uid of the target user0"
+
+WS-CtoS-Game:
+  type: object
+  description: Websocket object for send data to the server about the game
+  properties:
+    target: { type: string, fromat: "game"}
+    event: 
+      type: string
+      fromat: "join | message-send"
+      descripion: "[join]: notify server user has joined the game | \
+        [message-send]: event when user is send a message"
+    gameid (all): {type: string, descripion: "Current game ID required by any ws about the game"}
+    gameuid (all): {type: string, descripion: "Current game UID required by any ws about the game"}
+    message (message-send): {type: string, descripion: "Sent message by the user"}

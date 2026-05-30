@@ -3,7 +3,7 @@ WS-friend-chat:
     summary: WS about all friend chat
     description: Websocket object for recieved data from the server about all friend chats requests
     operationId: WSStoCFriendChat
-    tags: [ws]
+    tags: [websockets]
     requestBody:
       required: true
       content:
@@ -81,7 +81,7 @@ WS-notif:
     summary: WS about all notifications
     description: Websocket object for recieved data from the server about all notifications requests
     operationId: WSStoCNotif
-    tags: [ws]
+    tags: [websockets]
     responses:
       "200":
         content:
@@ -111,7 +111,7 @@ WS-friend-request:
     summary: WS about all friend requests
     description: Websocket object for recieved data from the server about all friend requests (used for live update)
     operationId: WSStoCNotif
-    tags: [ws]
+    tags: [websockets]
     responses:
       "200":
         content:
@@ -129,3 +129,132 @@ WS-friend-request:
                     image: "path/to/image"
                     badges: "deaf octopus"
                     relation: "incoming"
+
+
+#====================== GAME ======================
+WS-game:
+  post:
+    summary: WS about all game data
+    description: Websocket object for recieved data from the server about all game data
+    operationId: WSStoCGame
+    tags: [websockets]
+    requestBody:
+      required: true
+      content:
+        join:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
+          examples:
+            join:
+              value:
+                target: "game"
+                event: "join"
+                gameid: "123456"
+                gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+        message-send:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
+          examples:
+            join:
+              value:
+                target: "game"
+                event: "message-send"
+                gameid: "123456"
+                gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                message: "Hey everyone"
+        
+    responses:
+      "200":
+        content:
+          json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/WS - StoC - game
+            examples:
+              player-join:
+                value:
+                  target: "game"
+                  event: "player-join"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  player:
+                    user: 
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                      points: 150
+                      host: true
+                      colorid: 5
+              player-leave::
+                value:
+                  target: "game"
+                  event: "player-leave"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  player:
+                    user: 
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                    points: 150
+                    host: true
+                    colorid: 5
+              players-update::
+                value:
+                  target: "game"
+                  event: "players-update"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  players:
+                    - user: 
+                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "alice"
+                        image: "path/to/image"
+                        badges: "deaf octopus"
+                        relation: "incoming"
+                      points: 150
+                      host: true
+                      colorid: 5
+                    - user: 
+                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        image: "path/to/image"
+                        badges: "deaf octopus"
+                        relation: "self"
+                      points: 50
+                      host: false
+                      colorid: 8
+              message-new:
+                value:
+                  target: "game"
+                  event: "message-new"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  message:
+                    useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                    username: "alice"
+                    messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                    type: "message"
+                    message: "Hey everyone"
+              message-update:
+                value:
+                  target: "game"
+                  event: "message-new"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  messages:
+                    - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                      type: "message"
+                      message: "Hey everyone"
+                    - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "john"
+                      messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                      type: "joined"

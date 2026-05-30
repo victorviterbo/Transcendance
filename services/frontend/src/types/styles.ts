@@ -55,6 +55,8 @@ export interface IThemeColor {
 	greys: string[];
 	cancel: string[];
 	validate: string[];
+	white: string;
+	black: string;
 	text: IThemeTextColor;
 }
 
@@ -100,6 +102,7 @@ export interface IThemeSize {
 }
 export interface IThemePosition {
 	mainSpacing: number;
+	gameSpacing: number;
 
 	socialMargin: TMargin;
 
@@ -117,7 +120,10 @@ export interface IThemeBGs {
 
 export interface IThemeShared {
 	bg: IThemeBGs;
-	radius: number;
+	radius: number | string;
+	paperRadius: number | string;
+	gameRadius: string;
+	smallGameRadius: string;
 }
 
 //====================== ANIMATIONS ======================
