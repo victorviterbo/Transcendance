@@ -273,7 +273,7 @@ GAME_SETTINGS_SCORE_OPTION,Score options: ,,,Scoring system option title
 GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,,,Scoring system option (Speed: option)
 GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,,,Scoring system option (Speed: Normal)
 GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armagedon,,,Scoring system option (Speed: Armagedon)
-GAME_SETTINGS_CODE,Code: ,,,Title placed before the code
+GAME_SETTINGS_CODE,Room: ,,,Title placed before the code
 GAME_SETTINGS_CB,Copy to clipboard,,,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,,,Button to copy to the clipboard (when pressed)
 GAME_SETTINGS_GAME,Game settings,,,Title for game settings

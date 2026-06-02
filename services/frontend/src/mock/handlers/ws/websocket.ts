@@ -3,7 +3,7 @@ import { WS_ADRESS_WMS } from "../../../constants";
 import type { IWSGameRCVEvent, TWSRcv, TWSSend } from "../../../types/websocket";
 import { mockMessagesFriend1Update, onMessageSent, onMessageStatus } from "../social/socialChat";
 import { mockAcceptingRequests, mockNewIncomingRequests } from "../social/social";
-import { mockHandleGameMessages } from "../game/game_handlers";
+import { mockHandleGameMessages } from "../game/mockGameHandlers";
 
 //--------------------------------------------------
 //                                    NAME

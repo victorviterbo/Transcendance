@@ -237,7 +237,6 @@ function PGame() {
 				</Grid>
 				<Grid size={6}>
 					<PGameViews
-						onSettingsChanged={(_: IGameSettings) => {}/* onSettingsChanged*/}
 						status={status}
 						rounds={rounds}
 						players={players}

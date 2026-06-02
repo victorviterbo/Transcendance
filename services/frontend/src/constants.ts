@@ -33,6 +33,7 @@ export const API_CREATE_GAME = "/api/game/";
 export const API_GAME_FRIENDS = "/api/game/friends/";
 export const API_GAME_PUBLIC = "/api/game/";
 export const API_GAME = "/api/game/{ROOMID}";
+export const PAGE_GAME = "/game/{UID}";
 
 // WS
 export const WS_ADRESS_WMS = "ws://localhost:5173/";
