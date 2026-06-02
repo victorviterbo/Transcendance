@@ -3,7 +3,7 @@ import CText from "../../../components/text/CText";
 import CTextField from "../../../components/inputs/textFields/CTextField";
 import CSlider from "../../../components/inputs/slider/CSlider";
 import type { GPageProps } from "../../common/GPageBases";
-import type { IGameSettings, TGameVisibility, TScoreOption } from "../../../types/game";
+import type { IGameSettings, TScoreOption } from "../../../types/game";
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import CButtonToggle from "../../../components/inputs/buttons/CButtonToggle";
 import CToggle from "../../../components/inputs/toggle/CToggle";
@@ -17,7 +17,7 @@ import {
 	PGameSettingsTagButtonStyle,
 	PGameSettingsTagListStyle,
 } from "../../../styles/pages/game/PGameSettingsStyle";
-import { gameThemeCount } from "../../../handlers/gameHandlers";
+import { GameInstance, gameThemeCount } from "../../../handlers/gameHandlers";
 import { ttr, ttrfn } from "../../../localization/localization";
 import {
 	SETTINGS_BREAK_DURATION_MAX,
@@ -35,43 +35,42 @@ import CloseIcon from "@mui/icons-material/Close";
 
 interface PGameSettingsProps extends GPageProps {
 	settings: IGameSettings;
-	onSettingsChanged: (newSettings: IGameSettings) => void;
+	game: React.RefObject<GameInstance | undefined>;
 	onReturnToLobby: () => void;
 }
 
-function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSettingsProps) {
+function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) {
 	//====================== STATS ======================
-	const [tags, setTags] = useState<Record<string, boolean>>(structuredClone(settings.tags));
+	const [tags, setTags] = useState<Record<string, boolean>>(!settings.tags ? {} : structuredClone(settings.tags));
 	const [searchFilter, setSearchFilter] = useState<string>("");
 
-	const [nbSongs, setNBSongs] = useState<number>(settings.nbMusic);
-	const [timer, setTimer] = useState<number>(settings.timer);
-	const [breakTimer, setBreakTimer] = useState<number>(settings.breakTimer);
+	const [nbSongs, setNBSongs] = useState<number>(settings.trackCount);
+	const [timer, setTimer] = useState<number>(settings.playbackDuration);
+	const [breakTimer, setBreakTimer] = useState<number>(settings.breakDuration);
 
-	const [seeOthers, setSeeOthers] = useState<boolean>(settings.seeOthers);
+	const [seeOthers, setSeeOthers] = useState<boolean>(settings.reveal);
 	const [fuzzy, setFuzzy] = useState<boolean>(settings.fuzzy);
-	const [speedMode, setSpeedMode] = useState<TScoreOption>(settings.scoreOption);
-
-	const [visibilityValue, setVisibilityValue] = useState<TGameVisibility>("private");
-	const [codeVisible, setCodeVisible] = useState<boolean>(false);
+	const [speedMode, setSpeedMode] = useState<TScoreOption>(settings.mode);
 
 	const [copied, setCopied] = useState<boolean>(false);
 	const lastCallBack: React.RefObject<number> = useRef(-1);
+	const [codeVisible, setCodeVisible] = useState<boolean>(false);
 
 	//====================== HANDLERS ======================
 	const handleSaveChanges = useCallback(() => {
 		const nSettings: IGameSettings = {
 			tags: tags,
-			nbMusic: nbSongs,
-			timer: timer,
-			breakTimer: breakTimer,
-			seeOthers: seeOthers,
+			genres: [],
+			trackCount: nbSongs,
+			playbackDuration: timer,
+			breakDuration: breakTimer,
+			reveal: seeOthers,
 			fuzzy: fuzzy,
-			scoreOption: speedMode,
-			scope: visibilityValue,
-			code: settings.code,
+			mode: speedMode
 		};
-		onSettingsChanged(nSettings);
+		if(!game.current)
+			return;
+		game.current.settingsChanged(nSettings);	
 	}, [
 		tags,
 		nbSongs,
@@ -80,9 +79,7 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 		seeOthers,
 		fuzzy,
 		speedMode,
-		visibilityValue,
-		onSettingsChanged,
-		settings.code,
+		game,
 	]);
 
 	const handleOnReturn = () => {
@@ -178,13 +175,13 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 
 	//====================== HANDLE COPY ======================
 	const onCodeCopy = useCallback(() => {
-		navigator.clipboard.writeText(settings.code);
+		navigator.clipboard.writeText(game.current ? game.current.uid : "");
 		setCopied(true);
 		if (lastCallBack.current != -1) clearInterval(lastCallBack.current);
 		lastCallBack.current = setInterval(() => {
 			setCopied(false);
 		}, 2000);
-	}, [settings.code, setCopied]);
+	}, [game]);
 
 	return (
 		<Stack
@@ -286,19 +283,6 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 					direction={"row"}
 					sx={{ alignItems: "flex-start", justifyContent: "flex-start" }}
 				>
-					<CToggle
-						fontSize={"sm"}
-						padding="7px"
-						value={visibilityValue}
-						onValueChanged={(value: string) => {
-							setVisibilityValue(value as TGameVisibility);
-						}}
-						options={[
-							{ value: "private", label: "PRIVATE" },
-							{ value: "public", label: "PUBLIC" },
-						]}
-						data-testid={"PGameSettings_VisibilityOption"}
-					></CToggle>
 					<Stack direction={"column"} sx={PGameSettingsCodeBlockStyle}>
 						<Stack direction={"row"} sx={{ mb: "20px", alignItems: "center" }}>
 							<CText sx={{ transform: "translateY(5px)" }}>GAME_SETTINGS_CODE</CText>
@@ -309,10 +293,12 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 									filter: codeVisible ? undefined : "blur(7px)",
 								}}
 							>
-								{settings.code}
+								{game.current ? game.current.uid : ""}
 							</CText>
+						</Stack>
+						<Stack direction={"row"}>
 							<CButtonToggle
-								sx={{ p: "6px", minWidth: "50px" }}
+								sx={{ mr: "10px", p: "6px", minWidth: "50px" }}
 								selected={codeVisible}
 								value={"code_vidible"}
 								onClick={() => {
@@ -322,15 +308,15 @@ function PGameSettings({ settings, onSettingsChanged, onReturnToLobby }: PGameSe
 							>
 								<VisibilityIcon fontSize="small" />
 							</CButtonToggle>
+							<CButton onClick={onCodeCopy}>
+								<CText size="sm" sx={PGameSettingsCopyStyle(!copied, false)}>
+									GAME_SETTINGS_CB
+								</CText>
+								<CText size="sm" sx={PGameSettingsCopyStyle(copied, true)}>
+									GAME_SETTINGS_CB_COPIED
+								</CText>
+							</CButton>
 						</Stack>
-						<CButton onClick={onCodeCopy}>
-							<CText size="sm" sx={PGameSettingsCopyStyle(!copied, false)}>
-								GAME_SETTINGS_CB
-							</CText>
-							<CText size="sm" sx={PGameSettingsCopyStyle(copied, true)}>
-								GAME_SETTINGS_CB_COPIED
-							</CText>
-						</CButton>
 					</Stack>
 				</Stack>
 

@@ -141,8 +141,8 @@ export interface TWSGameInfo {
 }
 
 	  //--------------------- EVENTS ---------------------
-export type IWSGameEventRcvList = "game_join"
-export type IWSGameEventSndList = "player_joined" | "game_info"
+export type IWSGameEventRcvList = "game_join" | "settings_update"
+export type IWSGameEventSndList = "player_joined" | "player_left" | "game_info" | "settings_updated"
 
 
 export interface IWSGameEvent {
@@ -155,6 +155,10 @@ export interface IWSGameRCVEvent extends IWSGameEvent {
 	event: IWSGameEventRcvList;
 	uid: string;
 }
+export interface IWSGameRCVEventSettings extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "settings_update">;
+	settings: IGameSettings;
+}
 
 
 	//Send(Client to Server)
@@ -164,8 +168,8 @@ export interface IWSGameSendEvent extends IWSGameEvent {
 	self: IGameUser;
 }
 
-export interface IWSGameSendEventPlayerJoined extends IWSGameSendEvent {
-	event: Extract<IWSGameEventSndList, "player_joined">;
+export interface IWSGameSendEventPlayerManage extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "player_joined" | "player_left">;
 	player: IGamePlayer;
 }
 
@@ -176,3 +180,7 @@ export interface IWSGameSendEventGameInfo extends IWSGameSendEvent {
 	leaderboard: IGamePlayer[];
 }
 
+export interface IWSGameSendEventSettings extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "settings_updated">;
+	settings: IGameSettings;
+}

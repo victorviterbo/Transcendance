@@ -17,7 +17,6 @@ interface PGameViewsProps {
 	players: IGamePlayer[];
 	settings: IGameSettings;
 	rounds: IGameRound[];
-	onSettingsChanged: (newSettings: IGameSettings) => void;
 }
 
 type ECurrentViewType = {
@@ -38,7 +37,6 @@ function PGameViews({
 	rounds,
 	players,
 	settings,
-	onSettingsChanged,
 }: PGameViewsProps) {
 	//====================== STATES ======================
 	const getCurrentView = (): number => {
@@ -62,6 +60,8 @@ function PGameViews({
 	}, [currentView]);
 
 	//====================== EVENTS ======================
+	if(!game.current)
+		return <></>
 
 	return (
 		<CGamePaper
@@ -88,7 +88,7 @@ function PGameViews({
 			)}
 			{currentView == ECurrentView.SETTINGS && (
 				<PGameSettings
-					onSettingsChanged={onSettingsChanged}
+					game={game}
 					settings={settings}
 					onReturnToLobby={() => {
 						setCurrentView(ECurrentView.LOBBY);

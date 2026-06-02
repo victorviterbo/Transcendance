@@ -2,7 +2,7 @@ import type { IGameSettings, IGameUser } from "../../../types/game";
 import type { IExtUserInfo } from "../../../types/user";
 import { mockDefaultPP, mockDefaultUsername, mockDefaultUserUID } from "../../db";
 import { mockSocialSetDB } from "../social/social_dbs";
-import { MockGame, MockGameHosting, MockGameJoining, MockGamePlaying } from "./game_handlers";
+import { MockGame, MockGameHosting, MockGameJoining, MockGamePlaying } from "./mockGameHandlers";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 
 export class MockGameDB {

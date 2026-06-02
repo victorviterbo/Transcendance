@@ -1,8 +1,8 @@
 import type { SendMessage } from "react-use-websocket";
 import type { IGameChatMsg, IGameData, IGamePlayer, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerJoined } from "../types/websocket";
+import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventSettings } from "../types/websocket";
 import type { ReactNode } from "react";
-import { MUSIC_TAGS } from "../constants";
+import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 
 
 export interface IGameInstanceCallbacks {
@@ -24,7 +24,8 @@ export class GameInstance {
 		this.log("Loading....");
 
 		//Joining
-		this.send("game_join")
+		this.join();
+		this.gameLink = PAGE_GAME.replaceAll("{UID}", this.uid);
 	}
 	destroy() {
 		this.uid = "";
@@ -55,12 +56,23 @@ export class GameInstance {
 		//--------------------- Other ---------------------
 	self?: IGameUser ;
 	lastColorId: number = 0;
+	gameLink: string;
 
 
 	//====================== EVENTS ======================
-	onPlayerJoined(data: IWSGameSendEventPlayerJoined) {
+		//Server events
+	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
 		this.log("Player: '" + data.player.user.username + "' has joined");
-		this.players.push(data.player);
+		if(!this.players.find((player: IGamePlayer) => player.user.uid == data.player.user.uid))
+			this.players.push(data.player);
+		this.updatePlayers();
+	}
+	onPlayerLeft(data: IWSGameSendEventPlayerManage) {
+		const playerIndex: number = this.players.findIndex((player: IGamePlayer) => player.user.uid == data.player.user.uid)
+		if(!playerIndex)
+			return;
+		const player: IGamePlayer = this.players.splice(playerIndex, 1)[0];
+		this.log("Player: '" + player.user.username + "' has left");
 		this.updatePlayers();
 	}
 	onGameJoined(data: IWSGameSendEventGameInfo) {
@@ -87,6 +99,39 @@ export class GameInstance {
 		this.callbacks.setReady(true);
 		this.log("Game ready");
 	}
+	onSettingsChanged(data: IWSGameSendEventSettings) {
+		this.log("Settings changed");
+		this.settings = data.settings;
+		this.updateSettings();
+	}
+
+		//Client event
+	join() {
+		this.log("Joining game...");
+		this.send({
+			...this.getSendBaseData("game_join")
+		})
+	}
+	settingsChanged(nSettings: IGameSettings) {
+		if(!this.host)
+			return;
+		nSettings.genres = [];
+		if(!nSettings.tags)
+			return;
+		Object.keys(nSettings.tags).forEach((tag: string) => {
+			if(!nSettings.tags)
+				return;
+			if(nSettings.tags[tag])
+				nSettings.genres.push(tag);
+		})
+		this.log("Updating settings...");
+		this.send({
+			...this.getSendBaseData("settings_update"),
+			settings: nSettings,
+		} as IWSGameRCVEventSettings)
+	}
+
+	
 
 
 	//====================== FUNCTIONS ======================
@@ -135,25 +180,36 @@ export class GameInstance {
 	}
 
 		//--------------------- WS ---------------------
-	send(event: IWSGameEventRcvList) {
+	send(data: IWSGameRCVEvent) {
 		if(!this.check)
 			return;
-
-		this.log("Joining game");
-		const data: IWSGameRCVEvent = {
+		this.callbacks.sendMessage(JSON.stringify(data));
+	}
+	getSendBaseData(event: IWSGameEventRcvList): IWSGameRCVEvent {
+		return {
 			target: "game",
 			event,
 			uid: this.uid,
 		}
-		this.callbacks.sendMessage(JSON.stringify(data));
 	}
 	rcv(event: IWSGameSendEvent) {
 		if(event.target != "game")
 			return;
-		if(event.event == "player_joined")
-			this.onPlayerJoined(event as IWSGameSendEventPlayerJoined)
-		if(event.event == "game_info")
-			this.onGameJoined(event as IWSGameSendEventGameInfo)
+		switch(event.event)
+		{
+			case "player_joined":
+				this.onPlayerJoined(event as IWSGameSendEventPlayerManage)
+				break;
+			case "player_left":
+				this.onPlayerLeft(event as IWSGameSendEventPlayerManage)
+				break;
+			case "game_info":
+				this.onGameJoined(event as IWSGameSendEventGameInfo)
+				break;
+			case "settings_updated":
+				this.onSettingsChanged(event as IWSGameSendEventSettings)
+				break;
+		}
 	}
 
 		//--------------------- Check ---------------------
