@@ -39,6 +39,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		
 		self.room = None
 		self.profile = None
+		self.profile_data = None
 		self.active_layers = set()
 		self.group_name = None
 		self.game = None
@@ -56,9 +57,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		logger.debug('ws.connect.attempt user=%s scope_keys=%s', 
 					 type(getattr(self, 'user', None)).__name__,
 					 list(self.scope.keys()))
-		self.profile = await self._get_profile_from_scope()
+		self.profile, self.profile_data = await self._get_profile_from_scope()
 		if not self.profile:
-			logger.warning('ws.connect.rejected unauthenticated')
+			logger.warning('ws.connect.rejected could not retrieve profile')
 			await self.close(code=4401)
 			return
 		self.group_name = f"user_{self.profile.uid}"
@@ -310,7 +311,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'player_joined',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'error_mssg': event.get('error_mssg')
 		})
 	
@@ -320,7 +321,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'player_joined',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'player': event.get('player')
 		})
 
@@ -330,7 +331,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'settings_updated',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'settings': event.get('settings', {}),
 		})
 
@@ -341,7 +342,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'event': 'answer_validation',
 			'game': event.get('game'),
 			'senderPlayer': event.get('sender_player'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'answer': event.get('answer'),
 			'trackArtist': event.get('trackArtist'),
 			'tracktitle': event.get('tracktitle'),
@@ -355,7 +356,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'event': 'answer_validation',
 			'game': event.get('game'),
 			'senderPlayer': event.get('senderPlayer'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'answer': event.get('answer'),
 			'correct': event.get('is_correct', False),
 		})
@@ -366,7 +367,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'player_left',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'player': event.get('player'),
 		})
 
@@ -376,7 +377,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'round_started',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'track': event.get('track'),
 			'playbackDuration': event.get('playbackDuration'),
 		})
@@ -387,7 +388,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'round_end',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'track': event.get('track'),
 			'results': event.get('results'),
 			'is_last_round': event.get('is_last_round', False),
@@ -399,7 +400,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'start_signal',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 		})
 
 	async def game_completed(self, event: dict) -> None:
@@ -408,7 +409,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'target': 'game',
 			'event': 'game_completed',
 			'game': event.get('game'),
-			'self': LightProfileSerializer(self.profile).data,
+			'self': self.profile_data,
 			'leaderboard': event.get('leaderboard'),
 		})
 	
@@ -419,7 +420,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		return 'anonymous'
 	
 	@database_sync_to_async
-	def _get_profile_from_scope(self) -> Profile | None:
+	def _get_profile_from_scope(self) -> tuple[Profile, dict | None, None]:
 		"""Resolve profile from user, injected profile, or guest session."""
 		self.user = self.scope.get("user")
 		if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
@@ -427,16 +428,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 				profile = self.user.profile
 				logger.debug('ws.profile_resolve.from_authenticated_user user_id=%s profile_id=%s username=%s',
 							 self.user.id, profile.id, profile.username)
-				return profile
+				return profile, LightProfileSerializer(profile).data
 			except Profile.DoesNotExist:
 				logger.warning('ws.profile_resolve.authenticated_user_no_profile user_id=%s',
 							   self.user.id)
-
+				return None, None
 		profile = self.scope.get("profile")
 		if isinstance(profile, Profile):
 			logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s guest=%s',
 						 profile.id, profile.guest)
-			return profile
+			return profile, LightProfileSerializer(profile).data
 
 		session = self.scope.get("session", {})
 		guest_uid = session.get("guest_profile_uid")
@@ -446,23 +447,22 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 						 guest_profile.id if guest_profile else None,
 						 guest_uid,
 						 guest_profile.guest if guest_profile else None)
-			if guest_profile and self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated and guest_profile.user_id is None:
+			if (guest_profile and self.user and isinstance(self.user, SiteUser)
+			and self.user.is_authenticated and guest_profile.user_id is None):
 				guest_profile.user = self.user
 				guest_profile.guest = False
 				guest_profile.save(update_fields=['user', 'guest'])
 				logger.info('ws.profile_resolve.session_profile_linked user_id=%s profile_id=%s',
 							self.user.id,
 							guest_profile.id)
-			return guest_profile
-
+			return guest_profile, LightProfileSerializer(guest_profile).data
 		if self.create_missing_profile:
 			guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
 			new_profile = Profile.objects.create(username=guest_username, guest=True)
 			logger.debug('ws.profile_resolve.created_new_guest profile_id=%s', new_profile.id)
 			return new_profile
-		
 		logger.warning('ws.profile_resolve.failed no_profile_found')
-		return None
+		return None, None
 
 	@database_sync_to_async
 	def _save_message(self, body: str,
@@ -474,7 +474,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			sender_user = None
 			logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_guest=%s profile_user_id=%s',
 						 getattr(self.profile, 'id', None),
-						 type(getattr(self, 'user', None)).__name__,
+						 type(getattr(self, 'user', None)).__name__, # FIXME: this will crash if self.user is not set -> it will try to do None.__name__ which crash
 						 bool(self.user and self.user.is_authenticated) if self.user else False,
 						 getattr(self.profile, 'guest', None),
 						 getattr(self.profile, 'user_id', None))

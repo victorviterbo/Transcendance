@@ -11,6 +11,7 @@ from rest_framework import serializers
 
 from game.models import Game
 from game.services import format_validation_errors
+from game.ws_game_shared import ACTIVE_GAMES
 
 from .ws_game_db_helpers import (
     _add_player_to_game_stats,
@@ -41,9 +42,6 @@ from .ws_game_send_helpers import (
 
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
-
-# Global dict (shared by all consumers) that keeps track of active games
-ACTIVE_GAMES = {}
 
 async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     """Route game events to appropriate handlers."""
@@ -223,14 +221,13 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
         await check_all_answers_received(consumer, consumer.current_game)
     
     serialized_game = await _get_game_data(consumer)
-    serialized_player = await _get_player_data(consumer)
     if artist_correct or title_correct:
         if consumer.current_game.mode == 'armagedon':
             # if mode is armagedon, send the response to everyone
             await consumer.group_send(consumer.game_group_name, {
                 'type': 'game_answer_correct',
                 'game': serialized_game,
-                'senderPlayer': serialized_player,
+                'senderPlayer': consumer.profile_data,
                 'answer': answer,
                 'trackArtist': track_data['artist'] if artist_correct else None,
                 'tracktitle': track_data['title'] if title_correct else None,
@@ -253,7 +250,7 @@ async def _submit_answer(consumer: 'GlobalConsumer', content: dict) -> None:
             await consumer.group_send(consumer.game_group_name, {
                 'type': 'game_answer_incorrect',
                 'game': serialized_game,
-                'senderPlayer': serialized_player,
+                'senderPlayer': consumer.profile_data,
                 'answer': answer,
                 'is_correct': False
                 })
@@ -315,11 +312,10 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
     
     serialized_game = await _get_game_data(consumer)
-    serialized_player = await _get_player_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',
         'game': serialized_game,
-        'player': serialized_player,
+        'player': consumer.profile_data,
     })
     await consumer.remove_from_layer(consumer.game_group_name)
     consumer.current_game = None

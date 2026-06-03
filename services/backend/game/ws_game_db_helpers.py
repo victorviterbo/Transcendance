@@ -17,6 +17,7 @@ from userprofile.serializers import LightProfileSerializer
 
 from game.models import Game
 from game.serializers import GameHeaderSerializer, GameUpdateSerializer
+from game.ws_game_shared import ACTIVE_GAMES
 
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
@@ -28,14 +29,17 @@ def _get_game(consumer: Any,
 	"""Fetch a Game instance by uid, and check for player's membership if requested."""
 	if not game_uid:
 		return None
+	if game_uid in ACTIVE_GAMES:
+		if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
+			return None
+		else:
+			return ACTIVE_GAMES[game_uid]['task']
 	if req_membership:
 		return (Game.objects.filter(uid=game_uid,
 							players=consumer.profile)
-							.select_related('playlist',
-										'owned_by')
+							.select_related('playlist', 'owned_by')
 							.prefetch_related('playlist__tracks')
 							.first())
-	
 	return (Game.objects.filter(uid=game_uid)
 			.select_related('playlist', 'owned_by')
 			.prefetch_related('playlist__tracks')
