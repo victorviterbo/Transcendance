@@ -127,7 +127,8 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
     if getattr(consumer, 'current_game', None):
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
-                                'message': 'Already in a game'})
+                                'message': 'Already in a game',
+                                })
         return
     game_uid = content.get('uid')
     if game_uid is None:
