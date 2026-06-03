@@ -155,13 +155,13 @@ WS-game:
                 target: "game"
                 event: "start_game"
                 game_uid: "123456"
-            submit_answer:
+            answer_submit:
               value:
                 target: "game"
-                event: "submit_answer"
+                event: "answer_submit"
                 game_uid: "123456"
                 answer: "My answer"
-                answer_time: 1.42
+                answerTime: 1.42
             leave_game:
               value:
                 target: "game"

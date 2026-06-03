@@ -5,7 +5,7 @@ from django.db import models
 
 
 class Playlist(models.Model):
-	"""Stores the different playlists (e.g., Rock, Rap, Classics)."""
+	"""Stores the different playlists (e.g., Rock, Rap, Rnb..)."""
 	name = models.CharField(max_length=255, unique=True)
 	rss_url = models.URLField(max_length=500, default='')
 	uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -21,11 +21,8 @@ class Track(models.Model):
 	title = models.CharField(max_length=255)
 	artist = models.CharField(max_length=255)
 	genre = models.CharField(max_length=100, null=True, blank=True)
-	
-	# URLs can sometimes exceed 200 characters, so increasing max_length is safe
 	preview_url = models.URLField(max_length=500, null=True, blank=True)
 	artwork_url = models.URLField(max_length=500, null=True, blank=True)
-		# This links the track to the playlist(s)
 	playlists = models.ManyToManyField(Playlist, related_name='tracks')
 
 	def __str__(self) -> str:

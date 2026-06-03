@@ -19,11 +19,11 @@ game-create:
                 game_name: "My Game"
                 public_level: "public"
                 game_mode: "armageddon"
-                num_tracks: 10
-                break_duration: 15
-                playback_duration: 30
-                fuzzy_match: false
-                answer_public: true
+                trackCount: 10
+                breakDuration: 15
+                playbackDuration: 30
+                fuzzy: false
+                reveal: true
             with_genres:
               summary: Game creation with genres
               value:
@@ -31,11 +31,11 @@ game-create:
                 public_level: "private"
                 genres: ["pop", "rock"]
                 game_mode: "speed"
-                num_tracks: 20
-                break_duration: 30
-                playback_duration: 15
-                fuzzy_match: true
-                answer_public: false
+                trackCount: 20
+                breakDuration: 30
+                playbackDuration: 15
+                fuzzy: true
+                reveal: false
             party_mode:
               summary: Public party setup
               value:
@@ -43,11 +43,11 @@ game-create:
                 public_level: "public"
                 genres: ["electro", "rap", "rock"]
                 game_mode: "normal"
-                num_tracks: 15
-                break_duration: 12
-                playback_duration: 18
-                fuzzy_match: true
-                answer_public: true
+                trackCount: 15
+                breakDuration: 12
+                playbackDuration: 18
+                fuzzy: true
+                reveal: true
     responses:
       "201":
         description: Game created successfully
@@ -251,14 +251,14 @@ game:
               summary: Competitive setup
               value:
                 game_name: "Ranked Night"
-                public_level: "friends_only"
+                public_level: "friends"
                 genres: ["rock", "electro", "rap"]
                 game_mode: "speed"
-                num_tracks: 25
-                break_duration: 10
-                playback_duration: 10
-                fuzzy_match: false
-                answer_public: true
+                trackCount: 25
+                breakDuration: 10
+                playbackDuration: 10
+                fuzzy: false
+                reveal: true
     responses:
       "201":
         description: Game created successfully
@@ -306,7 +306,7 @@ game:
               invalid_duration:
                 value:
                   error:
-                    playback_duration: "MAX_VALUE_PLAYBACK_DURATION"
+                    playbackDuration: "MAX_VALUE_PLAYBACKDURATION"
 
 game-common:
   parameters:
@@ -411,59 +411,59 @@ game-common:
                 description: Genre list to use for rounds
               game_mode:
                 type: string
-                enum: [normal, speed, armagedon]
+                enum: [normal, speed, armageddon]
                 description: Gameplay mode
               public_level:
                 type: string
-                enum: [public, friends_only, invite_only]
-                description: New privacy level (public/friends_only/invite_only)
-              num_tracks:
+                enum: [public, friends, private]
+                description: New privacy level (public/friends/private)
+              trackCount:
                 type: integer
                 minimum: 1
                 maximum: 100
                 description: Number of tracks in the game
-              break_duration:
+              breakDuration:
                 type: integer
                 minimum: 1
                 description: Break duration between rounds (seconds)
-              playback_duration:
+              playbackDuration:
                 type: integer
                 minimum: 5
                 maximum: 30
                 description: Track preview duration (seconds)
-              fuzzy_match:
+              fuzzy:
                 type: boolean
                 description: Enable fuzzy answer matching
-              answer_public:
+              reveal:
                 type: boolean
                 description: Whether answers are visible to all players
           examples:
             privacy_only:
               summary: Update only privacy
               value:
-                public_level: "invite_only"
+                public_level: "private"
             speed_competitive:
               summary: Competitive speed setup
               value:
                 genres: ["rock", "electro", "rap"]
                 game_mode: "speed"
-                public_level: "friends_only"
-                num_tracks: 20
-                break_duration: 8
-                playback_duration: 12
-                fuzzy_match: false
-                answer_public: true
+                public_level: "friends"
+                trackCount: 20
+                breakDuration: 8
+                playbackDuration: 12
+                fuzzy: false
+                reveal: true
             chill_long_session:
               summary: Relaxed long session
               value:
-                genres: ["pop", "r&b/soul", "variété française"]
+                genres: ["pop", "r&b/soul", "French Variety"]
                 game_mode: "normal"
                 public_level: "public"
-                num_tracks: 30
-                break_duration: 20
-                playback_duration: 25
-                fuzzy_match: true
-                answer_public: false
+                trackCount: 30
+                breakDuration: 20
+                playbackDuration: 25
+                fuzzy: true
+                reveal: false
     responses:
       "200":
         description: Game updated
@@ -503,7 +503,7 @@ game-common:
               invalid_playback:
                 value:
                   error:
-                    playback_duration: "MAX_VALUE_PLAYBACK_DURATION"
+                    playbackDuration: "MAX_VALUE_PLAYBACKDURATION"
               invalid_genres:
                 value:
                   error:
@@ -511,7 +511,7 @@ game-common:
               invalid_tracks:
                 value:
                   error:
-                    num_tracks: "MIN_VALUE_NUM_TRACKS"
+                    trackCount: "MIN_VALUE_TRACKCOUNT"
 
   delete:
     summary: Delete a game

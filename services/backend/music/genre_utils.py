@@ -7,11 +7,12 @@ GENRE_MAPPING = {
 
 	# Pop variants
 	"K-Pop": "Pop",
-	"French Pop": "Variété française",
+	"French Pop": "French Variety",
 	"Indie Pop": "Pop",
 	"Pop in Spanish": "Pop",
 	"Pop Latino": "Pop",
 	"Afro-Pop": "Pop",
+	"Variété française": "French Variety",
 
 	# Rock variants
 	"Hard Rock": "Rock",

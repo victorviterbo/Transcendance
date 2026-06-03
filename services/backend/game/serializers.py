@@ -26,23 +26,21 @@ class GameCreationSerializer(serializers.ModelSerializer):
         fields = ['name', 'visibility']
 
 
-class GameUpdateSerializer(serializers.ModelSerializer):
+class GameSettingsSerializer(serializers.ModelSerializer):
     """Serializer for updating updating game fields through websocket."""
 
     class Meta:
-        """Meta config for GameUpdateSerializer."""
+        """Meta config for GameSettingsSerializer."""
         model = Game
         fields = [
-            'uid',
             'genres',
             'mode',
-            'num_tracks',
-            'playback_duration',
-            'break_duration',
-            'answer_public',
-            'fuzzy_match',
+            'trackCount',
+            'playbackDuration',
+            'breakDuration',
+            'reveal',
+            'fuzzy',
         ]
-        read_only_fields = ['name']
 
     def validate_genres(self, value : Any)-> Any:
         """Validate that all genres are in the allowed list."""

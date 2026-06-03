@@ -20,9 +20,9 @@ async def _send_track(consumer: 'GlobalConsumer',
         })
         return
     event = {'type': 'game_round_start',
-            'game': serialized_game,
-            'playbackDuration': consumer.current_game.playback_duration,
-            'track': serialized_track
+            'uid': serialized_game.get('uid'),
+            'preview': serialized_track.get('preview'),
+            'playbackDuration': consumer.current_game.playbackDuration,
         }
     await consumer.group_send(consumer.game_group_name, event)
 
@@ -36,7 +36,7 @@ async def _send_round_stats(consumer: 'GlobalConsumer',
             'track': serialized_track,
             'results': serialized_stats,
             'is_last_round': (consumer.current_game.current_round
-                                >= consumer.current_game.num_tracks)}
+                                >= consumer.current_game.trackCount)}
     await consumer.group_send(consumer.game_group_name, event)
 
 async def _send_game_stats(consumer: 'GlobalConsumer',
@@ -54,13 +54,14 @@ async def _send_new_player(consumer: 'GlobalConsumer',
                             serialized_player: dict) -> None:
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_joined',
-        'game': serialized_game,
+        'uid': serialized_game.get('uid'),
         'player': serialized_player
     })
 
-async def _send_start_signal(consumer: 'GlobalConsumer', serialized_game: dict) -> None:
+async def _send_start_signal(consumer: 'GlobalConsumer', serialized_game: dict, serialized_settings: dict) -> None:
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_start_signal',
-        'game': serialized_game,
+        'uid': serialized_game.get('uid'),
+        'settings': serialized_settings,
         'delay': countdown_time,
     })

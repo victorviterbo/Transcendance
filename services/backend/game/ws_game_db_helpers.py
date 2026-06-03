@@ -3,7 +3,6 @@ import uuid
 from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
-from chat.models import Room
 from django.db.models import Count, Q, Sum
 from music.models import Playlist, Track
 from music.serializers import TrackSerializer
@@ -16,7 +15,7 @@ from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
 
 from game.models import Game
-from game.serializers import GameHeaderSerializer, GameUpdateSerializer
+from game.serializers import GameHeaderSerializer, GameSettingsSerializer
 from game.ws_game_shared import ACTIVE_GAMES
 
 if TYPE_CHECKING:
@@ -55,7 +54,7 @@ def _setup_game_assets(game: Game) -> None:
 				code='MISSING_FIELD_GENRE',
 			)
 
-	tracks_per_genre = game.num_tracks // len(game.genres)
+	tracks_per_genre = game.trackCount // len(game.genres)
 	all_tracks = list()
 	for genre in game.genres:
 		genre_tracks = list(
@@ -67,7 +66,7 @@ def _setup_game_assets(game: Game) -> None:
 				code='NOT_ENOUGH_TRACKS_GENRE',
 			)
 		all_tracks.extend(genre_tracks)
-	if not len(all_tracks) == game.num_tracks:
+	if not len(all_tracks) == game.trackCount:
 		raise serializers.ValidationError(
 			'Error in playlist creation process',
 			code='NO_TRACKS_FOUND',
@@ -83,16 +82,6 @@ def _setup_game_assets(game: Game) -> None:
 		uid=playlist_uid,
 	)
 	playlist.tracks.set(all_tracks)
-
-	"""
-	room_uid = uuid.uuid4()
-	room = Room.objects.create(
-		name=f"Chat Room - {game.uid}",
-		is_direct=False,
-		uid=room_uid,
-	)
-	#game.room = room
-	# """ # TODO : check that the room is created in view ok
 	game.playlist = playlist
 	game.current_track = all_tracks[0]
 	game.status = 'playing_round'
@@ -125,7 +114,7 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 		if not consumer.current_game.current_track:
 			return None, None
 		track_data = TrackSerializer(consumer.current_game.current_track).data
-		track_data_hidden = {'preview_url': track_data['preview_url']}
+		track_data_hidden = {'preview': track_data['preview_url']}
 		return track_data, track_data_hidden
 	except Game.DoesNotExist:
 		return None, None
@@ -136,9 +125,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 	
 	Args:
 		consumer: The WebSocket consumer instance
-		player: The player profile
-		game: The game instance
-		answer: Player's answer (title title or artist name)
+		content: dict sent by client
 		track: The current track instance
 	
 	Returns:
@@ -146,7 +133,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		bool: Whether the title is correct
 	"""
 	try:
-		time = content.get('answer_time')
+		time = content.get('answerTime')
 		player_answer = content.get('answer').lower().strip()
 		if track is None or time is None or player_answer is None:
 			return False, False
@@ -162,7 +149,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_artist) >= 80
-		and consumer.current_game.fuzzy_match)
+		and consumer.current_game.fuzzy)
 				or player_answer == track_artist):
 				player_stats.artist_found = True
 				player_stats.artist_found_at = time
@@ -171,7 +158,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
-		and consumer.current_game.fuzzy_match)
+		and consumer.current_game.fuzzy)
 				or player_answer == track_title):
 				player_stats.title_found = True
 				player_stats.title_found_at = time
@@ -190,7 +177,6 @@ def _init_round_stats(game: Game) -> None:
 		round_number=game.current_round,
 		track=game.current_track,
 	)
-	#game_round_stats.players.set(game.players.all())
 	for player in game.players.all():
 		game_stats = UserGameStats.objects.filter(game=game, player=player).first()
 		UserRoundStats.objects.create(
@@ -207,18 +193,18 @@ def _compute_round_stats(game: Game) -> None:
 	"""Collect and store game statistics after a round finishes."""
 	stats = UserRoundStats.objects.filter(round__round_number=game.current_round,
 										round__game=game)
-	if game.mode == 'armagedon':
+	if game.mode == 'armageddon':
 		first_artist = stats.filter(artist_found=True).order_by('artist_found_at').first()
 		first_title = stats.filter(title_found=True).order_by('title_found_at').first()
 		if first_artist and first_title and first_artist.player == first_title.player:
-			first_artist.xp_earned += default_pts['armagedon']['both']
+			first_artist.xp_earned += default_pts['armageddon']['both']
 			first_artist.save(update_fields=['xp_earned'])
 		else:
 			if first_artist:
-				first_artist.xp_earned += default_pts['armagedon']['artist']
+				first_artist.xp_earned += default_pts['armageddon']['artist']
 				first_artist.save(update_fields=['xp_earned'])
 			if first_title:
-				first_title.xp_earned += default_pts['armagedon']['title']
+				first_title.xp_earned += default_pts['armageddon']['title']
 				first_title.save(update_fields=['xp_earned'])
 	elif game.mode == 'speed':
 		xp_to_add = {}
@@ -311,7 +297,7 @@ def _apply_game_settings(game: Game,
 						*,
 						partial: bool = True) -> Game:
 	"""Validate and persist game settings updates through the shared serializer."""
-	serializer = GameUpdateSerializer(instance=game, data=data, partial=partial)
+	serializer = GameSettingsSerializer(instance=game, data=data, partial=partial)
 	serializer.is_valid(raise_exception=True)
 	return serializer.save()
 
@@ -328,7 +314,7 @@ def _get_game_data(consumer: 'GlobalConsumer') -> dict:
 @database_sync_to_async
 def _get_game_settings_data(consumer: 'GlobalConsumer') -> dict:
 	"""Retrieve game setting data."""
-	return GameUpdateSerializer(consumer.current_game).data
+	return GameSettingsSerializer(consumer.current_game).data
 
 @database_sync_to_async
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:
