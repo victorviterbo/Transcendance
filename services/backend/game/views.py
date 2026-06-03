@@ -38,13 +38,14 @@ class GeneralGameView(APIView):
 			return Response({'error': {'profile': 'PROFILE_NOT_FOUND'}},
 							status=status.HTTP_400_BAD_REQUEST)
 		try:
-				room = create_gamechat_room(new_game)
-				new_game.room = room
-				new_game.save(update_fields=['room'])
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
-			#UserGameStats.objects.create(game=new_game, player=request.profile)
+			# create the chat room after the game exists
+			room = create_gamechat_room(new_game)
+			new_game.room = room
+			new_game.save(update_fields=['room'])
+			UserGameStats.objects.create(game=new_game, player=request.profile)
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:

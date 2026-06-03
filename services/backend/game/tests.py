@@ -346,15 +346,15 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            challenger_history = await challenger_socket.receive_json_from()
             challenger_join_response = await challenger_socket.receive_json_from()
+            challenger_history = await challenger_socket.receive_json_from()
             owner_broadcast = await owner_socket.receive_json_from()
 
-            self.assertEqual(challenger_history['target'], 'chat')
-            self.assertEqual(challenger_history['event'], 'history')
-            self.assertEqual(challenger_history['chat'], [])
             self.assertEqual(challenger_join_response['target'], 'game')
             self.assertEqual(challenger_join_response['event'], 'player_joined')
+            self.assertEqual(challenger_history['target'], 'game')
+            self.assertEqual(challenger_history['event'], 'game-chat-history')
+            self.assertEqual(challenger_history['game_chat'], [])
             self.assertEqual(owner_broadcast['target'], 'game')
             self.assertEqual(owner_broadcast['event'], 'player_joined')
             self.assertEqual(owner_broadcast['player']['uid'],
@@ -398,17 +398,17 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            history_response = await challenger_socket.receive_json_from()
             join_response = await challenger_socket.receive_json_from()
+            history_response = await challenger_socket.receive_json_from()
 
-            self.assertEqual(history_response['target'], 'chat')
-            self.assertEqual(history_response['event'], 'history')
-            self.assertEqual(
-                [entry['body'] for entry in history_response['chat']],
-                ['first message', 'second message'],
-            )
             self.assertEqual(join_response['target'], 'game')
             self.assertEqual(join_response['event'], 'player_joined')
+            self.assertEqual(history_response['target'], 'game')
+            self.assertEqual(history_response['event'], 'game-chat-history')
+            self.assertEqual(
+                [entry['body'] for entry in history_response['game_chat']],
+                ['first message', 'second message'],
+            )
 
             await challenger_socket.disconnect()
             await owner_socket.disconnect()
@@ -438,8 +438,8 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
 
             # Send a single chat message from owner
             await owner_socket.send_json_to({
-                'target': 'chat',
-                'event': 'chat-message',
+                'target': 'game',
+                'event': 'game-chat',
                 'message': 'hello everyone',
                 'room_uid': room_uid,
             })
@@ -450,7 +450,7 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
                         resp = await comm.receive_json_from(timeout=1)
                     except Exception:
                         continue
-                    if resp.get('type') == 'chat_message':
+                    if resp.get('target') == 'game' and resp.get('event') == 'message_broadcast':
                         return resp
                 return None
 
@@ -459,8 +459,8 @@ class GameWebsocketFlowTests(GameTestDataMixin, TransactionTestCase):
 
             self.assertIsNotNone(owner_chat)
             self.assertIsNotNone(challenger_chat)
-            self.assertEqual(owner_chat['message'], 'hello everyone')
-            self.assertEqual(challenger_chat['message'], 'hello everyone')
+            self.assertEqual(owner_chat['message']['body'], 'hello everyone')
+            self.assertEqual(challenger_chat['message']['body'], 'hello everyone')
 
             await challenger_socket.disconnect()
             await owner_socket.disconnect()

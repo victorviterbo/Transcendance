@@ -52,9 +52,6 @@ class RoomHistorySerializer(serializers.ModelSerializer):
         fields = [
             'sender_profile',
             'body',
-            'delivered',
-            'seen',
-            'created',
             'uid',
         ]
 

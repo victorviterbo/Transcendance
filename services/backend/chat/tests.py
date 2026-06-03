@@ -234,8 +234,8 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'chat-message',
+			await communicator.send_json_to({'target': 'game',
+									'event': 'game-chat',
 									'message': '   '})
 			response = await communicator.receive_json_from()
 			self.assertEqual(response, {'type': 'error',
@@ -253,17 +253,21 @@ class ChatWebsocketTests(TransactionTestCase):
 			self.assertTrue(connected)
 
 			await comm.send_json_to({
-				'target': 'chat', 'event': 'chat-message',
+				'target': 'game', 'event': 'game-chat',
 				'message': 'hello websocket', 'room_uid': str(self.room.uid),
 			})
 			resp = await comm.receive_json_from()
-			self.assertEqual(resp['type'], 'chat_message')
-			self.assertEqual(resp['message'], 'hello websocket')
+			self.assertEqual(resp['target'], 'game')
+			self.assertEqual(resp['event'], 'message_broadcast')
+			self.assertEqual(resp['message']['body'], 'hello websocket')
 
 
 			await comm.send_json_to({
-				'target': 'chat', 'event': 'direct-message',
-				'message': 'hello friend', 'user_uid': str(self.friend.uid),
+				'target': 'friend-chat', 'event': 'send',
+				'message': {
+					'message': 'hello friend',
+					'target-id': str(self.friend.uid),
+				},
 			})
 			dm = None
 			for _ in range(3):

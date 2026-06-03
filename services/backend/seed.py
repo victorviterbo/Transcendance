@@ -91,11 +91,13 @@ for _ in range(30): # Create 30 random friend connections
 for t_idx in range(1, 16):
     track, created = Track.objects.get_or_create(
         itunes_id=t_idx,
-        title=f"Track {t_idx}",
-        artist=f"Artist {t_idx}",
-        preview_url=f"https://example.com/preview{t_idx}.mp3",
-        artwork_url=f"https://example.com/artwork{t_idx}.jpg",
-        genre=random.choice(genres)
+        defaults={
+            'title': f"Track {t_idx}",
+            'artist': f"Artist {t_idx}",
+            'preview_url': f"https://example.com/preview{t_idx}.mp3",
+            'artwork_url': f"https://example.com/artwork{t_idx}.jpg",
+            'genre': random.choice(genres)
+        }
     )
     tracks.append(track)
 # ---------------------------------------------------------

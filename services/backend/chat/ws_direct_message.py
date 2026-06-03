@@ -4,6 +4,7 @@ import logging
 
 from channels.db import database_sync_to_async
 from chat.models import Message
+from chat.serializers import FriendChatMessageSerializer
 from django.core.cache import cache
 from django.db import models
 from userprofile.models import Profile
@@ -70,8 +71,8 @@ def mark_pendmessage_delivered(recipient_profile_id: int) -> int:
     ).exclude(sender_profile_id=recipient_profile_id).update(delivered=True)
 
 
-async def handle_chat_payload(consumer, content: dict, event: str | None) -> None:
-    """Translate frontend friend-chat payloads into internal chat events."""
+async def handle_friend_chat_payload(consumer, content: dict, event: str | None) -> None:
+    """Translate frontend friend-chat payloads into direct-message operations."""
     if event == 'send':
         frontend_message = content.get('message')
         if not isinstance(frontend_message, dict):
@@ -79,7 +80,7 @@ async def handle_chat_payload(consumer, content: dict, event: str | None) -> Non
                 'ws.receive.invalid_friend_chat_payload profile_id=%s',
                 getattr(getattr(consumer, 'profile', None), 'id', None),
             )
-            await consumer.send_json({'type': 'error', 'message': 'message is r-àèequired'})
+            await consumer.send_json({'type': 'error', 'message': 'message is required'})
             return
         logger.info(
             'ws.receive.friend_chat_translate profile_id=%s target_id=%s message_len=%s',
@@ -87,21 +88,105 @@ async def handle_chat_payload(consumer, content: dict, event: str | None) -> Non
             frontend_message.get('target-id'),
             len(str(frontend_message.get('message', ''))),
         )
-        await consumer.chat_subroutine({
-            'event': 'direct-message',
+        await handle_direct_message(consumer, {
             'message': frontend_message.get('message'),
             'user_uid': frontend_message.get('target-id'),
             '_frontend_contract': True,
         })
         return
     if event in ('open', 'close'):
-        await consumer.chat_subroutine({
+        await handle_chat_state_change(consumer, {
             'event': event,
             'target_uid': content.get('toUid'),
             '_frontend_contract': True,
         })
         return
     await consumer.send_json({'type': 'error', 'message': 'unsupported_event'})
+
+async def handle_direct_message(consumer, content: dict) -> None:
+    """Handle a direct-message payload from the websocket consumer."""
+    body = str(content.get('message', '')).strip()
+    if not body:
+        await consumer.send_json({'type': 'error', 'message': 'message is required'})
+        return
+    success, message = await consumer._save_message(body, 'direct-message', content)
+    if not success:
+        expected_validation_errors = {'Target is not a friend', 'User not found'}
+        message_text = message.get('message') if isinstance(message, dict) else None
+        log_fn = logger.info if message_text in expected_validation_errors else logger.warning
+        log_fn('ws.direct_message.save_failed profile_id=%s error=%s',
+               getattr(getattr(consumer, 'profile', None), 'id', None),
+               message)
+        await consumer.send_json(message)
+        return
+
+    recipient_profile = await get_recipient_profile(message)
+    if recipient_profile is None:
+        logger.warning('ws.direct_message.no_recipient profile_id=%s message_uid=%s',
+                       getattr(getattr(consumer, 'profile', None), 'id', None),
+                       message.uid)
+        await consumer.send_json({'type': 'error', 'message': 'Target user not found'})
+        return
+
+    if recipient_profile.is_online:
+        recipient_chat_open = await is_chat_open(recipient_profile.id, consumer.profile.id)
+        if recipient_chat_open:
+            await mark_message_seen(message.uid)
+            message.delivered = True
+            message.seen = True
+        elif not message.delivered:
+            await mark_message_delivered(message.uid)
+            message.delivered = True
+
+    logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
+                getattr(getattr(consumer, 'profile', None), 'id', None),
+                recipient_profile.id,
+                message.uid)
+
+    sender_payload = {
+        'target': 'friend-chat',
+        'event': 'new',
+        'message': FriendChatMessageSerializer(
+            message,
+            context={'recipient_profile': recipient_profile, 'direction': 'outgoing'},
+        ).data,
+    }
+    recipient_payload = {
+        'target': 'friend-chat',
+        'event': 'new',
+        'message': FriendChatMessageSerializer(
+            message,
+            context={'recipient_profile': consumer.profile, 'direction': 'incoming'},
+        ).data,
+    }
+    await consumer.group_send(f'user_{consumer.profile.uid}', {
+        'type': 'send.notification',
+        'payload': sender_payload,
+    })
+    if recipient_profile.is_online:
+        await consumer.group_send(f'user_{recipient_profile.uid}', {
+            'type': 'send.notification',
+            'payload': recipient_payload,
+        })
+
+
+async def handle_chat_state_change(consumer, content: dict) -> None:
+    """Handle open/close state changes for direct chat."""
+    recipient_uid = content.get('target_uid')
+    if not recipient_uid:
+        await consumer.send_json({'type': 'error', 'message': 'target_uid is required'})
+        return
+    recipient_profile = await consumer.get_profile_by_uid(recipient_uid)
+    if not recipient_profile:
+        await consumer.send_json({'type': 'error', 'message': 'target_not_found'})
+        return
+
+    is_open = content.get('event') == 'open'
+    await set_chat_open(consumer.profile.id, recipient_profile.id, is_open=is_open)
+    if is_open:
+        consumer.open_chat_recipient.add(recipient_profile.id)
+    else:
+        consumer.open_chat_recipient.discard(recipient_profile.id)
 
 @database_sync_to_async
 def mark_message_delivered(message_uid) -> None:
