@@ -235,7 +235,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
 			await communicator.send_json_to({'target': 'game',
-									'event': 'game-chat',
+									'event': 'message_send',
 									'message': '   '})
 			response = await communicator.receive_json_from()
 			self.assertEqual(response, {'type': 'error',
@@ -253,7 +253,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			self.assertTrue(connected)
 
 			await comm.send_json_to({
-				'target': 'game', 'event': 'game-chat',
+				'target': 'game', 'event': 'message_send',
 				'message': 'hello websocket', 'room_uid': str(self.room.uid),
 			})
 			resp = await comm.receive_json_from()

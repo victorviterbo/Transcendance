@@ -109,7 +109,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			await handle_friend_chat_payload(self, content, event)
 			return
 		if target == 'game':
-			if event == 'game-chat':
+			if event == 'message_send':
 				await handle_game_chat_payload(self, content)
 				return
 			await handle_game_action(self, content)
@@ -149,7 +149,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			'uid': event.get('uid'),
 			'self': LightProfileSerializer(self.profile).data,
 			'message': event.get('message'),
-			'created': event.get('created'),
 		})
 
 	async def send_notification(self, event: dict) -> None:
@@ -382,11 +381,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 				room.participants.add(self.profile)
 				room.participants.add(recipient_profile)
 		elif event == 'chat-message':
-			if content.get('room_uid'):
-				room = Room.objects.filter(uid=content['room_uid']).first()
-				self.room = room
-			elif getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
+			if getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
 				room = self.current_game.room
+				self.room = room
+			elif content.get('room_uid'):
+				room = Room.objects.filter(uid=content['room_uid']).first()
 				self.room = room
 			elif self.room:
 				room = self.room

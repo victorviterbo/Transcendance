@@ -44,15 +44,15 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class RoomHistorySerializer(serializers.ModelSerializer):
     """Serialize persisted game room messages for history replay."""
-    sender_profile = LightProfileSerializer(read_only=True)
+    sender = LightProfileSerializer(source="sender_profile", read_only=True)
     class Meta:
         """Define the message fields exposed to history consumers from game players."""
 
         model = Message
         fields = [
-            'sender_profile',
-            'body',
             'uid',
+            'sender',
+            'body',
         ]
 
 class FriendChatMessageSerializer(serializers.Serializer):

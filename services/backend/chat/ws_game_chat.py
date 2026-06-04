@@ -38,17 +38,27 @@ def get_join_history(game) -> list[dict]:
 	messages = (
 		Message.objects.filter(room=game.room)
 		.select_related('sender_profile')
-		.order_by('created')
+		.order_by('created', 'id')
 	)
-	return RoomHistorySerializer(messages, many=True).data
+	history = RoomHistorySerializer(messages, many=True).data
+	return [
+		{
+			'uid': str(message['uid']),
+			'sender': message['sender_profile'],
+			'body': message['body'],
+		}
+		for message in history
+	]
 
 async def send_join_chatroom(consumer) -> None:
 	"""Send persisted chat room history to the joining websocket client."""
 	history = await get_join_history(consumer.current_game)
 	await consumer.send_json({
 		'target': 'game',
-		'event': 'game-chat-history',
-		'game_chat': history,
+		'event': 'message_history',
+		'uid': str(consumer.current_game.uid),
+		'self': LightProfileSerializer(consumer.profile).data,
+		'messages': history,
 	})
 
 @database_sync_to_async
@@ -59,30 +69,28 @@ def get_recipient_uids(game) -> list[str]:
 	return [str(uid) for uid in game.players.values_list('uid', flat=True)]
 
 
-def chat_message_payload(message: Message, sender: str) -> dict[str, object]:
+def chat_message_payload(message: Message, game_uid: str) -> dict[str, object]:
 	"""Build the websocket payload shared by chat and game chat messages."""
-	#TODO check the message, sender,  we need uid or id
 	return {
 		'type': 'game.chat.message',
-		'uid': str(message.uid),
+		'uid': game_uid,
 		'message': {
-			'body': message.body,
 			'uid': str(message.uid),
 			'sender': LightProfileSerializer(message.sender_profile).data,
+			'body': message.body,
 		},
-		'sender': sender,
-		'created': message.created.isoformat() if message.created else None,
 	}
 
 async def broadcast_message(consumer: 'GlobalConsumer', message: Message) -> None:
 	"""Broadcast a live game-room chat message to everyone in the game group."""
-	payload = chat_message_payload(message, consumer._sender_name())
 	if getattr(consumer, 'current_game', None):
+		payload = chat_message_payload(message, str(consumer.current_game.uid))
 		recipient_uids = await get_recipient_uids(consumer.current_game)
 		logger.debug('broadcast_message recipients=%s game=%s', recipient_uids, getattr(consumer.current_game, 'uid', None))
 		for recipient_uid in recipient_uids:
 			await consumer.group_send(f'user_{recipient_uid}', payload)
 		return
+	payload = chat_message_payload(message, consumer._sender_name())
 	await consumer.group_send(f'user_{consumer.profile.uid}', payload)
 
 
