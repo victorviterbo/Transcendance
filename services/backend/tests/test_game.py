@@ -161,7 +161,7 @@ class GameWebsocketFlowTests(TestBaseHelpers):
     def test_join_game_rejects_unknown_game_uid(self) -> None:
         """join_game should fail when the target game does not exist."""
 
-        async def scenario() -> None:
+        async def scenario() -> str:
             communicator = self._connect_socket(self.challenger)
             connected, _ = await communicator.connect()
             self.assertTrue(connected)
@@ -287,8 +287,10 @@ class GameWebsocketFlowTests(TestBaseHelpers):
             self.assertEqual(challenger_join_response['target'], 'game')
             self.assertEqual(challenger_join_response['event'], 'player_joined')
             self.assertEqual(challenger_history['target'], 'game')
-            self.assertEqual(challenger_history['event'], 'game-chat-history')
-            self.assertEqual(challenger_history['game_chat'], [])
+            self.assertEqual(challenger_history['event'], 'message_history')
+            self.assertEqual(challenger_history['uid'], str(game.uid))
+            self.assertEqual(challenger_history['self']['uid'], str(self.challenger.profile.uid))
+            self.assertEqual(challenger_history['messages'], [])
             self.assertEqual(owner_broadcast['target'], 'game')
             self.assertEqual(owner_broadcast['event'], 'player_joined')
             self.assertEqual(owner_broadcast['player']['uid'],
@@ -309,12 +311,12 @@ class GameWebsocketFlowTests(TestBaseHelpers):
         game.room = room
         game.save(update_fields=['room'])
 
-        Message.objects.create(
+        first_message = Message.objects.create(
             sender_profile=self.owner.profile,
             room=room,
             body='first message',
         )
-        Message.objects.create(
+        second_message = Message.objects.create(
             sender_profile=self.owner.profile,
             room=room,
             body='second message',
@@ -338,10 +340,20 @@ class GameWebsocketFlowTests(TestBaseHelpers):
             self.assertEqual(join_response['target'], 'game')
             self.assertEqual(join_response['event'], 'player_joined')
             self.assertEqual(history_response['target'], 'game')
-            self.assertEqual(history_response['event'], 'game-chat-history')
+            self.assertEqual(history_response['event'], 'message_history')
+            self.assertEqual(history_response['uid'], str(game.uid))
+            self.assertEqual(history_response['self']['uid'], str(self.challenger.profile.uid))
             self.assertEqual(
-                [entry['body'] for entry in history_response['game_chat']],
+                [entry['uid'] for entry in history_response['messages']],
+                [str(first_message.uid), str(second_message.uid)],
+            )
+            self.assertEqual(
+                [entry['body'] for entry in history_response['messages']],
                 ['first message', 'second message'],
+            )
+            self.assertEqual(
+                [entry['sender']['uid'] for entry in history_response['messages']],
+                [str(self.owner.profile.uid), str(self.owner.profile.uid)],
             )
 
             await challenger_socket.disconnect()
@@ -355,7 +367,6 @@ class GameWebsocketFlowTests(TestBaseHelpers):
     def test_live_game_chat_is_broadcast_to_all_players(self) -> None:
         """Live chat sent during a game should reach every socket in the game room."""
         _, game = self.create_game_via_http(self.owner, name='WS Live Chat')
-        room_uid = str(game.room.uid)
 
         async def scenario() -> None:
             owner_socket = self._connect_socket(self.owner)
@@ -373,9 +384,8 @@ class GameWebsocketFlowTests(TestBaseHelpers):
             # Send a single chat message from owner
             await owner_socket.send_json_to({
                 'target': 'game',
-                'event': 'game-chat',
+                'event': 'message_send',
                 'message': 'hello everyone',
-                'room_uid': room_uid,
             })
 
             async def pull_chat(comm):
@@ -393,16 +403,33 @@ class GameWebsocketFlowTests(TestBaseHelpers):
 
             self.assertIsNotNone(owner_chat)
             self.assertIsNotNone(challenger_chat)
+            self.assertEqual(owner_chat['uid'], str(game.uid))
+            self.assertEqual(challenger_chat['uid'], str(game.uid))
+            self.assertNotIn('created', owner_chat)
+            self.assertNotIn('created', challenger_chat)
+            self.assertEqual(owner_chat['message']['uid'], challenger_chat['message']['uid'])
             self.assertEqual(owner_chat['message']['body'], 'hello everyone')
             self.assertEqual(challenger_chat['message']['body'], 'hello everyone')
+            self.assertEqual(owner_chat['message']['sender']['uid'], str(self.owner.profile.uid))
+            self.assertEqual(challenger_chat['message']['sender']['uid'], str(self.owner.profile.uid))
+            self.assertNotIn('created', owner_chat['message'])
+            self.assertNotIn('created', challenger_chat['message'])
+            message_uid = owner_chat['message']['uid']
 
             await challenger_socket.disconnect()
             await owner_socket.disconnect()
+            return message_uid
 
-        async_to_sync(scenario)()
+        broadcast_message_uid = async_to_sync(scenario)()
 
         # ensure message persisted
-        self.assertTrue(Message.objects.filter(sender_profile=self.owner.profile, room=game.room, body='hello everyone').exists())
+        message = Message.objects.get(
+            sender_profile=self.owner.profile,
+            room=game.room,
+            body='hello everyone',
+        )
+        self.assertEqual(message.room, game.room)
+        self.assertEqual(broadcast_message_uid, str(message.uid))
 
     def test_unknown_websocket_game_event_returns_error(self) -> None:
         """Unknown game events should return an explicit websocket error."""
