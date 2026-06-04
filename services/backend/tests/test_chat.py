@@ -5,6 +5,7 @@ import uuid
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
+from chat.models import Message, Room
 from django.test import TransactionTestCase
 from django.urls import reverse
 from friends.models import Friendship
@@ -13,8 +14,6 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
-
-from .models import Message, Room
 
 
 class ChatViewsTests(APITestCase):
@@ -70,12 +69,12 @@ class ChatViewsTests(APITestCase):
 	def test_room_exclude_history_query(self) -> None:
 		"""Room lookup should return room metadata even when include_history is passed."""
 		Message.objects.create(
-			sender_profile=self.user.profile,
+			sender=self.user.profile,
 			room=self.room,
 			body='first message',
 		)
 		Message.objects.create(
-			sender_profile=self.friend.profile,
+			sender=self.friend.profile,
 			room=self.room,
 			body='second message',
 		)
@@ -97,7 +96,7 @@ class ChatViewsTests(APITestCase):
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertTrue(
 			Message.objects.filter(room=self.room,
-						sender_profile=self.user.profile,
+						sender=self.user.profile,
 						body='hello room').exists()
 						)
 		self.assertTrue(self.room.participants.filter(uid=self.user.profile.uid).exists())
@@ -281,7 +280,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			await comm.disconnect()
 
 		async_to_sync(scenario)()
-		self.assertTrue(Message.objects.filter(sender_profile=self.user.profile, body='hello websocket').exists())
+		self.assertTrue(Message.objects.filter(sender=self.user.profile, body='hello websocket').exists())
 		self.assertTrue(self.room.participants.filter(id=self.user.profile.id).exists())
 
 	def test_direct_room_websocket_accepts_participant(self) -> None:

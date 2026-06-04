@@ -46,7 +46,7 @@ class RoomView(APIView):
             room.participants.add(request.profile)
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(sender_profile=request.profile, room=room)
+            serializer.save(sender=request.profile, room=room)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -117,9 +117,9 @@ class FriendMessageFeed(APIView):
 
         channel_layer = get_channel_layer()
         feed: list[dict[str, object]] = []
-        messages = Message.objects.filter(room=room).select_related('sender_profile').order_by('created')
+        messages = Message.objects.filter(room=room).select_related('sender').order_by('created')
         for m in messages:
-            is_outgoing = m.sender_profile_id == current_profile.id
+            is_outgoing = m.sender_id == current_profile.id
             if not is_outgoing and not m.seen:
                 update_fields: list[str] = []
                 if not m.delivered:
@@ -139,7 +139,7 @@ class FriendMessageFeed(APIView):
                         ).data,
                     }
                     async_to_sync(channel_layer.group_send)(
-                        f'user_{m.sender_profile.uid}',
+                        f'user_{m.sender.uid}',
                         {
                             'type': 'send.notification',
                             'payload': payload,

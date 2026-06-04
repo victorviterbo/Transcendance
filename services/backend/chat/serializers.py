@@ -23,7 +23,7 @@ class RoomSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     """Set how to serialize a user's friendship requests."""
-    sender_profile = LightProfileSerializer(read_only=True)
+    sender = LightProfileSerializer(read_only=True)
     room = RoomSerializer(read_only=True)
     class Meta:
         """Defines the metaclass for the Profile serializer.
@@ -32,7 +32,7 @@ class MessageSerializer(serializers.ModelSerializer):
         ProfileSerializer class itself
         """
         model = Message
-        fields = ['sender_profile',
+        fields = ['sender',
                   'room',
                   'body',
                   'delivered',
@@ -44,7 +44,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class RoomHistorySerializer(serializers.ModelSerializer):
     """Serialize persisted game room messages for history replay."""
-    sender = LightProfileSerializer(source="sender_profile", read_only=True)
+    sender = LightProfileSerializer(read_only=True)
     class Meta:
         """Define the message fields exposed to history consumers from game players."""
 
@@ -57,6 +57,7 @@ class RoomHistorySerializer(serializers.ModelSerializer):
 
 class FriendChatMessageSerializer(serializers.Serializer):
     """Serialize a direct-message `Message` into the frontend friend-chat contract.
+
     This serializer provide:
         - `recipient_profile`: the `Profile` that should appear as the chat partner in the
           payload, and

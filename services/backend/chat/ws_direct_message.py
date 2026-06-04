@@ -27,10 +27,10 @@ async def update_online_status(consumer, current_profile_id: int, is_online: boo
         await mark_pendmessage_delivered(current_profile_id)
 
         for ref in pending_message:
-            sender_profile_id = ref.get('sender_profile_id')
-            sender_profile_uid = ref.get('sender_profile_uid')
-            if sender_profile_id and sender_profile_uid and await is_chat_open(sender_profile_id, current_profile_id):
-                await consumer.group_send(f'user_{sender_profile_uid}', {
+            sender_id = ref.get('sender_id')
+            sender_uid = ref.get('sender_uid')
+            if sender_id and sender_uid and await is_chat_open(sender_id, current_profile_id):
+                await consumer.group_send(f'user_{sender_uid}', {
                     'type': 'send.notification',
                     'payload': {
                         'target': 'friend-chat',
@@ -57,9 +57,9 @@ def get_pending_message(recipient_profile_id: int) -> list[dict[str, int]]:
             room__participants__id=recipient_profile_id,
             delivered=False,
         )
-        .exclude(sender_profile__id=recipient_profile_id)
-        .values('uid', 'sender_profile_id')
-        .annotate(sender_profile_uid=models.F('sender_profile__uid'))
+        .exclude(sender__id=recipient_profile_id)
+        .values('uid', 'sender_id')
+        .annotate(sender_uid=models.F('sender__uid'))
     )
 @database_sync_to_async
 def mark_pendmessage_delivered(recipient_profile_id: int) -> int:
@@ -68,7 +68,7 @@ def mark_pendmessage_delivered(recipient_profile_id: int) -> int:
         room__is_direct=True,
         room__participants__id=recipient_profile_id,
         delivered=False,
-    ).exclude(sender_profile_id=recipient_profile_id).update(delivered=True)
+    ).exclude(sender_id=recipient_profile_id).update(delivered=True)
 
 
 async def handle_friend_chat_payload(consumer, content: dict, event: str | None) -> None:
@@ -138,7 +138,7 @@ async def handle_direct_message(consumer, content: dict) -> None:
             await mark_message_delivered(message.uid)
             message.delivered = True
 
-    logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
+    logger.info('ws.direct_message.sent sender_id=%s recipient_profile_id=%s message_uid=%s',
                 getattr(getattr(consumer, 'profile', None), 'id', None),
                 recipient_profile.id,
                 message.uid)
@@ -215,14 +215,14 @@ def mark_message_seen(message_uid) -> None:
         message.save(update_fields=update_fields)
 
 @database_sync_to_async
-def is_chat_open(sender_profile_id: int, recipient_profile_id: int) -> bool:
+def is_chat_open(sender_id: int, recipient_profile_id: int) -> bool:
     """Check whether the sender currently has the recipient chat open."""
-    return bool(cache.get(f'chat_open:{sender_profile_id}:{recipient_profile_id}'))
+    return bool(cache.get(f'chat_open:{sender_id}:{recipient_profile_id}'))
 
 @database_sync_to_async
-def set_chat_open(sender_profile_id: int, recipient_profile_id: int, is_open: bool) -> None:
+def set_chat_open(sender_id: int, recipient_profile_id: int, is_open: bool) -> None:
     """Set or clear the direct chat open state in cache."""
-    key = f'chat_open:{sender_profile_id}:{recipient_profile_id}'
+    key = f'chat_open:{sender_id}:{recipient_profile_id}'
     if is_open:
         cache.set(key, True, timeout=180)
     else:
@@ -231,4 +231,4 @@ def set_chat_open(sender_profile_id: int, recipient_profile_id: int, is_open: bo
 @database_sync_to_async
 def get_recipient_profile(message: Message) -> Profile | None:
     """Return the other participant profile for a direct-message room."""
-    return message.room.participants.exclude(id=message.sender_profile.id).first()
+    return message.room.participants.exclude(id=message.sender.id).first()

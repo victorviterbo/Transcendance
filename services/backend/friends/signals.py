@@ -68,7 +68,7 @@ def save_profile(sender: type[Friendship],
                  **kwargs: Any) -> None:
     """Trigger sending of notifications when friendship is saved."""
     if created:
-        sender_profile = instance.from_user.profile
+        sender = instance.from_user.profile
         recipient_group = profile_group_name(instance.to_user)
         group_send_safe(
             recipient_group,
@@ -77,7 +77,7 @@ def save_profile(sender: type[Friendship],
                 'payload': {
                     'target': 'friend-request',
                     'event': 'new-incoming',
-                    'user': FriendUserSerializer(sender_profile, context={'relation': 'incoming'}).data,
+                    'user': FriendUserSerializer(sender, context={'relation': 'incoming'}).data,
                 },
             },
         )
@@ -89,7 +89,7 @@ def save_profile(sender: type[Friendship],
                     'target': 'notif',
                     'event': 'new',
                     'notif': notif_payload(
-                        profile=sender_profile,
+                        profile=sender,
                         relation='incoming',
                         kind='friend-request',
                         uid=str(instance.uid),

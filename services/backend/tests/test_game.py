@@ -184,9 +184,9 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             await communicator.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            response = await communicator.receive_json_from()
-            await self.expect_event(communicator, 'player_joined')
+            
             await self.expect_event(communicator, 'message_history')
+            await self.expect_event(communicator, 'player_joined')
 
             await communicator.send_json_to(
                 {
@@ -261,14 +261,14 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             await owner_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            owner_first_message = await self.expect_event(self.owner_socket, 'message_history')
-            owner_join_response = await self.expect_event(self.owner_socket, 'player_joined')
+            owner_first_message = await self.expect_event(owner_socket, 'message_history')
+            owner_join_response = await self.expect_event(owner_socket, 'player_joined')
 
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            challenger_join_response = await self.expect_event(challenger_socket, 'player_joined')
             challenger_history = await self.expect_event(challenger_socket, 'message_history')
+            challenger_join_response = await self.expect_event(challenger_socket, 'player_joined')
             owner_broadcast = await self.expect_event(owner_socket, 'player_joined')
 
             self.assertEqual(challenger_join_response['target'], 'game')
@@ -299,12 +299,12 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
         game.save(update_fields=['room'])
 
         first_message = Message.objects.create(
-            sender_profile=self.owner.profile,
+            sender=self.owner.profile,
             room=room,
             body='first message',
         )
         second_message = Message.objects.create(
-            sender_profile=self.owner.profile,
+            sender=self.owner.profile,
             room=room,
             body='second message',
         )
@@ -317,8 +317,8 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
-            join_response = await challenger_socket.receive_json_from()
-            history_response = await challenger_socket.receive_json_from()
+            history_response = await self.expect_event(challenger_socket, 'message_history')
+            join_response = await self.expect_event(challenger_socket, 'player_joined')
 
             self.assertEqual(join_response['target'], 'game')
             self.assertEqual(join_response['event'], 'player_joined')
@@ -403,7 +403,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
 
         # ensure message persisted
         message = Message.objects.get(
-            sender_profile=self.owner.profile,
+            sender=self.owner.profile,
             room=game.room,
             body='hello everyone',
         )

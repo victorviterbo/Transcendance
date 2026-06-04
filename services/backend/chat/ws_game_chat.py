@@ -37,7 +37,7 @@ def get_join_history(game) -> list[dict]:
 		return []
 	messages = (
 		Message.objects.filter(room=game.room)
-		.select_related('sender_profile')
+		.select_related('sender')
 		.order_by('created', 'id')
 	)
 	history = RoomHistorySerializer(messages, many=True).data
@@ -76,7 +76,7 @@ def chat_message_payload(message: Message, game_uid: str) -> dict[str, object]:
 		'uid': game_uid,
 		'message': {
 			'uid': str(message.uid),
-			'sender': LightProfileSerializer(message.sender_profile).data,
+			'sender': LightProfileSerializer(message.sender).data,
 			'body': message.body,
 		},
 	}
@@ -127,10 +127,10 @@ async def handle_game_chat_payload(consumer: 'GlobalConsumer', content: dict) ->
 
 #TODO Not yet call this function, maybe need to delete at the end, will see 
 @database_sync_to_async
-def create_chat_message(room: Room, sender_profile, body: str) -> Message:
+def create_chat_message(room: Room, sender, body: str) -> Message:
 	"""Persist a room message that can later be replayed from chat history."""
 	return Message.objects.create(
-		sender_profile=sender_profile,
+		sender=sender,
 		room=room,
 		body=body,
 	)

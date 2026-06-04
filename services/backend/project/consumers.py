@@ -412,7 +412,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                            'message': 'Not a chat member'}
         message = Message.objects.create(
-            sender_profile=self.profile,
+            sender=self.profile,
             room=room,
             body=body,
         )
