@@ -44,7 +44,7 @@ def get_join_history(game) -> list[dict]:
 	return [
 		{
 			'uid': str(message['uid']),
-			'sender': message['sender_profile'],
+			'sender': message['sender'],
 			'body': message['body'],
 		}
 		for message in history

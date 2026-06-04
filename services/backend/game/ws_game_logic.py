@@ -144,7 +144,6 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'event': 'error',
                                 'message': 'Game not found'})
         return
-    #FIXME: same block twice, refactor
     num_current_players = await _get_num_curr_players(consumer.current_game)
     if num_current_players >= max_players:
         await consumer.send_json({'target': 'game',

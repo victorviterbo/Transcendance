@@ -12,17 +12,36 @@ from asgiref.sync import async_to_sync
 from channels.testing import WebsocketCommunicator
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TransactionTestCase, override_settings
+from django.test import AsyncClient, override_settings
 from game.models import Game
 from music.models import Track
 from PIL import Image
+from project.asgi import application
 from project.defaults import genres
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
+from rest_framework.test import (
+    APITransactionTestCase,
+)
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from userprofile.models import Profile
 from userprofile.serializers import ProfileSerializer
+
+urls = {
+    'login': '/api/auth/login/',
+    'logout': '/api/auth/logout/',
+    'refresh': '/api/auth/refresh/',
+    'game': '/api/game/',
+    'delete_account': '/api/auth/delete-account/',
+    'register': '/api/auth/register/',
+    'profile': '/api/profile/',
+    'guest_create_url': '/api/auth/guest-create/',
+    'friend_request': '/api/friend-request/',
+    'friend_request_send': '/api/friend-request/send/',
+    'friend_request_respond': '/api/friend-request/respond/',
+    'friend_remove': '/api/friend/remove/',
+    'friends_list': '/api/friends/',
+}
 
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
 
@@ -91,14 +110,13 @@ class TestBaseHelpers(APITransactionTestCase):
                                 visibility: str = 'public',
                                 ) -> tuple[dict, Game]:
         """self.owner will create a new game via http."""
-        client = APIClient()
         login_url = '/api/auth/login/'
-        login_res = client.post(login_url, data={'email': user.email,
+        login_res = self.client.post(login_url, data={'email': user.email,
                                                     'password': 'Password123!'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')
-        client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
-        response = client.post(
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+        response = self.client.post(
             '/api/game/',
             {
                 'name': name,
@@ -125,6 +143,13 @@ class TestBaseHelpers(APITransactionTestCase):
 class TestWebsocketHelpers(APITransactionTestCase):
     """Shared setup and helper functions for websocket game tests."""
 
+    async def _connect_socket(self, user) -> WebsocketCommunicator:
+        communicator = WebsocketCommunicator(application, '/ws/global/')
+        communicator.scope['user'] = user
+        connected, _ = await communicator.connect()
+        self.assertTrue(connected)
+        return communicator
+    
     async def expect_event(self, communicator: WebsocketCommunicator,
                                    event_name: str,
                                    timeout: int = 35

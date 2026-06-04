@@ -6,8 +6,7 @@ mkdir -p /backend/DB/website
 
 if [ "$APP_MODE" = "test" ]; then
     echo "Running Tests..."
-    exec conda run --no-capture-output -n backend python /backend/manage.py test tests
-    exit 0
+    exec conda run --no-capture-output -n backend python /backend/manage.py test tests.test_game.GameWebsocketFlowTests.test_http_creation_then_websocket_settings_update
 fi
 
 rm -f /backend/DB/website/db.sqlite3

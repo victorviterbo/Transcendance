@@ -26,12 +26,6 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
         """Set up players for game simulation."""
         self.owner = self.create_user('ws-owner@mail.com', 'ws_owner')
         self.challenger = self.create_user('ws-challenger@mail.com', 'ws_challenger')
-
-    def _connect_socket(self, user: SiteUser) -> WebsocketCommunicator:
-        """Connection protocol for user."""
-        communicator = WebsocketCommunicator(application, '/ws/global/')
-        communicator.scope['user'] = user
-        return communicator
     
     def test_multiplayer_full_game_lifecycle(self) -> None:
         """Two players should be able to join, start, and complete a full game loop."""
@@ -40,22 +34,21 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
 
         async def scenario() -> None:
 
-            owner_socket = self._connect_socket(self.owner)
-            owner_connected, _ = await owner_socket.connect()
-            self.assertTrue(owner_connected)
+            owner_socket = await self._connect_socket(self.owner)
 
             await owner_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
+            await self.expect_event(owner_socket, 'message_history')
             await self.expect_event(owner_socket, 'player_joined')
             
-            challenger_socket = self._connect_socket(self.challenger)
-            challenger_connected, _ = await challenger_socket.connect()
-            self.assertTrue(challenger_connected)
+            challenger_socket = await self._connect_socket(self.challenger)
 
             await challenger_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
+
+            await self.expect_event(challenger_socket, 'message_history')
             await self.expect_event(challenger_socket, 'player_joined')
             await self.expect_event(owner_socket, 'player_joined')
 
