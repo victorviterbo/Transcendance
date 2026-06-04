@@ -18,7 +18,7 @@ from music.models import Track
 from PIL import Image
 from project.defaults import genres
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from userprofile.models import Profile
@@ -27,7 +27,7 @@ from userprofile.serializers import ProfileSerializer
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
 
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
-class TestBaseHelpers(APITestCase):
+class TestBaseHelpers(APITransactionTestCase):
     """Shared setup and helper functions for game tests."""
 
     image_dict = {
@@ -122,7 +122,7 @@ class TestBaseHelpers(APITestCase):
                 preview_url='https://example.com/track.mp3',
             )
 
-class TestWebsocketHelpers(TransactionTestCase):
+class TestWebsocketHelpers(APITransactionTestCase):
     """Shared setup and helper functions for websocket game tests."""
 
     async def expect_event(self, communicator: WebsocketCommunicator,

@@ -18,7 +18,7 @@ from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from tests.test_helpers import TestBaseHelpers
 
-class GameHTTPViewTests(TestBaseHelpers, APITestCase):
+class GameHTTPViewTests(TestBaseHelpers):
     """Validate game HTTP endpoints and creation contract."""
 
     def setUp(self) -> None:
@@ -142,7 +142,7 @@ class GameHTTPViewTests(TestBaseHelpers, APITestCase):
         self.assertEqual(response.data['name'], 'Single Lookup')
 
 
-class GameWebsocketFlowTests(TestBaseHelpers, TransactionTestCase):
+class GameWebsocketFlowTests(TestBaseHelpers):
     """Validate websocket game lifecycle after HTTP creation."""
 
     def setUp(self) -> None:

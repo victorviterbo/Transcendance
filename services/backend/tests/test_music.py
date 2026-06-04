@@ -13,7 +13,7 @@ from music.serializers import PlaylistTracksSerializer, TrackSerializer
 from tests.test_helpers import TestBaseHelpers
 
 
-class MusicModelsTests(TestBaseHelpers, TestCase):
+class MusicModelsTests(TestBaseHelpers):
 	"""Validate Playlist and Track model behavior."""
 
 	def test_track_many_to_many_playlist(self):
@@ -36,7 +36,7 @@ class MusicModelsTests(TestBaseHelpers, TestCase):
 		self.assertTrue(pop.tracks.filter(itunes_id=1234).exists())
 
 
-class ITunesClientTests(TestBaseHelpers, TestCase):
+class ITunesClientTests(TestBaseHelpers):
 	"""Validate iTunes parsing and error handling logic."""
 
 	@patch('music.itunes_client.requests.get')
@@ -138,7 +138,7 @@ class ITunesClientTests(TestBaseHelpers, TestCase):
 		self.assertEqual(metadata[333]['preview_url'], 'https://example.org/333.m4a')
 
 
-class MusicManagementCommandsTests(TestBaseHelpers, TestCase):
+class MusicManagementCommandsTests(TestBaseHelpers):
 	"""Validate playlist seed and sync commands behavior."""
 
 	def test_seed_playlists_is_idempotent(self):
@@ -315,7 +315,7 @@ class MusicManagementCommandsTests(TestBaseHelpers, TestCase):
 		mock_full_lookup.assert_any_call(static_ids, country='US')
 
 
-class MusicSerializersTests(TestBaseHelpers, TestCase):
+class MusicSerializersTests(TestBaseHelpers):
 	"""Validate serialization for tracks and playlists."""
 
 	def test_track_serializer_fields(self):

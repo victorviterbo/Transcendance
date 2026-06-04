@@ -6,21 +6,17 @@ import shutil
 from pathlib import Path
 
 from django.conf import settings
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TransactionTestCase, override_settings
-from PIL import Image
 from rest_framework import status
+from PIL import Image
 from rest_framework.test import APIClient
-from tests.test_helpers import TestBaseHelpers
+from tests.test_helpers import MEDIA_ROOT, TestBaseHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer, ProfileSerializer
 
-MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
 
-@override_settings(MEDIA_ROOT=MEDIA_ROOT)
-class ProfileTests(TestBaseHelpers, TransactionTestCase):
+class ProfileTests(TestBaseHelpers):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
@@ -250,7 +246,6 @@ class ProfileTests(TestBaseHelpers, TransactionTestCase):
 
         response = self.client.post(guest_delete_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        print(f"Original image path: {original_img_path}")
         self.assertFalse(original_img_path.is_file())
 
     def test_profile_validation(self) -> None:

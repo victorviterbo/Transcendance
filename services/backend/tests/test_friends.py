@@ -8,7 +8,7 @@ from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
 
 
-class FriendRequestsTests(TestBaseHelpers, APITestCase):
+class FriendRequestsTests(TestBaseHelpers):
     """Test suit specifically for friendship requests."""
 
     def setUp(self) -> None:

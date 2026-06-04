@@ -7,7 +7,7 @@ from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 
 
-class UserAccountTests(TestBaseHelpers, APITestCase):
+class UserAccountTests(TestBaseHelpers):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
