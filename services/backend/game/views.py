@@ -2,7 +2,7 @@
 
 import uuid
 
-from chat.models import Room
+from chat.ws_game_chat import create_gamechat_room
 from django.shortcuts import get_object_or_404
 from friends.models import Friendship
 from rest_framework import serializers, status
@@ -39,7 +39,10 @@ class GeneralGameView(APIView):
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
-			new_game.room = Room.objects.create(name=f"Game Room - {new_game.uid}")
+			# create the chat room after the game exists
+			room = create_gamechat_room(new_game)
+			new_game.room = room
+			new_game.save(update_fields=['room'])
 			serialized_game = GameDetailSerializer(new_game)
 			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
 		except serializers.ValidationError as e:

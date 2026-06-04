@@ -10,13 +10,9 @@ from channels.generic.websocket import (
 )
 from chat.chat_utils import accepted_friendship, create_direct_room
 from chat.models import Message, Room
-from chat.serializers import FriendChatMessageSerializer
+from chat.ws_game_chat import handle_game_chat_payload
 from chat.ws_direct_message import (
-	get_recipient_profile,
-	handle_chat_payload,
-	is_chat_open,
-	mark_message_delivered,
-	mark_message_seen,
+	handle_friend_chat_payload,
 	set_chat_open,
 	update_online_status,
 )
@@ -43,6 +39,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		self.active_layers = set()
 		self.group_name = None
 		self.game = None
+		self.current_game = None
 		self.game_group_name = None
 		self.open_chat_recipient = set() # tracker when frontend sends open/close so can mark as seen
 	
@@ -110,12 +107,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		event = content.get('event')
 
 		if target == 'friend-chat':
-			await handle_chat_payload(self, content, event)
-			return
-		if target == 'chat':
-			await self.chat_subroutine(content)
+			await handle_friend_chat_payload(self, content, event)
 			return
 		if target == 'game':
+			if event == 'game-chat':
+				await handle_game_chat_payload(self, content)
+				return
 			await handle_game_action(self, content)
 			return
 		logger.warning(
@@ -140,150 +137,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 		"""Send a message to the specified channel."""
 		await self.channel_layer.group_send(group_name, message)
 	
-	async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
-		"""Process incoming chat events from the client."""
-		event = content.get('event')
-		cycle_event = event
-
-		if event == 'chat-message':
-			body = str(content.get('message', '')).strip()
-			if not body:
-				await self.send_json({'type': 'error','message': 'message is required'})
-				return
-			success, message = await self._save_message(body, event, content)
-			if not success:
-				logger.warning('ws.chat_message.save_failed profile_id=%s error=%s',
-							   getattr(getattr(self, 'profile', None), 'id', None),
-							   message)
-				await self.send_json(message)
-				return
-
-			logger.info('ws.chat_message.saved profile_id=%s message_uid=%s room_uid=%s',
-						getattr(getattr(self, 'profile', None), 'id', None),
-						message.uid,
-						message.room.uid)
-
-			await self.group_send(f'user_{self.profile.id}', {
-				'type': 'chat.message',
-				'message_uid': str(message.uid),
-				'message': message.body,
-				'sender': self._sender_name(),
-				'created': message.created.isoformat(),
-				'delivered': message.delivered,
-				'seen': message.seen,
-			})
-			return
-		elif event == 'direct-message':
-			body = str(content.get('message', '')).strip()
-			if not body:
-				await self.send_json({'type': 'error','message': 'message is required'})
-				return
-			success, message = await self._save_message(body, event, content)
-			if not success:
-				expected_validation_errors = {'Target is not a friend', 'User not found'}
-				message_text = message.get('message') if isinstance(message, dict) else None
-				log_fn = logger.info if message_text in expected_validation_errors else logger.warning
-				log_fn('ws.direct_message.save_failed profile_id=%s error=%s',
-					   getattr(getattr(self, 'profile', None), 'id', None),
-					   message)
-				await self.send_json(message)
-				return
-
-			recipient_profile = await get_recipient_profile(message)
-			if recipient_profile is None:
-				logger.warning('ws.direct_message.no_recipient profile_id=%s message_uid=%s',
-							   getattr(getattr(self, 'profile', None), 'id', None),
-							   message.uid)
-				await self.send_json({'type': 'error','message': 'Target user not found'})
-				return
-
-			if recipient_profile.is_online:
-				recipient_chat_open = await is_chat_open(recipient_profile.id, self.profile.id)
-				if recipient_chat_open:
-					await mark_message_seen(message.uid)
-					message.delivered = True
-					message.seen = True
-				elif not message.delivered:
-					await mark_message_delivered(message.uid)
-					message.delivered = True
-
-			logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
-						getattr(getattr(self, 'profile', None), 'id', None),
-						recipient_profile.id,
-						message.uid)
-
-			event_payload = {
-				'type': 'chat.message',
-				'message_uid': str(message.uid),
-				'message': message.body,
-				'sender': self._sender_name(),
-				'created': message.created.isoformat(),
-				'delivered': message.delivered,
-				'seen': message.seen,
-			}
-			await self.group_send(f'user_{recipient_profile.id}', event_payload)
-			await self.group_send(f'user_{self.profile.id}', event_payload)
-
-			sender_payload = {
-				'target': 'friend-chat',
-				'event': 'new',
-				'message': FriendChatMessageSerializer(
-					message,
-					context={'recipient_profile': recipient_profile, 'direction': 'outgoing'},
-				).data,
-			}
-			recipient_payload = {
-				'target': 'friend-chat',
-				'event': 'new',
-				'message': FriendChatMessageSerializer(
-					message,
-					context={'recipient_profile': self.profile, 'direction': 'incoming'},
-				).data,
-			}
-			await self.group_send(f'user_{self.profile.id}', {
-				'type': 'send.notification',
-				'payload': sender_payload,
-			})
-			if recipient_profile.is_online:
-				await self.group_send(f'user_{recipient_profile.id}', {
-					'type': 'send.notification',
-					'payload': recipient_payload,
-				})
-			return
-		elif cycle_event in ('open', 'close'):
-			recipient_uid = content.get('target_uid')
-			if not recipient_uid:
-				await self.send_json({'type': 'error', 'message': 'target_uid is required'})
-				return
-			recipient_profile = await self.cget_profile_by_uid(recipient_uid)
-			if not recipient_profile:
-				await self.send_json({'type': 'error', 'message': 'target_not_found'})
-				return
-
-			is_open = cycle_event == 'open'
-			await set_chat_open(self.profile.id, recipient_profile.id, is_open=is_open)
-			if is_open:
-				self.open_chat_recipient.add(recipient_profile.id)
-			else:
-				self.open_chat_recipient.discard(recipient_profile.id)
-			return
-		await self.send_json({'type': 'error', 'message': 'unsupported_event'})
-
 	@database_sync_to_async
 	def get_profile_by_uid(self, profile_uid: str) -> Profile | None:
 		return Profile.objects.filter(uid=profile_uid).first()
 
-	async def chat_message(self, event: dict) -> None:
-		"""Forward a chat message event to the connected client."""
+	async def game_chat_message(self, event: dict) -> None:
+		"""Forward a chat message event to the connected client.
+		So its final output formattes for each connected socket"""
 		await self.send_json({
-			'type': 'chat_message',
-			'group': self.group_name,
-			'sender': event['sender'],
-			'message': event['message'],
-			'message_id': event.get('message_id'),
+			'target': 'game',
+			'event': 'message_broadcast',
+			'uid': event.get('uid'),
+			'self': LightProfileSerializer(self.profile).data,
+			'message': event.get('message'),
 			'created': event.get('created'),
-			'delivered': event.get('delivered'),
-			'seen': event.get('seen'),
 		})
 
 	async def send_notification(self, event: dict) -> None:
@@ -521,6 +388,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			if content.get('room_uid'):
 				room = Room.objects.filter(uid=content['room_uid']).first()
 				self.room = room
+			elif getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
+				room = self.current_game.room
+				self.room = room
 			elif self.room:
 				room = self.room
 			else:
@@ -534,7 +404,13 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 			return False, {'type': 'error',
 						   'message': 'An unexpected error occured'}
 		if not room.participants.filter(uid=self.profile.uid).exists():
-			return False, {'type': 'error',
+			is_game_room = (
+				not room.is_direct
+				and getattr(self, 'current_game', None) is not None
+				and getattr(self.current_game, 'room_id', None) == room.id
+			)
+			if not is_game_room:
+				return False, {'type': 'error',
 						   'message': 'Not a chat member'}
 		message = Message.objects.create(
 			sender_profile=self.profile,

@@ -44,7 +44,7 @@ def profile_group_name(user) -> str | None:
     profile = getattr(user, 'profile', None)
     if profile is None:
         return None
-    return f'user_{profile.id}'
+    return f'user_{profile.uid}'
 
 
 def group_send_safe(group_name: str | None, payload: dict[str, Any]) -> None:

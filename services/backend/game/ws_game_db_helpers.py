@@ -3,6 +3,7 @@ import uuid
 from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
+from chat.models import Room
 from django.db.models import Count, Q, Sum
 from music.models import Playlist, Track
 from music.serializers import TrackSerializer
@@ -82,6 +83,15 @@ def _setup_game_assets(game: Game) -> None:
 		uid=playlist_uid,
 	)
 	playlist.tracks.set(all_tracks)
+
+	if getattr(game, 'room', None):# reuse existing room if already created at HTTP creation
+		room = game.room
+	else:
+		room_uid = uuid.uuid4()
+		room, _created = Room.objects.get_or_create(
+			name=f"Chat Room - {game.uid}",
+			defaults={'is_direct': False, 'uid': room_uid},
+		)
 	game.playlist = playlist
 	game.current_track = all_tracks[0]
 	game.status = 'playing_round'

@@ -7,6 +7,7 @@ import uuid
 from asgiref.sync import async_to_sync
 from channels.testing import WebsocketCommunicator
 from django.test import TransactionTestCase
+from chat.models import Message, Room
 from friends.models import Friendship
 from game.models import Game
 from music.models import Track
@@ -55,6 +56,9 @@ class GameHTTPViewTests(TestBaseHelpers):
         game = Game.objects.get(uid=response.data['uid'])
         self.assertEqual(game.name, 'Friday Quiz')
         self.assertEqual(game.owned_by.uid, self.owner.profile.uid)
+        self.assertTrue(game.players.filter(id=self.owner.profile.id).exists())
+        self.assertIsNotNone(game.room)
+        self.assertEqual(game.room.name, f'Chat Room - {game.uid}')
 
     def test_create_game_missing_name_returns_structured_error(self) -> None:
         """Missing required fields should use normalized error codes."""
@@ -277,10 +281,14 @@ class GameWebsocketFlowTests(TestBaseHelpers):
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
             challenger_join_response = await challenger_socket.receive_json_from()
+            challenger_history = await challenger_socket.receive_json_from()
             owner_broadcast = await owner_socket.receive_json_from()
 
             self.assertEqual(challenger_join_response['target'], 'game')
             self.assertEqual(challenger_join_response['event'], 'player_joined')
+            self.assertEqual(challenger_history['target'], 'game')
+            self.assertEqual(challenger_history['event'], 'game-chat-history')
+            self.assertEqual(challenger_history['game_chat'], [])
             self.assertEqual(owner_broadcast['target'], 'game')
             self.assertEqual(owner_broadcast['event'], 'player_joined')
             self.assertEqual(owner_broadcast['player']['uid'],
@@ -293,6 +301,108 @@ class GameWebsocketFlowTests(TestBaseHelpers):
 
         game.refresh_from_db()
         self.assertTrue(game.players.filter(id=self.challenger.profile.id).exists())
+
+    def test_join_game_sends_chat_history_to_joining_player(self) -> None:
+        """A player joining should receive the linked room's persisted chat history."""
+        _, game = self.create_game_via_http(self.owner, name='WS History Join')
+        room = Room.objects.create(name=f'chat-room-{game.uid}')
+        game.room = room
+        game.save(update_fields=['room'])
+
+        Message.objects.create(
+            sender_profile=self.owner.profile,
+            room=room,
+            body='first message',
+        )
+        Message.objects.create(
+            sender_profile=self.owner.profile,
+            room=room,
+            body='second message',
+        )
+
+        async def scenario() -> None:
+            owner_socket = self._connect_socket(self.owner)
+            owner_connected, _ = await owner_socket.connect()
+            self.assertTrue(owner_connected)
+
+            challenger_socket = self._connect_socket(self.challenger)
+            challenger_connected, _ = await challenger_socket.connect()
+            self.assertTrue(challenger_connected)
+
+            await challenger_socket.send_json_to(
+                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+            )
+            join_response = await challenger_socket.receive_json_from()
+            history_response = await challenger_socket.receive_json_from()
+
+            self.assertEqual(join_response['target'], 'game')
+            self.assertEqual(join_response['event'], 'player_joined')
+            self.assertEqual(history_response['target'], 'game')
+            self.assertEqual(history_response['event'], 'game-chat-history')
+            self.assertEqual(
+                [entry['body'] for entry in history_response['game_chat']],
+                ['first message', 'second message'],
+            )
+
+            await challenger_socket.disconnect()
+            await owner_socket.disconnect()
+
+        async_to_sync(scenario)()
+
+        game.refresh_from_db()
+        self.assertTrue(game.players.filter(id=self.challenger.profile.id).exists())
+
+    def test_live_game_chat_is_broadcast_to_all_players(self) -> None:
+        """Live chat sent during a game should reach every socket in the game room."""
+        _, game = self.create_game_via_http(self.owner, name='WS Live Chat')
+        room_uid = str(game.room.uid)
+
+        async def scenario() -> None:
+            owner_socket = self._connect_socket(self.owner)
+            owner_connected, _ = await owner_socket.connect()
+            self.assertTrue(owner_connected)
+
+            challenger_socket = self._connect_socket(self.challenger)
+            challenger_connected, _ = await challenger_socket.connect()
+            self.assertTrue(challenger_connected)
+
+            # Both players join the game
+            await owner_socket.send_json_to({'target': 'game', 'event': 'join_game', 'uid': str(game.uid)})
+            await challenger_socket.send_json_to({'target': 'game', 'event': 'join_game', 'uid': str(game.uid)})
+
+            # Send a single chat message from owner
+            await owner_socket.send_json_to({
+                'target': 'game',
+                'event': 'game-chat',
+                'message': 'hello everyone',
+                'room_uid': room_uid,
+            })
+
+            async def pull_chat(comm):
+                for _ in range(8):
+                    try:
+                        resp = await comm.receive_json_from(timeout=1)
+                    except Exception:
+                        continue
+                    if resp.get('target') == 'game' and resp.get('event') == 'message_broadcast':
+                        return resp
+                return None
+
+            owner_chat = await pull_chat(owner_socket)
+            challenger_chat = await pull_chat(challenger_socket)
+
+            self.assertIsNotNone(owner_chat)
+            self.assertIsNotNone(challenger_chat)
+            self.assertEqual(owner_chat['message']['body'], 'hello everyone')
+            self.assertEqual(challenger_chat['message']['body'], 'hello everyone')
+
+            await challenger_socket.disconnect()
+            await owner_socket.disconnect()
+
+        async_to_sync(scenario)()
+
+        # ensure message persisted
+        self.assertTrue(Message.objects.filter(sender_profile=self.owner.profile, room=game.room, body='hello everyone').exists())
 
     def test_unknown_websocket_game_event_returns_error(self) -> None:
         """Unknown game events should return an explicit websocket error."""

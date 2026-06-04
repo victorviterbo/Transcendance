@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import channels.layers
 from asgiref.sync import async_to_sync
+from chat.ws_game_chat import add_gameroom_participant, send_join_chatroom
 from project.defaults import answer_buffer_time, countdown_time, max_players
 from rest_framework import serializers
 
@@ -191,10 +192,12 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
                             'message': 'Failed to join game'})
         return
     await consumer.add_to_layer(consumer.game_group_name)
+    await add_gameroom_participant(consumer.current_game, consumer.profile) #ensure room participant exist before sending history
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
     #TODO: add game_info event to the player who just joined
     await _send_new_player(consumer, serialized_game, serialized_player)
+    await send_join_chatroom(consumer) # send chat history to the joining player
     return
 
 
@@ -314,7 +317,6 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
         return
     
     await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
-    
     serialized_game = await _get_game_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',
@@ -333,4 +335,3 @@ async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> 
     game_over = found['titles'] > 0 and found['artists'] > 0
     if game_over:
         ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].set()
-
