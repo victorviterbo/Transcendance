@@ -16,7 +16,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
-from test_helpers import TestBaseHelpers
+from tests.test_helpers import TestBaseHelpers
 
 class GameHTTPViewTests(TestBaseHelpers, APITestCase):
     """Validate game HTTP endpoints and creation contract."""

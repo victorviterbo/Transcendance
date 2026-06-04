@@ -8,18 +8,18 @@ from asgiref.sync import async_to_sync
 from channels.testing import WebsocketCommunicator
 from django.test import TransactionTestCase
 from friends.models import Friendship
+from game.models import Game
 from music.models import Track
 from project.asgi import application
 from project.defaults import genres
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
+from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 
-from game.models import Game
-from test_helpers import TestBaseHelpers
 
-class GameWebsocketFlowTests(TestBaseHelpers, TransactionTestCase):
+class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
     """Validate websocket game lifecycle after HTTP creation."""
 
     def setUp(self) -> None:

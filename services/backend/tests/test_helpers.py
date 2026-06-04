@@ -1,3 +1,5 @@
+"""Shared test setup and helper functions for multiple test modules."""
+
 import io
 import json
 import os
@@ -11,19 +13,19 @@ from channels.testing import WebsocketCommunicator
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TransactionTestCase, override_settings
-from friends.models import Friendship
+from game.models import Game
 from music.models import Track
 from PIL import Image
-from project.asgi import application
 from project.defaults import genres
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
-from userprofile.models import Game, Profile
-from userprofile.serializers import LightProfileSerializer, ProfileSerializer
+from userprofile.models import Profile
+from userprofile.serializers import ProfileSerializer
 
-
+MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class TestBaseHelpers(APITestCase):
     """Shared setup and helper functions for game tests."""
 
@@ -119,3 +121,43 @@ class TestBaseHelpers(APITestCase):
                 genre=random.choice(genres),
                 preview_url='https://example.com/track.mp3',
             )
+
+class TestWebsocketHelpers(TransactionTestCase):
+    """Shared setup and helper functions for websocket game tests."""
+
+    async def expect_event(self, communicator: WebsocketCommunicator,
+                                   event_name: str,
+                                   timeout: int = 35
+									) -> dict:
+        payload = await communicator.receive_json_from(timeout=timeout)
+        self.assertEqual(payload.get('target'), 'game')
+        self.assertEqual(payload.get('event'), event_name, payload.get('messgae'))
+        return payload
+    
+    async def play_round(self,
+                         players: list,
+                         player_answer: list,
+                         owner: dict,
+                         public: bool=False,
+                         armageddon: bool=False
+                        ) -> dict:
+        payloads = {'start': [],
+                    'in_game': [],
+                    'end': []}
+        for p in players:
+            payload = await self.expect_event(p, 'round_started')
+            payloads['start'].append(payload)
+        for answers in player_answer:
+            await answers['socket'].send_json_to(answers['payload'])
+            if (answers['is_correct'] and armageddon) or (not answers['is_correct'] and public):
+                for p in players:
+                    payload = await self.expect_event(p, answers['expected_response'])
+                    payloads['in_game'].append(payload)
+            else:
+                payload = await self.expect_event(answers['socket'],
+                                                answers['expected_response'])
+                payloads['in_game'].append(payload)
+        for p in players:
+            payload = await self.expect_event(p, 'round_ended')
+            payloads['end'].append(payload)
+        return payloads

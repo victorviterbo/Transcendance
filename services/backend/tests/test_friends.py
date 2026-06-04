@@ -3,7 +3,7 @@
 from friends.models import Friendship
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from test_helpers import TestBaseHelpers
+from tests.test_helpers import TestBaseHelpers
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
 

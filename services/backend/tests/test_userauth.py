@@ -2,9 +2,10 @@
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from tests.test_helpers import TestBaseHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
-from test_helpers import TestBaseHelpers
+
 
 class UserAccountTests(TestBaseHelpers, APITestCase):
     """Test suit for the user module."""

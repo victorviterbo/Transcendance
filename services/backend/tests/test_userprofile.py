@@ -11,7 +11,7 @@ from django.test import TransactionTestCase, override_settings
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
-from test_helpers import TestBaseHelpers
+from tests.test_helpers import TestBaseHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from userprofile.models import Profile
@@ -250,6 +250,7 @@ class ProfileTests(TestBaseHelpers, TransactionTestCase):
 
         response = self.client.post(guest_delete_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        print(f"Original image path: {original_img_path}")
         self.assertFalse(original_img_path.is_file())
 
     def test_profile_validation(self) -> None:

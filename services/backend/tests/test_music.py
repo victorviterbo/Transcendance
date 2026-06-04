@@ -1,3 +1,5 @@
+"""Test suite for music app models, serializers, and management commands."""
+
 from io import StringIO
 from unittest.mock import Mock, patch
 
@@ -8,7 +10,8 @@ from music.itunes_client import batch_lookup, fetch_ids_from_rss, full_lookup
 from music.management.commands.seed_playlists import PLAYLISTS, STATIC_TRACK_IDS
 from music.models import Playlist, Track
 from music.serializers import PlaylistTracksSerializer, TrackSerializer
-from test_helpers import TestBaseHelpers
+from tests.test_helpers import TestBaseHelpers
+
 
 class MusicModelsTests(TestBaseHelpers, TestCase):
 	"""Validate Playlist and Track model behavior."""
