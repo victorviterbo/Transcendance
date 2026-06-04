@@ -25,10 +25,10 @@ from userprofile.models import Profile
 from userprofile.serializers import ProfileSerializer
 
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
+
 @override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class TestBaseHelpers(APITestCase):
     """Shared setup and helper functions for game tests."""
-
 
     image_dict = {
         'valid': '',
@@ -129,6 +129,7 @@ class TestWebsocketHelpers(TransactionTestCase):
                                    event_name: str,
                                    timeout: int = 35
 									) -> dict:
+        """Wait for a specific event from the game socket and return its payload."""
         payload = await communicator.receive_json_from(timeout=timeout)
         self.assertEqual(payload.get('target'), 'game')
         self.assertEqual(payload.get('event'), event_name, payload.get('messgae'))
@@ -141,6 +142,7 @@ class TestWebsocketHelpers(TransactionTestCase):
                          public: bool=False,
                          armageddon: bool=False
                         ) -> dict:
+        """Handle a game round."""
         payloads = {'start': [],
                     'in_game': [],
                     'end': []}
