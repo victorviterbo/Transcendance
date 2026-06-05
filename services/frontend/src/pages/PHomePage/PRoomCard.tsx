@@ -5,13 +5,14 @@ import type { CButtonProps } from "../../components/inputs/buttons/CButton";
 import CButton from "../../components/inputs/buttons/CButton";
 import CText from "../../components/text/CText";
 import { ttr } from "../../localization/localization";
+import { MUSIC_TAGS } from "../../constants";
 import {
 	PRoomCardButtonStyle,
 	PRoomCardContentStyle,
-	PRoomCardEmptyGenreStyle,
 	PRoomCardGenreStyle,
 	PRoomCardGenreTextStyle,
 	PRoomCardGenresStyle,
+	PRoomCardHeaderStyle,
 	PRoomCardNameStyle,
 	PRoomCardPlayerCountStyle,
 	PRoomCardPlayerIconStyle,
@@ -24,7 +25,7 @@ interface PRoomCardProps extends CButtonProps {
 }
 
 function PRoomCard({ infos, ...other }: PRoomCardProps) {
-	const genres = infos.genres.length > 0 ? infos.genres.map((genre) => ttr(genre)) : [];
+	const selectedGenres = new Set(infos.genres);
 	const playerCount = `${infos.playerCount} / ${infos.playerMax}`;
 	const navigate = useNavigate();
 
@@ -36,7 +37,12 @@ function PRoomCard({ infos, ...other }: PRoomCardProps) {
 			data-testid={"PRoomCard"}
 		>
 			<Stack sx={PRoomCardContentStyle} spacing={1}>
-				<Stack direction="row" spacing={1} alignItems="flex-start">
+				<Stack
+					direction="row"
+					spacing={1}
+					alignItems="flex-start"
+					sx={PRoomCardHeaderStyle}
+				>
 					<CText noTr={true} size="sm" sx={PRoomCardNameStyle}>
 						{infos.name}
 					</CText>
@@ -53,27 +59,19 @@ function PRoomCard({ infos, ...other }: PRoomCardProps) {
 					</Stack>
 				</Stack>
 
-				<Stack
-					direction="row"
-					spacing={0.75}
-					useFlexGap={true}
-					flexWrap="nowrap"
-					sx={PRoomCardGenresStyle}
-				>
-					{genres.length > 0 ? (
-						genres.map((genre) => (
-							<Box key={genre} sx={PRoomCardGenreStyle}>
+				<Box sx={PRoomCardGenresStyle}>
+					{MUSIC_TAGS.map((genre) => {
+						const isSelected = selectedGenres.has(genre);
+
+						return (
+							<Box key={genre} sx={PRoomCardGenreStyle(isSelected)}>
 								<CText noTr={true} size="xs" sx={PRoomCardGenreTextStyle}>
-									{genre}
+									{ttr(genre)}
 								</CText>
 							</Box>
-						))
-					) : (
-						<CText noTr={true} size="xs" sx={PRoomCardEmptyGenreStyle}>
-							{ttr("ROOM_GENRES_EMPTY")}
-						</CText>
-					)}
-				</Stack>
+						);
+					})}
+				</Box>
 			</Stack>
 		</CButton>
 	);
