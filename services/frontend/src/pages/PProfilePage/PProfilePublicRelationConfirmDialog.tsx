@@ -31,8 +31,8 @@ function PProfilePublicRelationConfirmDialog({
 			<Stack spacing={2} alignItems="center" sx={{ pt: 1, minWidth: { xs: 0, sm: 360 } }}>
 				<CDialogTitle>
 					{isCancelRequest
-						? "PROFILE_SOCIAL_CANCEL_REQUEST"
-						: "PROFILE_SOCIAL_REMOVE_FRIEND"}
+						? "PROFILE_SOCIAL_CANCEL_REQUEST_TITLE"
+						: "PROFILE_SOCIAL_REMOVE_FRIEND_TITLE"}
 				</CDialogTitle>
 				<CText align="center">
 					{isCancelRequest
@@ -41,7 +41,9 @@ function PProfilePublicRelationConfirmDialog({
 				</CText>
 				<DialogActions sx={{ px: 0, pb: 0, pt: 1 }}>
 					<CButtonText onClick={onClose} disabled={isPending}>
-						CANCEL
+						{isCancelRequest
+							? "PROFILE_SOCIAL_CANCEL_REQUEST_CANCEL"
+							: "PROFILE_SOCIAL_REMOVE_FRIEND_CANCEL"}
 					</CButtonText>
 					<CButtonText onClick={onConfirm} disabled={isPending}>
 						{isPending

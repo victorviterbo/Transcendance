@@ -1,4 +1,4 @@
-import { alpha, Divider, Grid, Stack } from "@mui/material";
+import { Divider, Grid, Stack } from "@mui/material";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -8,7 +8,7 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import MicIcon from "@mui/icons-material/Mic";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { fetchGlobalStats } from "../../api/stats";
 import { MUSIC_TAGS } from "../../constants";
@@ -19,6 +19,14 @@ import type { IGlobalStatsResponse } from "../../types/stats";
 import { getErrorMessage } from "../../utils/error";
 import { formatPercentage, formatSeconds } from "../../utils/string";
 import PProfileStatisticsMetricCard from "./PProfileStatisticsMetricCard";
+import {
+	PProfileStatisticsStyle,
+	type IProfileStatisticsStyle,
+} from "../../styles/pages/profile/PProfileStatisticsStyle";
+import {
+	PProfileTextStyle,
+	type IProfileTextStyle,
+} from "../../styles/pages/profile/PProfileTextStyle";
 
 type ProfileStatisticsStatus = "idle" | "loading" | "ready" | "error";
 
@@ -95,14 +103,24 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 		error: null,
 		username: "",
 	});
-	const isCurrentUsername = statisticsState.username === username;
-	const status: ProfileStatisticsStatus = !username
-		? "idle"
-		: isCurrentUsername
-			? statisticsState.status
-			: "loading";
-	const stats = isCurrentUsername ? statisticsState.stats : null;
-	const error = isCurrentUsername ? statisticsState.error : null;
+	const style: IProfileStatisticsStyle = useMemo(() => {
+		return PProfileStatisticsStyle();
+	}, []);
+	const textStyle: IProfileTextStyle = useMemo(() => {
+		return PProfileTextStyle();
+	}, []);
+	const viewState = useMemo(() => {
+		const isCurrentUsername = statisticsState.username === username;
+		const status: ProfileStatisticsStatus = !username
+			? "idle"
+			: isCurrentUsername
+				? statisticsState.status
+				: "loading";
+		const stats = isCurrentUsername ? statisticsState.stats : null;
+		const error = isCurrentUsername ? statisticsState.error : null;
+
+		return { error, stats, status };
+	}, [statisticsState, username]);
 
 	useEffect(() => {
 		if (!username) return;
@@ -134,25 +152,30 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 		};
 	}, [username]);
 
-	const statisticMetrics = stats ? getStatisticMetrics(stats) : [];
-	const tagRates = MUSIC_TAGS.map((tag) => ({
-		tag,
-		value: stats?.successRatesCompleteByTag[tag] ?? 0,
-	}));
+	const statisticMetrics = useMemo(() => {
+		return viewState.stats ? getStatisticMetrics(viewState.stats) : [];
+	}, [viewState.stats]);
+
+	const tagRates = useMemo(() => {
+		return MUSIC_TAGS.map((tag) => ({
+			tag,
+			value: viewState.stats?.successRatesCompleteByTag[tag] ?? 0,
+		}));
+	}, [viewState.stats]);
 
 	return (
 		<Stack spacing={3}>
 			{title ? <CText size="md">{title}</CText> : null}
 
-			{status === "loading" ? <CText size="sm">PROFILE_STATS_LOADING</CText> : null}
+			{viewState.status === "loading" ? <CText size="sm">PROFILE_STATS_LOADING</CText> : null}
 
-			{status === "error" ? (
-				<CText size="sm" color="error.main">
-					{error ?? "PROFILE_STATS_LOAD_FAILED"}
+			{viewState.status === "error" ? (
+				<CText size="sm" sx={textStyle.error}>
+					{viewState.error ?? "PROFILE_STATS_LOAD_FAILED"}
 				</CText>
 			) : null}
 
-			{status === "ready" && stats ? (
+			{viewState.status === "ready" && viewState.stats ? (
 				<Stack spacing={3}>
 					<Grid container spacing={2}>
 						{statisticMetrics.map((metric) => (
@@ -166,12 +189,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 						))}
 					</Grid>
 
-					<Divider
-						flexItem
-						sx={(theme) => ({
-							borderColor: alpha(theme.palette.primary.main, 0.1),
-						})}
-					/>
+					<Divider flexItem sx={style.divider} />
 
 					<Stack spacing={1.5}>
 						<CTitle size="sm" sx={{ mb: 0 }}>

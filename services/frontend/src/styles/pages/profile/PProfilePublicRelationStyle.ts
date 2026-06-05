@@ -1,35 +1,60 @@
-import type { SxProps, Theme } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import type { ButtonProps, SxProps, Theme } from "@mui/material";
+import { appColors, appSharedStyle } from "../../theme";
 
-export type RelationChipTone = "success" | "info" | "warning" | "primary";
-
-const getRelationChipColor = (theme: Theme, tone: RelationChipTone) => {
-	if (tone === "success") return theme.palette.success.main;
-	if (tone === "info") return theme.palette.info.main;
-	if (tone === "warning") return theme.palette.warning.main;
-	return theme.palette.primary.main;
+export type RelationChipTone = "success" | "info" | "loading";
+type RelationButtonVisualProps = Pick<ButtonProps, "variant"> & {
+	sx: SxProps<Theme>;
 };
 
-export const getRelationChipStyle =
-	(tone: RelationChipTone): SxProps<Theme> =>
-	(theme) => {
-		const color = getRelationChipColor(theme, tone);
+export interface IProfilePublicRelationStyle {
+	relationChip: (tone: RelationChipTone) => SxProps<Theme>;
+	dangerButton: RelationButtonVisualProps;
+	successButton: RelationButtonVisualProps;
+}
+
+const relationChipColors: Record<RelationChipTone, { background: string; text: string }> = {
+	success: { background: appColors.validate[0], text: appColors.text.dark },
+	info: { background: appColors.primary[1], text: appColors.text.light },
+	loading: { background: appColors.greys[3], text: appColors.text.dark },
+};
+
+export const PProfilePublicRelationStyle = (): IProfilePublicRelationStyle => ({
+	relationChip: (tone: RelationChipTone): SxProps<Theme> => {
+		const colors = relationChipColors[tone];
 
 		return {
 			height: 36,
-			borderRadius: 1.5,
-			border: `1px solid ${alpha(color, 0.44)}`,
-			backgroundColor: alpha(color, 0.16),
-			color,
+			borderRadius: appSharedStyle.smallGameRadius,
+			border: `2px solid ${colors.background}`,
+			backgroundColor: colors.background,
+			color: colors.text,
 			fontWeight: 800,
-			boxShadow: `inset 0 1px 0 ${alpha(theme.palette.common.white, 0.18)}`,
-			"& .MuiChip-label": {
-				px: 1.25,
-			},
+			boxShadow: `0px 3px 0px 0px ${appColors.greys[9]}`,
 			"& .MuiChip-icon": {
-				color,
-				fontSize: 19,
-				ml: 1,
+				color: colors.text,
 			},
 		};
-	};
+	},
+	dangerButton: {
+		variant: "contained",
+		sx: {
+			backgroundColor: appColors.cancel[0],
+			color: appColors.text.light,
+			"&:hover": {
+				backgroundColor: appColors.cancel[1],
+				color: appColors.text.light,
+			},
+		},
+	},
+	successButton: {
+		variant: "contained",
+		sx: {
+			backgroundColor: appColors.validate[1],
+			color: appColors.text.light,
+			"&:hover": {
+				backgroundColor: appColors.validate[0],
+				color: appColors.text.dark,
+			},
+		},
+	},
+});

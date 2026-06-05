@@ -1,13 +1,16 @@
 import { Button, Chip, CircularProgress, Stack } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { ttr } from "../../localization/localization";
 import {
-	getRelationChipStyle,
+	PProfilePublicRelationStyle,
+	type IProfilePublicRelationStyle,
 	type RelationChipTone,
 } from "../../styles/pages/profile/PProfilePublicRelationStyle";
+import { useMemo } from "react";
 import type {
 	IRelationState,
 	TConfirmableRelationAction,
@@ -22,10 +25,12 @@ interface RelationActionButtonProps {
 
 interface ConfirmableRelationActionButtonProps extends RelationActionButtonProps {
 	onConfirmableAction: (action: TConfirmableRelationAction) => void;
+	style: IProfilePublicRelationStyle;
 }
 
 interface ImmediateRelationActionButtonProps extends RelationActionButtonProps {
 	onAction: (action: TRelationAction) => void;
+	style: IProfilePublicRelationStyle;
 }
 
 interface PProfilePublicRelationActionsProps {
@@ -39,25 +44,28 @@ interface PProfilePublicRelationActionsProps {
 interface RelationStatusChipProps {
 	icon: React.ReactElement;
 	label: string;
+	style: IProfilePublicRelationStyle;
 	tone: RelationChipTone;
 }
 
 interface RelationChipProps {
 	status: IRelationState["status"];
 	relation: TFriendRelation;
+	style: IProfilePublicRelationStyle;
 }
 
-function RelationStatusChip({ icon, label, tone }: RelationStatusChipProps) {
-	return <Chip icon={icon} label={label} sx={getRelationChipStyle(tone)} />;
+function RelationStatusChip({ icon, label, style, tone }: RelationStatusChipProps) {
+	return <Chip icon={icon} label={label} sx={style.relationChip(tone)} />;
 }
 
-function RelationChip({ status, relation }: RelationChipProps) {
+function RelationChip({ status, relation, style }: RelationChipProps) {
 	if (status === "loading") {
 		return (
 			<RelationStatusChip
 				icon={<CircularProgress size={16} sx={{ color: "inherit" }} />}
 				label={ttr("PROFILE_SOCIAL_LOADING")}
-				tone="primary"
+				style={style}
+				tone="loading"
 			/>
 		);
 	}
@@ -66,6 +74,7 @@ function RelationChip({ status, relation }: RelationChipProps) {
 			<RelationStatusChip
 				icon={<CheckIcon />}
 				label={ttr("PROFILE_SOCIAL_FRIEND")}
+				style={style}
 				tone="success"
 			/>
 		);
@@ -75,18 +84,13 @@ function RelationChip({ status, relation }: RelationChipProps) {
 			<RelationStatusChip
 				icon={<HourglassEmptyIcon />}
 				label={ttr("PROFILE_SOCIAL_REQUEST_SENT")}
+				style={style}
 				tone="info"
 			/>
 		);
 	}
 	if (relation === "incoming") {
-		return (
-			<RelationStatusChip
-				icon={<HourglassEmptyIcon />}
-				label={ttr("PROFILE_SOCIAL_REQUEST_RECEIVED")}
-				tone="warning"
-			/>
-		);
+		return null;
 	}
 	return null;
 }
@@ -95,11 +99,11 @@ function RemoveFriendButton({
 	pendingAction,
 	disabled,
 	onConfirmableAction,
+	style,
 }: ConfirmableRelationActionButtonProps) {
 	return (
 		<Button
-			color="error"
-			variant="outlined"
+			{...style.dangerButton}
 			startIcon={pendingAction === "remove" ? <CircularProgress size={16} /> : <DeleteIcon />}
 			disabled={disabled}
 			onClick={() => onConfirmableAction("remove")}
@@ -114,11 +118,11 @@ function CancelFriendRequestButton({
 	pendingAction,
 	disabled,
 	onConfirmableAction,
+	style,
 }: ConfirmableRelationActionButtonProps) {
 	return (
 		<Button
-			color="warning"
-			variant="outlined"
+			{...style.dangerButton}
 			startIcon={pendingAction === "cancel" ? <CircularProgress size={16} /> : <DeleteIcon />}
 			disabled={disabled}
 			onClick={() => onConfirmableAction("cancel")}
@@ -133,12 +137,12 @@ function IncomingFriendRequestActions({
 	pendingAction,
 	disabled,
 	onAction,
+	style,
 }: ImmediateRelationActionButtonProps) {
 	return (
 		<Stack direction="row" spacing={1}>
 			<Button
-				color="success"
-				variant="contained"
+				{...style.successButton}
 				startIcon={
 					pendingAction === "accept" ? <CircularProgress size={16} /> : <CheckIcon />
 				}
@@ -149,8 +153,10 @@ function IncomingFriendRequestActions({
 				{ttr("PROFILE_SOCIAL_ACCEPT")}
 			</Button>
 			<Button
-				color="error"
-				variant="outlined"
+				{...style.dangerButton}
+				startIcon={
+					pendingAction === "refuse" ? <CircularProgress size={16} /> : <CloseIcon />
+				}
 				disabled={disabled}
 				onClick={() => onAction("refuse")}
 				data-testid="PProfilePublic_RefuseFriend"
@@ -165,6 +171,7 @@ function AddFriendButton({
 	pendingAction,
 	disabled,
 	onAction,
+	style: _style,
 }: ImmediateRelationActionButtonProps) {
 	return (
 		<Button
@@ -187,12 +194,14 @@ function RelationAction({
 	disabled,
 	onAction,
 	onConfirmableAction,
+	style,
 }: {
 	relation: TFriendRelation;
 	pendingAction: TRelationAction | null;
 	disabled: boolean;
 	onAction: (action: TRelationAction) => void;
 	onConfirmableAction: (action: TConfirmableRelationAction) => void;
+	style: IProfilePublicRelationStyle;
 }) {
 	if (relation === "friends") {
 		return (
@@ -200,6 +209,7 @@ function RelationAction({
 				pendingAction={pendingAction}
 				disabled={disabled}
 				onConfirmableAction={onConfirmableAction}
+				style={style}
 			/>
 		);
 	}
@@ -209,6 +219,7 @@ function RelationAction({
 				pendingAction={pendingAction}
 				disabled={disabled}
 				onConfirmableAction={onConfirmableAction}
+				style={style}
 			/>
 		);
 	}
@@ -218,6 +229,7 @@ function RelationAction({
 				pendingAction={pendingAction}
 				disabled={disabled}
 				onAction={onAction}
+				style={style}
 			/>
 		);
 	}
@@ -227,6 +239,7 @@ function RelationAction({
 				pendingAction={pendingAction}
 				disabled={disabled}
 				onAction={onAction}
+				style={style}
 			/>
 		);
 	}
@@ -241,6 +254,9 @@ function PProfilePublicRelationActions({
 	onConfirmableAction,
 }: PProfilePublicRelationActionsProps) {
 	const disabled = relationState.status === "loading" || pendingAction !== null || !isTargetReady;
+	const style: IProfilePublicRelationStyle = useMemo(() => {
+		return PProfilePublicRelationStyle();
+	}, []);
 
 	return (
 		<Stack
@@ -248,13 +264,18 @@ function PProfilePublicRelationActions({
 			spacing={1}
 			alignItems={{ xs: "stretch", sm: "center" }}
 		>
-			<RelationChip status={relationState.status} relation={relationState.relation} />
+			<RelationChip
+				status={relationState.status}
+				relation={relationState.relation}
+				style={style}
+			/>
 			<RelationAction
 				relation={relationState.relation}
 				pendingAction={pendingAction}
 				disabled={disabled}
 				onAction={onAction}
 				onConfirmableAction={onConfirmableAction}
+				style={style}
 			/>
 		</Stack>
 	);

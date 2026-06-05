@@ -3,15 +3,18 @@ import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import CircleIcon from "@mui/icons-material/Circle";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import MicIcon from "@mui/icons-material/Mic";
-import { alpha, Box, Stack } from "@mui/material";
-import { type ReactNode } from "react";
+import { Box, Stack } from "@mui/material";
+import { useMemo, type ReactNode } from "react";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
 import { ttrn } from "../../localization/localization";
 import type { IHistoryRound } from "../../types/stats";
 import { formatSeconds } from "../../utils/string";
-import { getScaledRadius } from "../../utils/styles";
 import CCover from "../../components/images/CCover";
+import {
+	PProfileMatchHistoryStyle,
+	type IProfileMatchHistoryStyle,
+} from "../../styles/pages/profile/PProfileMatchHistoryStyle";
 
 interface PProfileMatchHistoryRoundEntryProps {
 	round: IHistoryRound;
@@ -19,19 +22,16 @@ interface PProfileMatchHistoryRoundEntryProps {
 
 interface RoundMetaItemProps {
 	icon?: ReactNode;
+	style: IProfileMatchHistoryStyle;
 	value?: string;
 	statusColor?: string;
 }
 
-function RoundMetaItem({ icon, value, statusColor }: RoundMetaItemProps) {
+function RoundMetaItem({ icon, style, value, statusColor }: RoundMetaItemProps) {
 	return (
 		<Stack direction="row" spacing={0.5} alignItems="center">
-			{icon ? (
-				<Box sx={{ display: "flex", alignItems: "center", color: "text.secondary" }}>
-					{icon}
-				</Box>
-			) : null}
-			{statusColor ? <CircleIcon sx={{ fontSize: 12, color: statusColor }} /> : null}
+			{icon ? <Box sx={style.roundMetaIcon}>{icon}</Box> : null}
+			{statusColor ? <CircleIcon sx={style.roundStatusIcon(statusColor)} /> : null}
 			{value ? (
 				<CText size="sm" sx={{ mb: 0 }}>
 					{value}
@@ -42,25 +42,26 @@ function RoundMetaItem({ icon, value, statusColor }: RoundMetaItemProps) {
 }
 
 function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntryProps) {
-	const isRoundFullyFound = round.artistFound && round.songFound;
+	const style: IProfileMatchHistoryStyle = useMemo(() => {
+		return PProfileMatchHistoryStyle();
+	}, []);
+
+	const roundInfos = useMemo(() => {
+		const isRoundFullyFound = round.artistFound && round.songFound;
+
+		return {
+			artistStatusColor: style.roundStatusColor(round.artistFound),
+			coverAlt: `${round.trackArtist} - ${round.trackName}`,
+			isRoundFullyFound,
+			rankingLabel: isRoundFullyFound ? ttrn(round.ranking) : undefined,
+			songStatusColor: style.roundStatusColor(round.songFound),
+			timeLabel: isRoundFullyFound ? formatSeconds(round.time) : undefined,
+		};
+	}, [round, style]);
 
 	return (
-		<Stack
-			direction="row"
-			spacing={1.5}
-			alignItems="center"
-			sx={(theme) => ({
-				width: "100%",
-				py: 1,
-				px: 0.75,
-				borderRadius: getScaledRadius(theme.shape.borderRadius, 2),
-				backgroundColor: alpha(theme.palette.primary.main, 0.03),
-			})}
-		>
-			<CCover
-				url={round.artworkUrl}
-				alt={`${round.trackArtist} - ${round.trackName}`}
-			></CCover>
+		<Stack direction="row" spacing={1.5} alignItems="center" sx={style.roundEntry}>
+			<CCover url={round.artworkUrl} alt={roundInfos.coverAlt}></CCover>
 			<Stack sx={{ flex: 1, minWidth: 0 }}>
 				<CTitle size="sm" sx={{ mb: 0 }}>
 					{round.trackArtist}
@@ -79,27 +80,31 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 				justifyContent="flex-end"
 				sx={{ flexShrink: 0 }}
 			>
-				{isRoundFullyFound ? (
+				{roundInfos.isRoundFullyFound ? (
 					<RoundMetaItem
 						icon={<LeaderboardIcon fontSize="small" />}
-						value={ttrn(round.ranking)}
+						style={style}
+						value={roundInfos.rankingLabel}
 					/>
 				) : null}
-				{isRoundFullyFound ? (
+				{roundInfos.isRoundFullyFound ? (
 					<RoundMetaItem
 						icon={<AccessTimeIcon fontSize="small" />}
-						value={formatSeconds(round.time)}
+						style={style}
+						value={roundInfos.timeLabel}
 					/>
 				) : null}
 				<RoundMetaItem
 					icon={<MicIcon fontSize="small" />}
+					style={style}
 					value={undefined}
-					statusColor={round.artistFound ? "success.main" : "error.main"}
+					statusColor={roundInfos.artistStatusColor}
 				/>
 				<RoundMetaItem
 					icon={<AudiotrackIcon fontSize="small" />}
+					style={style}
 					value={undefined}
-					statusColor={round.songFound ? "success.main" : "error.main"}
+					statusColor={roundInfos.songStatusColor}
 				/>
 			</Stack>
 		</Stack>

@@ -59,7 +59,7 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 				sx={{
 					minWidth: 0,
 					width: "100%",
-					maxWidth: { xs: "100%", sm: 260, md: 300 },
+					maxWidth: { xs: "100%", sm: 280, md: 300 },
 				}}
 			>
 				<CTitle

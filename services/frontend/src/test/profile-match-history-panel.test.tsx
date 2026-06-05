@@ -9,7 +9,7 @@ vi.mock("../api/stats", () => ({
 	fetchHistory: (...args: unknown[]) => fetchHistoryMock(...args),
 }));
 
-vi.mock("../pages/PProfilePage/PProfileMatchHistoryDrawerCard", () => ({
+vi.mock("../pages/PProfilePage/PProfileMatchHistoryAccordionCard", () => ({
 	default: ({ entry }: { entry: { roomTitle: string } }) => <div>{entry.roomTitle}</div>,
 }));
 

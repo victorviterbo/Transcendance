@@ -17,6 +17,14 @@ import CDialog from "../../components/feedback/dialogs/CDialog";
 import CDialogTitle from "../../components/feedback/dialogs/CDialogTitle";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
 import CText from "../../components/text/CText";
+import {
+	PProfileLayoutStyle,
+	type IProfileLayoutStyle,
+} from "../../styles/pages/profile/PProfileLayoutStyle";
+import {
+	PProfileTextStyle,
+	type IProfileTextStyle,
+} from "../../styles/pages/profile/PProfileTextStyle";
 
 export interface ProfileSettingsPanelProps extends GPageProps {
 	username: string | undefined;
@@ -30,6 +38,12 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 	const [deleteConfirmError, setDeleteConfirmError] = useState<string | null>(null);
 	const [isDeletingProfile, setIsDeletingProfile] = useState(false);
 	const { setAuth, user, logout } = useAuth();
+	const style: IProfileTextStyle = useMemo(() => {
+		return PProfileTextStyle();
+	}, []);
+	const layoutStyle: IProfileLayoutStyle = useMemo(() => {
+		return PProfileLayoutStyle();
+	}, []);
 	const usernameFields = useMemo<TFormFieldConfig[]>(
 		() => [
 			{
@@ -212,7 +226,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 	};
 
 	return (
-		<div>
+		<Stack sx={layoutStyle.tabContent}>
 			<Accordion expanded={expanded === "username"} onChange={handlePanel("username")}>
 				<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 					<CTitle size="sm">CHANGE_USERNAME</CTitle>
@@ -271,7 +285,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 					<CDialogTitle>DELETE_ACCOUNT</CDialogTitle>
 					<CText align="center">DELETE_ACCOUNT_CONFIRMATION</CText>
 					{deleteConfirmError ? (
-						<CText color="error.main" size="sm" align="center">
+						<CText size="sm" align="center" sx={style.error}>
 							{deleteConfirmError}
 						</CText>
 					) : null}
@@ -288,7 +302,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 					</DialogActions>
 				</Stack>
 			</CDialog>
-		</div>
+		</Stack>
 	);
 };
 

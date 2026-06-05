@@ -83,20 +83,24 @@ SOCIAL_REQUESTS_ERROR,Couldn't load friend requests.,Impossible de charger les d
 SOCIAL_REQUESTS_OUTGOING,Sent,Envoyée,送信済み,Displayed when waiting for the other user to respond
 SOCIAL_ADD_FRIEND_FAILED,Failed to send friend request.,Échec de l'envoi de la demande d'ami.,フレンド申請の送信に失敗しました。,Error shown when sending a friend request fails
 SOCIAL_RESPOND_FRIEND_FAILED,Failed to respond to friend request.,Échec de la réponse à la demande d'ami.,フレンド申請への応答に失敗しました。,Error shown when responding to a friend request fails
-PROFILE_SOCIAL_LOADING,Loading relation,Chargement de la relation,関係を読み込み中,Shown while the public profile social relation is loading
+PROFILE_SOCIAL_LOADING,Loading...,Chargement...,関係を読み込み中,Shown while the public profile social relation is loading
 PROFILE_SOCIAL_ADD_FRIEND,Add friend,Ajouter ami,フレンド追加,Button to send a friend request from a public profile
 PROFILE_SOCIAL_FRIEND,Friend,Ami,フレンド,Status shown when the public profile user is already a friend
-PROFILE_SOCIAL_REMOVE_FRIEND,Remove friend,Retirer ami,フレンド解除,Button to remove an existing friend from a public profile
-PROFILE_SOCIAL_CANCEL_REQUEST,Cancel request,Annuler la demande,申請をキャンセル,Button to cancel an outgoing friend request from a public profile
+PROFILE_SOCIAL_REMOVE_FRIEND,Remove,Retirer des ami,フレンド解除,Button to remove an existing friend from a public profile
+PROFILE_SOCIAL_CANCEL_REQUEST,Cancel,Annuler,申請をキャンセル,Button to cancel an outgoing friend request from a public profile
 PROFILE_SOCIAL_REQUEST_SENT,Request sent,Demande envoyée,申請送信済み,Status shown when a friend request is outgoing
 PROFILE_SOCIAL_REQUEST_RECEIVED,Request received,Demande reçue,申請受信済み,Status shown when a friend request is incoming
 PROFILE_SOCIAL_ACCEPT,Accept,Accepter,承認,Button to accept an incoming friend request
 PROFILE_SOCIAL_REFUSE,Refuse,Refuser,拒否,Button to refuse an incoming friend request
+PROFILE_SOCIAL_CANCEL_REQUEST_TITLE,Cancel friend request,Annuler la demande d’ami,フレンド申請をキャンセル,Title of the confirmation dialog to cancel an outgoing friend request
 PROFILE_SOCIAL_REMOVE_FRIEND_CONFIRMATION,This will remove this user from your friends. Continue ?,Cela retirera cet utilisateur de vos amis. Continuer ?,このユーザーをフレンドから解除します。続行しますか？,Confirmation text before removing a friend from a public profile
+PROFILE_SOCIAL_REMOVE_FRIEND_CANCEL,Keep friend,Garder l’ami,フレンドのままにする,Shown to cancel the friend removal in the dialog
+PROFILE_SOCIAL_REMOVE_FRIEND_TITLE,Remove friend,Retirer l’ami,フレンド解除,Title of the confirmation dialog to remove a friend
 PROFILE_SOCIAL_CANCEL_REQUEST_CONFIRMATION,This will cancel your pending friend request. Continue ?,Cela annulera votre demande d'ami en attente. Continuer ?,保留中のフレンド申請をキャンセルします。続行しますか？,Confirmation text before canceling an outgoing friend request from a public profile
+PROFILE_SOCIAL_CANCEL_REQUEST_CANCEL,Keep request,Garder la demande,申請を維持する,Shown to cancel the request cancel in the dialog
 PROFILE_SOCIAL_RELATION_FAILED,Couldn't load social relation.,Impossible de charger la relation sociale.,ソーシャル関係を読み込めませんでした。,Error shown when loading the public profile relation fails
-PROFILE_SOCIAL_ACTION_FAILED,Friend action failed.,L'action ami a échoué.,フレンド操作に失敗しました。,Error shown when a public profile friend action fails
-PROFILE_SOCIAL_REQUEST_EXPIRED,Friend request has expired.,La demande d'ami a expiré.,フレンド申請は期限切れです。,Shown when an incoming friend request disappeared before the user could accept or refuse it
+PROFILE_SOCIAL_ACTION_FAILED,Friend action failed,L'action ami a échoué,フレンド操作に失敗しました。,Error shown when a public profile friend action fails
+PROFILE_SOCIAL_REQUEST_EXPIRED,Friend request expired,Demande d'ami expirée,申請期限切れ,Shown when an incoming friend request disappeared before the user could accept or refuse it
 SOCIAL_NO_MESSAGE,You do not have any messages with this user yet.,Vous n'avez pas encore de messages avec cet utilisateur.,このユーザーとのメッセージはまだありません。,Displayed when there is no conversation with the selected user
 SOCIAL_MESSAGE_ERROR,Couldn't load messages.,Impossible de charger les messages.,メッセージを読み込めませんでした。,Displayed when the message feed request fails
 CHANGE_FAILED,Change failed,La modification a échoué,変更に失敗しました,Shows when an unknown error occurred while changing a profile field
