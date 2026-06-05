@@ -83,6 +83,7 @@ SOCIAL_REQUESTS_ERROR,Couldn't load friend requests.,Impossible de charger les d
 SOCIAL_REQUESTS_OUTGOING,Sent,Envoyée,送信済み,Displayed when waiting for the other user to respond
 SOCIAL_ADD_FRIEND_FAILED,Failed to send friend request.,Échec de l'envoi de la demande d'ami.,フレンド申請の送信に失敗しました。,Error shown when sending a friend request fails
 SOCIAL_RESPOND_FRIEND_FAILED,Failed to respond to friend request.,Échec de la réponse à la demande d'ami.,フレンド申請への応答に失敗しました。,Error shown when responding to a friend request fails
+PROGRESS_BAR_LVL,LVL,NIV,LV,Shown below a player's level in its profile
 PROFILE_SOCIAL_LOADING,Loading...,Chargement...,関係を読み込み中,Shown while the public profile social relation is loading
 PROFILE_SOCIAL_ADD_FRIEND,Add friend,Ajouter ami,フレンド追加,Button to send a friend request from a public profile
 PROFILE_SOCIAL_FRIEND,Friend,Ami,フレンド,Status shown when the public profile user is already a friend
