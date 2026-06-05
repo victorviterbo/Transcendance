@@ -13,11 +13,11 @@ const PHomePage = () => {
 	return (
 		<GPageBase>
 			<Container sx={{ p: spacing }}>
-				<Grid container spacing={spacing}>
-					<Grid size={{ xs: 12, sm: 6 }}>
+				<Grid container spacing={spacing} columns={{ xs: 12, md: 5 }}>
+					<Grid size={{ xs: 12, md: 3 }}>
 						<PCreateRoom></PCreateRoom>
 					</Grid>
-					<Grid size={{ xs: 12, sm: 6 }}>
+					<Grid size={{ xs: 12, md: 2 }}>
 						<PJoinRoom></PJoinRoom>
 					</Grid>
 				</Grid>
