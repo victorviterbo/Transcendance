@@ -4,7 +4,7 @@ import type { IGamePlayerAnswer } from "../../../types/game";
 import CText from "../../../components/text/CText";
 import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import {
 	PGameRoundAnswerStyle,
 	type IGameRoundAnswerStyle,
@@ -36,4 +36,4 @@ function PGameRoundAnswer({ answer, variant }: PGameRoundAnswerProps) {
 	);
 }
 
-export default PGameRoundAnswer;
+export default memo(PGameRoundAnswer);

@@ -1,6 +1,5 @@
 import type { MUSIC_TAGS } from "../constants";
 import type { IErrorStruct } from "./error";
-import type { IExtUserInfo } from "./user";
 
 //====================== LIST ======================
 export type TGameGenre = (typeof MUSIC_TAGS)[number];
@@ -81,13 +80,18 @@ export interface IGameSettings {
 }
 
 //====================== STATUS ======================
-export type TGamePhase = "waiting" | "playing_round" | "playing_break" | "finish";
-export type TGameVisibility = "public" | "private" | "friends";
-
+export type TGamePhase = "waiting" | "started" | "count" | "playing_round" | "playing_break" | "finish";
 export interface IGameStatus {
 	phase: TGamePhase;
 	round: number;
 	keyTime: number;
+}
+
+export interface IGameTrack {
+	title?: string;
+	artist?: string;
+	preview?: string;
+	artwork?: string;
 }
 
 export interface IGamePlayerAnswer {
@@ -97,22 +101,19 @@ export interface IGamePlayerAnswer {
 	artistFound: boolean;
 }
 
-export interface IGameTitle {
-	title?: string;
-	artist?: string;
-	preview: string;
-	artwork?: string;
+export interface IGameRoundStatus {
+	titleFound: boolean;
+	artistFound: boolean;
+	points: number;
+	time: number;
+	answers: IGamePlayerAnswer[];
 }
 
 export type TRoundPhase = "not-done" | "playing" | "break" | "done";
 export interface IGameRound {
-	title: IGameTitle;
-	titleFound: number;
-	artistFound: number;
-	points: number;
-	time: number;
+	track: IGameTrack;
 	phase: TRoundPhase;
-	answers: IGamePlayerAnswer[];
+	status: IGameRoundStatus;
 }
 
 //====================== COMMON ======================

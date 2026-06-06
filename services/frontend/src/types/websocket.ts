@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGamePlayer, IGameSettings, IGameUser, TGamePhase, TGameVisibility } from "./game";
+import type { IGamePlayer, IGameSettings, IGameTrack, IGameUser, TGamePhase, TGameVisibility } from "./game";
 //import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
@@ -140,9 +140,29 @@ export interface TWSGameInfo {
 	maxPlayers: number;
 }
 
+export interface TWSRoundInfo {
+	track: IGameTrack;
+    titleFound: boolean;
+    artistFound: boolean,
+    time: number,
+    ranking: number,
+    points: number,
+	round: number;
+}
+
+
+
 	  //--------------------- EVENTS ---------------------
-export type IWSGameEventRcvList = "game_join" | "settings_update"
-export type IWSGameEventSndList = "player_joined" | "player_left" | "game_info" | "settings_updated"
+export type IWSGameEventRcvList = "game_join" 
+	| "settings_update" 
+	| "game_start"
+	| "answer_submit"
+
+export type IWSGameEventSndList = "player_joined" | "player_left" | "game_info" 
+	| "settings_updated" 
+	| "game_started"
+	| "round_preview"
+	| "round_started"
 
 
 export interface IWSGameEvent {
@@ -158,6 +178,11 @@ export interface IWSGameRCVEvent extends IWSGameEvent {
 export interface IWSGameRCVEventSettings extends IWSGameRCVEvent {
 	event: Extract<IWSGameEventRcvList, "settings_update">;
 	settings: IGameSettings;
+}
+export interface IWSGameRCVEventAnswer extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "answer_submit">;
+	answer: string;
+	time: number
 }
 
 
@@ -178,9 +203,17 @@ export interface IWSGameSendEventGameInfo extends IWSGameSendEvent {
 	game: TWSGameInfo;
 	settings: IGameSettings;
 	leaderboard: IGamePlayer[];
+	history: TWSRoundInfo[];
 }
 
 export interface IWSGameSendEventSettings extends IWSGameSendEvent {
-	event: Extract<IWSGameEventSndList, "settings_updated">;
+	event: Extract<IWSGameEventSndList, "settings_updated" | "game_started">;
 	settings: IGameSettings;
+}
+
+export interface IWSGameSendEventRoundStart extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "round_preview" | "round_started">;
+	round: number;
+	preview: string;
+	playbackDuration: number;
 }

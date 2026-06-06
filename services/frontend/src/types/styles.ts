@@ -39,6 +39,11 @@ export type TColor = {
 	saturation: number;
 	brightness: number;
 };
+export type TColorSimple = {
+	r: number;
+	g: number;
+	b: number;
+};
 export type TColorAlteration = "shift-saturation" | "shift-brightness" | "shift-hue";
 
 //--------------------------------------------------

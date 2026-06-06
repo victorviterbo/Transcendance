@@ -12,6 +12,7 @@ import type {
 	IGameRound,
 	IGameSettings,
 	IGameStatus,
+	TLoadingPhase,
 } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { gameFetchData } from "../../api/game";
@@ -79,6 +80,7 @@ function PGame() {
 			setError,
 			setStatus,
 			setSettings,
+			setRounds,
 			setPlayers,
 			sendMessage: wsContext.sendMessage,
 		})
@@ -94,11 +96,12 @@ function PGame() {
 			setError,
 			setStatus,
 			setSettings,
+			setRounds,
 			setPlayers,
 			sendMessage: wsContext.sendMessage,
 		}
 
-	}, [setReady, setError, wsContext]);
+	}, [setReady, setError, setStatus, setSettings, setPlayers, wsContext]);
 
 	// useEffect(() => {
 	// 	if (gameid == undefined) return;

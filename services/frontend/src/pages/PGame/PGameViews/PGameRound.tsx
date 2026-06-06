@@ -13,7 +13,7 @@ import type {
 	IGameSettings,
 	IGameStatus,
 } from "../../../types/game";
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import PGameRoundStateNode from "./PGameRoundStateNode";
 import CCounterCircular from "../../../components/feedback/loading/CCounterCircular";
 import PGameRoundTracker from "./PGameRoundTracker";
@@ -22,6 +22,7 @@ import { PGameRoundStyle, type IGameRoundStyle } from "../../../styles/pages/gam
 import PGameRoundReveal from "./PGameRoundReveal";
 import CVolumeSilder from "../../../components/inputs/slider/CVolumeSilder";
 import type { GameInstance } from "../../../handlers/gameHandlers";
+import CCountdownCircular from "../../../components/feedback/loading/CCountdownCircular";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
@@ -31,7 +32,11 @@ interface PGameRoundProps extends GPageProps {
 	rounds: IGameRound[];
 }
 
-function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
+function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps) {
+
+	//====================== STATES ======================
+	const [answerField, setAnswerField] = useState<string>("");
+
 	//====================== MAPS ======================
 	const roundHistory = useMemo((): ReactNode[] => {
 		return rounds.map((round: IGameRound, index: number) => {
@@ -45,7 +50,7 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 	}, [rounds]);
 
 	const answerHistory = useMemo((): ReactNode[] => {
-		return rounds[status.round].answers.map((answer: IGamePlayerAnswer, index: number) => {
+		return rounds[status.round].status.answers.map((answer: IGamePlayerAnswer, index: number) => {
 			return (
 				<Grid size={6} key={"answer-node-" + index}>
 					<PGameRoundAnswer variant="answer" answer={answer} />
@@ -55,28 +60,37 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 	}, [rounds, status]);
 
 	const playerTimes = useMemo((): ReactNode[] => {
-		const answeredPlayers = players.filter((player: IGamePlayer) => {
-			return (
-				(player.current.artistFound || player.current.titleFound) &&
-				player.current.lastestTime >= 0
-			);
-		});
+		// const answeredPlayers = players.filter((player: IGamePlayer) => {
+		// 	return (
+		// 		(player.current.artistFound || player.current.titleFound) &&
+		// 		player.current.lastestTime >= 0
+		// 	);
+		// });
 
-		return answeredPlayers.map((player: IGamePlayer) => {
-			return (
-				<PGameRoundAnswer
-					variant="time"
-					key={player.user.uid}
-					answer={{
-						message: player.user.username,
-						time: player.current.lastestTime,
-						titleFound: player.current.titleFound,
-						artistFound: player.current.artistFound,
-					}}
-				></PGameRoundAnswer>
-			);
-		});
-	}, [players]);
+		// return answeredPlayers.map((player: IGamePlayer) => {
+		// 	return (
+		// 		<PGameRoundAnswer
+		// 			variant="time"
+		// 			key={player.user.uid}
+		// 			answer={{
+		// 				message: player.user.username,
+		// 				time: player.current.lastestTime,
+		// 				titleFound: player.current.titleFound,
+		// 				artistFound: player.current.artistFound,
+		// 			}}
+		// 		></PGameRoundAnswer>
+		// 	);
+		// });
+		return []
+	}, []); // players
+
+	//====================== EVENTS ======================
+	const handleSendMessage = useCallback(() => {
+		if(!game.current)
+			return;
+		game.current.submitAnswer(answerField);
+		setAnswerField("");
+	}, [game, answerField, setAnswerField])
 
 	//====================== STYLE ======================
 	const style: IGameRoundStyle = useMemo(() => {
@@ -95,7 +109,7 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 						<CText sx={{ m: 0, mr: "15px", textAlign: "center" }}>
 							{ttrfn("GAME_ROUND_INDICATOR", {
 								CURRENT: <span>{status.round + 1}</span>,
-								MAX: <span>{settings.nbMusic}</span>,
+								MAX: <span>{settings.trackCount}</span>,
 							})}
 						</CText>
 						<Stack direction={"row"} sx={{ flexWrap: "wrap" }}>
@@ -115,7 +129,7 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 					direction={"column"}
 				>
 					<Box>
-						<PGameRoundReveal title={rounds[status.round].title}></PGameRoundReveal>
+						{/* <PGameRoundReveal title={rounds[status.round].track.title}></PGameRoundReveal> */}
 					</Box>
 					<Grid container spacing={"5px"}>
 						{answerHistory}
@@ -154,29 +168,24 @@ function PGameRound({ players, status, rounds, settings }: PGameRoundProps) {
 					fontSize={appTexts.text.sizes.xs}
 					borderWidth="2px"
 					verticalPadding="10px"
-					// value={messageField}
-					// onChange={(event) => {
-					// 	setMessageField(event.target.value);
-					// }}
-					// onKeyUp={(event) => {
-					// 	if (event.code == "Enter") handleSendMessage();
-					// }}
+					value={answerField}
+					onChange={(event) => {
+						setAnswerField(event.target.value);
+					}}
+					onKeyUp={(event) => {
+						if (event.code == "Enter") handleSendMessage();
+					}}
 					data-testid="PGameChat-TextField"
 				></CTextField>
 				<CIconButton
-					//onClick={handleSendMessage}
+					onClick={handleSendMessage}
 					sx={{ ml: "5px", mr: "20px" }}
 					data-testid="PGameChat-SendButton"
 				>
 					<SendIcon fontSize="small" />
 				</CIconButton>
-				<CCounterCircular
-					stackSx={{ transform: "translateY(-5px)" }}
-					min={0}
-					max={30}
-					variant="determinate"
-					value={25}
-				/>
+				<CCountdownCircular startTime={status.keyTime} timeMS={settings.playbackDuration * 1000} size={"35px"} fontSize="xs" startColor={appColors.primary[0]} endColor={appColors.cancel[0]}>
+				</CCountdownCircular>
 				<CVolumeSilder onVolumeChanged={(_) => {}}></CVolumeSilder>
 			</Stack>
 		</Stack>
