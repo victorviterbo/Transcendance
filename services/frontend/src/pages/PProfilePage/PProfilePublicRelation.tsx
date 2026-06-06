@@ -1,5 +1,5 @@
 import { Alert, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import {
 	removeFriend,
@@ -46,7 +46,9 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 	});
 	const [pendingAction, setPendingAction] = useState<TRelationAction | null>(null);
 	const [confirmAction, setConfirmAction] = useState<TConfirmableRelationAction | null>(null);
-	const targetUser = getTargetUser(profile);
+	const targetUser = useMemo(() => {
+		return getTargetUser(profile);
+	}, [profile]);
 
 	useEffect(() => {
 		if (authStatus !== "authed") {

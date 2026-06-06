@@ -55,9 +55,23 @@ function PCreateRoom() {
 						</CText>
 					) : null}
 				</Box>
-				<Stack direction={"row"} sx={{ justifyContent: "space-between" }}>
+				<Stack
+					direction={"row"}
+					sx={{ justifyContent: "space-between", alignItems: "center", gap: 2 }}
+				>
 					<CToggle
-						sx={{ height: appPositions.sizes.buttons.home }}
+						fontSize="sm"
+						sx={{
+							height: appPositions.sizes.buttons.home,
+							"& .MuiToggleButton-root": {
+								height: appPositions.sizes.buttons.home,
+								minHeight: appPositions.sizes.buttons.home,
+							},
+							"& .MuiTypography-root": {
+								m: 0,
+								display: { xs: "none", sm: "block" },
+							},
+						}}
 						value={visibility}
 						options={[
 							{
@@ -80,7 +94,11 @@ function PCreateRoom() {
 							if (value) setVisibility(value as TGameVisibility);
 						}}
 					/>
-					<CButtonText onClick={handleCreateRoom} disabled={!name.trim() || isCreating}>
+					<CButtonText
+						sx={{ height: appPositions.sizes.buttons.home }}
+						onClick={handleCreateRoom}
+						disabled={!name.trim() || isCreating}
+					>
 						{isCreating ? "CREATING_GAME" : "CREATE_GAME"}
 					</CButtonText>
 				</Stack>

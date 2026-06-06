@@ -1,5 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import CTitle from "../text/CTitle";
+import { ttr } from "../../localization/localization";
 
 interface CLevelProgressProps {
 	level: number;
@@ -49,7 +50,7 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 						opacity: 0.9,
 					})}
 				>
-					LVL
+					{ttr("PROGRESS_BAR_LVL")}
 				</Box>
 			</Stack>
 
@@ -59,7 +60,7 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 				sx={{
 					minWidth: 0,
 					width: "100%",
-					maxWidth: { xs: "100%", sm: 260, md: 300 },
+					maxWidth: { xs: "100%", sm: 280, md: 300 },
 				}}
 			>
 				<CTitle

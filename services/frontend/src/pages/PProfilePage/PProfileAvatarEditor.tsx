@@ -9,6 +9,10 @@ import { type IProfileData } from "../../types/profile";
 import CDialogTitle from "../../components/feedback/dialogs/CDialogTitle";
 import { getErrorMessage } from "../../utils/error";
 import { validateImageFile } from "../../utils/image";
+import {
+	PProfileAvatarEditorStyle,
+	type IProfileAvatarEditorStyle,
+} from "../../styles/pages/profile/PProfileAvatarEditorStyle";
 
 interface ProfileAvatarEditorProps {
 	username: string;
@@ -28,6 +32,9 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 	const [isUploading, setIsUploading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const style: IProfileAvatarEditorStyle = useMemo(() => {
+		return PProfileAvatarEditorStyle();
+	}, []);
 
 	const previewUrl = useMemo(() => {
 		if (!selectedFile) return null;
@@ -80,38 +87,28 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 		}
 	};
 
-	const avatarSrc = previewUrl ?? resolveProfileImage(avatar);
+	const currentAvatarSrc = useMemo(() => {
+		return resolveProfileImage(avatar);
+	}, [avatar]);
+
+	const avatarSrc = useMemo(() => {
+		return previewUrl ?? currentAvatarSrc;
+	}, [currentAvatarSrc, previewUrl]);
+
+	const usernameInitial = useMemo(() => {
+		return username.charAt(0).toUpperCase();
+	}, [username]);
 
 	return (
 		<>
 			<Box sx={{ position: "relative", width: 88, height: 88 }}>
-				<Avatar
-					src={resolveProfileImage(avatar)}
-					sx={{
-						width: 88,
-						height: 88,
-						bgcolor: "secondary.main",
-						fontWeight: "bold",
-						fontSize: "2rem",
-					}}
-				>
-					{username.charAt(0).toUpperCase()}
+				<Avatar src={currentAvatarSrc} sx={style.avatar}>
+					{usernameInitial}
 				</Avatar>
 				<IconButton
 					aria-label="Change profile picture"
 					onClick={() => setOpen(true)}
-					sx={{
-						position: "absolute",
-						right: -6,
-						bottom: -6,
-						backgroundColor: "secondary.main",
-						opacity: 0.95,
-						color: "secondary.contrastText",
-						"&:hover": {
-							backgroundColor: "secondary.dark",
-						},
-						border: (theme) => `1.5px solid ${theme.palette.divider}`,
-					}}
+					sx={style.button}
 				>
 					<PhotoCameraIcon fontSize="small" />
 				</IconButton>
@@ -129,22 +126,13 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 			>
 				<Stack spacing={2} alignItems="center" sx={{ pt: 1 }}>
 					<CDialogTitle>UPDATE_PROFILE_PICTURE</CDialogTitle>
-					<Avatar
-						src={avatarSrc ?? undefined}
-						sx={{
-							width: 132,
-							height: 132,
-							bgcolor: "secondary.main",
-							fontWeight: "bold",
-							fontSize: "3rem",
-						}}
-					>
-						{username.charAt(0).toUpperCase()}
+					<Avatar src={avatarSrc ?? undefined} sx={style.preview}>
+						{usernameInitial}
 					</Avatar>
-					<CText size="sm" color="text.secondary" sx={{ pt: 1 }}>
+					<CText size="sm" sx={style.helperText}>
 						CHOOSE_PICTURE_PREVIEW
 					</CText>
-					<CText size="sm" color="text.secondary" align="center">
+					<CText size="sm" sx={style.secondaryText} align="center">
 						PROFILE_IMAGE_REQUIREMENTS
 					</CText>
 					{selectedFile && (
@@ -153,7 +141,7 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 						</CText>
 					)}
 					{error && (
-						<CText color="error.main" size="sm" sx={{ mt: 1 }}>
+						<CText size="sm" sx={style.errorText}>
 							{error}
 						</CText>
 					)}
@@ -169,7 +157,11 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 							onClick={handleUpload}
 							disabled={isUploading || !selectedFile || Boolean(error)}
 						>
-							{isUploading ? <CircularProgress size={18} color="inherit" /> : "SAVE"}
+							{isUploading ? (
+								<CircularProgress size={18} sx={style.progress} />
+							) : (
+								"SAVE"
+							)}
 						</CButtonText>
 					</DialogActions>
 				</Stack>

@@ -1,5 +1,5 @@
-import { alpha, Container, Divider, Stack, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Container, Stack, Typography } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import { fetchLeaderboard } from "../../api/stats";
 import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import CText from "../../components/text/CText";
@@ -9,6 +9,10 @@ import GPageBase from "../common/GPageBases";
 import { appPositions } from "../../styles/theme";
 import PLeaderboardRow from "./PLeaderboardRow";
 import { ttrf } from "../../localization/localization";
+import {
+	PLeaderboardStyle,
+	type ILeaderboardStyle,
+} from "../../styles/pages/leaderboard/PLeaderboardStyle";
 
 type LeaderboardStatus = "loading" | "ready" | "error";
 
@@ -20,6 +24,9 @@ interface LeaderboardState {
 
 function PLeaderboardPage() {
 	const spacing = appPositions.mainSpacing;
+	const style: ILeaderboardStyle = useMemo(() => {
+		return PLeaderboardStyle();
+	}, []);
 	const [leaderboardState, setLeaderboardState] = useState<LeaderboardState>({
 		status: "loading",
 		data: null,
@@ -62,7 +69,7 @@ function PLeaderboardPage() {
 
 					{leaderboardState.status === "error" ? (
 						<Stack spacing={1}>
-							<CText size="md" sx={{ color: "error.main" }}>
+							<CText size="md" sx={style.errorText}>
 								{leaderboardState.error ?? "LEADERBOARD_LOADING_FAILED"}
 							</CText>
 						</Stack>
@@ -71,17 +78,7 @@ function PLeaderboardPage() {
 					{leaderboardState.status === "ready" && leaderboardState.data ? (
 						<Stack spacing={3}>
 							<CText align="center">LEADERBOARD_MESSAGE</CText>
-							<Stack
-								divider={
-									<Divider
-										flexItem
-										sx={(theme) => ({
-											borderColor: alpha(theme.palette.primary.main, 0.1),
-										})}
-									/>
-								}
-								sx={{ px: { xs: 1, md: 0.5 } }}
-							>
+							<Stack spacing={1.25} sx={style.rows}>
 								{leaderboardState.data.leaderboard.map((entry) => (
 									<PLeaderboardRow
 										key={`${entry.ranking}-${entry.username}`}
@@ -89,19 +86,7 @@ function PLeaderboardPage() {
 									/>
 								))}
 							</Stack>
-							<Divider
-								flexItem
-								sx={(theme) => ({
-									borderColor: alpha(theme.palette.primary.main, 0.1),
-								})}
-							/>
-							<Typography
-								align="center"
-								sx={(theme) => ({
-									mb: 0,
-									color: alpha(theme.palette.text.primary, 0.72),
-								})}
-							>
+							<Typography align="center" sx={style.footerText}>
 								{ttrf("LEADERBOARD_TOTAL_PLAYERS", {
 									number: String(leaderboardState.data.totalNumberPlayer),
 								})}

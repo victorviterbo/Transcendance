@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import PProfileMatchHistoryDrawerCard from "../pages/PProfilePage/PProfileMatchHistoryDrawerCard";
+import PProfileMatchHistoryAccordionCard from "../pages/PProfilePage/PProfileMatchHistoryAccordionCard";
 import type { IHistoryEntry } from "../types/stats";
 
 const navigateMock = vi.fn();
@@ -54,9 +54,9 @@ const createEntry = (overrides: Partial<IHistoryEntry> = {}): IHistoryEntry => (
 	...overrides,
 });
 
-describe("PProfileMatchHistoryDrawerCard", () => {
+describe("PProfileMatchHistoryAccordionCard", () => {
 	it("renders the closed summary card with room title in the header", () => {
-		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
+		render(<PProfileMatchHistoryAccordionCard entry={createEntry()} />);
 
 		expect(screen.getByText("Late Night Classics")).toBeInTheDocument();
 		expect(screen.getByText("Apr 10, 2026")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 	});
 
 	it("shows the rounds and players tabs when expanded", () => {
-		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
+		render(<PProfileMatchHistoryAccordionCard entry={createEntry()} />);
 
 		fireEvent.click(screen.getByRole("button", { expanded: false }));
 
@@ -76,7 +76,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 	});
 
 	it("keeps round details hidden while collapsed", () => {
-		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
+		render(<PProfileMatchHistoryAccordionCard entry={createEntry()} />);
 
 		expect(screen.getByText("Fleetwood Mac")).not.toBeVisible();
 		expect(screen.queryByText("john")).not.toBeInTheDocument();
@@ -84,7 +84,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 
 	it("expands and shows rounds by default", () => {
 		render(
-			<PProfileMatchHistoryDrawerCard
+			<PProfileMatchHistoryAccordionCard
 				entry={createEntry({
 					rounds: [
 						{
@@ -113,7 +113,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 
 	it("renders every tag in the summary", () => {
 		render(
-			<PProfileMatchHistoryDrawerCard
+			<PProfileMatchHistoryAccordionCard
 				entry={createEntry({
 					tags: [
 						"TAG_POP",
@@ -137,7 +137,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 
 	it("switches to the players tab and navigates when a player name is clicked", () => {
 		navigateMock.mockReset();
-		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
+		render(<PProfileMatchHistoryAccordionCard entry={createEntry()} />);
 
 		fireEvent.click(screen.getByRole("button", { expanded: false }));
 		fireEvent.click(screen.getByRole("tab", { name: "Players" }));
@@ -149,7 +149,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 	});
 
 	it("shows every player once the players tab is selected", () => {
-		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
+		render(<PProfileMatchHistoryAccordionCard entry={createEntry()} />);
 
 		fireEvent.click(screen.getByRole("button", { expanded: false }));
 		fireEvent.click(screen.getByRole("tab", { name: "Players" }));
@@ -162,7 +162,7 @@ describe("PProfileMatchHistoryDrawerCard", () => {
 
 	it("navigates when a player avatar is clicked", () => {
 		navigateMock.mockReset();
-		render(<PProfileMatchHistoryDrawerCard entry={createEntry()} />);
+		render(<PProfileMatchHistoryAccordionCard entry={createEntry()} />);
 
 		fireEvent.click(screen.getByRole("button", { expanded: false }));
 		fireEvent.click(screen.getByRole("tab", { name: "Players" }));

@@ -165,9 +165,9 @@ describe("PProfilePublicRelation", () => {
 		it("shows incoming request actions when relation is incoming", async () => {
 			renderRelation([createUser("incoming")]);
 
-			expect(await screen.findByText("PROFILE_SOCIAL_REQUEST_RECEIVED")).toBeInTheDocument();
-			expect(screen.getByTestId("PProfilePublic_AcceptFriend")).toBeInTheDocument();
+			expect(await screen.findByTestId("PProfilePublic_AcceptFriend")).toBeInTheDocument();
 			expect(screen.getByTestId("PProfilePublic_RefuseFriend")).toBeInTheDocument();
+			expect(screen.queryByText("PROFILE_SOCIAL_REQUEST_RECEIVED")).not.toBeInTheDocument();
 		});
 
 		it("shows relation load errors", async () => {
@@ -251,7 +251,7 @@ describe("PProfilePublicRelation", () => {
 			await userEvent.click(await screen.findByTestId("PProfilePublic_CancelFriendRequest"));
 			expect(screen.getByRole("dialog")).toBeInTheDocument();
 
-			await clickConfirmDialogButton("CANCEL");
+			await clickConfirmDialogButton("PROFILE_SOCIAL_CANCEL_REQUEST_CANCEL");
 
 			await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
 			expect(mocks.removeFriend).not.toHaveBeenCalled();
@@ -276,7 +276,7 @@ describe("PProfilePublicRelation", () => {
 			await userEvent.click(await screen.findByTestId("PProfilePublic_RemoveFriend"));
 			expect(screen.getByRole("dialog")).toBeInTheDocument();
 
-			await clickConfirmDialogButton("CANCEL");
+			await clickConfirmDialogButton("PROFILE_SOCIAL_REMOVE_FRIEND_CANCEL");
 
 			await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
 			expect(mocks.removeFriend).not.toHaveBeenCalled();
@@ -442,7 +442,9 @@ describe("PProfilePublicRelation", () => {
 			expect(await screen.findByTestId("PProfilePublic_SocialError")).toHaveTextContent(
 				"BROKEN_ACTION",
 			);
-			expect(screen.getByText("PROFILE_SOCIAL_REQUEST_RECEIVED")).toBeInTheDocument();
+			expect(screen.getByTestId("PProfilePublic_AcceptFriend")).toBeInTheDocument();
+			expect(screen.getByTestId("PProfilePublic_RefuseFriend")).toBeInTheDocument();
+			expect(screen.queryByText("PROFILE_SOCIAL_REQUEST_RECEIVED")).not.toBeInTheDocument();
 		});
 
 		it("shows remove errors that are not missing-friend races", async () => {

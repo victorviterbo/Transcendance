@@ -1,5 +1,5 @@
-import { Avatar, Container, Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Avatar, Box, Container, Stack } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTitle from "../../components/text/CTitle";
 import GPageBase from "../common/GPageBases";
@@ -10,6 +10,10 @@ import CProfileRequestState from "../../components/feedback/CProfileRequestState
 import { fetchProfile, getProfileLevelProgress, resolveProfileImage } from "../../api/profile";
 import { type IProfileData } from "../../types/profile";
 import PProfilePublicRelation from "./PProfilePublicRelation";
+import {
+	PProfilePublicStyle,
+	type IProfilePublicStyle,
+} from "../../styles/pages/profile/PProfilePublicStyle";
 
 type ProfileStatus = "idle" | "loading" | "ready" | "notFound" | "error";
 
@@ -52,10 +56,17 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 		profile: null,
 		error: null,
 	});
+	const style: IProfilePublicStyle = useMemo(() => {
+		return PProfilePublicStyle();
+	}, []);
 	const isCurrentUsername = profileState.username === username;
 	const profile = isCurrentUsername ? profileState.profile : null;
 	const error = isCurrentUsername ? profileState.error : null;
-	const status = !username ? "idle" : isCurrentUsername ? profileState.status : "loading";
+	const status: ProfileStatus = !username
+		? "idle"
+		: isCurrentUsername
+			? profileState.status
+			: "loading";
 
 	useEffect(() => {
 		if (!username) return;
@@ -123,36 +134,51 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3} sx={{ mt: 3 }}>
 					<CBasePaper sx={{ p: 3 }}>
-						<Stack spacing={2}>
+						<Box
+							sx={{
+								display: "grid",
+								gridTemplateColumns: {
+									xs: "1fr",
+									md: "minmax(0, 1fr) minmax(260px, 400px) minmax(0, 1fr)",
+								},
+								gap: 3,
+								alignItems: "center",
+							}}
+						>
 							<Stack
-								direction={{ xs: "column", sm: "row" }}
-								spacing={2}
-								alignItems={{ xs: "flex-start", sm: "center" }}
+								direction="row"
+								spacing={2.5}
+								alignItems="center"
+								sx={{ minWidth: 0 }}
 							>
-								<Avatar
-									src={resolveProfileImage(profile.avatar)}
-									sx={{
-										width: 88,
-										height: 88,
-										bgcolor: "secondary.main",
-										fontWeight: "bold",
-										fontSize: "2rem",
-										flexShrink: 0,
-									}}
-								>
+								<Avatar src={resolveProfileImage(profile.avatar)} sx={style.avatar}>
 									{displayUsername.charAt(0).toUpperCase()}
 								</Avatar>
-								<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-									<CTitle size="md">{displayUsername}</CTitle>
-									<CLevelProgress
-										level={levelProgress.level}
-										progressPercent={levelProgress.progressPercent}
-										title={displayBadge}
-									/>
-								</Stack>
-								<PProfilePublicRelation profile={profile} />
+								<CTitle
+									noTr={true}
+									size="md"
+									sx={{ minWidth: 0, mb: 0, overflowWrap: "anywhere" }}
+								>
+									{displayUsername}
+								</CTitle>
 							</Stack>
-						</Stack>
+							<Box
+								sx={{
+									width: "100%",
+									maxWidth: 400,
+									justifySelf: { xs: "stretch", md: "center" },
+								}}
+							>
+								<CLevelProgress
+									level={levelProgress.level}
+									progressPercent={levelProgress.progressPercent}
+									title={displayBadge}
+								/>
+							</Box>
+							<Box sx={{ justifySelf: { xs: "stretch", md: "end" } }}>
+								<PProfilePublicRelation profile={profile} />
+							</Box>
+						</Box>
 					</CBasePaper>
 
 					<CBasePaper>
