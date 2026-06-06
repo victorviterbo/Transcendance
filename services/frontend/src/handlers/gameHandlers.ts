@@ -1,6 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
-import type { IGameChatMsg, IGameData, IGamePlayer, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventSettings } from "../types/websocket";
+import type { IGameChatMsg, IGameData, IGamePlayer, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
+import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 
@@ -10,6 +10,7 @@ export interface IGameInstanceCallbacks {
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>;
 	setStatus: React.Dispatch<React.SetStateAction<IGameStatus | undefined>>;
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>
+	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>
 	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>
 	sendMessage: SendMessage;
 }
@@ -42,7 +43,13 @@ export class GameInstance {
 	maxPlayers: number = 0;
 
 		//--------------------- Status ---------------------
-	status?: IGameStatus;
+	status: IGameStatus = {
+		phase: "waiting",
+		round: 0,
+		keyTime: 0,
+	};
+	rounds: IGameRound[] = [];
+	songs: (HTMLAudioElement | undefined)[] = [];
 
 		//--------------------- Settings ---------------------
 	settings?: IGameSettings;
@@ -61,6 +68,34 @@ export class GameInstance {
 
 	//====================== EVENTS ======================
 		//Server events
+	onGameJoined(data: IWSGameSendEventGameInfo) {
+		this.log("Game joined");
+		this.log("Parsing data");
+		this.name = data.game.name;
+		this.host = data.game.owner;
+		this.isHost = data.game.owner.uid == data.self.uid;
+		this.self = data.self;
+		this.maxPlayers= data.game.maxPlayers
+		this.visibility = data.game.visibility;
+
+		
+		this.status = {
+			phase: data.game.status,
+			round: data.game.round,
+			keyTime: 0,
+		};
+		this.settings = data.settings;
+		this.players = data.leaderboard;
+
+		this.checkRounds();
+		data.history.forEach((round: TWSRoundInfo) => {
+			this.applyWSRound(round);
+		})
+
+		this.updateAll();
+		this.callbacks.setReady(true);
+		this.log("Game ready");
+	}
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
 		this.log("Player: '" + data.player.user.username + "' has joined");
 		if(!this.players.find((player: IGamePlayer) => player.user.uid == data.player.user.uid))
@@ -75,35 +110,41 @@ export class GameInstance {
 		this.log("Player: '" + player.user.username + "' has left");
 		this.updatePlayers();
 	}
-	onGameJoined(data: IWSGameSendEventGameInfo) {
-		this.log("Game joined");
-		this.log("Parsing data");
-		this.name = data.game.name;
-		this.host = data.game.owner;
-		this.isHost = data.game.owner.uid == data.self.uid
-		this.status = {
-			phase: data.game.status,
-			round: data.game.round,
-			keyTime: 0,
-		};
-		this.settings = data.settings;
-
-		this.maxPlayers= data.game.maxPlayers
-		this.visibility = data.game.visibility;
-
-		this.players = data.leaderboard;
-
-		this.self = data.self;
-
-		this.updateAll();
-		this.callbacks.setReady(true);
-		this.log("Game ready");
-	}
 	onSettingsChanged(data: IWSGameSendEventSettings) {
 		this.log("Settings changed");
 		this.settings = data.settings;
 		this.updateSettings();
 	}
+	onGameStart(data: IWSGameSendEventSettings)
+	{
+		this.log("Game started");
+		this.settings = data.settings;
+		this.updateSettings();
+		this.status.keyTime = Date.now();
+		this.status.phase = "count";
+		this.updateStatus();
+	}
+	onPreviewRecieve(data: IWSGameSendEventRoundStart)
+	{
+		this.logRound("Preview recieved");
+		this.checkRounds();
+		this.setRound(data.preview, data.round - 1);
+		this.updateRounds();
+	}
+	onRoundStart(data: IWSGameSendEventRoundStart)
+	{
+		this.status.round = data.round - 1;
+		this.logRound("Starting round");
+		this.status.keyTime = Date.now();
+		this.status.phase = "playing_round";
+		this.setRound(data.preview, this.status.round , true);
+		this.rounds[this.status.round].phase = "playing";
+		this.songs[this.status.round]?.play();
+		this.updateRounds();
+		this.updateStatus();
+	}
+	
+
 
 		//Client event
 	join() {
@@ -130,6 +171,25 @@ export class GameInstance {
 			settings: nSettings,
 		} as IWSGameRCVEventSettings)
 	}
+	start() {
+		if(!this.host)
+			return;
+		this.log("Starting game...");
+		this.send({
+			...this.getSendBaseData("game_start")
+		})
+		this.status.phase = "started";
+		this.updateStatus();
+	}
+	submitAnswer(answer: string) {
+		this.logRound("Sending answer: '" + answer + "'")
+		this.send({
+			...this.getSendBaseData("answer_submit"),
+			event: "answer_submit",
+			answer: answer,
+			time: (Date.now() - this.status.keyTime) / 1000
+		} as IWSGameRCVEvent)
+	}
 
 	
 
@@ -139,6 +199,7 @@ export class GameInstance {
 	updateAll() {
 		this.updateStatus();
 		this.updateSettings();
+		this.updateRounds();
 		this.updatePlayers();
 	}
 	updateStatus() {
@@ -164,6 +225,10 @@ export class GameInstance {
 			this.settings.tags = undefined;
 		this.settings = structuredClone(this.settings);
 		this.callbacks.setSettings(this.settings);
+	}
+	updateRounds() {
+		this.rounds = structuredClone(this.rounds);
+		this.callbacks.setRounds(this.rounds);
 	}
 	updatePlayers() {
 		this.players.forEach((player: IGamePlayer) => {
@@ -209,8 +274,64 @@ export class GameInstance {
 			case "settings_updated":
 				this.onSettingsChanged(event as IWSGameSendEventSettings)
 				break;
+			case "game_started":
+				this.onGameStart(event as IWSGameSendEventSettings)
+				break;
+			case "round_preview":
+				this.onPreviewRecieve(event as IWSGameSendEventRoundStart)
+				break;
+			case "round_started":
+				this.onRoundStart(event as IWSGameSendEventRoundStart)
+				break;
 		}
 	}
+
+		//--------------------- Round Management ---------------------
+	setRound(preview: string, target: number, showAlert: boolean = false): void {
+		this.checkRounds();
+		if(!this.rounds[target].track.preview)
+		{
+			if(showAlert)
+				this.logRound("%cPreview recieved not on time.%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400")
+			this.rounds[target].track.preview = preview;
+			this.songs[target] = undefined;
+		}
+		if(!this.songs[target])
+		{
+			if(showAlert)
+				this.logRound("%cSong is not cached.%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400")
+			this.songs[target] = new Audio(preview);
+		}
+	}
+	applyWSRound(round: TWSRoundInfo) {
+		const target: IGameRound | undefined = this.rounds[round.round - 1];
+		if(!target)
+			return;
+		target.track = round.track;
+		target.status.titleFound = round.titleFound;
+		target.status.artistFound = round.artistFound;
+		target.status.time = round.time;
+		target.status.points = round.points;
+	}
+	checkRounds(): void {
+		if(this.settings && this.rounds.length != this.settings.trackCount)
+			this.rounds = [];
+		if(this.rounds.length > 0 || !this.settings)
+			return;
+		for(let i = 0; i < this.settings.trackCount; i++) 
+			this.rounds.push({
+				track: {},
+				phase: "not-done",
+				status: {
+					titleFound: false,
+					artistFound: false,
+					points: 0,
+					time: -1,
+					answers: [],
+				}
+			})
+	}
+	
 
 		//--------------------- Check ---------------------
 	check(): boolean {
@@ -222,6 +343,17 @@ export class GameInstance {
 		//--------------------- LOGs ---------------------
 	log(MSG: string, ...Styling: string[]){
 		console.log("[%cGAME%c]: " + MSG, "font-weight: 900; color: #2083d4", "font-weight: 400; color: white", ...Styling);
+	}	
+	logRound(MSG: string, ...Styling: string[]){
+		this.log("%c(Round: %c" + (this.status.round + 1) + "%c / %c" + (!this.settings ? "?" : this.settings.trackCount) + "%c)%c - " + MSG, 
+			"font-weight: 900", 
+			"font-weight: 900; color: #0fbedd", 
+			"font-weight: 900; color: white", 
+			"font-weight: 900; color: #728bdd", 
+			"font-weight: 900; color: white",  
+			"font-weight: 400", 
+			...Styling
+		)
 	}	
 }
 

@@ -1,5 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import type { IGamePlayer, IGameSettings } from "../../../types/game";
+import type { IGamePlayer, IGameSettings, IGameStatus } from "../../../types/game";
 import CTitle from "../../../components/text/CTitle";
 import CText from "../../../components/text/CText";
 import { ttrf, ttrfn, ttrn } from "../../../localization/localization";
@@ -15,16 +15,22 @@ import {
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import type { GameInstance } from "../../../handlers/gameHandlers";
+import CCountdownCircular from "../../../components/feedback/loading/CCountdownCircular";
+import { GAME_COUNTDOWNM_TIME_MS } from "../../../constants";
 
 interface PGameLobbyProps {
 	game:  React.RefObject<GameInstance | undefined>;
+	status: IGameStatus;
 	settings: IGameSettings;
 	players: IGamePlayer[];
 
 	onOpenSettings: () => void;
 }
 
-function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps) {
+function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLobbyProps) {
+
+
+	//====================== MEMO ======================
 	const host: IGamePlayer | undefined = useMemo(() => {
 		const targetUser: IGamePlayer | undefined = players.find(
 			(player: IGamePlayer) => player.host,
@@ -32,6 +38,61 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 		if (!targetUser) return undefined;
 		return targetUser;
 	}, [players]);
+
+		//Sub comp
+	const centralData = useMemo(() => {
+		if(!game.current)
+			return <></>
+
+		if(status.phase == "count")
+			return <>
+				<CText sx={{mb: "10px"}}>GAME_STARTING_IN</CText>
+				<CCountdownCircular startColor={appColors.primary[0]} endColor={appColors.tertiary[0]} fontSize="xl" size="60px" startTime={status.keyTime} timeMS={GAME_COUNTDOWNM_TIME_MS}></CCountdownCircular>
+			</>
+
+		return <>
+			{!game.current.isHost && (
+				<CText size="lg" align="center" testid="PGameLobby-Waiting">
+					{host
+						? ttrfn("GAME_WAITING_START", {
+								USER: (
+									<span
+										style={{ color: colorFromID(host && host.colorid != undefined ? host.colorid : 0) }}
+									>
+										{host ? host.user.username : ""}
+									</span>
+								),
+							})
+						: "GAME_WAITING_START_NO_HOST"}
+				</CText>
+			)}
+			{game.current.isHost && (
+				<>
+					<CButtonText
+						disabled={status.phase != "waiting"}
+						sx={{ mb: "15px", minWidth: "150px" }}
+						onClick={onOpenSettings}
+					>
+						GAME_EDIT
+					</CButtonText>
+					<CButtonText sx={{ mb: "15px", minWidth: "150px" }}
+						disabled={status.phase != "waiting"} onClick={() => {
+						if(game.current)
+							game.current.start();
+					}}>GAME_START</CButtonText>
+				</>
+			)}
+			<CText align="center" size="sm">
+				{ttrf("GAME_PLAYER_COUNT", {
+					COUNT: ttrn(players.length),
+					MAX: ttrn(game.current.maxPlayers),
+				})}
+			</CText>
+			{status.phase != "waiting" && <CText  sx={{color: appColors.secondary[0]}} align="center" size="sm">
+				GAME_STARTING
+			</CText>}
+		</>
+	}, [game, host, players, status, onOpenSettings]);
 
 	//====================== COMPONENTS ======================
 	const genreTags: ReactNode[] = useMemo(() => {
@@ -115,38 +176,7 @@ function PGameLobby({ players, game, settings, onOpenSettings }: PGameLobbyProps
 					zIndex: 1,
 				}}
 			>
-				{!game.current.isHost && (
-					<CText size="lg" align="center" testid="PGameLobby-Waiting">
-						{host
-							? ttrfn("GAME_WAITING_START", {
-									USER: (
-										<span
-											style={{ color: colorFromID(host ? host.colorid : 0) }}
-										>
-											{host ? host.user.username : ""}
-										</span>
-									),
-								})
-							: "GAME_WAITING_START_NO_HOST"}
-					</CText>
-				)}
-				{game.current.isHost && (
-					<>
-						<CButtonText
-							sx={{ mb: "15px", minWidth: "150px" }}
-							onClick={onOpenSettings}
-						>
-							GAME_EDIT
-						</CButtonText>
-						<CButtonText sx={{ mb: "15px", minWidth: "150px" }}>GAME_START</CButtonText>
-					</>
-				)}
-				<CText align="center" size="sm">
-					{ttrf("GAME_PLAYER_COUNT", {
-						COUNT: ttrn(players.length),
-						MAX: ttrn(game.current.maxPlayers),
-					})}
-				</CText>
+				{centralData}
 			</Stack>
 
 			<Stack

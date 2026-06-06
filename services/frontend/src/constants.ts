@@ -53,6 +53,8 @@ export const DAY_MS = 1000 * 60 * 60 * 24;
 export const HOUR_MS = 1000 * 60 * 60;
 export const MINUTE_MS = 1000 * 60;
 
+// TIMIMNG
+export const GAME_COUNTDOWNM_TIME_MS = 3000
 // SETTINGS
 export const SETTINGS_NGSONGS_MIN = 5;
 export const SETTINGS_NGSONGS_MAX = 50;

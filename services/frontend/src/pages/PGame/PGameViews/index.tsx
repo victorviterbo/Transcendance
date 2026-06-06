@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import CGamePaper from "../../../components/surfaces/CGamePaper";
 import type {
 	IGamePlayer,
@@ -39,12 +39,19 @@ function PGameViews({
 	settings,
 }: PGameViewsProps) {
 	//====================== STATES ======================
-	const getCurrentView = (): number => {
+	const getCurrentView = useCallback((): number => {
 		if (status.phase == "playing_round") return ECurrentView.PLAYING;
 		return ECurrentView.LOBBY;
-	};
+	}, [status]);
 
 	const [currentView, setCurrentView] = useState<number>(getCurrentView());
+
+	useEffect(() => {
+		async function changeView() {
+			setCurrentView(getCurrentView());
+		}
+		changeView();
+	}, [status.phase, setCurrentView, getCurrentView])
 
 	//====================== FUNCTIONS ======================
 	const currentTitle: string = useMemo(() => {
@@ -78,6 +85,7 @@ function PGameViews({
 		>
 			{currentView == ECurrentView.LOBBY && (
 				<PGameLobby
+					status={status}
 					players={players}
 					settings={settings}
 					game={game}

@@ -298,3 +298,5 @@ ROOMS_LOADING,Loading rooms...,Chargement des salles...,ルームを読み込み
 ROOMS_LOADING_FAILED,Rooms loading failed,Échec du chargement des salles,ルームの読み込みに失敗しました,Shown when home room lists fail to load
 ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルームがありません,Shown when a home room list is empty
 REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button
+GAME_STARTING,Game is starting...,,,Message shown when host is pressing starting button.
+GAME_STARTING_IN,Game starting in,,,Count before game is starting

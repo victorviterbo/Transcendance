@@ -27,7 +27,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 				>
 					<span
 						style={{
-							color: colorFromID(user == undefined ? -1 : user.colorid),
+							color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
 							fontWeight: 700,
 						}}
 					>
@@ -54,7 +54,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 							PLAYER: (
 								<span
 									style={{
-										color: colorFromID(user == undefined ? -1 : user.colorid),
+										color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
 										fontWeight: 700,
 									}}
 								>
@@ -81,7 +81,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 						PLAYER: (
 							<span
 								style={{
-									color: colorFromID(user == undefined ? -1 : user.colorid),
+									color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
 									fontWeight: 700,
 								}}
 							>
@@ -112,7 +112,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 						PLAYER: (
 							<span
 								style={{
-									color: colorFromID(user == undefined ? -1 : user.colorid),
+									color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
 									fontWeight: 700,
 								}}
 							>

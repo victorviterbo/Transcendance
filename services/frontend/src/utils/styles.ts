@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors } from "../styles/theme";
-import type { TColor, TColorAlteration, TDropShadow } from "../types/styles";
+import type { TColor, TColorAlteration, TColorSimple, TDropShadow } from "../types/styles";
 
 //--------------------------------------------------
 //                    SX
@@ -142,6 +142,21 @@ export function colorAlterColor(
 	return colorColorToHex(colorOut);
 }
 
+export function colorGetAtPos(
+	colorStart: string,
+	colorEnd: string,
+	per: number
+): string {
+	const colorStartObj = colorHexToColor(colorStart);
+	const colorEndObj = colorHexToColor(colorEnd);
+	const colorOut: TColorSimple = {
+		r: Math.trunc(colorStartObj.r + ((colorEndObj.r - colorStartObj.r) * per)),
+		g: Math.trunc(colorStartObj.g + ((colorEndObj.g - colorStartObj.g) * per)),
+		b: Math.trunc(colorStartObj.b + ((colorEndObj.b - colorStartObj.b) * per)),
+	}
+	return colorColorToHex(colorOut);
+}
+
 //--------------------------------------------------
 //                    UTILS
 //--------------------------------------------------
@@ -213,7 +228,7 @@ export function colorHexToColor(hexa: string): TColor {
 	return color;
 }
 
-export function colorColorToHex(color: TColor): string {
+export function colorColorToHex(color: TColor | TColorSimple): string {
 	return (
 		"#" +
 		(color.r.toString(16).length == 1 ? "0" : "") +

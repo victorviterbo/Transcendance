@@ -11,6 +11,8 @@ import { mockSocialDB } from "./social_dbs";
 import type { TWSRcv, TWSSend } from "../../../types/websocket";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 
+const BLOCK_SOCIAL_MOCK_EVENT = true
+
 //--------------------------------------------------
 //                     DEBUG VARS
 //--------------------------------------------------
@@ -82,6 +84,9 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 	)?.messages;
 
 	if (!targetFeed) return;
+
+	if(BLOCK_SOCIAL_MOCK_EVENT)
+		return;
 
 	setTimeout(() => {
 		targetFeed.feed.forEach((message: IFriendMessage) => {
@@ -180,6 +185,8 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 		message: data.message,
 	};
 	client.send(JSON.stringify(sendbackList));
+
+	
 
 	setTimeout(() => {
 		targetFeed.feed.forEach((message: IFriendMessage) => {
