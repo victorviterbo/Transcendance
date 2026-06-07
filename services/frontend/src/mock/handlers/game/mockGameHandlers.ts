@@ -1,6 +1,6 @@
 import type { IGamePlayer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameTrack, IGameUser, TGameVisibility } from "../../../types/game";
 import { convExtUserToGameUser, type IExtUserInfo } from "../../../types/user";
-import type { IWSGameEventSndList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../../../types/websocket";
+import type { IWSGameEventSndList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../../../types/websocket";
 import { mockDefaultUserUID } from "../../db";
 
 import { mockSocialDB } from "../social/social_dbs";
@@ -240,6 +240,24 @@ export class MockGame {
 		}
 		this.sendEvent(event as IWSGameSendEvent)
 	}
+	getResult(user: IGameUser): IGamePlayerResult{
+		let res: IGamePlayerResult | undefined = this.roundResult.find((result: IGamePlayerResult) => {
+			return result.user.uid == user.uid;
+		})
+		if(!res)
+		{
+			res = {
+				user,
+				titleFound: false,
+				artistFound: false,
+				time: -1,
+				ranking: 0,
+				points: 0,
+			}
+			this.roundResult.push(res);
+		}
+		return res;
+	}
 
 
 	changeSettings() {
@@ -320,7 +338,51 @@ export class MockGame {
 					}, sim.at * 1000);
 				}
 			})
+
+			setTimeout(() => {
+				this.simulateRoundEnd()
+			}, this.settings.playbackDuration * 1000)
 		}, 3000)
+	}
+	simulateRoundEnd() {
+
+		this.players.forEach((player: IGamePlayer) => {
+			this.getResult(player.user);
+		})
+
+		this.roundResult.forEach((res: IGamePlayerResult) => {
+			if(!res.artistFound || !res.titleFound)
+				res.time = this.settings.playbackDuration;
+		})
+		
+		this.roundResult.sort((res1: IGamePlayerResult, res2: IGamePlayerResult) => {
+			return res1.time - res2.time;
+		})
+
+		this.roundResult.forEach((res: IGamePlayerResult, index: number) => {
+			res.ranking = index + 1;
+			if(res.artistFound && res.titleFound)
+				res.points += (10 - index) <= 0 ? 1 : (10 - index);
+			const player: IGamePlayer | undefined = this.players.find((targetPlayer: IGamePlayer) => targetPlayer.user.uid == res.user.uid)
+			if(!player)
+				return;
+			player.points += res.points;
+		})
+
+
+		this.logRound("Round ended");
+		this.sendEvent({
+			...this.getBaseData("round_ended"),
+			event: "round_ended",
+			track: this.rounds[this.status.round].track,
+			leaderboard: this.players,
+			results: this.roundResult,
+		} as IWSGameSendEventRoundEnd)
+
+		setTimeout(() => {
+			this.status.round++;
+			this.simulateGameRound()
+		}, (this.settings.breakDuration - 3) * 1000);
 	}
 	simulateAnswer(sim: mockPlayerAnswerSim){
 		const player: IGamePlayer = this.players[sim.playerNumber];
@@ -349,6 +411,7 @@ export class MockGame {
 		{
 			res.artistFound = true;
 			res.points += 5;
+			res.time = res.time < sim.at ?  sim.at : res.time;
 		}
 		else if(!res.titleFound 
 			&& track.title 
@@ -358,6 +421,7 @@ export class MockGame {
 		{
 			res.titleFound = true;
 			res.points += 5;
+			res.time = res.time < sim.at ?  sim.at : res.time;
 		}
 
 		this.sendEvent({

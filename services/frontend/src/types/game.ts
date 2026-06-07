@@ -121,6 +121,7 @@ export interface IGameRound {
 	titleFoundAt?: number;
 	artistFoundAt?: number;
 	points: number;
+	bonusPoints?: number;
 	time: number;
 	answers: IGamePlayerAnswer[];
 }

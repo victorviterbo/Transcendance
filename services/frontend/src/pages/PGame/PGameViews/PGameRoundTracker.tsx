@@ -1,6 +1,5 @@
 import { Box, Stack } from "@mui/material";
 import type { IGameRound, IGameSettings, IGameStatus } from "../../../types/game";
-import { timeGetElapse } from "../../../utils/time";
 import PGameRoundTrackerPin from "./PGameRoundTrackerPin";
 import type { GPageProps } from "../../common/GPageBases";
 import {
@@ -36,7 +35,7 @@ function PGameRoundTracker({ settings, status, round }: PGameRoundTrackerProps) 
 			</Box>
 			<CCountdownLinear
 				sx={style.bar}
-				startTime={status.keyTime}
+				startTime={status.phase == "playing_break" ? 0 : status.keyTime}
 				timeMS={settings.playbackDuration * 1000}
 				inverse={true}
 			></CCountdownLinear>

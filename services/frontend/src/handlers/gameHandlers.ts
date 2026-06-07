@@ -1,6 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
 import type { IGameChatMsg, IGameData, IGamePlayer, IGamePlayerAnswer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
+import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 
@@ -144,7 +144,9 @@ export class GameInstance {
 		this.setRound(data.preview, this.status.round , true);
 		this.rounds[this.status.round].phase = "playing";
 		this.songs[this.status.round]?.play();
+		this.roundResult = []
 		this.updateRounds();
+		this.updateResults();
 		this.updateStatus();
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer)
@@ -196,6 +198,53 @@ export class GameInstance {
 			res.titleFound = true;
 		}
 		this.updateResults();
+	}
+	onRoundEnd(data: IWSGameSendEventRoundEnd) {
+		this.logRound("Round ended");
+		this.logRound("Starting break");
+		this.getRound().track = data.track;
+		this.getRound().phase = "done";
+
+		const selfRes: IGamePlayerResult | undefined = data.results.find((res: IGamePlayerResult) => {
+			return res.user.uid == data.self.uid;
+		})
+		if(selfRes)
+		{
+			this.getRound().artistFound = selfRes.artistFound;
+			this.getRound().titleFound = selfRes.titleFound;
+			this.getRound().points = selfRes.points;
+			this.getRound().time = selfRes.time;
+			this.getRound().bonusPoints = selfRes.points - (this.getRound().artistFound ? 5 : 0) - (this.getRound().titleFound ? 5 : 0);
+		}
+
+		//RESULT
+		this.roundResult = data.results;
+		this.roundResult.sort((res1: IGamePlayerResult, res2: IGamePlayerResult) => {
+			return res1.ranking - res2.ranking;
+		})
+
+		//PLAYERS
+		const prevLeaderboard: IGamePlayer[] = this.players;
+		this.players = [];
+		data.leaderboard.forEach((player: IGamePlayer) => {
+			const old: IGamePlayer | undefined = prevLeaderboard.find((value: IGamePlayer) => value.user.uid = player.user.uid);
+			if(old)
+			{
+				player.host = old.host;
+				player.self = old.self;
+				player.colorid = old.colorid;
+			}
+			this.players.push(player);
+		})
+
+
+		//STATUS
+		this.status.keyTime = Date.now();
+		this.status.phase = "playing_break";
+
+		this.stopAll();
+
+		this.updateAll();
 	}
 	
 
@@ -305,6 +354,9 @@ export class GameInstance {
 			player.host = player.user.uid == this.host?.uid
 			player.self = player.user.uid == this.self?.uid
 		})
+		this.players.sort((player1: IGamePlayer, player2 : IGamePlayer) => {
+			return player2.points - player1.points;
+		})
 		this.players = structuredClone(this.players);
 		this.callbacks.setPlayers(this.players);
 	}
@@ -360,6 +412,9 @@ export class GameInstance {
 				break;
 			case "answer_broadcast":
 				this.onAnswerBroadcast(event as IWSGameSendEventRoundAnswerBroadcast)
+				break;
+			case "round_ended":
+				this.onRoundEnd(event as IWSGameSendEventRoundEnd)
 				break;
 		}
 	}
@@ -440,6 +495,14 @@ export class GameInstance {
 			el.volume = value / 100;
 		});
 		this.updateVolume();
+	}
+	stopAll()
+	{
+		this.songs.forEach((el: HTMLAudioElement | undefined) => {
+			if(!el)
+				return;
+			el.pause();
+		});
 	}
 
 		//--------------------- Check ---------------------

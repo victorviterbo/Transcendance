@@ -45,7 +45,7 @@ function PGameViews({
 }: PGameViewsProps) {
 	//====================== STATES ======================
 	const getCurrentView = useCallback((): number => {
-		if (status.phase == "playing_round") return ECurrentView.PLAYING;
+		if (status.phase == "playing_round" || status.phase == "playing_break") return ECurrentView.PLAYING;
 		return ECurrentView.LOBBY;
 	}, [status]);
 

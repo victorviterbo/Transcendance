@@ -66,6 +66,8 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 	const playerTimes = useMemo((): ReactNode[] => {
 		
 		return results.map((result: IGamePlayerResult) => {
+			if(!result.artistFound && !result.titleFound)
+				return;
 			return (
 				<PGameRoundAnswer
 					variant="time"
@@ -77,13 +79,15 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 						titleFound: result.titleFound,
 						artistFound: result.artistFound,
 					}}
+					settings={settings}
 				></PGameRoundAnswer>
 			);
 		});
-		return []
-	}, [results]);
+	}, [results, settings]);
 
 	const isLocked = useMemo(() => {
+		if(status.phase != "playing_round")
+			return true;
 		return rounds[status.round].artistFound && rounds[status.round].titleFound;
 	}, [status, rounds])
 
@@ -148,7 +152,7 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 						<Stack direction={"column"} sx={style.pointBoxPointList}>
 							<CText sx={{  color:  rounds[status.round].artistFound ? appColors.primary[0] : appColors.cancel[0] }}>{rounds[status.round].artistFound ? 5 : 0}</CText>
 							<CText sx={{ color: rounds[status.round].titleFound ? appColors.primary[0] : appColors.cancel[0] }}>{rounds[status.round].titleFound ? 5 : 0}</CText>
-							<CText sx={{ color: appColors.secondary[0] }}>-</CText>
+							<CText sx={{ color: appColors.secondary[0] }}>{rounds[status.round].bonusPoints == undefined ? "-" : rounds[status.round].bonusPoints?.toString()}</CText>
 						</Stack>
 						<Stack direction={"column"} sx={style.pointBoxPointSumup}>
 							<CText size="lg">{rounds[status.round].points}</CText>
@@ -189,7 +193,7 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 				>
 					<SendIcon fontSize="small" />
 				</CIconButton>
-				<CCountdownCircular startTime={status.keyTime} timeMS={settings.playbackDuration * 1000} size={"35px"} fontSize="xs" startColor={appColors.primary[0]} endColor={appColors.cancel[0]}>
+				<CCountdownCircular startTime={status.keyTime} timeMS={(status.phase == "playing_break" ? settings.breakDuration : settings.playbackDuration) * 1000} size={"35px"} fontSize="xs" startColor={appColors.primary[0]} endColor={appColors.cancel[0]}>
 				</CCountdownCircular>
 				<CVolumeSilder volume={volume} onVolumeChanged={(value) => {
 					if(game.current)
