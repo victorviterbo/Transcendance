@@ -1,6 +1,7 @@
-import type { IGamePlayer, IGameRound, IGameSettings, IGameStatus, IGameTrack, IGameUser, TGameVisibility } from "../../../types/game";
+import type { IGamePlayer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameTrack, IGameUser, TGameVisibility } from "../../../types/game";
 import { convExtUserToGameUser, type IExtUserInfo } from "../../../types/user";
-import type { IWSGameEventSndList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../../../types/websocket";
+import type { IWSGameEventSndList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../../../types/websocket";
+import { mockDefaultUserUID } from "../../db";
 
 import { mockSocialDB } from "../social/social_dbs";
 import { mockGameDB } from "./game_db";
@@ -19,6 +20,17 @@ export function mockHandleGameMessages(Data: IWSGameRCVEvent, client: WebSocketC
 //                      SETTINGS
 //--------------------------------------------------
 const MOCK_CONNECTION_SPEED = 1000 //6000
+
+
+//--------------------------------------------------
+//                      LOCAL TYPES
+//--------------------------------------------------
+interface mockPlayerAnswerSim {
+	playerNumber: number;
+	try: string;
+	at: number;
+	round: number;
+}
 
 
 //--------------------------------------------------
@@ -59,6 +71,7 @@ export class MockGame {
 
 		//--------------------- PLAYERS ---------------------
 	players: IGamePlayer[] = [];
+	roundResult: IGamePlayerResult[] = []
 	
 
 		//--------------------- SETTINGS ---------------------
@@ -68,6 +81,7 @@ export class MockGame {
 	currentTarget: number = 0;
 	simStarted: boolean = false;
 	gameStarted: boolean = false;
+	answerSimulation: mockPlayerAnswerSim[] = []
 
 
 	//====================== EVENTS ======================
@@ -80,11 +94,11 @@ export class MockGame {
 		{
 			history.push({
 				track: this.rounds[i].track,
-				titleFound: this.rounds[i].status.titleFound,
-				artistFound: this.rounds[i].status.artistFound,
-				time: this.rounds[i].status.time,
+				titleFound: this.rounds[i].titleFound,
+				artistFound: this.rounds[i].artistFound,
+				time: this.rounds[i].time,
 				ranking: 0,
-				points: this.rounds[i].status.points,
+				points: this.rounds[i].points,
 				round: i + 1,
 			})
 		}
@@ -121,23 +135,36 @@ export class MockGame {
 	onUserAnswer(event: IWSGameRCVEventAnswer) {
 		this.logRound("Answer recieved: '" + event.answer + "' at " + event.time.toString());
 		const track: IGameTrack | undefined = this.rounds[this.status.round].track;
-		console.log(track);
 		if(!track)
 			return;
 		
-		if(!this.rounds[this.status.round].status.artistFound 
+		if(!this.rounds[this.status.round].artistFound 
 			&& track.artist 
 			&& event.answer.toLowerCase().includes(
 				track.artist.toLowerCase()
 			))
-			this.rounds[this.status.round].status.artistFound = true;
-		else if(!this.rounds[this.status.round].status.titleFound 
+			this.rounds[this.status.round].artistFound = true;
+		else if(!this.rounds[this.status.round].titleFound 
 			&& track.title 
 			&& event.answer.toLowerCase().includes(
 				track.title.toLowerCase()
 			))
-			this.rounds[this.status.round].status.titleFound = true;
-		console.log(this.rounds[this.status.round]);
+			this.rounds[this.status.round].titleFound = true;
+		this.sendEvent({
+			...this.getBaseData("answer_validation"),
+			event: "answer_validation",
+			titleFound: this.rounds[this.status.round].titleFound,
+			artistFound: this.rounds[this.status.round].artistFound,
+			time: event.time,
+			track: this.rounds[this.status.round].titleFound && this.rounds[this.status.round].artistFound ? this.rounds[this.status.round].track : undefined,
+		} as IWSGameSendEventRoundAnswer)
+
+		this.simulateAnswer({
+			playerNumber: this.players.findIndex((player: IGamePlayer) => player.user.uid == mockDefaultUserUID),
+			try: event.answer,
+			at: event.time,
+			round: this.status.round
+		})
 	}
 
 	//====================== FUNCTIONS ======================
@@ -161,6 +188,7 @@ export class MockGame {
 	sendEvent(data: IWSGameSendEvent) {
 		if(!mockGameDB.client)
 			return;
+		//console.log(data);
 		mockGameDB.client.send(JSON.stringify(data));
 	}
 	getBaseData(event: IWSGameEventSndList): IWSGameSendEvent {
@@ -213,6 +241,7 @@ export class MockGame {
 		this.sendEvent(event as IWSGameSendEvent)
 	}
 
+
 	changeSettings() {
 		this.log("Settings updated by mock");
 		this.sendEvent({
@@ -237,13 +266,11 @@ export class MockGame {
 			this.rounds.push({
 				track: mockGameDB.getRoundTrack(i),
 				phase: "not-done",
-				status: {
-					titleFound: false,
-					artistFound: false,
-					points: 0,
-					time: -1,
-					answers: []
-				}
+				titleFound: false,
+				artistFound: false,
+				points: 0,
+				time: -1,
+				answers: []
 			})
 		}
 
@@ -276,6 +303,7 @@ export class MockGame {
 		//Sending round start
 		setTimeout(() => {
 			this.logRound("Sending round start signal");
+			this.roundResult = [];
 			this.sendEvent({
 				...this.getBaseData("round_started"),
 				event: "round_started",
@@ -283,7 +311,62 @@ export class MockGame {
 				preview: this.rounds[this.status.round].track.preview,
 				playbackDuration: this.settings.playbackDuration
 			} as IWSGameSendEventRoundStart)
+			
+			this.answerSimulation.forEach((sim: mockPlayerAnswerSim) => {
+				if(sim.round == this.status.round)
+				{
+					setTimeout(() => {
+						this.simulateAnswer(sim);
+					}, sim.at * 1000);
+				}
+			})
 		}, 3000)
+	}
+	simulateAnswer(sim: mockPlayerAnswerSim){
+		const player: IGamePlayer = this.players[sim.playerNumber];
+		this.logRound("Answer recieved from '" + player.user.username + "': '" + sim.try + "' at " + sim.at.toString());
+		let res: IGamePlayerResult | undefined = this.roundResult.find((result: IGamePlayerResult) => {
+			return result.user.uid == player.user.uid;
+		})
+		if(!res)
+		{
+			res = {
+				user: player.user,
+				titleFound: false,
+				artistFound: false,
+				time: -1,
+				ranking: 0,
+				points: 0,
+			}
+			this.roundResult.push(res);
+		}
+		const track: IGameTrack | undefined = this.rounds[this.status.round].track;
+		if(!res.artistFound 
+			&& track.artist 
+			&& sim.try.toLowerCase().includes(
+				track.artist.toLowerCase()
+			))
+		{
+			res.artistFound = true;
+			res.points += 5;
+		}
+		else if(!res.titleFound 
+			&& track.title 
+			&& sim.try.toLowerCase().includes(
+				track.title.toLowerCase()
+			))
+		{
+			res.titleFound = true;
+			res.points += 5;
+		}
+
+		this.sendEvent({
+			...this.getBaseData("answer_broadcast"),
+			event: "answer_broadcast",
+			player: player.user,
+			kind: res.artistFound && res.titleFound ? "bothFound" : (res.artistFound ? "artistFound" : (res.titleFound ? "titleFound" : "incorrect")),
+			answer: !res.artistFound && !res.titleFound ? sim.try : undefined
+		} as IWSGameSendEventRoundAnswerBroadcast)
 	}
 	
 		//--------------------- LOGs ---------------------
@@ -496,6 +579,70 @@ export class MockGameJoining extends MockGame {
 			this.settings.fuzzy =  true;
 			this.changeSettings();
 		}, 5000);
+	}
+
+}
+
+export class MockGameJoiningSpeed extends MockGame {
+
+
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's speed room"
+		this.log("Game (Joining - Speed): '" + uid + "' created");
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for(; this.currentTarget < 4; this.currentTarget++ )
+		{
+			this.players.push({
+				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: 0
+			})
+		}
+
+		this.answerSimulation.push({playerNumber: 0, try: "Timbaland", round: 0, at: 5.25});
+		this.answerSimulation.push({playerNumber: 0, try: "Timbaland", round: 0, at: 6.25});
+		this.answerSimulation.push({playerNumber: 0, try: "The way I are", round: 0, at: 10.56});
+	}
+
+
+	//====================== FUNCTIONS ======================
+		//--------------------- Simulate ---------------------
+	simulate(): void  {
+		if(this.simStarted)
+			return;
+		super.simulate();
+
+		for (let i = 0; i < 5; i++) {
+			const time: number = 250 * i;
+			setTimeout(() => {
+				this.joinPlayer(convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false));
+				const lastID = this.currentTarget;
+				this.currentTarget++;
+
+				if (lastID == 7) {
+					this.joinPlayer(convExtUserToGameUser(mockSocialDB.users[lastID], false));
+				}
+			}, time);
+		}
+		
+		setTimeout(() => {
+			this.settings.genres.splice(1,1);
+			this.settings.genres.push("TAG_RNB");
+			this.settings.mode = "speed";
+			this.settings.trackCount = 5;
+			this.settings.playbackDuration = 20;
+			this.settings.breakDuration = 15;
+			this.settings.reveal = true;
+			this.settings.fuzzy =  true;
+			this.changeSettings();
+		}, 250);
+
+		setTimeout(() => {
+			this.simulateGame();
+		}, 1000);
 	}
 
 }

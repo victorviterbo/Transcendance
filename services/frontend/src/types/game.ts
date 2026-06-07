@@ -56,13 +56,21 @@ export interface IGamePlayerRoundStatus {
 	titleFound: boolean;
 }
 
+export interface IGamePlayerResult {
+	user: IGameUser;
+	titleFound: boolean;
+	artistFound: boolean;
+	time: number;
+	ranking: number;
+	points: number;
+}
+
 export interface IGamePlayer {
 	user: IGameUser;
 	points: number;
 	host?: boolean;
 	self?: boolean;
 	colorid?: number;
-	//current: IGamePlayerRoundStatus;
 }
 
 //====================== SETTINGS ======================
@@ -95,25 +103,26 @@ export interface IGameTrack {
 }
 
 export interface IGamePlayerAnswer {
+	validated: boolean;
 	message: string;
 	time: number;
 	titleFound: boolean;
 	artistFound: boolean;
 }
 
-export interface IGameRoundStatus {
-	titleFound: boolean;
-	artistFound: boolean;
-	points: number;
-	time: number;
-	answers: IGamePlayerAnswer[];
-}
 
-export type TRoundPhase = "not-done" | "playing" | "break" | "done";
+
+export type TRoundPhase = "not-done" | "playing" | "done";
 export interface IGameRound {
 	track: IGameTrack;
 	phase: TRoundPhase;
-	status: IGameRoundStatus;
+	titleFound: boolean;
+	artistFound: boolean;
+	titleFoundAt?: number;
+	artistFoundAt?: number;
+	points: number;
+	time: number;
+	answers: IGamePlayerAnswer[];
 }
 
 //====================== COMMON ======================

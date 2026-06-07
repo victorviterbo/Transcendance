@@ -1,6 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
-import type { IGameChatMsg, IGameData, IGamePlayer, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
+import type { IGameChatMsg, IGameData, IGamePlayer, IGamePlayerAnswer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
+import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 
@@ -12,6 +12,8 @@ export interface IGameInstanceCallbacks {
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>
 	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>
 	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>
+	setResults: React.Dispatch<React.SetStateAction<IGamePlayerResult[]>>
+	setVolume: React.Dispatch<React.SetStateAction<number>>
 	sendMessage: SendMessage;
 }
 
@@ -56,6 +58,7 @@ export class GameInstance {
 
 		//--------------------- PLayers ---------------------
 	players: IGamePlayer[] = [];
+	roundResult: IGamePlayerResult[] = []
 
 		//--------------------- Callbacks ---------------------
 	callbacks: IGameInstanceCallbacks;
@@ -64,6 +67,7 @@ export class GameInstance {
 	self?: IGameUser ;
 	lastColorId: number = 0;
 	gameLink: string;
+	volume = 50;
 
 
 	//====================== EVENTS ======================
@@ -143,6 +147,56 @@ export class GameInstance {
 		this.updateRounds();
 		this.updateStatus();
 	}
+	onAnswerValidation(data: IWSGameSendEventRoundAnswer)
+	{
+		this.logRound("Answer validation recieved for " + data.time.toString());
+		const answer: IGamePlayerAnswer | undefined = this.getRound().answers.find((answer: IGamePlayerAnswer) => {
+			return !answer.validated && answer.time == data.time;
+		})
+		if(!answer)	
+		{
+			this.warnRound("Failed to fecth  " + data.time.toString());
+			return;
+		}
+		answer.titleFound = data.titleFound;
+		answer.artistFound = data.artistFound;
+		answer.validated = true;
+
+		if(!this.getRound().titleFound && data.titleFound)
+			this.getRound().titleFoundAt = data.time;
+		if(!this.getRound().artistFound && data.artistFound)
+			this.getRound().artistFoundAt = data.time;
+
+		this.getRound().titleFound = data.titleFound;
+		this.getRound().artistFound = data.artistFound;
+		this.getRound().time = data.time;
+		if(data.track)
+			this.getRound().track = data.track;
+		
+		this.getRound().points = 0
+		if(data.titleFound)
+			this.getRound().points += 5;
+		if(data.artistFound)
+			this.getRound().points += 5;
+
+		this.updateRounds();
+	}
+	onAnswerBroadcast(data: IWSGameSendEventRoundAnswerBroadcast) {
+		this.logRound("Answer broadcast recieved for '" + data.player.username + "'");
+		const res: IGamePlayerResult = this.getResult(data.player);
+		res.points = 0;
+		if(data.kind == "artistFound" || data.kind == "bothFound")
+		{
+			res.points += 5;
+			res.artistFound = true;
+		}
+		if(data.kind == "titleFound" || data.kind == "bothFound")
+		{
+			res.points += 5;
+			res.titleFound = true;
+		}
+		this.updateResults();
+	}
 	
 
 
@@ -183,12 +237,21 @@ export class GameInstance {
 	}
 	submitAnswer(answer: string) {
 		this.logRound("Sending answer: '" + answer + "'")
+		const time = (Date.now() - this.status.keyTime) / 1000
+		this.rounds[this.status.round].answers.push({
+			validated: false,
+			message: answer,
+			time,
+			titleFound: false,
+			artistFound: false
+		})
+		this.updateRounds();
 		this.send({
 			...this.getSendBaseData("answer_submit"),
 			event: "answer_submit",
 			answer: answer,
-			time: (Date.now() - this.status.keyTime) / 1000
-		} as IWSGameRCVEvent)
+			time
+		} as IWSGameRCVEventAnswer)
 	}
 
 	
@@ -201,6 +264,8 @@ export class GameInstance {
 		this.updateSettings();
 		this.updateRounds();
 		this.updatePlayers();
+		this.updateResults();
+		this.updateVolume();
 	}
 	updateStatus() {
 		this.status = structuredClone(this.status);
@@ -243,6 +308,13 @@ export class GameInstance {
 		this.players = structuredClone(this.players);
 		this.callbacks.setPlayers(this.players);
 	}
+	updateResults() {
+		this.roundResult = structuredClone(this.roundResult);
+		this.callbacks.setResults(this.roundResult);
+	}
+	updateVolume() {
+		this.callbacks.setVolume(this.volume);
+	}
 
 		//--------------------- WS ---------------------
 	send(data: IWSGameRCVEvent) {
@@ -283,6 +355,12 @@ export class GameInstance {
 			case "round_started":
 				this.onRoundStart(event as IWSGameSendEventRoundStart)
 				break;
+			case "answer_validation":
+				this.onAnswerValidation(event as IWSGameSendEventRoundAnswer)
+				break;
+			case "answer_broadcast":
+				this.onAnswerBroadcast(event as IWSGameSendEventRoundAnswerBroadcast)
+				break;
 		}
 	}
 
@@ -292,26 +370,30 @@ export class GameInstance {
 		if(!this.rounds[target].track.preview)
 		{
 			if(showAlert)
-				this.logRound("%cPreview recieved not on time.%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400")
+				this.warnRound("Preview recieved not on time.")
 			this.rounds[target].track.preview = preview;
 			this.songs[target] = undefined;
 		}
 		if(!this.songs[target])
 		{
 			if(showAlert)
-				this.logRound("%cSong is not cached.%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400")
+				this.warnRound("Song is not cached.")
 			this.songs[target] = new Audio(preview);
 		}
+	}
+	getRound(index?: number)
+	{
+		return this.rounds[index == undefined ? this.status.round : index];
 	}
 	applyWSRound(round: TWSRoundInfo) {
 		const target: IGameRound | undefined = this.rounds[round.round - 1];
 		if(!target)
 			return;
 		target.track = round.track;
-		target.status.titleFound = round.titleFound;
-		target.status.artistFound = round.artistFound;
-		target.status.time = round.time;
-		target.status.points = round.points;
+		target.titleFound = round.titleFound;
+		target.artistFound = round.artistFound;
+		target.time = round.time;
+		target.points = round.points;
 	}
 	checkRounds(): void {
 		if(this.settings && this.rounds.length != this.settings.trackCount)
@@ -322,16 +404,43 @@ export class GameInstance {
 			this.rounds.push({
 				track: {},
 				phase: "not-done",
-				status: {
-					titleFound: false,
-					artistFound: false,
-					points: 0,
-					time: -1,
-					answers: [],
-				}
+				titleFound: false,
+				artistFound: false,
+				points: 0,
+				time: -1,
+				answers: [],
 			})
 	}
+	getResult(user: IGameUser): IGamePlayerResult{
+		let res: IGamePlayerResult | undefined = this.roundResult.find((result: IGamePlayerResult) => {
+			return result.user.uid == user.uid;
+		})
+		if(!res)
+		{
+			res = {
+				user,
+				titleFound: false,
+				artistFound: false,
+				time: -1,
+				ranking: 0,
+				points: 0,
+			}
+			this.roundResult.push(res);
+		}
+		return res;
+	}
 	
+		//--------------------- Sounds ---------------------
+	changeVolume(value: number)
+	{
+		this.volume = value;
+		this.songs.forEach((el: HTMLAudioElement | undefined) => {
+			if(!el)
+				return;
+			el.volume = value / 100;
+		});
+		this.updateVolume();
+	}
 
 		//--------------------- Check ---------------------
 	check(): boolean {
@@ -354,7 +463,13 @@ export class GameInstance {
 			"font-weight: 400", 
 			...Styling
 		)
+	}
+	warn(MSG: string, ...Styling: string[]){
+		this.log("%c" + MSG + "%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400", ...Styling);
 	}	
+	warnRound(MSG: string, ...Styling: string[]){
+		this.logRound("%c" + MSG + "%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400", ...Styling);
+	}
 }
 
 

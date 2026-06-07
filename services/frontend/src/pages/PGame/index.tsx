@@ -9,6 +9,7 @@ import type {
 	IGameData,
 	IGameDataRes,
 	IGamePlayer,
+	IGamePlayerResult,
 	IGameRound,
 	IGameSettings,
 	IGameStatus,
@@ -46,9 +47,11 @@ function PGame() {
 	const [ready, setReady] = useState<boolean>(false)
 	const [status, setStatus] = useState<IGameStatus | undefined>();
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
+	const [volume, setVolume] = useState<number>(50);
 
 	//Updatable Data
 	const [players, setPlayers] = useState<IGamePlayer[]>([]);
+	const [results, setResults] = useState<IGamePlayerResult[]>([]);
 	const [chat, setChat] = useState<IGameChatMsg[]>([]);
 
 	//SETTINGS
@@ -82,6 +85,8 @@ function PGame() {
 			setSettings,
 			setRounds,
 			setPlayers,
+			setResults,
+			setVolume,
 			sendMessage: wsContext.sendMessage,
 		})
 
@@ -98,6 +103,8 @@ function PGame() {
 			setSettings,
 			setRounds,
 			setPlayers,
+			setResults,
+			setVolume,
 			sendMessage: wsContext.sendMessage,
 		}
 
@@ -243,8 +250,10 @@ function PGame() {
 						status={status}
 						rounds={rounds}
 						players={players}
+						results={results}
 						game={game}
 						settings={settings}
+						volume={volume}
 					/>
 				</Grid>
 				<Grid size={3}>

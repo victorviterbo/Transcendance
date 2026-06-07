@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import CGamePaper from "../../../components/surfaces/CGamePaper";
 import type {
 	IGamePlayer,
+	IGamePlayerResult,
 	IGameRound,
 	IGameSettings,
 	IGameStatus,
@@ -17,6 +18,8 @@ interface PGameViewsProps {
 	players: IGamePlayer[];
 	settings: IGameSettings;
 	rounds: IGameRound[];
+	results: IGamePlayerResult[],
+	volume: number
 }
 
 type ECurrentViewType = {
@@ -36,7 +39,9 @@ function PGameViews({
 	status,
 	rounds,
 	players,
+	results,
 	settings,
+	volume,
 }: PGameViewsProps) {
 	//====================== STATES ======================
 	const getCurrentView = useCallback((): number => {
@@ -110,6 +115,8 @@ function PGameViews({
 					settings={settings}
 					rounds={rounds}
 					players={players}
+					volume={volume}
+					results={results}
 				/>
 			)}
 		</CGamePaper>

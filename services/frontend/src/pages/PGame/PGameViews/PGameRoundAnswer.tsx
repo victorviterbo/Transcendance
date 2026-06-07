@@ -28,7 +28,7 @@ function PGameRoundAnswer({ answer, variant }: PGameRoundAnswerProps) {
 				{answer.message}
 			</CText>
 			<CText size="2xs" sx={style.time}>
-				{ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" })}
+				{answer.time >= 0 ? ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" }) : "--"}
 			</CText>
 			<MicExternalOnIcon sx={style.artist} />
 			<AudiotrackIcon sx={style.title} />
