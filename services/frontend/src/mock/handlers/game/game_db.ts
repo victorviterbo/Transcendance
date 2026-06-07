@@ -2,7 +2,7 @@ import type { IGameSettings, IGameTrack, IGameUser } from "../../../types/game";
 import type { IExtUserInfo } from "../../../types/user";
 import { mockDefaultPP, mockDefaultUsername, mockDefaultUserUID } from "../../db";
 import { mockSocialSetDB } from "../social/social_dbs";
-import { MockGame, MockGameHosting, MockGameJoining, MockGamePlaying } from "./mockGameHandlers";
+import { MockGame, MockGameHosting, MockGameJoining, MockGameJoiningSpeed, MockGamePlaying } from "./mockGameHandlers";
 import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 
 // https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/49/91/bb/4991bbbc-300b-f07d-71e1-096f1db7b667/mzaf_6226001835790259080.plus.aac.p.m4a
@@ -67,6 +67,9 @@ export class MockGameDB {
 					break;
 				case "join":
 					game = new MockGameJoining(uid);
+					break;
+				case "join-speed":
+					game = new MockGameJoiningSpeed(uid);
 					break;
 				case "playing":
 					game = new MockGamePlaying(uid);

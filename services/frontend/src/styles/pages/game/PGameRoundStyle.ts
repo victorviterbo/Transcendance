@@ -70,7 +70,7 @@ export interface IGameRoundStateNodeStyle {
 
 export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNodeStyle => {
 	let bgColor = appColors.greys[7];
-	if (round.phase == "done" || round.phase == "break") {
+	if (round.phase == "done") {
 		if (round.points == 0) bgColor = appColors.cancel[0];
 		if (round.points == 5) bgColor = appColors.secondary[0];
 		if (round.points == 10) bgColor = appColors.primary[0];
@@ -201,12 +201,12 @@ export const PGameRoundAnswerStyle = (
 			ml: "7px",
 			flex: 0.075,
 			zIndex: 1,
-			color: answer.artistFound ? appColors.greys[4] : appColors.primary[0],
+			color: !answer.artistFound ? appColors.greys[4] : appColors.primary[0],
 		},
 		title: {
 			flex: 0.075,
 			zIndex: 1,
-			color: answer.titleFound ? appColors.greys[4] : appColors.primary[0],
+			color: !answer.titleFound ? appColors.greys[4] : appColors.primary[0],
 		},
 	};
 };

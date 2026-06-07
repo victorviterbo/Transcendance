@@ -9,13 +9,13 @@ import type { GPageProps } from "../../common/GPageBases";
 import type {
 	IGamePlayer,
 	IGamePlayerAnswer,
+	IGamePlayerResult,
 	IGameRound,
 	IGameSettings,
 	IGameStatus,
 } from "../../../types/game";
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import PGameRoundStateNode from "./PGameRoundStateNode";
-import CCounterCircular from "../../../components/feedback/loading/CCounterCircular";
 import PGameRoundTracker from "./PGameRoundTracker";
 import PGameRoundAnswer from "./PGameRoundAnswer";
 import { PGameRoundStyle, type IGameRoundStyle } from "../../../styles/pages/game/PGameRoundStyle";
@@ -30,9 +30,11 @@ interface PGameRoundProps extends GPageProps {
 	status: IGameStatus;
 	settings: IGameSettings;
 	rounds: IGameRound[];
+	results: IGamePlayerResult[],
+	volume: number
 }
 
-function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps) {
+function PGameRound({ game, status, rounds, results, settings, volume}: PGameRoundProps) {
 
 	//====================== STATES ======================
 	const [answerField, setAnswerField] = useState<string>("");
@@ -50,7 +52,9 @@ function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps
 	}, [rounds]);
 
 	const answerHistory = useMemo((): ReactNode[] => {
-		return rounds[status.round].status.answers.map((answer: IGamePlayerAnswer, index: number) => {
+		return rounds[status.round].answers.map((answer: IGamePlayerAnswer, index: number) => {
+			if(!answer.validated)
+				return;
 			return (
 				<Grid size={6} key={"answer-node-" + index}>
 					<PGameRoundAnswer variant="answer" answer={answer} />
@@ -60,33 +64,32 @@ function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps
 	}, [rounds, status]);
 
 	const playerTimes = useMemo((): ReactNode[] => {
-		// const answeredPlayers = players.filter((player: IGamePlayer) => {
-		// 	return (
-		// 		(player.current.artistFound || player.current.titleFound) &&
-		// 		player.current.lastestTime >= 0
-		// 	);
-		// });
-
-		// return answeredPlayers.map((player: IGamePlayer) => {
-		// 	return (
-		// 		<PGameRoundAnswer
-		// 			variant="time"
-		// 			key={player.user.uid}
-		// 			answer={{
-		// 				message: player.user.username,
-		// 				time: player.current.lastestTime,
-		// 				titleFound: player.current.titleFound,
-		// 				artistFound: player.current.artistFound,
-		// 			}}
-		// 		></PGameRoundAnswer>
-		// 	);
-		// });
+		
+		return results.map((result: IGamePlayerResult) => {
+			return (
+				<PGameRoundAnswer
+					variant="time"
+					key={result.user.uid}
+					answer={{
+						validated: true,
+						message: result.user.username,
+						time: result.time,
+						titleFound: result.titleFound,
+						artistFound: result.artistFound,
+					}}
+				></PGameRoundAnswer>
+			);
+		});
 		return []
-	}, []); // players
+	}, [results]);
+
+	const isLocked = useMemo(() => {
+		return rounds[status.round].artistFound && rounds[status.round].titleFound;
+	}, [status, rounds])
 
 	//====================== EVENTS ======================
 	const handleSendMessage = useCallback(() => {
-		if(!game.current)
+		if(!game.current || answerField == "" || /^\s+$/g.test(answerField))
 			return;
 		game.current.submitAnswer(answerField);
 		setAnswerField("");
@@ -129,7 +132,7 @@ function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps
 					direction={"column"}
 				>
 					<Box>
-						{/* <PGameRoundReveal title={rounds[status.round].track.title}></PGameRoundReveal> */}
+						{rounds[status.round].track.title && <PGameRoundReveal title={rounds[status.round].track}></PGameRoundReveal>}
 					</Box>
 					<Grid container spacing={"5px"}>
 						{answerHistory}
@@ -143,12 +146,12 @@ function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps
 							<CText>GAME_ROUND_SPEED</CText>
 						</Stack>
 						<Stack direction={"column"} sx={style.pointBoxPointList}>
-							<CText sx={{ color: appColors.primary[0] }}>5</CText>
-							<CText sx={{ color: appColors.cancel[0] }}>0</CText>
-							<CText sx={{ color: appColors.secondary[0] }}>3</CText>
+							<CText sx={{  color:  rounds[status.round].artistFound ? appColors.primary[0] : appColors.cancel[0] }}>{rounds[status.round].artistFound ? 5 : 0}</CText>
+							<CText sx={{ color: rounds[status.round].titleFound ? appColors.primary[0] : appColors.cancel[0] }}>{rounds[status.round].titleFound ? 5 : 0}</CText>
+							<CText sx={{ color: appColors.secondary[0] }}>-</CText>
 						</Stack>
 						<Stack direction={"column"} sx={style.pointBoxPointSumup}>
-							<CText size="lg">13</CText>
+							<CText size="lg">{rounds[status.round].points}</CText>
 							<CText size="xs">GAME_ROUND_POINTS</CText>
 						</Stack>
 					</Stack>
@@ -176,17 +179,22 @@ function PGameRound({ game, players, status, rounds, settings }: PGameRoundProps
 						if (event.code == "Enter") handleSendMessage();
 					}}
 					data-testid="PGameChat-TextField"
+					disabled={isLocked}
 				></CTextField>
 				<CIconButton
 					onClick={handleSendMessage}
 					sx={{ ml: "5px", mr: "20px" }}
 					data-testid="PGameChat-SendButton"
+					disabled={isLocked}
 				>
 					<SendIcon fontSize="small" />
 				</CIconButton>
 				<CCountdownCircular startTime={status.keyTime} timeMS={settings.playbackDuration * 1000} size={"35px"} fontSize="xs" startColor={appColors.primary[0]} endColor={appColors.cancel[0]}>
 				</CCountdownCircular>
-				<CVolumeSilder onVolumeChanged={(_) => {}}></CVolumeSilder>
+				<CVolumeSilder volume={volume} onVolumeChanged={(value) => {
+					if(game.current)
+						game.current.changeVolume(value);
+				}}></CVolumeSilder>
 			</Stack>
 		</Stack>
 	);

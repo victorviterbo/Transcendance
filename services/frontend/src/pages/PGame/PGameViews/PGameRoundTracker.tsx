@@ -24,14 +24,15 @@ function PGameRoundTracker({ settings, status, round }: PGameRoundTrackerProps) 
 	return (
 		<Stack direction={"column"} sx={{ mb: "10px", mt: "20px" }}>
 			<Box sx={style.pinbox}>
-				{/* <PGameRoundTrackerPin
-					type="artist"
-					percent={(round.artistFound / settings.timer) * 100}
-				/>
-				<PGameRoundTrackerPin
-					type="title"
-					percent={(round.titleFound / settings.timer) * 100}
-				/> */}
+			{ round.artistFoundAt != undefined && <PGameRoundTrackerPin
+				type="artist"
+				percent={(round.artistFoundAt / settings.playbackDuration) * 100}
+			/>
+			}
+			{ round.titleFoundAt != undefined && <PGameRoundTrackerPin
+				type="title"
+				percent={(round.titleFoundAt / settings.playbackDuration) * 100}
+			/> }
 			</Box>
 			<CCountdownLinear
 				sx={style.bar}

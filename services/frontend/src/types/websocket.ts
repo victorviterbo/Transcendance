@@ -153,16 +153,23 @@ export interface TWSRoundInfo {
 
 
 	  //--------------------- EVENTS ---------------------
-export type IWSGameEventRcvList = "game_join" 
+export type IWSGameEventRcvList = 
+	| "game_join" 
 	| "settings_update" 
 	| "game_start"
 	| "answer_submit"
 
-export type IWSGameEventSndList = "player_joined" | "player_left" | "game_info" 
+export type IWSGameEventSndList = 
+	| "player_joined" 
+	| "player_left" 
+	| "game_info" 
 	| "settings_updated" 
 	| "game_started"
 	| "round_preview"
 	| "round_started"
+	| "answer_validation"
+	| "answer_broadcast"
+	| "round_ended"
 
 
 export interface IWSGameEvent {
@@ -216,4 +223,20 @@ export interface IWSGameSendEventRoundStart extends IWSGameSendEvent {
 	round: number;
 	preview: string;
 	playbackDuration: number;
+}
+
+export interface IWSGameSendEventRoundAnswer extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "answer_validation">;
+	titleFound: boolean;
+	artistFound: boolean;
+	time: number;
+	track?: IGameTrack;
+}
+
+
+export interface IWSGameSendEventRoundAnswerBroadcast extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "answer_broadcast">;
+	player: IGameUser;
+	kind: "incorrect" | "titleFound" | "artistFound" | "bothFound";
+	answer?: string;
 }
