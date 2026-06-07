@@ -71,9 +71,9 @@ export interface IGameRoundStateNodeStyle {
 export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNodeStyle => {
 	let bgColor = appColors.greys[7];
 	if (round.phase == "done") {
-		if (round.points == 0) bgColor = appColors.cancel[0];
-		if (round.points == 5) bgColor = appColors.secondary[0];
-		if (round.points == 10) bgColor = appColors.primary[0];
+		if (round.artistFound && round.titleFound) bgColor = appColors.primary[0];
+		else if(round.artistFound || round.titleFound) bgColor = appColors.secondary[0];
+		else bgColor = appColors.cancel[0];
 	}
 
 	return {

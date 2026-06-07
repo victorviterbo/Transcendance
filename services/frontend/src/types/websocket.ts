@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGamePlayer, IGameSettings, IGameTrack, IGameUser, TGamePhase, TGameVisibility } from "./game";
+import type { IGamePlayer, IGamePlayerResult, IGameSettings, IGameTrack, IGameUser, TGamePhase, TGameVisibility } from "./game";
 //import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
@@ -239,4 +239,11 @@ export interface IWSGameSendEventRoundAnswerBroadcast extends IWSGameSendEvent {
 	player: IGameUser;
 	kind: "incorrect" | "titleFound" | "artistFound" | "bothFound";
 	answer?: string;
+}
+
+export interface IWSGameSendEventRoundEnd  extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "round_ended">;
+	track: IGameTrack;
+	leaderboard: IGamePlayer[];
+	results: IGamePlayerResult[];
 }
