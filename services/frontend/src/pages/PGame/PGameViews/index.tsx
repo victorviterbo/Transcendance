@@ -19,7 +19,9 @@ interface PGameViewsProps {
 	settings: IGameSettings;
 	rounds: IGameRound[];
 	results: IGamePlayerResult[],
-	volume: number
+	volume: number,
+	muted: boolean,
+	answerRef: React.RefObject<HTMLDivElement | null>
 }
 
 type ECurrentViewType = {
@@ -42,6 +44,8 @@ function PGameViews({
 	results,
 	settings,
 	volume,
+	muted,
+	answerRef,
 }: PGameViewsProps) {
 	//====================== STATES ======================
 	const getCurrentView = useCallback((): number => {
@@ -116,7 +120,9 @@ function PGameViews({
 					rounds={rounds}
 					players={players}
 					volume={volume}
+					muted={muted}
 					results={results}
+					answerRef={answerRef}
 				/>
 			)}
 		</CGamePaper>

@@ -3,7 +3,7 @@ import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
 import PGameChat from "./PGameChat";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createRef, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type {
 	IGameChatMsg,
 	IGameData,
@@ -48,6 +48,7 @@ function PGame() {
 	const [status, setStatus] = useState<IGameStatus | undefined>();
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 	const [volume, setVolume] = useState<number>(50);
+	const [muted, setMuted] = useState<boolean>(false);
 
 	//Updatable Data
 	const [players, setPlayers] = useState<IGamePlayer[]>([]);
@@ -56,6 +57,9 @@ function PGame() {
 
 	//SETTINGS
 	const [settings, setSettings] = useState<IGameSettings | undefined>(undefined);
+
+	//REFS
+	const answerRef = createRef<HTMLDivElement | null>();
 
 	//====================== WS ======================
 	const wsContext = useWS("game");
@@ -87,10 +91,12 @@ function PGame() {
 			setPlayers,
 			setResults,
 			setVolume,
+			setMuted,
 			sendMessage: wsContext.sendMessage,
+			answerRef
 		})
 
-	}, [gameid, wsContext]);
+	}, [gameid, wsContext, answerRef]);
 
 	useEffect(() => {
 
@@ -105,10 +111,12 @@ function PGame() {
 			setPlayers,
 			setResults,
 			setVolume,
+			setMuted,
 			sendMessage: wsContext.sendMessage,
+			answerRef
 		}
 
-	}, [setReady, setError, setStatus, setSettings, setPlayers, wsContext]);
+	}, [setReady, setError, setStatus, setSettings, setPlayers, wsContext, answerRef]);
 
 	// useEffect(() => {
 	// 	if (gameid == undefined) return;
@@ -254,6 +262,8 @@ function PGame() {
 						game={game}
 						settings={settings}
 						volume={volume}
+						muted={muted}
+						answerRef={answerRef}
 					/>
 				</Grid>
 				<Grid size={3}>

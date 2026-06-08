@@ -666,9 +666,80 @@ export class MockGameJoiningSpeed extends MockGame {
 			})
 		}
 
+		//R1
 		this.answerSimulation.push({playerNumber: 0, try: "Timbaland", round: 0, at: 5.25});
 		this.answerSimulation.push({playerNumber: 0, try: "Timbaland", round: 0, at: 6.25});
 		this.answerSimulation.push({playerNumber: 0, try: "The way I are", round: 0, at: 10.56});
+		this.answerSimulation.push({playerNumber: 1, try: "Shakira", round: 0, at:  5});
+		this.answerSimulation.push({playerNumber: 1, try: "Timbaland", round: 0, at:  8.5});
+		this.answerSimulation.push({playerNumber: 2, try: "John", round: 0, at:  8.5});
+		this.answerSimulation.push({playerNumber: 2, try: "Elvis", round: 0, at:  12.});
+		this.answerSimulation.push({playerNumber: 2, try: "I DONT KNOW", round: 0, at:  18});
+		this.answerSimulation.push({playerNumber: 6, try: "Dua", round: 0, at:  15});
+		this.answerSimulation.push({playerNumber: 6, try: "Timbaland", round: 0, at:  18});
+		this.answerSimulation.push({playerNumber: 7, try: "Timbaland", round: 0, at:  10});
+		this.answerSimulation.push({playerNumber: 7, try: "The way I are", round: 0, at:  19});
+
+		
+		//R2
+		this.answerSimulation.push({playerNumber: 0, try: "soprano", round: 1, at: 2});
+		this.answerSimulation.push({playerNumber: 0, try: "c'est ma vie", round: 1, at: 15});
+		this.answerSimulation.push({playerNumber: 0, try: "c'est ma life", round: 1, at: 18});
+		this.answerSimulation.push({playerNumber: 1, try: "booba", round: 1, at: 5});
+		this.answerSimulation.push({playerNumber: 1, try: "NTM", round: 1, at: 8});
+		this.answerSimulation.push({playerNumber: 1, try: "Cortex ?", round: 1, at: 15});
+		this.answerSimulation.push({playerNumber: 1, try: "c'est ma life", round: 1, at: 19});
+		this.answerSimulation.push({playerNumber: 2, try: "c'est la vie", round: 1, at: 2});
+		this.answerSimulation.push({playerNumber: 2, try: "c'est la life", round: 1, at: 3});
+		this.answerSimulation.push({playerNumber: 2, try: "c'est ma life", round: 1, at: 4});
+		this.answerSimulation.push({playerNumber: 9, try: "sopano", round: 1, at: 4});
+		this.answerSimulation.push({playerNumber: 9, try: "soprano", round: 1, at: 5});
+		this.answerSimulation.push({playerNumber: 9, try: "c'est ma life", round: 1, at: 17});
+
+		
+		//R3
+		this.answerSimulation.push({playerNumber: 0, try: "wait B", round: 2, at: 2});
+		this.answerSimulation.push({playerNumber: 0, try: "Big ali express", round: 2, at: 3});
+		this.answerSimulation.push({playerNumber: 0, try: "aaaaaaaaaaaaaaaa", round: 2, at: 6});
+		this.answerSimulation.push({playerNumber: 0, try: "Morenas", round: 2, at: 6});
+		this.answerSimulation.push({playerNumber: 1, try: "Morenas", round: 2, at: 6});
+		this.answerSimulation.push({playerNumber: 1, try: "Lord Kossity", round: 2, at: 7});
+		this.answerSimulation.push({playerNumber: 6, try: "Morenas", round: 2, at: 6});
+		this.answerSimulation.push({playerNumber: 6, try: "Lod Kossity", round: 2, at: 12});
+		this.answerSimulation.push({playerNumber: 6, try: "Lod Kossityy", round: 2, at: 13});
+		this.answerSimulation.push({playerNumber: 6, try: "Lord Kossityy", round: 2, at: 13.5});
+		this.answerSimulation.push({playerNumber: 6, try: "Lord Kossity", round: 2, at: 14});
+		this.answerSimulation.push({playerNumber: 8, try: "Lord Kossity", round: 2, at: 1});
+		this.answerSimulation.push({playerNumber: 8, try: "Morenas", round: 2, at: 2});
+
+		
+		//R4
+		this.answerSimulation.push({playerNumber: 0, try: "cardi B", round: 3, at: 2});
+		this.answerSimulation.push({playerNumber: 0, try: "Kelis", round: 3, at: 5});
+		this.answerSimulation.push({playerNumber: 0, try: "Milkshake", round: 3, at: 15});
+		this.answerSimulation.push({playerNumber: 3, try: "Milkshake", round: 3, at: 1});
+		this.answerSimulation.push({playerNumber: 3, try: "Kelis", round: 3, at: 19.5});
+		this.answerSimulation.push({playerNumber: 2, try: "Morenas", round: 3, at: 5});
+		this.answerSimulation.push({playerNumber: 2, try: "Lord Kossity", round: 3, at: 6});
+		this.answerSimulation.push({playerNumber: 6, try: "Milkshake", round: 3, at: 7});
+		this.answerSimulation.push({playerNumber: 7, try: "Milkshake", round: 3, at: 15});
+		this.answerSimulation.push({playerNumber: 8, try: "Milkshake", round: 3, at: 16});
+		this.answerSimulation.push({playerNumber: 8, try: "Kelis", round: 3, at: 5});
+		
+		//R5
+		this.answerSimulation.push({playerNumber: 0, try: "wati B", round: 4, at: 2});
+		this.answerSimulation.push({playerNumber: 0, try: "wati Big ali ?", round: 4, at: 3});
+		this.answerSimulation.push({playerNumber: 0, try: "DJ Abdel", round: 4, at: 6});
+		this.answerSimulation.push({playerNumber: 0, try: "Funk", round: 4, at: 10});
+		this.answerSimulation.push({playerNumber: 1, try: "Donnez Nous De La Funk", round: 4, at: 10});
+		this.answerSimulation.push({playerNumber: 1, try: "DJ Abdel", round: 4, at: 11});
+		this.answerSimulation.push({playerNumber: 2, try: "DJ Khaled", round: 4, at: 11});
+		this.answerSimulation.push({playerNumber: 6, try: "DJ Abdel", round: 4, at: 11});
+		this.answerSimulation.push({playerNumber: 8, try: "Funk", round: 4, at: 11});
+		this.answerSimulation.push({playerNumber: 8, try: "Donnez Nous De La Funk", round: 4, at: 11});
+		this.answerSimulation.push({playerNumber: 8, try: "DJ Abdel", round: 4, at: 11});
+		
+
 	}
 
 
