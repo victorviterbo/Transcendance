@@ -31,16 +31,20 @@ urls = {
     'login': '/api/auth/login/',
     'logout': '/api/auth/logout/',
     'refresh': '/api/auth/refresh/',
+    'pw_change': '/api/auth/password/',
     'game': '/api/game/',
     'delete_account': '/api/auth/delete-account/',
     'register': '/api/auth/register/',
     'profile': '/api/profile/',
     'guest_create_url': '/api/auth/guest-create/',
-    'friend_request': '/api/friend-request/',
-    'friend_request_send': '/api/friend-request/send/',
-    'friend_request_respond': '/api/friend-request/respond/',
-    'friend_remove': '/api/friend/remove/',
-    'friends_list': '/api/friends/',
+    'friend_request': '/api/social/friends-request/',
+    'friend_request_send': '/api/social/friend-request/send/',
+    'friend_request_respond': '/api/social/friend-request/respond/',
+    'friend_remove': '/api/social/friend/remove/',
+    'friends_list': '/api/social/friends/',
+    'friend_search': '/api/social/friends-search/',
+    'friends_notif': '/api/social/notifs/',
+    'chat': '/api/chat/room/',
 }
 
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
@@ -96,8 +100,7 @@ class TestBaseHelpers(APITransactionTestCase):
 
     def authenticate(self, email: str, password: str='Password123!') -> None:
         """Authenticate a user and set credentials for future requests."""
-        login_url = '/api/auth/login/'
-        login_res = self.client.post(login_url, data={'email': email,
+        login_res = self.client.post(urls['login'], data={'email': email,
                                                       'password': password})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')
@@ -110,8 +113,7 @@ class TestBaseHelpers(APITransactionTestCase):
                                 visibility: str = 'public',
                                 ) -> tuple[dict, Game]:
         """self.owner will create a new game via http."""
-        login_url = '/api/auth/login/'
-        login_res = self.client.post(login_url, data={'email': user.email,
+        login_res = self.client.post(urls['login'], data={'email': user.email,
                                                     'password': 'Password123!'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')

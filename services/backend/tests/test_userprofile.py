@@ -9,7 +9,7 @@ from django.conf import settings
 from rest_framework import status
 from PIL import Image
 from rest_framework.test import APIClient
-from tests.test_helpers import MEDIA_ROOT, TestBaseHelpers
+from tests.test_helpers import MEDIA_ROOT, TestBaseHelpers, urls
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from userprofile.models import Profile
@@ -84,7 +84,6 @@ class ProfileTests(TestBaseHelpers):
 
     def test_profile_post(self) -> None:
         """Test success and failure of profile modification operation."""
-        login_url = '/api/auth/login/'
         profile_url = '/api/profile/'
         new_data = {
             'username': 'a_new_user',
@@ -95,7 +94,7 @@ class ProfileTests(TestBaseHelpers):
         response = self.client.post(profile_url, data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
@@ -151,10 +150,9 @@ class ProfileTests(TestBaseHelpers):
 
     def test_profile_delete(self) -> None:
         """Test profile deletion operation."""
-        login_url = '/api/auth/login/'
         account_delete_url = '/api/auth/delete/'
 
-        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
@@ -162,7 +160,7 @@ class ProfileTests(TestBaseHelpers):
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
         response = self.client.post(account_delete_url, data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
-        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -171,11 +169,10 @@ class ProfileTests(TestBaseHelpers):
 
     def test_profile_create_update_delete(self) -> None:
         """Test all profile operation."""
-        login_url = '/api/auth/login/'
         profile_url = '/api/profile/'
         account_delete_url = '/api/auth/delete/'
 
-        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
@@ -202,7 +199,7 @@ class ProfileTests(TestBaseHelpers):
 
         response = self.client.post(account_delete_url, data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
-        login_res = self.client.post(login_url, data={'email': 'user1@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -15,15 +15,15 @@ from .views import (
 )
 
 urlpatterns = [
-    path('friends', FriendSee.as_view()),
-    path('friends-search', FriendSearch.as_view()),
-    path('friends-request', FriendRequestsSeePend.as_view()),
-    path('friend-request/respond', FriendRequestsRespond.as_view()),
-    path('friend-request/send', FriendRequestsSend.as_view()),
-    path('friend/remove', FriendRemove.as_view()),
+    path('friends/', FriendSee.as_view()),
+    path('friends-search/', FriendSearch.as_view()),
+    path('friends-request/', FriendRequestsSeePend.as_view()),
+    path('friend-request/respond/', FriendRequestsRespond.as_view()),
+    path('friend-request/send/', FriendRequestsSend.as_view()),
+    path('friend/remove/', FriendRemove.as_view()),
 
-    path('notifs', NotifSee.as_view()),
-    path('notifs_read', NotifRead.as_view()),
+    path('notifs/', NotifSee.as_view()),
+    path('notifs_read/', NotifRead.as_view()),
     
-    path('message', FriendMessageFeed.as_view()),
+    path('message/', FriendMessageFeed.as_view()),
 ]

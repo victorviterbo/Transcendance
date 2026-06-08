@@ -15,9 +15,10 @@ from project.asgi import application
 from project.defaults import genres
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
+
+from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers, urls
 
 
 class GameHTTPViewTests(TestBaseHelpers):
@@ -27,8 +28,7 @@ class GameHTTPViewTests(TestBaseHelpers):
         self.owner = self.create_user('owner@mail.com', 'game_owner')
         self.friend = self.create_user('friend@mail.com', 'game_friend')
         self.stranger = self.create_user('stranger@mail.com', 'game_stranger')
-        login_url = '/api/auth/login/'
-        login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'owner@mail.com',
                                                  'password': 'Password123!'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')
@@ -36,8 +36,7 @@ class GameHTTPViewTests(TestBaseHelpers):
 
     def test_create_game_with_required_payload_only(self) -> None:
         """Game creation should only require name and visibility."""
-        login_url = '/api/auth/login/'
-        login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'owner@mail.com',
                                                  'password': 'Password123!'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')
@@ -119,8 +118,7 @@ class GameHTTPViewTests(TestBaseHelpers):
             visibility='friends',
             owned_by=self.stranger.profile,
         )
-        login_url = '/api/auth/login/'
-        login_res = self.client.post(login_url, data={'email': 'owner@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'owner@mail.com',
                                                  'password': 'Password123!'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')

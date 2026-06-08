@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
-
+from tests.test_helpers import TestBaseHelpers, urls
 
 class ChatViewsTests(APITestCase):
 	"""Validate chat HTTP endpoints."""
@@ -117,8 +117,7 @@ class ChatViewsTests(APITestCase):
 
 	def test_direct_room_created_for_friends(self) -> None:
 		"""Direct-room creation should return a shared DM room for friends."""
-		login_url = '/api/auth/login/'
-		login_res = self.client.post(login_url, data={'email': self.user.email,
+		login_res = self.client.post(urls['login'], data={'email': self.user.email,
                                               'password': 'Password123!'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
@@ -136,8 +135,7 @@ class ChatViewsTests(APITestCase):
 
 	def test_direct_room_rejected_for_nonfriend(self) -> None:
 		"""Non-friends should be blocked from direct-room creation."""
-		login_url = '/api/auth/login/'
-		login_res = self.client.post(login_url, data={'email': self.user.email,
+		login_res = self.client.post(urls['login'], data={'email': self.user.email,
                                               'password': 'Password123!'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
