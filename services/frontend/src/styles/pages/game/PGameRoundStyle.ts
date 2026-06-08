@@ -89,6 +89,8 @@ export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNode
 			borderRadius: "100px",
 			border: round.phase == "playing" ? "solid 2px " + appColors.tertiary[0] : undefined,
 			boxShadow: round.phase == "done" ? "0px 2px 0px 0px white" : undefined,
+
+			transform: "translateY(5px)"
 		},
 	};
 };

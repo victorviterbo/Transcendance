@@ -139,6 +139,7 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 					step={step}
 					value={currentValue}
 					marks
+					sx={{width: "60%"}}
 					onChange={(_: Event, value: number | number[]) => {
 						let finalValue: number = Array.isArray(value) ? value[0] : value;
 						if (finalValue < min) finalValue = min;

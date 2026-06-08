@@ -24,6 +24,7 @@ export function CTextFieldStyle(
 ) {
 	return {
 		//Label
+
 		"& .MuiInputLabel-root": {
 			color: appColors.greys[0],
 			pl: "5px",
@@ -66,6 +67,10 @@ export function CTextFieldStyle(
 			backgroundColor: appColors.greys[7],
 		},
 
+		"& .MuiOutlinedInput-root.Mui-disabled": {
+			backgroundColor: appColors.greys[8],
+		},
+
 		//INput objkect
 		"& .MuiOutlinedInput-root .MuiInputBase-input": {
 			py: verticalPadding,
@@ -86,6 +91,10 @@ export function CTextFieldStyle(
 		},
 		"& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
 			borderColor: appColors.secondary[0],
+			borderWidth: borderWidth ? borderWidth : "4px",
+		},
+		"& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+			borderColor: appColors.greys[9],
 			borderWidth: borderWidth ? borderWidth : "4px",
 		},
 

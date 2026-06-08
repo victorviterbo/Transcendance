@@ -14,7 +14,9 @@ export interface IGameInstanceCallbacks {
 	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>
 	setResults: React.Dispatch<React.SetStateAction<IGamePlayerResult[]>>
 	setVolume: React.Dispatch<React.SetStateAction<number>>
+	setMuted: React.Dispatch<React.SetStateAction<boolean>>
 	sendMessage: SendMessage;
+	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export class GameInstance {
@@ -29,6 +31,14 @@ export class GameInstance {
 		//Joining
 		this.join();
 		this.gameLink = PAGE_GAME.replaceAll("{UID}", this.uid);
+
+		//Volume
+		const volumeStorage: string | null = localStorage.getItem("default_volume");
+		if(volumeStorage)
+			this.volume = parseInt(volumeStorage)
+		const mutedStorage: string | null = localStorage.getItem("default_mute");
+		if(mutedStorage)
+			this.muted = mutedStorage == "true"
 	}
 	destroy() {
 		this.uid = "";
@@ -68,6 +78,7 @@ export class GameInstance {
 	lastColorId: number = 0;
 	gameLink: string;
 	volume = 50;
+	muted = false;
 
 
 	//====================== EVENTS ======================
@@ -143,11 +154,19 @@ export class GameInstance {
 		this.status.phase = "playing_round";
 		this.setRound(data.preview, this.status.round , true);
 		this.rounds[this.status.round].phase = "playing";
-		this.songs[this.status.round]?.play();
+		const song: HTMLAudioElement | undefined =  this.songs[this.status.round];
+		if(song)
+		{
+			song.volume =  this.muted ? 0 : (this.volume / 100);
+			song.play();
+		}
 		this.roundResult = []
 		this.updateRounds();
 		this.updateResults();
 		this.updateStatus();
+		setTimeout(() => {
+			this.focusInput();
+		}, 50)
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer)
 	{
@@ -366,6 +385,7 @@ export class GameInstance {
 	}
 	updateVolume() {
 		this.callbacks.setVolume(this.volume);
+		this.callbacks.setMuted(this.muted);
 	}
 
 		//--------------------- WS ---------------------
@@ -485,15 +505,27 @@ export class GameInstance {
 		return res;
 	}
 	
-		//--------------------- Sounds ---------------------
+		//--------------------- Other ---------------------
 	changeVolume(value: number)
 	{
 		this.volume = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
 			if(!el)
 				return;
-			el.volume = value / 100;
+			el.volume = this.muted ? 0 : (this.volume / 100);
 		});
+		localStorage.setItem("default_volume", this.volume.toString());
+		this.updateVolume();
+	}
+	mute(value: boolean)
+	{
+		this.muted = value;
+		this.songs.forEach((el: HTMLAudioElement | undefined) => {
+			if(!el)
+				return;
+			el.volume = this.muted ? 0 : (this.volume / 100);
+		});
+		localStorage.setItem("default_mute", this.muted.toString());
 		this.updateVolume();
 	}
 	stopAll()
@@ -503,6 +535,14 @@ export class GameInstance {
 				return;
 			el.pause();
 		});
+	}
+	focusInput() {
+		if(this.callbacks.answerRef.current)
+		{
+			const el: HTMLCollectionOf<HTMLInputElement> = this.callbacks.answerRef.current.getElementsByTagName("input");
+			if(el.length > 0)
+				el[0].focus();
+		}
 	}
 
 		//--------------------- Check ---------------------

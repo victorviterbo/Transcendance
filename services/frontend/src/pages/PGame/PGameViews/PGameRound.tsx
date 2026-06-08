@@ -14,7 +14,7 @@ import type {
 	IGameSettings,
 	IGameStatus,
 } from "../../../types/game";
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import PGameRoundStateNode from "./PGameRoundStateNode";
 import PGameRoundTracker from "./PGameRoundTracker";
 import PGameRoundAnswer from "./PGameRoundAnswer";
@@ -23,6 +23,7 @@ import PGameRoundReveal from "./PGameRoundReveal";
 import CVolumeSilder from "../../../components/inputs/slider/CVolumeSilder";
 import type { GameInstance } from "../../../handlers/gameHandlers";
 import CCountdownCircular from "../../../components/feedback/loading/CCountdownCircular";
+import { GAME_MAX_ROUND_DISPLAYED, GAME_ROUND_PASSED_DISPLAYED } from "../../../constants";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
@@ -32,16 +33,30 @@ interface PGameRoundProps extends GPageProps {
 	rounds: IGameRound[];
 	results: IGamePlayerResult[],
 	volume: number
+	muted: boolean
+	answerRef: React.RefObject<HTMLDivElement | null>
 }
 
-function PGameRound({ game, status, rounds, results, settings, volume}: PGameRoundProps) {
+function PGameRound({ game, status, rounds, results, settings, volume, muted, answerRef}: PGameRoundProps) {
 
 	//====================== STATES ======================
 	const [answerField, setAnswerField] = useState<string>("");
 
-	//====================== MAPS ======================
+	//====================== MAPS ======================	
 	const roundHistory = useMemo((): ReactNode[] => {
-		return rounds.map((round: IGameRound, index: number) => {
+		const displayed: IGameRound[] = rounds.filter((_, index: number) => {
+			const start = Math.min(
+				Math.max(0, status.round - GAME_ROUND_PASSED_DISPLAYED), 
+				Math.max(0, settings.trackCount - GAME_MAX_ROUND_DISPLAYED)
+			)
+			const end = Math.min(
+				start + GAME_MAX_ROUND_DISPLAYED -1,
+				settings.trackCount - 1
+			)
+
+			return start <= index && index <= end;
+		})
+		return displayed.map((round: IGameRound, index: number) => {
 			return (
 				<PGameRoundStateNode
 					key={"round-node-" + index}
@@ -49,7 +64,7 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 				></PGameRoundStateNode>
 			);
 		});
-	}, [rounds]);
+	}, [rounds, status, settings]);
 
 	const answerHistory = useMemo((): ReactNode[] => {
 		return rounds[status.round].answers.map((answer: IGamePlayerAnswer, index: number) => {
@@ -99,6 +114,15 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 		setAnswerField("");
 	}, [game, answerField, setAnswerField])
 
+	useEffect(() => {
+		async function clear()
+		{
+			if(status.phase == "playing_break")
+				setAnswerField("");
+		}
+		clear();
+	}, [status, setAnswerField])
+
 	//====================== STYLE ======================
 	const style: IGameRoundStyle = useMemo(() => {
 		return PGameRoundStyle();
@@ -108,7 +132,7 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 	return (
 		<Stack
 			direction={"column"}
-			sx={{ position: "absolute", inset: "15px", overflowY: "auto", overflowX: "hidden" }}
+			sx={{ position: "absolute", inset: "15px"}}
 		>
 			<Box sx={style.progressBox}>
 				<Stack direction={"column"}>
@@ -169,6 +193,7 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 			</Stack>
 			<Stack direction={"row"} sx={{ alignItems: "flex-start" }}>
 				<CTextField
+					ref={answerRef}
 					sx={{ flex: 1, m: 0 }}
 					fontWeight={500}
 					fontFamily={appTexts.text.secondaryFamily}
@@ -195,9 +220,13 @@ function PGameRound({ game, status, rounds, results, settings, volume}: PGameRou
 				</CIconButton>
 				<CCountdownCircular startTime={status.keyTime} timeMS={(status.phase == "playing_break" ? settings.breakDuration : settings.playbackDuration) * 1000} size={"35px"} fontSize="xs" startColor={appColors.primary[0]} endColor={appColors.cancel[0]}>
 				</CCountdownCircular>
-				<CVolumeSilder volume={volume} onVolumeChanged={(value) => {
+				<CVolumeSilder volume={volume} muted={muted} onVolumeChanged={(value) => {
 					if(game.current)
 						game.current.changeVolume(value);
+				}}
+				onVolumeMuted={(value) => {
+					if(game.current)
+						game.current.mute(value);
 				}}></CVolumeSilder>
 			</Stack>
 		</Stack>
