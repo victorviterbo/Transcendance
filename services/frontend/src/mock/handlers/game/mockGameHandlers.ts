@@ -1,6 +1,6 @@
-import type { IGamePlayer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameTrack, IGameUser, TGameVisibility } from "../../../types/game";
+import type { IGameChatMsg, IGamePlayer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameTrack, IGameUser, TGameVisibility } from "../../../types/game";
 import { convExtUserToGameUser, type IExtUserInfo } from "../../../types/user";
-import type { IWSGameEventSndList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../../../types/websocket";
+import type { IWSGameEventSndList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventMsg, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventMessage, IWSGameSendEventMessageHistory, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../../../types/websocket";
 import { mockDefaultUserUID } from "../../db";
 
 import { mockSocialDB } from "../social/social_dbs";
@@ -31,6 +31,11 @@ interface mockPlayerAnswerSim {
 	at: number;
 	round: number;
 }
+interface mockMsgSim {
+	playerNumber: number;
+	body: string;
+	at: number;
+}
 
 
 //--------------------------------------------------
@@ -48,9 +53,13 @@ export class MockGame {
 		else
 			this.host = mockGameDB.getDefaultHost();
 		this.buildPlayers();
+		this.buildChat();
 		this.simulate();
 	}
 	buildPlayers() {
+
+	}
+	buildChat() {
 
 	}
 
@@ -73,6 +82,8 @@ export class MockGame {
 	players: IGamePlayer[] = [];
 	roundResult: IGamePlayerResult[] = []
 	
+		//--------------------- Chat ---------------------
+	chat: IGameChatMsg[] = [];
 
 		//--------------------- SETTINGS ---------------------
 	settings: IGameSettings = mockGameDB.getDefaultSettings();
@@ -82,6 +93,7 @@ export class MockGame {
 	simStarted: boolean = false;
 	gameStarted: boolean = false;
 	answerSimulation: mockPlayerAnswerSim[] = []
+	messageSimulation: mockMsgSim[] = []
 
 
 	//====================== EVENTS ======================
@@ -119,6 +131,13 @@ export class MockGame {
 			history
 		}
 		this.sendEvent(gameInfo as IWSGameSendEvent)
+
+		this.log("Sending to new user all chat history");
+		this.sendEvent({
+			...this.getBaseData("message_history"),
+			event: "message_history",
+			messages: this.chat
+		} as IWSGameSendEventMessageHistory)
 
 		this.log("Adding user to player list");
 		this.joinPlayer(mockGameDB.getSelf())
@@ -166,6 +185,13 @@ export class MockGame {
 			round: this.status.round
 		})
 	}
+	onUserMessage(event: IWSGameRCVEventMsg) {
+		this.log("User has sent a message  message: " + event.message);
+		const currentUser: IGamePlayer | undefined = this.players.find((player: IGamePlayer) => player.user.uid == mockDefaultUserUID);
+		if(!currentUser)
+			return;
+		this.newMSG(event.message, currentUser.user);
+	}
 
 	//====================== FUNCTIONS ======================
 		//--------------------- WS ---------------------
@@ -182,6 +208,9 @@ export class MockGame {
 			break;
 		case "answer_submit":
 			this.onUserAnswer(e as IWSGameRCVEventAnswer);
+			break;
+		case "message_send":
+			this.onUserMessage(e as IWSGameRCVEventMsg);
 			break;
 		}
 	}
@@ -258,6 +287,21 @@ export class MockGame {
 		}
 		return res;
 	}
+	newMSG(body: string, sender: IGameUser)
+	{
+		const nMessage: IGameChatMsg = {
+			uid: crypto.randomUUID(),
+			sender,
+			body,
+		}
+		this.chat.push(nMessage);
+		this.log("Sending message from: " + sender.username)
+		this.sendEvent({
+			...this.getBaseData("message_broadcast"),
+			event: "message_broadcast",
+			message: nMessage,
+		} as IWSGameSendEventMessage)
+	}
 
 
 	changeSettings() {
@@ -272,6 +316,7 @@ export class MockGame {
 		//--------------------- Simulate ---------------------
 	simulate(): void  {
 		this.simStarted = true;
+		this.simulateMessages();
 	}
 	simulateGame(): void  {
 		if(this.gameStarted)
@@ -431,6 +476,13 @@ export class MockGame {
 			kind: res.artistFound && res.titleFound ? "bothFound" : (res.artistFound ? "artistFound" : (res.titleFound ? "titleFound" : "incorrect")),
 			answer: !res.artistFound && !res.titleFound ? sim.try : undefined
 		} as IWSGameSendEventRoundAnswerBroadcast)
+	}
+	simulateMessages() {
+		this.messageSimulation.forEach((sim: mockMsgSim) => {
+			setTimeout(() => {
+				this.newMSG(sim.body, this.players[sim.playerNumber].user)
+			}, sim.at * 1000)
+		})
 	}
 	
 		//--------------------- LOGs ---------------------
@@ -740,6 +792,52 @@ export class MockGameJoiningSpeed extends MockGame {
 		this.answerSimulation.push({playerNumber: 8, try: "DJ Abdel", round: 4, at: 11});
 		
 
+	}
+
+	buildChat() {
+		this.chat.push({
+			uid: crypto.randomUUID(),
+			sender: this.players[0].user,
+			body: "Helly everyone"
+		});
+		this.chat.push({
+			uid: crypto.randomUUID(),
+			sender: this.players[1].user,
+			body: "hey !!"
+		});
+		this.chat.push({
+			uid: crypto.randomUUID(),
+			sender: this.players[1].user,
+			body: "Woaaaa I have to  write a long message to test if it displays goods on the screen and I don't look like nothing !!!!"
+		});
+		this.chat.push({
+			uid: crypto.randomUUID(),
+			sender: this.players[0].user,
+			body: "TG"
+		});
+		this.chat.push({
+			uid: crypto.randomUUID(),
+			sender: this.players[1].user,
+			body: "Hey !!! j'essaie d'etre utile moi au moin..."
+		});
+		this.chat.push({
+			uid: crypto.randomUUID(),
+			sender: this.players[2].user,
+			body: "Calma"
+		});
+
+		
+		this.messageSimulation.push({playerNumber: 1, body: "Are you guys ready ?", at: 1});
+
+		this.messageSimulation.push({playerNumber: 2, body: "Yeah", at: 2.5});
+		this.messageSimulation.push({playerNumber: 3, body: "Yeah", at: 3});
+		this.messageSimulation.push({playerNumber: 8, body: "No", at: 4.5});
+		this.messageSimulation.push({playerNumber: 8, body: "You guys suck", at: 10});
+		this.messageSimulation.push({playerNumber: 1, body: "I think I know this one no ?", at: 11});
+		this.messageSimulation.push({playerNumber: 2, body: "Hey !! Igot it", at: 12});
+		this.messageSimulation.push({playerNumber: 0, body: "John you suck", at: 20});
+		this.messageSimulation.push({playerNumber: 9, body: "Those songs sucks", at: 22});
+		this.messageSimulation.push({playerNumber: 8, body: "おれは最高だ", at: 23});
 	}
 
 

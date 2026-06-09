@@ -1,6 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
-import type { IGameChatMsg, IGameData, IGamePlayer, IGamePlayerAnswer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
+import type { IGameChatMsg, IGamePlayer, IGamePlayerAnswer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameChatType, TGameVisibility } from "../types/game";
+import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventMsg, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventMessage, IWSGameSendEventMessageHistory, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 
@@ -13,6 +13,7 @@ export interface IGameInstanceCallbacks {
 	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>
 	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>
 	setResults: React.Dispatch<React.SetStateAction<IGamePlayerResult[]>>
+	setChat: React.Dispatch<React.SetStateAction<IGameChatMsg[]>>
 	setVolume: React.Dispatch<React.SetStateAction<number>>
 	setMuted: React.Dispatch<React.SetStateAction<boolean>>
 	sendMessage: SendMessage;
@@ -62,6 +63,9 @@ export class GameInstance {
 	};
 	rounds: IGameRound[] = [];
 	songs: (HTMLAudioElement | undefined)[] = [];
+
+		//--------------------- Chat ---------------------
+	chat: IGameChatMsg[] = [];
 
 		//--------------------- Settings ---------------------
 	settings?: IGameSettings;
@@ -114,8 +118,11 @@ export class GameInstance {
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
 		this.log("Player: '" + data.player.user.username + "' has joined");
 		if(!this.players.find((player: IGamePlayer) => player.user.uid == data.player.user.uid))
+		{
 			this.players.push(data.player);
-		this.updatePlayers();
+			this.updatePlayers();		
+			this.addMessage(data.player, "joined")
+		}
 	}
 	onPlayerLeft(data: IWSGameSendEventPlayerManage) {
 		const playerIndex: number = this.players.findIndex((player: IGamePlayer) => player.user.uid == data.player.user.uid)
@@ -123,6 +130,7 @@ export class GameInstance {
 			return;
 		const player: IGamePlayer = this.players.splice(playerIndex, 1)[0];
 		this.log("Player: '" + player.user.username + "' has left");
+		this.addMessage(player, "leaved")
 		this.updatePlayers();
 	}
 	onSettingsChanged(data: IWSGameSendEventSettings) {
@@ -204,18 +212,30 @@ export class GameInstance {
 	}
 	onAnswerBroadcast(data: IWSGameSendEventRoundAnswerBroadcast) {
 		this.logRound("Answer broadcast recieved for '" + data.player.username + "'");
-		const res: IGamePlayerResult = this.getResult(data.player);
+		
+		const 	player: IGamePlayer | undefined = this.players.find((fPlayer: IGamePlayer) => fPlayer.user.uid == data.player.uid)
+		const 	res: IGamePlayerResult = this.getResult(data.player);
+		let		changed: boolean = false;
+
 		res.points = 0;
 		if(data.kind == "artistFound" || data.kind == "bothFound")
-		{
-			res.points += 5;
+		{	
+			if(!res.artistFound)
+				changed = true;
 			res.artistFound = true;
 		}
 		if(data.kind == "titleFound" || data.kind == "bothFound")
 		{
-			res.points += 5;
+			if(!res.titleFound)
+				changed = true;
 			res.titleFound = true;
 		}
+		console.log(player?.user.username, player && (data.kind == "incorrect" || !changed));
+		if(player && data.kind != "incorrect" && changed)
+			this.addMessage(player, "found")
+		else if (player && (data.kind == "incorrect" || !changed))
+			this.addMessage(player, "guessed", data.answer)
+
 		this.updateResults();
 	}
 	onRoundEnd(data: IWSGameSendEventRoundEnd) {
@@ -265,7 +285,32 @@ export class GameInstance {
 
 		this.updateAll();
 	}
-	
+
+		//Chat
+	onMessageHistory(data: IWSGameSendEventMessageHistory) {
+		this.log("Message history recieved")
+		this.chat = data.messages;
+		this.chat.forEach((msg: IGameChatMsg) => {
+			msg.type = "message";
+			const senderPLayer: IGamePlayer | undefined = this.players.find(player => player.user.uid == msg.sender.uid);
+			if(senderPLayer)
+				msg.colorID = senderPLayer.colorid;
+		})
+		this.chat.reverse()
+		this.updateChat();
+	}
+	onNewMessage(data: IWSGameSendEventMessage) {
+		this.log("Recieved message from: " + data.message.sender.username)
+		const check = this.chat.find(msg => msg.uid == data.message.uid)
+		if(check)
+			return;
+		data.message.type = "message";
+		const senderPLayer: IGamePlayer | undefined = this.players.find(player => player.user.uid == data.message.sender.uid);
+			if(senderPLayer)
+				data.message.colorID = senderPLayer.colorid;
+		this.chat.unshift(data.message);
+		this.updateChat();
+	}
 
 
 		//Client event
@@ -334,6 +379,7 @@ export class GameInstance {
 		this.updatePlayers();
 		this.updateResults();
 		this.updateVolume();
+		this.updateChat();
 	}
 	updateStatus() {
 		this.status = structuredClone(this.status);
@@ -382,6 +428,10 @@ export class GameInstance {
 	updateResults() {
 		this.roundResult = structuredClone(this.roundResult);
 		this.callbacks.setResults(this.roundResult);
+	}
+	updateChat() {
+		this.chat = structuredClone(this.chat);
+		this.callbacks.setChat(this.chat);
 	}
 	updateVolume() {
 		this.callbacks.setVolume(this.volume);
@@ -435,6 +485,12 @@ export class GameInstance {
 				break;
 			case "round_ended":
 				this.onRoundEnd(event as IWSGameSendEventRoundEnd)
+				break;
+			case "message_history":
+				this.onMessageHistory(event as IWSGameSendEventMessageHistory)
+				break;
+			case "message_broadcast":
+				this.onNewMessage(event as IWSGameSendEventMessage)
 				break;
 		}
 	}
@@ -545,6 +601,26 @@ export class GameInstance {
 		}
 	}
 
+		//--------------------- Messages ---------------------
+	sendChatMessage(msg: string) {
+		this.log("Sending message: " + msg);
+		this.send({
+			...this.getSendBaseData("message_send"),
+			message: msg
+		} as IWSGameRCVEventMsg)
+	}
+	addMessage(user: IGamePlayer, type: TGameChatType, msg?: string)  {
+		const nMessage: IGameChatMsg = {
+			uid: crypto.randomUUID(),
+			sender: user.user,
+			type,
+			colorID: user.colorid,
+			body: msg
+		}
+		this.chat.unshift(nMessage);
+		this.updateChat();
+	}
+
 		//--------------------- Check ---------------------
 	check(): boolean {
 		if(this.uid == "")
@@ -575,97 +651,6 @@ export class GameInstance {
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//====================== PLAYER LISTS ======================
-export const gameOnPlayerJoin = (
-	Game: IGameData,
-	Player: IGamePlayer,
-	setUsers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>,
-) => {
-	if (Game.players.find((local: IGamePlayer) => local.user.uid == Player.user.uid)) return;
-	Game.players.push(Player);
-	Game.players = structuredClone(Game.players);
-	setUsers(Game.players);
-};
-
-export const gameOnPlayerLeave = (
-	Game: IGameData,
-	Player: IGamePlayer,
-	setUsers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>,
-) => {
-	const found: number = Game.players.findIndex(
-		(local: IGamePlayer) => local.user.uid == Player.user.uid,
-	);
-	if (found == -1) return;
-	Game.players.splice(found, 1);
-	Game.players = structuredClone(Game.players);
-	setUsers(Game.players);
-};
-
-export const gameOnPlayerUpdate = (
-	Game: IGameData,
-	Players: IGamePlayer[],
-	setUsers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>,
-) => {
-	Game.players = structuredClone(Players);
-	setUsers(Game.players);
-};
-
-export const gameOnMessageNew = (
-	Game: IGameData,
-	Message: IGameChatMsg,
-	setChat: React.Dispatch<React.SetStateAction<IGameChatMsg[]>>,
-) => {
-	if (Game.chat.find((msg: IGameChatMsg) => msg.messageuid == Message.messageuid)) return;
-	Game.chat.push(Message);
-	Game.chat = structuredClone(Game.chat);
-	setChat(structuredClone(Game.chat).reverse());
-};
-
-export const gameOnMessageUpdate = (
-	Game: IGameData,
-	Message: IGameChatMsg[],
-	setChat: React.Dispatch<React.SetStateAction<IGameChatMsg[]>>,
-) => {
-	Game.chat = structuredClone(Message);
-	setChat(structuredClone(Game.chat).reverse());
-};
-
-export const gameOnSettingsUpdate = (
-	Game: IGameData,
-	Settings: IGameSettings,
-	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>,
-) => {
-	Game.settings = structuredClone(Settings);
-	setSettings(Game.settings);
-};
 
 //--------------------------------------------------
 //                     UTILS

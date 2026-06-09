@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import CGamePaper from "../../components/surfaces/CGamePaper";
 import type { GPageProps } from "../common/GPageBases";
-import type { IGameChatMsg, IGamePlayer } from "../../types/game";
+import type { IGameChatMsg } from "../../types/game";
 import { appTexts } from "../../styles/theme";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
@@ -9,37 +9,31 @@ import SendIcon from "@mui/icons-material/Send";
 import { PGameChatSendStack } from "../../styles/pages/game/PGameChatStyle";
 import { useMemo, useState, type ReactNode } from "react";
 import PGameChatNode from "./PGameChatNode";
-import type { TWSSend } from "../../types/websocket";
+import type { GameInstance } from "../../handlers/gameHandlers";
 
 interface PGameChatProps extends GPageProps {
+	game: React.RefObject<GameInstance | undefined>;
 	chat: IGameChatMsg[];
-	players: IGamePlayer[];
-	sendWSMessage: (dataSent: Omit<TWSSend, "target">) => void;
 }
 
-function PGameChat({ chat, players, sendWSMessage }: PGameChatProps) {
+function PGameChat({game, chat }: PGameChatProps) {
 	//====================== NAME ======================
 	const [messageField, setMessageField] = useState<string>("");
 
 	//====================== GETTERS ======================
 	const chatList = useMemo((): ReactNode[] => {
 		return chat.map((msg: IGameChatMsg) => {
-			const targetUser: IGamePlayer | undefined = players.find((user: IGamePlayer) => {
-				return user.user.uid == msg.useruid;
-			});
+			
 			return (
-				<PGameChatNode message={msg} user={targetUser} key={msg.messageuid}></PGameChatNode>
+				<PGameChatNode message={msg} key={msg.uid}></PGameChatNode>
 			);
 		});
-	}, [chat, players]);
+	}, [chat]);
 
 	//====================== EVENT ======================
 	function handleSendMessage() {
-		if (!messageField || messageField.length == 0) return;
-		sendWSMessage({
-			event: "message-send",
-			message: messageField,
-		});
+		if (!game.current || !messageField || messageField.length == 0 || /^\s+$/g.test(messageField)) return;
+		game.current.sendChatMessage(messageField);
 		setMessageField("");
 	}
 

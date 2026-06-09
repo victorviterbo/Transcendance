@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { type IGameChatMsg, type IGamePlayer } from "../../types/game";
+import { type IGameChatMsg } from "../../types/game";
 import type { GPageProps } from "../common/GPageBases";
 import CText from "../../components/text/CText";
 import { colorFromID } from "../../utils/styles";
@@ -10,12 +10,11 @@ import { memo } from "react";
 
 interface PGameChatNodeProps extends GPageProps {
 	message: IGameChatMsg;
-	user?: IGamePlayer;
 }
 
-function PGameChatNode({ message, user }: PGameChatNodeProps) {
+function PGameChatNode({ message }: PGameChatNodeProps) {
 	//====================== RETURS ======================
-	if (message.type == "message" && message.message) {
+	if (message.type == "message" && message.body) {
 		return (
 			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
@@ -27,13 +26,13 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 				>
 					<span
 						style={{
-							color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
+							color: colorFromID(message.colorID == undefined ? -1 : message.colorID),
 							fontWeight: 700,
 						}}
 					>
-						{message.username}
+						{message.sender.username}
 					</span>
-					: {message.message}
+					: {message.body}
 				</CText>
 			</Box>
 		);
@@ -54,11 +53,11 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 							PLAYER: (
 								<span
 									style={{
-										color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
+										color: colorFromID(message.colorID == undefined ? -1 : message.colorID),
 										fontWeight: 700,
 									}}
 								>
-									{message.username}
+									{message.sender.username}
 								</span>
 							),
 						},
@@ -66,7 +65,7 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 				</CText>
 			</Box>
 		);
-	} else if (message.type == "guessed" && message.message) {
+	} else if (message.type == "guessed") {
 		return (
 			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
@@ -76,21 +75,22 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 					fontWeight={600}
 					size="md"
 					testid={"PGameChatNode-" + message.type}
+					color={message.body ? undefined : appColors.cancel[1]}
 				>
-					{ttrfn("GAME_GUESSED_MESSAGE", {
+					{ttrfn(message.body ? "GAME_GUESSED_MESSAGE" : "GAME_GUESSED_MESSAGE_EMPTY", {
 						PLAYER: (
 							<span
 								style={{
-									color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
+									color: colorFromID(message.colorID == undefined ? -1 : message.colorID),
 									fontWeight: 700,
 								}}
 							>
-								{message.username}
+								{message.sender.username}
 							</span>
 						),
 						GUESS: (
 							<span style={{ color: appColors.cancel[1], fontWeight: 500 }}>
-								{message.message}
+								{message.body}
 							</span>
 						),
 					})}
@@ -112,11 +112,11 @@ function PGameChatNode({ message, user }: PGameChatNodeProps) {
 						PLAYER: (
 							<span
 								style={{
-									color: colorFromID(user == undefined || user.colorid == undefined ? -1 : user.colorid),
+									color: colorFromID(message.colorID == undefined ? -1 : message.colorID),
 									fontWeight: 700,
 								}}
 							>
-								{message.username}
+								{message.sender.username}
 							</span>
 						),
 					})}

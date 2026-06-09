@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGamePlayer, IGamePlayerResult, IGameSettings, IGameTrack, IGameUser, TGamePhase, TGameVisibility } from "./game";
+import type { IGameChatMsg, IGamePlayer, IGamePlayerResult, IGameSettings, IGameTrack, IGameUser, TGamePhase, TGameVisibility } from "./game";
 //import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
@@ -158,6 +158,7 @@ export type IWSGameEventRcvList =
 	| "settings_update" 
 	| "game_start"
 	| "answer_submit"
+	| "message_send"
 
 export type IWSGameEventSndList = 
 	| "player_joined" 
@@ -170,6 +171,8 @@ export type IWSGameEventSndList =
 	| "answer_validation"
 	| "answer_broadcast"
 	| "round_ended"
+	| "message_history"
+	| "message_broadcast"
 
 
 export interface IWSGameEvent {
@@ -191,9 +194,13 @@ export interface IWSGameRCVEventAnswer extends IWSGameRCVEvent {
 	answer: string;
 	time: number
 }
+export interface IWSGameRCVEventMsg extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "message_send">;
+	message: string;
+}
 
 
-	//Send(Client to Server)
+	//Send(Server to Client)
 export interface IWSGameSendEvent extends IWSGameEvent {
 	event: IWSGameEventSndList;
 	uid: string;
@@ -246,4 +253,14 @@ export interface IWSGameSendEventRoundEnd  extends IWSGameSendEvent {
 	track: IGameTrack;
 	leaderboard: IGamePlayer[];
 	results: IGamePlayerResult[];
+}
+
+export interface IWSGameSendEventMessageHistory extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "message_history">;
+	messages: IGameChatMsg[];
+}
+
+export interface IWSGameSendEventMessage extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "message_broadcast">;
+	message: IGameChatMsg;
 }
