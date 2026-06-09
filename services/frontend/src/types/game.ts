@@ -41,12 +41,11 @@ export interface IGameUser {
 //====================== CHAT ======================
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
 export interface IGameChatMsg {
-	useruid: string;
-	username: string;
-	messageuid: string;
-
-	type: TGameChatType;
-	message?: string;
+	uid: string;
+	sender: IGameUser;
+	type?: TGameChatType;
+	body?: string;
+	colorID?: number;
 }
 
 //====================== PLAYER ======================
