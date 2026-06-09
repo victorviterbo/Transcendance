@@ -9,7 +9,7 @@ import PFriendChatNode from "./PFriendChatNode";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import SendIcon from "@mui/icons-material/Send";
 import { appTexts } from "../../styles/theme";
-import type { IWSContextModule, TWSRcv, TWSSend } from "../../types/websocket";
+import type { IWSContextModule, IWSGameSendEvent, TWSRcv, TWSSend } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { fetchFriendMessages } from "../../api/social";
 
@@ -28,7 +28,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	useEffect(() => {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
-				const last: TWSRcv | undefined = wsContext.getLast();
+				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
 				if (last?.target == "friend-chat") {
 					if (last.event == "update_status") {
 						if (!feed || !last.message) return;

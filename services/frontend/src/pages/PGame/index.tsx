@@ -16,9 +16,7 @@ import { useWS } from "../../components/websocket/CWebsocket";
 import CGamePaper from "../../components/surfaces/CGamePaper";
 import CText from "../../components/text/CText";
 import type { IWSGameSendEvent, TWSRcv } from "../../types/websocket";
-import {
-	GameInstance
-} from "../../handlers/gameHandlers";
+import { GameInstance } from "../../handlers/gameHandlers";
 import PGameViews from "./PGameViews";
 import { useParams } from "react-router-dom";
 
@@ -31,9 +29,11 @@ function PGame() {
 
 	//GAME
 	const { gameid } = useParams();
-	
-	const game: React.RefObject<GameInstance | undefined> = useRef<GameInstance | undefined>(undefined);
-	const [ready, setReady] = useState<boolean>(false)
+
+	const game: React.RefObject<GameInstance | undefined> = useRef<GameInstance | undefined>(
+		undefined,
+	);
+	const [ready, setReady] = useState<boolean>(false);
 	const [status, setStatus] = useState<IGameStatus | undefined>();
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 	const [volume, setVolume] = useState<number>(50);
@@ -55,19 +55,16 @@ function PGame() {
 
 	//====================== MANAGEMENT ======================
 	useEffect(() => {
-
-		async function setFalse()
-		{
+		async function setFalse() {
 			setReady(false);
 		}
 
-		if(!gameid || (game.current && game.current.uid == gameid))
-			return;
-		
-		if(game.current) {
-			game.current.destroy()
+		if (!gameid || (game.current && game.current.uid == gameid)) return;
+
+		if (game.current) {
+			game.current.destroy();
 			delete game.current;
-			game.current = undefined
+			game.current = undefined;
 			setFalse();
 		}
 
@@ -83,15 +80,12 @@ function PGame() {
 			setVolume,
 			setMuted,
 			sendMessage: wsContext.sendMessage,
-			answerRef
-		})
-
+			answerRef,
+		});
 	}, [gameid, wsContext, answerRef]);
 
 	useEffect(() => {
-
-		if(!game.current)
-			return;
+		if (!game.current) return;
 		game.current.callbacks = {
 			setReady,
 			setError,
@@ -104,11 +98,9 @@ function PGame() {
 			setVolume,
 			setMuted,
 			sendMessage: wsContext.sendMessage,
-			answerRef
-		}
-
+			answerRef,
+		};
 	}, [setReady, setError, setStatus, setSettings, setPlayers, wsContext, answerRef]);
-
 
 	useEffect(() => {
 		if (!gameid) return;
@@ -120,7 +112,6 @@ function PGame() {
 			}
 		});
 	}, [wsContext, gameid]);
-
 
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------

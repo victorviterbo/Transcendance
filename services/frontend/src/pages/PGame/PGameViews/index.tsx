@@ -13,15 +13,15 @@ import PGameRound from "./PGameRound";
 import type { GameInstance } from "../../../handlers/gameHandlers";
 
 interface PGameViewsProps {
-	game:  React.RefObject<GameInstance | undefined>;
+	game: React.RefObject<GameInstance | undefined>;
 	status: IGameStatus;
 	players: IGamePlayer[];
 	settings: IGameSettings;
 	rounds: IGameRound[];
-	results: IGamePlayerResult[],
-	volume: number,
-	muted: boolean,
-	answerRef: React.RefObject<HTMLDivElement | null>
+	results: IGamePlayerResult[];
+	volume: number;
+	muted: boolean;
+	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 type ECurrentViewType = {
@@ -49,7 +49,8 @@ function PGameViews({
 }: PGameViewsProps) {
 	//====================== STATES ======================
 	const getCurrentView = useCallback((): number => {
-		if (status.phase == "playing_round" || status.phase == "playing_break") return ECurrentView.PLAYING;
+		if (status.phase == "playing_round" || status.phase == "playing_break")
+			return ECurrentView.PLAYING;
 		return ECurrentView.LOBBY;
 	}, [status]);
 
@@ -60,7 +61,7 @@ function PGameViews({
 			setCurrentView(getCurrentView());
 		}
 		changeView();
-	}, [status.phase, setCurrentView, getCurrentView])
+	}, [status.phase, setCurrentView, getCurrentView]);
 
 	//====================== FUNCTIONS ======================
 	const currentTitle: string = useMemo(() => {
@@ -76,8 +77,7 @@ function PGameViews({
 	}, [currentView]);
 
 	//====================== EVENTS ======================
-	if(!game.current)
-		return <></>
+	if (!game.current) return <></>;
 
 	return (
 		<CGamePaper

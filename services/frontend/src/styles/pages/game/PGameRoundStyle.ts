@@ -72,7 +72,7 @@ export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNode
 	let bgColor = appColors.greys[7];
 	if (round.phase == "done") {
 		if (round.artistFound && round.titleFound) bgColor = appColors.primary[0];
-		else if(round.artistFound || round.titleFound) bgColor = appColors.secondary[0];
+		else if (round.artistFound || round.titleFound) bgColor = appColors.secondary[0];
 		else bgColor = appColors.cancel[0];
 	}
 
@@ -90,7 +90,7 @@ export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNode
 			border: round.phase == "playing" ? "solid 2px " + appColors.tertiary[0] : undefined,
 			boxShadow: round.phase == "done" ? "0px 2px 0px 0px white" : undefined,
 
-			transform: "translateY(5px)"
+			transform: "translateY(5px)",
 		},
 	};
 };

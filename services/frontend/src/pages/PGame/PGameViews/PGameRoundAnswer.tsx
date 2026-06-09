@@ -14,7 +14,7 @@ import { ttrf } from "../../../localization/localization";
 interface PGameRoundAnswerProps extends GPageProps {
 	answer: IGamePlayerAnswer;
 	variant: "answer" | "time";
-	settings?: IGameSettings
+	settings?: IGameSettings;
 }
 
 function PGameRoundAnswer({ answer, settings, variant }: PGameRoundAnswerProps) {
@@ -29,7 +29,9 @@ function PGameRoundAnswer({ answer, settings, variant }: PGameRoundAnswerProps) 
 				{answer.message}
 			</CText>
 			<CText size="2xs" sx={style.time}>
-				{answer.time < 0 || (settings && answer.time >= settings.playbackDuration) ? "--" : ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" })}
+				{answer.time < 0 || (settings && answer.time >= settings.playbackDuration)
+					? "--"
+					: ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" })}
 			</CText>
 			<MicExternalOnIcon sx={style.artist} />
 			<AudiotrackIcon sx={style.title} />

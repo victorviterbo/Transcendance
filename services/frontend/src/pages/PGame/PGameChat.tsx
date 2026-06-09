@@ -16,23 +16,26 @@ interface PGameChatProps extends GPageProps {
 	chat: IGameChatMsg[];
 }
 
-function PGameChat({game, chat }: PGameChatProps) {
+function PGameChat({ game, chat }: PGameChatProps) {
 	//====================== NAME ======================
 	const [messageField, setMessageField] = useState<string>("");
 
 	//====================== GETTERS ======================
 	const chatList = useMemo((): ReactNode[] => {
 		return chat.map((msg: IGameChatMsg) => {
-			
-			return (
-				<PGameChatNode message={msg} key={msg.uid}></PGameChatNode>
-			);
+			return <PGameChatNode message={msg} key={msg.uid}></PGameChatNode>;
 		});
 	}, [chat]);
 
 	//====================== EVENT ======================
 	function handleSendMessage() {
-		if (!game.current || !messageField || messageField.length == 0 || /^\s+$/g.test(messageField)) return;
+		if (
+			!game.current ||
+			!messageField ||
+			messageField.length == 0 ||
+			/^\s+$/g.test(messageField)
+		)
+			return;
 		game.current.sendChatMessage(messageField);
 		setMessageField("");
 	}

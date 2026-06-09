@@ -19,7 +19,7 @@ import CCountdownCircular from "../../../components/feedback/loading/CCountdownC
 import { GAME_COUNTDOWNM_TIME_MS } from "../../../constants";
 
 interface PGameLobbyProps {
-	game:  React.RefObject<GameInstance | undefined>;
+	game: React.RefObject<GameInstance | undefined>;
 	status: IGameStatus;
 	settings: IGameSettings;
 	players: IGamePlayer[];
@@ -28,8 +28,6 @@ interface PGameLobbyProps {
 }
 
 function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLobbyProps) {
-
-
 	//====================== MEMO ======================
 	const host: IGamePlayer | undefined = useMemo(() => {
 		const targetUser: IGamePlayer | undefined = players.find(
@@ -39,71 +37,94 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 		return targetUser;
 	}, [players]);
 
-		//Sub comp
+	//Sub comp
 	const centralData = useMemo(() => {
-		if(!game.current)
-			return <></>
+		if (!game.current) return <></>;
 
-		if(status.phase == "count")
-			return <>
-				<CText sx={{mb: "10px"}}>GAME_STARTING_IN</CText>
-				<CCountdownCircular startColor={appColors.primary[0]} endColor={appColors.tertiary[0]} fontSize="xl" size="60px" startTime={status.keyTime} timeMS={GAME_COUNTDOWNM_TIME_MS}></CCountdownCircular>
-			</>
-
-		return <>
-			{!game.current.isHost && (
-				<CText size="lg" align="center" testid="PGameLobby-Waiting">
-					{host
-						? ttrfn("GAME_WAITING_START", {
-								USER: (
-									<span
-										style={{ color: colorFromID(host && host.colorid != undefined ? host.colorid : 0) }}
-									>
-										{host ? host.user.username : ""}
-									</span>
-								),
-							})
-						: "GAME_WAITING_START_NO_HOST"}
-				</CText>
-			)}
-			{game.current.isHost && (
+		if (status.phase == "count")
+			return (
 				<>
-					<CButtonText
-						disabled={status.phase != "waiting"}
-						sx={{ mb: "15px", minWidth: "150px" }}
-						onClick={onOpenSettings}
-					>
-						GAME_EDIT
-					</CButtonText>
-					<CButtonText sx={{ mb: "15px", minWidth: "150px" }}
-						disabled={status.phase != "waiting"} onClick={() => {
-						if(game.current)
-							game.current.start();
-					}}>GAME_START</CButtonText>
+					<CText sx={{ mb: "10px" }}>GAME_STARTING_IN</CText>
+					<CCountdownCircular
+						startColor={appColors.primary[0]}
+						endColor={appColors.tertiary[0]}
+						fontSize="xl"
+						size="60px"
+						startTime={status.keyTime}
+						timeMS={GAME_COUNTDOWNM_TIME_MS}
+					></CCountdownCircular>
 				</>
-			)}
-			<CText align="center" size="sm">
-				{ttrf("GAME_PLAYER_COUNT", {
-					COUNT: ttrn(players.length),
-					MAX: ttrn(game.current.maxPlayers),
-				})}
-			</CText>
-			{status.phase != "waiting" && <CText  sx={{color: appColors.secondary[0]}} align="center" size="sm">
-				GAME_STARTING
-			</CText>}
-		</>
+			);
+
+		return (
+			<>
+				{!game.current.isHost && (
+					<CText size="lg" align="center" testid="PGameLobby-Waiting">
+						{host
+							? ttrfn("GAME_WAITING_START", {
+									USER: (
+										<span
+											style={{
+												color: colorFromID(
+													host && host.colorid != undefined
+														? host.colorid
+														: 0,
+												),
+											}}
+										>
+											{host ? host.user.username : ""}
+										</span>
+									),
+								})
+							: "GAME_WAITING_START_NO_HOST"}
+					</CText>
+				)}
+				{game.current.isHost && (
+					<>
+						<CButtonText
+							disabled={status.phase != "waiting"}
+							sx={{ mb: "15px", minWidth: "150px" }}
+							onClick={onOpenSettings}
+						>
+							GAME_EDIT
+						</CButtonText>
+						<CButtonText
+							sx={{ mb: "15px", minWidth: "150px" }}
+							disabled={status.phase != "waiting"}
+							onClick={() => {
+								if (game.current) game.current.start();
+							}}
+						>
+							GAME_START
+						</CButtonText>
+					</>
+				)}
+				<CText align="center" size="sm">
+					{ttrf("GAME_PLAYER_COUNT", {
+						COUNT: ttrn(players.length),
+						MAX: ttrn(game.current.maxPlayers),
+					})}
+				</CText>
+				{status.phase != "waiting" && (
+					<CText sx={{ color: appColors.secondary[0] }} align="center" size="sm">
+						GAME_STARTING
+					</CText>
+				)}
+			</>
+		);
 	}, [game, host, players, status, onOpenSettings]);
 
 	//====================== COMPONENTS ======================
 	const genreTags: ReactNode[] = useMemo(() => {
-		if(!settings.tags)
-			return [<CText key={"no_tag"} sx={PGameLobbyTagStyle}>
-						GAME_SETTINGS_NOTAG
-					</CText>]
+		if (!settings.tags)
+			return [
+				<CText key={"no_tag"} sx={PGameLobbyTagStyle}>
+					GAME_SETTINGS_NOTAG
+				</CText>,
+			];
 		const out: ReactNode[] = Object.keys(settings.tags)
 			.filter((key: string) => {
-				if(!settings.tags)
-					return false;
+				if (!settings.tags) return false;
 				return settings.tags[key];
 			})
 			.map((key: string) => {
@@ -147,8 +168,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 		);
 	}, []);
 
-	if(!game.current)
-		return <></>;
+	if (!game.current) return <></>;
 
 	//====================== STRUCTURE ======================
 	return (

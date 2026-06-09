@@ -6,39 +6,51 @@ interface CCountdownLinearProps extends Omit<CLinearProgressProps, "min" | "max"
 	startTime: number;
 	timeMS: number;
 	updateStep?: number;
-	inverse? :boolean
+	inverse?: boolean;
 }
 
-function CCountdownLinear({timeMS, startTime, inverse, sx, updateStep = 10, ...other}: CCountdownLinearProps) {
-
+function CCountdownLinear({
+	timeMS,
+	startTime,
+	inverse,
+	sx,
+	updateStep = 10,
+	...other
+}: CCountdownLinearProps) {
 	const [current, setCurrent] = useState<number>(timeMS);
 	const to = useRef<number>(-1);
 
-
 	useEffect(() => {
-		if(to.current >= 0)
-		{
+		if (to.current >= 0) {
 			clearTimeout(to.current);
 			to.current = -1;
 		}
 		function updateCurrent() {
-
 			let result = timeMS - (Date.now() - startTime);
-			if(result < 0)
-				result = 0;
-			setCurrent(inverse ? (timeMS - result) : result)
-			if(result == 0)
-				return;
-			to.current = setTimeout(updateCurrent, updateStep)
+			if (result < 0) result = 0;
+			setCurrent(inverse ? timeMS - result : result);
+			if (result == 0) return;
+			to.current = setTimeout(updateCurrent, updateStep);
 		}
-		to.current = setTimeout(updateCurrent, updateStep)
-	}, [to, startTime, timeMS, updateStep, setCurrent, inverse])
+		to.current = setTimeout(updateCurrent, updateStep);
+	}, [to, startTime, timeMS, updateStep, setCurrent, inverse]);
 
-	return <CLinearProgress sx={[{
-		"& .MuiLinearProgress-bar": {
-			transition: "none"//"stroke-dashoffset " + updateStep + "ms linear 0ms"
-		}
-	}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} min={0} value={current} max={timeMS} {...other}></CLinearProgress>
+	return (
+		<CLinearProgress
+			sx={[
+				{
+					"& .MuiLinearProgress-bar": {
+						transition: "none", //"stroke-dashoffset " + updateStep + "ms linear 0ms"
+					},
+				},
+				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+			]}
+			min={0}
+			value={current}
+			max={timeMS}
+			{...other}
+		></CLinearProgress>
+	);
 }
 
 export default CCountdownLinear;

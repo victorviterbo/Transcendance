@@ -11,11 +11,10 @@ interface CVolumeSilderProps extends GCompProps {
 	volume: number;
 	muted: boolean;
 	onVolumeChanged: (volume: number) => void;
-	onVolumeMuted: (volume: boolean) => void
+	onVolumeMuted: (volume: boolean) => void;
 }
 
-function CVolumeSilder({ muted, volume, onVolumeChanged, onVolumeMuted}: CVolumeSilderProps) {
-
+function CVolumeSilder({ muted, volume, onVolumeChanged, onVolumeMuted }: CVolumeSilderProps) {
 	return (
 		<Stack sx={{ minWidth: "150px", pl: "30px", alignItems: "center" }} direction={"row"}>
 			<CSlider
@@ -32,11 +31,14 @@ function CVolumeSilder({ muted, volume, onVolumeChanged, onVolumeMuted}: CVolume
 					onVolumeChanged(finalValue);
 				}}
 			></CSlider>
-			<Stack direction={"row"} onClick={() => {
+			<Stack
+				direction={"row"}
+				onClick={() => {
 					muted = !muted;
 					onVolumeMuted(muted);
-				}}>
-				{(muted || volume == 0 )&& <VolumeOffIcon sx={{ color: appColors.cancel[0] }} />}
+				}}
+			>
+				{(muted || volume == 0) && <VolumeOffIcon sx={{ color: appColors.cancel[0] }} />}
 				{!muted && volume > 0 && volume <= 25 && <VolumeMuteIcon />}
 				{!muted && volume > 25 && volume <= 75 && <VolumeDownAltIcon />}
 				{!muted && volume > 75 && <VolumeUpIcon />}

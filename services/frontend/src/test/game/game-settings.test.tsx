@@ -193,7 +193,9 @@ describe("Tests for settings view", () => {
 
 		expect(within(options).getByText("GAME_SETTINGS_SCORE_OPTION_SPEED")).toBeInTheDocument();
 		expect(within(options).getByText("GAME_SETTINGS_SCORE_OPTION_NORMAL")).toBeInTheDocument();
-		expect(within(options).getByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON")).toBeInTheDocument();
+		expect(
+			within(options).getByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON"),
+		).toBeInTheDocument();
 
 		const buttonList = within(options).getAllByRole("button");
 		expect(buttonList.length).toEqual(3);

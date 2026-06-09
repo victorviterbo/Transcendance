@@ -36,8 +36,6 @@ export interface IGameUser {
 	uid: string;
 }
 
-
-
 //====================== CHAT ======================
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
 export interface IGameChatMsg {
@@ -77,7 +75,7 @@ export type TScoreOption = "speed" | "normal" | "armageddon";
 
 export interface IGameSettings {
 	tags?: Record<string, boolean>;
-	genres: string[]
+	genres: string[];
 	mode: TScoreOption;
 	trackCount: number;
 	playbackDuration: number;
@@ -87,7 +85,13 @@ export interface IGameSettings {
 }
 
 //====================== STATUS ======================
-export type TGamePhase = "waiting" | "started" | "count" | "playing_round" | "playing_break" | "finish";
+export type TGamePhase =
+	| "waiting"
+	| "started"
+	| "count"
+	| "playing_round"
+	| "playing_break"
+	| "finish";
 export interface IGameStatus {
 	phase: TGamePhase;
 	round: number;
@@ -108,8 +112,6 @@ export interface IGamePlayerAnswer {
 	titleFound: boolean;
 	artistFound: boolean;
 }
-
-
 
 export type TRoundPhase = "not-done" | "playing" | "done";
 export interface IGameRound {
