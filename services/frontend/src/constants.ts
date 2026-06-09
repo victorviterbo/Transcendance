@@ -54,10 +54,9 @@ export const HOUR_MS = 1000 * 60 * 60;
 export const MINUTE_MS = 1000 * 60;
 
 // GAMR
-export const GAME_COUNTDOWNM_TIME_MS = 3000
+export const GAME_COUNTDOWNM_TIME_MS = 3000;
 export const GAME_MAX_ROUND_DISPLAYED = 11;
 export const GAME_ROUND_PASSED_DISPLAYED = 8;
-
 
 // SETTINGS
 export const SETTINGS_NGSONGS_MIN = 5;

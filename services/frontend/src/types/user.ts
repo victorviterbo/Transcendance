@@ -28,7 +28,6 @@ export interface IExtUserInfo {
 	relation: TFriendRelation;
 }
 
-
 //====================== CONVERTION ======================
 export const convGameUserToExtUser = (user: IGameUser, self?: string): IExtUserInfo => {
 	return {
@@ -38,13 +37,13 @@ export const convGameUserToExtUser = (user: IGameUser, self?: string): IExtUserI
 
 		badges: "",
 		relation: self && self == user.uid ? "self" : "not-friends",
-	}
-}
+	};
+};
 export const convExtUserToGameUser = (user: IExtUserInfo, guest: boolean): IGameUser => {
 	return {
 		uid: user.uid,
 		username: user.username,
 		avatar: user.image,
 		guest: guest,
-	}
-}	
+	};
+};

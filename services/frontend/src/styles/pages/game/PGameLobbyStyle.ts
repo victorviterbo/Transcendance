@@ -16,11 +16,11 @@ export const PGameLobbyTagStyle: SxProps<Theme> = (_) => ({
 export const PGameLobbyScoreTypeStyle = (scoreType: TScoreOption): SxProps<Theme> => {
 	let bgColor = appColors.primary[1];
 	if (scoreType == "normal") bgColor = appColors.secondary[0];
-	else if (scoreType == "arma") bgColor = appColors.cancel[0];
+	else if (scoreType == "armageddon") bgColor = appColors.cancel[0];
 
 	let textColor = appColors.text.light;
 	if (scoreType == "normal") textColor = appColors.text.light;
-	else if (scoreType == "arma") textColor = appColors.text.light;
+	else if (scoreType == "armageddon") textColor = appColors.text.light;
 
 	return {
 		px: "15px",

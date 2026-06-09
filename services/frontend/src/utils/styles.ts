@@ -142,18 +142,14 @@ export function colorAlterColor(
 	return colorColorToHex(colorOut);
 }
 
-export function colorGetAtPos(
-	colorStart: string,
-	colorEnd: string,
-	per: number
-): string {
+export function colorGetAtPos(colorStart: string, colorEnd: string, per: number): string {
 	const colorStartObj = colorHexToColor(colorStart);
 	const colorEndObj = colorHexToColor(colorEnd);
 	const colorOut: TColorSimple = {
-		r: Math.trunc(colorStartObj.r + ((colorEndObj.r - colorStartObj.r) * per)),
-		g: Math.trunc(colorStartObj.g + ((colorEndObj.g - colorStartObj.g) * per)),
-		b: Math.trunc(colorStartObj.b + ((colorEndObj.b - colorStartObj.b) * per)),
-	}
+		r: Math.trunc(colorStartObj.r + (colorEndObj.r - colorStartObj.r) * per),
+		g: Math.trunc(colorStartObj.g + (colorEndObj.g - colorStartObj.g) * per),
+		b: Math.trunc(colorStartObj.b + (colorEndObj.b - colorStartObj.b) * per),
+	};
 	return colorColorToHex(colorOut);
 }
 

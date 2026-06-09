@@ -21,7 +21,6 @@ import {
 import { friendMessageHandler } from "./handlers/social/socialChat";
 import { socketConnHandler } from "./handlers/ws/websocket";
 
-
 export const handlers = [
 	LoginHandler,
 	RegisterHandler,

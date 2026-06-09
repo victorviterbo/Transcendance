@@ -1,27 +1,53 @@
 import type { SendMessage } from "react-use-websocket";
-import type { IGameChatMsg, IGamePlayer, IGamePlayerAnswer, IGamePlayerResult, IGameRound, IGameSettings, IGameStatus, IGameUser, TGameChatType, TGameVisibility } from "../types/game";
-import type { IWSGameEventRcvList, IWSGameRCVEvent, IWSGameRCVEventAnswer, IWSGameRCVEventMsg, IWSGameRCVEventSettings, IWSGameSendEvent, IWSGameSendEventGameInfo, IWSGameSendEventMessage, IWSGameSendEventMessageHistory, IWSGameSendEventPlayerManage, IWSGameSendEventRoundAnswer, IWSGameSendEventRoundAnswerBroadcast, IWSGameSendEventRoundEnd, IWSGameSendEventRoundStart, IWSGameSendEventSettings, TWSRoundInfo } from "../types/websocket";
+import type {
+	IGameChatMsg,
+	IGamePlayer,
+	IGamePlayerAnswer,
+	IGamePlayerResult,
+	IGameRound,
+	IGameSettings,
+	IGameStatus,
+	IGameUser,
+	TGameChatType,
+	TGameVisibility,
+} from "../types/game";
+import type {
+	IWSGameEventRcvList,
+	IWSGameRCVEvent,
+	IWSGameRCVEventAnswer,
+	IWSGameRCVEventMsg,
+	IWSGameRCVEventSettings,
+	IWSGameSendEvent,
+	IWSGameSendEventGameInfo,
+	IWSGameSendEventMessage,
+	IWSGameSendEventMessageHistory,
+	IWSGameSendEventPlayerManage,
+	IWSGameSendEventRoundAnswer,
+	IWSGameSendEventRoundAnswerBroadcast,
+	IWSGameSendEventRoundEnd,
+	IWSGameSendEventRoundStart,
+	IWSGameSendEventSettings,
+	TWSRoundInfo,
+} from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
-
 
 export interface IGameInstanceCallbacks {
 	setReady: React.Dispatch<React.SetStateAction<boolean>>;
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>;
 	setStatus: React.Dispatch<React.SetStateAction<IGameStatus | undefined>>;
-	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>
-	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>
-	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>
-	setResults: React.Dispatch<React.SetStateAction<IGamePlayerResult[]>>
-	setChat: React.Dispatch<React.SetStateAction<IGameChatMsg[]>>
-	setVolume: React.Dispatch<React.SetStateAction<number>>
-	setMuted: React.Dispatch<React.SetStateAction<boolean>>
+	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>;
+	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>;
+	setPlayers: React.Dispatch<React.SetStateAction<IGamePlayer[]>>;
+	setResults: React.Dispatch<React.SetStateAction<IGamePlayerResult[]>>;
+	setChat: React.Dispatch<React.SetStateAction<IGameChatMsg[]>>;
+	setVolume: React.Dispatch<React.SetStateAction<number>>;
+	setMuted: React.Dispatch<React.SetStateAction<boolean>>;
 	sendMessage: SendMessage;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export class GameInstance {
-
 	//====================== CONSTRUCTOR ======================
 	constructor(uid: string, callbacks: IGameInstanceCallbacks) {
 		this.uid = uid;
@@ -35,19 +61,17 @@ export class GameInstance {
 
 		//Volume
 		const volumeStorage: string | null = localStorage.getItem("default_volume");
-		if(volumeStorage)
-			this.volume = parseInt(volumeStorage)
+		if (volumeStorage) this.volume = parseInt(volumeStorage);
 		const mutedStorage: string | null = localStorage.getItem("default_mute");
-		if(mutedStorage)
-			this.muted = mutedStorage == "true"
+		if (mutedStorage) this.muted = mutedStorage == "true";
 	}
 	destroy() {
 		this.uid = "";
 		this.log("Destroying game instance");
 	}
-	
+
 	//====================== DATA ======================
-		//--------------------- Info ---------------------
+	//--------------------- Info ---------------------
 	uid: string;
 	name: string = "N/A";
 	host?: IGameUser;
@@ -55,7 +79,7 @@ export class GameInstance {
 	visibility: TGameVisibility = "public";
 	maxPlayers: number = 0;
 
-		//--------------------- Status ---------------------
+	//--------------------- Status ---------------------
 	status: IGameStatus = {
 		phase: "waiting",
 		round: 0,
@@ -64,29 +88,28 @@ export class GameInstance {
 	rounds: IGameRound[] = [];
 	songs: (HTMLAudioElement | undefined)[] = [];
 
-		//--------------------- Chat ---------------------
+	//--------------------- Chat ---------------------
 	chat: IGameChatMsg[] = [];
 
-		//--------------------- Settings ---------------------
+	//--------------------- Settings ---------------------
 	settings?: IGameSettings;
 
-		//--------------------- PLayers ---------------------
+	//--------------------- PLayers ---------------------
 	players: IGamePlayer[] = [];
-	roundResult: IGamePlayerResult[] = []
+	roundResult: IGamePlayerResult[] = [];
 
-		//--------------------- Callbacks ---------------------
+	//--------------------- Callbacks ---------------------
 	callbacks: IGameInstanceCallbacks;
-	
-		//--------------------- Other ---------------------
-	self?: IGameUser ;
+
+	//--------------------- Other ---------------------
+	self?: IGameUser;
 	lastColorId: number = 0;
 	gameLink: string;
 	volume = 50;
 	muted = false;
 
-
 	//====================== EVENTS ======================
-		//Server events
+	//Server events
 	onGameJoined(data: IWSGameSendEventGameInfo) {
 		this.log("Game joined");
 		this.log("Parsing data");
@@ -94,10 +117,9 @@ export class GameInstance {
 		this.host = data.game.owner;
 		this.isHost = data.game.owner.uid == data.self.uid;
 		this.self = data.self;
-		this.maxPlayers= data.game.maxPlayers
+		this.maxPlayers = data.game.maxPlayers;
 		this.visibility = data.game.visibility;
 
-		
 		this.status = {
 			phase: data.game.status,
 			round: data.game.round,
@@ -109,7 +131,7 @@ export class GameInstance {
 		this.checkRounds();
 		data.history.forEach((round: TWSRoundInfo) => {
 			this.applyWSRound(round);
-		})
+		});
 
 		this.updateAll();
 		this.callbacks.setReady(true);
@@ -117,20 +139,20 @@ export class GameInstance {
 	}
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
 		this.log("Player: '" + data.player.user.username + "' has joined");
-		if(!this.players.find((player: IGamePlayer) => player.user.uid == data.player.user.uid))
-		{
+		if (!this.players.find((player: IGamePlayer) => player.user.uid == data.player.user.uid)) {
 			this.players.push(data.player);
-			this.updatePlayers();		
-			this.addMessage(data.player, "joined")
+			this.updatePlayers();
+			this.addMessage(data.player, "joined");
 		}
 	}
 	onPlayerLeft(data: IWSGameSendEventPlayerManage) {
-		const playerIndex: number = this.players.findIndex((player: IGamePlayer) => player.user.uid == data.player.user.uid)
-		if(!playerIndex)
-			return;
+		const playerIndex: number = this.players.findIndex(
+			(player: IGamePlayer) => player.user.uid == data.player.user.uid,
+		);
+		if (!playerIndex) return;
 		const player: IGamePlayer = this.players.splice(playerIndex, 1)[0];
 		this.log("Player: '" + player.user.username + "' has left");
-		this.addMessage(player, "leaved")
+		this.addMessage(player, "leaved");
 		this.updatePlayers();
 	}
 	onSettingsChanged(data: IWSGameSendEventSettings) {
@@ -138,8 +160,7 @@ export class GameInstance {
 		this.settings = data.settings;
 		this.updateSettings();
 	}
-	onGameStart(data: IWSGameSendEventSettings)
-	{
+	onGameStart(data: IWSGameSendEventSettings) {
 		this.log("Game started");
 		this.settings = data.settings;
 		this.updateSettings();
@@ -147,43 +168,40 @@ export class GameInstance {
 		this.status.phase = "count";
 		this.updateStatus();
 	}
-	onPreviewRecieve(data: IWSGameSendEventRoundStart)
-	{
+	onPreviewRecieve(data: IWSGameSendEventRoundStart) {
 		this.logRound("Preview recieved");
 		this.checkRounds();
 		this.setRound(data.preview, data.round - 1);
 		this.updateRounds();
 	}
-	onRoundStart(data: IWSGameSendEventRoundStart)
-	{
+	onRoundStart(data: IWSGameSendEventRoundStart) {
 		this.status.round = data.round - 1;
 		this.logRound("Starting round");
 		this.status.keyTime = Date.now();
 		this.status.phase = "playing_round";
-		this.setRound(data.preview, this.status.round , true);
+		this.setRound(data.preview, this.status.round, true);
 		this.rounds[this.status.round].phase = "playing";
-		const song: HTMLAudioElement | undefined =  this.songs[this.status.round];
-		if(song)
-		{
-			song.volume =  this.muted ? 0 : (this.volume / 100);
+		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
+		if (song) {
+			song.volume = this.muted ? 0 : this.volume / 100;
 			song.play();
 		}
-		this.roundResult = []
+		this.roundResult = [];
 		this.updateRounds();
 		this.updateResults();
 		this.updateStatus();
 		setTimeout(() => {
 			this.focusInput();
-		}, 50)
+		}, 50);
 	}
-	onAnswerValidation(data: IWSGameSendEventRoundAnswer)
-	{
+	onAnswerValidation(data: IWSGameSendEventRoundAnswer) {
 		this.logRound("Answer validation recieved for " + data.time.toString());
-		const answer: IGamePlayerAnswer | undefined = this.getRound().answers.find((answer: IGamePlayerAnswer) => {
-			return !answer.validated && answer.time == data.time;
-		})
-		if(!answer)	
-		{
+		const answer: IGamePlayerAnswer | undefined = this.getRound().answers.find(
+			(answer: IGamePlayerAnswer) => {
+				return !answer.validated && answer.time == data.time;
+			},
+		);
+		if (!answer) {
 			this.warnRound("Failed to fecth  " + data.time.toString());
 			return;
 		}
@@ -191,50 +209,44 @@ export class GameInstance {
 		answer.artistFound = data.artistFound;
 		answer.validated = true;
 
-		if(!this.getRound().titleFound && data.titleFound)
+		if (!this.getRound().titleFound && data.titleFound)
 			this.getRound().titleFoundAt = data.time;
-		if(!this.getRound().artistFound && data.artistFound)
+		if (!this.getRound().artistFound && data.artistFound)
 			this.getRound().artistFoundAt = data.time;
 
 		this.getRound().titleFound = data.titleFound;
 		this.getRound().artistFound = data.artistFound;
 		this.getRound().time = data.time;
-		if(data.track)
-			this.getRound().track = data.track;
-		
-		this.getRound().points = 0
-		if(data.titleFound)
-			this.getRound().points += 5;
-		if(data.artistFound)
-			this.getRound().points += 5;
+		if (data.track) this.getRound().track = data.track;
+
+		this.getRound().points = 0;
+		if (data.titleFound) this.getRound().points += 5;
+		if (data.artistFound) this.getRound().points += 5;
 
 		this.updateRounds();
 	}
 	onAnswerBroadcast(data: IWSGameSendEventRoundAnswerBroadcast) {
 		this.logRound("Answer broadcast recieved for '" + data.player.username + "'");
-		
-		const 	player: IGamePlayer | undefined = this.players.find((fPlayer: IGamePlayer) => fPlayer.user.uid == data.player.uid)
-		const 	res: IGamePlayerResult = this.getResult(data.player);
-		let		changed: boolean = false;
+
+		const player: IGamePlayer | undefined = this.players.find(
+			(fPlayer: IGamePlayer) => fPlayer.user.uid == data.player.uid,
+		);
+		const res: IGamePlayerResult = this.getResult(data.player);
+		let changed: boolean = false;
 
 		res.points = 0;
-		if(data.kind == "artistFound" || data.kind == "bothFound")
-		{	
-			if(!res.artistFound)
-				changed = true;
+		if (data.kind == "artistFound" || data.kind == "bothFound") {
+			if (!res.artistFound) changed = true;
 			res.artistFound = true;
 		}
-		if(data.kind == "titleFound" || data.kind == "bothFound")
-		{
-			if(!res.titleFound)
-				changed = true;
+		if (data.kind == "titleFound" || data.kind == "bothFound") {
+			if (!res.titleFound) changed = true;
 			res.titleFound = true;
 		}
 		console.log(player?.user.username, player && (data.kind == "incorrect" || !changed));
-		if(player && data.kind != "incorrect" && changed)
-			this.addMessage(player, "found")
+		if (player && data.kind != "incorrect" && changed) this.addMessage(player, "found");
 		else if (player && (data.kind == "incorrect" || !changed))
-			this.addMessage(player, "guessed", data.answer)
+			this.addMessage(player, "guessed", data.answer);
 
 		this.updateResults();
 	}
@@ -244,38 +256,42 @@ export class GameInstance {
 		this.getRound().track = data.track;
 		this.getRound().phase = "done";
 
-		const selfRes: IGamePlayerResult | undefined = data.results.find((res: IGamePlayerResult) => {
-			return res.user.uid == data.self.uid;
-		})
-		if(selfRes)
-		{
+		const selfRes: IGamePlayerResult | undefined = data.results.find(
+			(res: IGamePlayerResult) => {
+				return res.user.uid == data.self.uid;
+			},
+		);
+		if (selfRes) {
 			this.getRound().artistFound = selfRes.artistFound;
 			this.getRound().titleFound = selfRes.titleFound;
 			this.getRound().points = selfRes.points;
 			this.getRound().time = selfRes.time;
-			this.getRound().bonusPoints = selfRes.points - (this.getRound().artistFound ? 5 : 0) - (this.getRound().titleFound ? 5 : 0);
+			this.getRound().bonusPoints =
+				selfRes.points -
+				(this.getRound().artistFound ? 5 : 0) -
+				(this.getRound().titleFound ? 5 : 0);
 		}
 
 		//RESULT
 		this.roundResult = data.results;
 		this.roundResult.sort((res1: IGamePlayerResult, res2: IGamePlayerResult) => {
 			return res1.ranking - res2.ranking;
-		})
+		});
 
 		//PLAYERS
 		const prevLeaderboard: IGamePlayer[] = this.players;
 		this.players = [];
 		data.leaderboard.forEach((player: IGamePlayer) => {
-			const old: IGamePlayer | undefined = prevLeaderboard.find((value: IGamePlayer) => value.user.uid = player.user.uid);
-			if(old)
-			{
+			const old: IGamePlayer | undefined = prevLeaderboard.find(
+				(value: IGamePlayer) => (value.user.uid = player.user.uid),
+			);
+			if (old) {
 				player.host = old.host;
 				player.self = old.self;
 				player.colorid = old.colorid;
 			}
 			this.players.push(player);
-		})
-
+		});
 
 		//STATUS
 		this.status.keyTime = Date.now();
@@ -286,92 +302,84 @@ export class GameInstance {
 		this.updateAll();
 	}
 
-		//Chat
+	//Chat
 	onMessageHistory(data: IWSGameSendEventMessageHistory) {
-		this.log("Message history recieved")
+		this.log("Message history recieved");
 		this.chat = data.messages;
 		this.chat.forEach((msg: IGameChatMsg) => {
 			msg.type = "message";
-			const senderPLayer: IGamePlayer | undefined = this.players.find(player => player.user.uid == msg.sender.uid);
-			if(senderPLayer)
-				msg.colorID = senderPLayer.colorid;
-		})
-		this.chat.reverse()
+			const senderPLayer: IGamePlayer | undefined = this.players.find(
+				(player) => player.user.uid == msg.sender.uid,
+			);
+			if (senderPLayer) msg.colorID = senderPLayer.colorid;
+		});
+		this.chat.reverse();
 		this.updateChat();
 	}
 	onNewMessage(data: IWSGameSendEventMessage) {
-		this.log("Recieved message from: " + data.message.sender.username)
-		const check = this.chat.find(msg => msg.uid == data.message.uid)
-		if(check)
-			return;
+		this.log("Recieved message from: " + data.message.sender.username);
+		const check = this.chat.find((msg) => msg.uid == data.message.uid);
+		if (check) return;
 		data.message.type = "message";
-		const senderPLayer: IGamePlayer | undefined = this.players.find(player => player.user.uid == data.message.sender.uid);
-			if(senderPLayer)
-				data.message.colorID = senderPLayer.colorid;
+		const senderPLayer: IGamePlayer | undefined = this.players.find(
+			(player) => player.user.uid == data.message.sender.uid,
+		);
+		if (senderPLayer) data.message.colorID = senderPLayer.colorid;
 		this.chat.unshift(data.message);
 		this.updateChat();
 	}
 
-
-		//Client event
+	//Client event
 	join() {
 		this.log("Joining game...");
 		this.send({
-			...this.getSendBaseData("game_join")
-		})
+			...this.getSendBaseData("game_join"),
+		});
 	}
 	settingsChanged(nSettings: IGameSettings) {
-		if(!this.host)
-			return;
+		if (!this.host) return;
 		nSettings.genres = [];
-		if(!nSettings.tags)
-			return;
+		if (!nSettings.tags) return;
 		Object.keys(nSettings.tags).forEach((tag: string) => {
-			if(!nSettings.tags)
-				return;
-			if(nSettings.tags[tag])
-				nSettings.genres.push(tag);
-		})
+			if (!nSettings.tags) return;
+			if (nSettings.tags[tag]) nSettings.genres.push(tag);
+		});
 		this.log("Updating settings...");
 		this.send({
 			...this.getSendBaseData("settings_update"),
 			settings: nSettings,
-		} as IWSGameRCVEventSettings)
+		} as IWSGameRCVEventSettings);
 	}
 	start() {
-		if(!this.host)
-			return;
+		if (!this.host) return;
 		this.log("Starting game...");
 		this.send({
-			...this.getSendBaseData("game_start")
-		})
+			...this.getSendBaseData("game_start"),
+		});
 		this.status.phase = "started";
 		this.updateStatus();
 	}
 	submitAnswer(answer: string) {
-		this.logRound("Sending answer: '" + answer + "'")
-		const time = (Date.now() - this.status.keyTime) / 1000
+		this.logRound("Sending answer: '" + answer + "'");
+		const time = (Date.now() - this.status.keyTime) / 1000;
 		this.rounds[this.status.round].answers.push({
 			validated: false,
 			message: answer,
 			time,
 			titleFound: false,
-			artistFound: false
-		})
+			artistFound: false,
+		});
 		this.updateRounds();
 		this.send({
 			...this.getSendBaseData("answer_submit"),
 			event: "answer_submit",
 			answer: answer,
-			time
-		} as IWSGameRCVEventAnswer)
+			time,
+		} as IWSGameRCVEventAnswer);
 	}
 
-	
-
-
 	//====================== FUNCTIONS ======================
-		//--------------------- Update ---------------------
+	//--------------------- Update ---------------------
 	updateAll() {
 		this.updateStatus();
 		this.updateSettings();
@@ -386,22 +394,21 @@ export class GameInstance {
 		this.callbacks.setStatus(this.status);
 	}
 	updateSettings() {
-		if(!this.settings)
-		{
+		if (!this.settings) {
 			this.callbacks.setSettings(undefined);
 			return;
 		}
-		if(this.settings.genres.length > 0)
-		{
+		if (this.settings.genres.length > 0) {
 			this.settings.tags = {};
 			MUSIC_TAGS.forEach((tag: string) => {
-				if(!this.settings || !this.settings.tags)
-					return;
-				this.settings.tags[tag] = this.settings.genres.find((tagSearch: string) => tagSearch == tag) ? true : false;
-			})
-		}
-		else
-			this.settings.tags = undefined;
+				if (!this.settings || !this.settings.tags) return;
+				this.settings.tags[tag] = this.settings.genres.find(
+					(tagSearch: string) => tagSearch == tag,
+				)
+					? true
+					: false;
+			});
+		} else this.settings.tags = undefined;
 		this.settings = structuredClone(this.settings);
 		this.callbacks.setSettings(this.settings);
 	}
@@ -411,17 +418,16 @@ export class GameInstance {
 	}
 	updatePlayers() {
 		this.players.forEach((player: IGamePlayer) => {
-			if(player.colorid == undefined)
-			{
-				player.colorid = this.lastColorId % 10
+			if (player.colorid == undefined) {
+				player.colorid = this.lastColorId % 10;
 				this.lastColorId++;
 			}
-			player.host = player.user.uid == this.host?.uid
-			player.self = player.user.uid == this.self?.uid
-		})
-		this.players.sort((player1: IGamePlayer, player2 : IGamePlayer) => {
+			player.host = player.user.uid == this.host?.uid;
+			player.self = player.user.uid == this.self?.uid;
+		});
+		this.players.sort((player1: IGamePlayer, player2: IGamePlayer) => {
 			return player2.points - player1.points;
-		})
+		});
 		this.players = structuredClone(this.players);
 		this.callbacks.setPlayers(this.players);
 	}
@@ -438,10 +444,9 @@ export class GameInstance {
 		this.callbacks.setMuted(this.muted);
 	}
 
-		//--------------------- WS ---------------------
+	//--------------------- WS ---------------------
 	send(data: IWSGameRCVEvent) {
-		if(!this.check)
-			return;
+		if (!this.check) return;
 		this.callbacks.sendMessage(JSON.stringify(data));
 	}
 	getSendBaseData(event: IWSGameEventRcvList): IWSGameRCVEvent {
@@ -449,77 +454,69 @@ export class GameInstance {
 			target: "game",
 			event,
 			uid: this.uid,
-		}
+		};
 	}
 	rcv(event: IWSGameSendEvent) {
-		if(event.target != "game")
-			return;
-		switch(event.event)
-		{
+		if (event.target != "game") return;
+		switch (event.event) {
 			case "player_joined":
-				this.onPlayerJoined(event as IWSGameSendEventPlayerManage)
+				this.onPlayerJoined(event as IWSGameSendEventPlayerManage);
 				break;
 			case "player_left":
-				this.onPlayerLeft(event as IWSGameSendEventPlayerManage)
+				this.onPlayerLeft(event as IWSGameSendEventPlayerManage);
 				break;
 			case "game_info":
-				this.onGameJoined(event as IWSGameSendEventGameInfo)
+				this.onGameJoined(event as IWSGameSendEventGameInfo);
 				break;
 			case "settings_updated":
-				this.onSettingsChanged(event as IWSGameSendEventSettings)
+				this.onSettingsChanged(event as IWSGameSendEventSettings);
 				break;
 			case "game_started":
-				this.onGameStart(event as IWSGameSendEventSettings)
+				this.onGameStart(event as IWSGameSendEventSettings);
 				break;
 			case "round_preview":
-				this.onPreviewRecieve(event as IWSGameSendEventRoundStart)
+				this.onPreviewRecieve(event as IWSGameSendEventRoundStart);
 				break;
 			case "round_started":
-				this.onRoundStart(event as IWSGameSendEventRoundStart)
+				this.onRoundStart(event as IWSGameSendEventRoundStart);
 				break;
 			case "answer_validation":
-				this.onAnswerValidation(event as IWSGameSendEventRoundAnswer)
+				this.onAnswerValidation(event as IWSGameSendEventRoundAnswer);
 				break;
 			case "answer_broadcast":
-				this.onAnswerBroadcast(event as IWSGameSendEventRoundAnswerBroadcast)
+				this.onAnswerBroadcast(event as IWSGameSendEventRoundAnswerBroadcast);
 				break;
 			case "round_ended":
-				this.onRoundEnd(event as IWSGameSendEventRoundEnd)
+				this.onRoundEnd(event as IWSGameSendEventRoundEnd);
 				break;
 			case "message_history":
-				this.onMessageHistory(event as IWSGameSendEventMessageHistory)
+				this.onMessageHistory(event as IWSGameSendEventMessageHistory);
 				break;
 			case "message_broadcast":
-				this.onNewMessage(event as IWSGameSendEventMessage)
+				this.onNewMessage(event as IWSGameSendEventMessage);
 				break;
 		}
 	}
 
-		//--------------------- Round Management ---------------------
+	//--------------------- Round Management ---------------------
 	setRound(preview: string, target: number, showAlert: boolean = false): void {
 		this.checkRounds();
-		if(!this.rounds[target].track.preview)
-		{
-			if(showAlert)
-				this.warnRound("Preview recieved not on time.")
+		if (!this.rounds[target].track.preview) {
+			if (showAlert) this.warnRound("Preview recieved not on time.");
 			this.rounds[target].track.preview = preview;
 			this.songs[target] = undefined;
 		}
-		if(!this.songs[target])
-		{
-			if(showAlert)
-				this.warnRound("Song is not cached.")
+		if (!this.songs[target]) {
+			if (showAlert) this.warnRound("Song is not cached.");
 			this.songs[target] = new Audio(preview);
 		}
 	}
-	getRound(index?: number)
-	{
+	getRound(index?: number) {
 		return this.rounds[index == undefined ? this.status.round : index];
 	}
 	applyWSRound(round: TWSRoundInfo) {
 		const target: IGameRound | undefined = this.rounds[round.round - 1];
-		if(!target)
-			return;
+		if (!target) return;
 		target.track = round.track;
 		target.titleFound = round.titleFound;
 		target.artistFound = round.artistFound;
@@ -527,11 +524,9 @@ export class GameInstance {
 		target.points = round.points;
 	}
 	checkRounds(): void {
-		if(this.settings && this.rounds.length != this.settings.trackCount)
-			this.rounds = [];
-		if(this.rounds.length > 0 || !this.settings)
-			return;
-		for(let i = 0; i < this.settings.trackCount; i++) 
+		if (this.settings && this.rounds.length != this.settings.trackCount) this.rounds = [];
+		if (this.rounds.length > 0 || !this.settings) return;
+		for (let i = 0; i < this.settings.trackCount; i++)
 			this.rounds.push({
 				track: {},
 				phase: "not-done",
@@ -540,14 +535,15 @@ export class GameInstance {
 				points: 0,
 				time: -1,
 				answers: [],
-			})
+			});
 	}
-	getResult(user: IGameUser): IGamePlayerResult{
-		let res: IGamePlayerResult | undefined = this.roundResult.find((result: IGamePlayerResult) => {
-			return result.user.uid == user.uid;
-		})
-		if(!res)
-		{
+	getResult(user: IGameUser): IGamePlayerResult {
+		let res: IGamePlayerResult | undefined = this.roundResult.find(
+			(result: IGamePlayerResult) => {
+				return result.user.uid == user.uid;
+			},
+		);
+		if (!res) {
 			res = {
 				user,
 				titleFound: false,
@@ -555,102 +551,114 @@ export class GameInstance {
 				time: -1,
 				ranking: 0,
 				points: 0,
-			}
+			};
 			this.roundResult.push(res);
 		}
 		return res;
 	}
-	
-		//--------------------- Other ---------------------
-	changeVolume(value: number)
-	{
+
+	//--------------------- Other ---------------------
+	changeVolume(value: number) {
 		this.volume = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
-			if(!el)
-				return;
-			el.volume = this.muted ? 0 : (this.volume / 100);
+			if (!el) return;
+			el.volume = this.muted ? 0 : this.volume / 100;
 		});
 		localStorage.setItem("default_volume", this.volume.toString());
 		this.updateVolume();
 	}
-	mute(value: boolean)
-	{
+	mute(value: boolean) {
 		this.muted = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
-			if(!el)
-				return;
-			el.volume = this.muted ? 0 : (this.volume / 100);
+			if (!el) return;
+			el.volume = this.muted ? 0 : this.volume / 100;
 		});
 		localStorage.setItem("default_mute", this.muted.toString());
 		this.updateVolume();
 	}
-	stopAll()
-	{
+	stopAll() {
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
-			if(!el)
-				return;
+			if (!el) return;
 			el.pause();
 		});
 	}
 	focusInput() {
-		if(this.callbacks.answerRef.current)
-		{
-			const el: HTMLCollectionOf<HTMLInputElement> = this.callbacks.answerRef.current.getElementsByTagName("input");
-			if(el.length > 0)
-				el[0].focus();
+		if (this.callbacks.answerRef.current) {
+			const el: HTMLCollectionOf<HTMLInputElement> =
+				this.callbacks.answerRef.current.getElementsByTagName("input");
+			if (el.length > 0) el[0].focus();
 		}
 	}
 
-		//--------------------- Messages ---------------------
+	//--------------------- Messages ---------------------
 	sendChatMessage(msg: string) {
 		this.log("Sending message: " + msg);
 		this.send({
 			...this.getSendBaseData("message_send"),
-			message: msg
-		} as IWSGameRCVEventMsg)
+			message: msg,
+		} as IWSGameRCVEventMsg);
 	}
-	addMessage(user: IGamePlayer, type: TGameChatType, msg?: string)  {
+	addMessage(user: IGamePlayer, type: TGameChatType, msg?: string) {
 		const nMessage: IGameChatMsg = {
 			uid: crypto.randomUUID(),
 			sender: user.user,
 			type,
 			colorID: user.colorid,
-			body: msg
-		}
+			body: msg,
+		};
 		this.chat.unshift(nMessage);
 		this.updateChat();
 	}
 
-		//--------------------- Check ---------------------
+	//--------------------- Check ---------------------
 	check(): boolean {
-		if(this.uid == "")
-			return false;
+		if (this.uid == "") return false;
 		return true;
 	}
 
-		//--------------------- LOGs ---------------------
-	log(MSG: string, ...Styling: string[]){
-		console.log("[%cGAME%c]: " + MSG, "font-weight: 900; color: #2083d4", "font-weight: 400; color: white", ...Styling);
-	}	
-	logRound(MSG: string, ...Styling: string[]){
-		this.log("%c(Round: %c" + (this.status.round + 1) + "%c / %c" + (!this.settings ? "?" : this.settings.trackCount) + "%c)%c - " + MSG, 
-			"font-weight: 900", 
-			"font-weight: 900; color: #0fbedd", 
-			"font-weight: 900; color: white", 
-			"font-weight: 900; color: #728bdd", 
-			"font-weight: 900; color: white",  
-			"font-weight: 400", 
-			...Styling
-		)
+	//--------------------- LOGs ---------------------
+	log(MSG: string, ...Styling: string[]) {
+		console.log(
+			"[%cGAME%c]: " + MSG,
+			"font-weight: 900; color: #2083d4",
+			"font-weight: 400; color: white",
+			...Styling,
+		);
 	}
-	warn(MSG: string, ...Styling: string[]){
-		this.log("%c" + MSG + "%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400", ...Styling);
-	}	
-	warnRound(MSG: string, ...Styling: string[]){
-		this.logRound("%c" + MSG + "%c", "color: #ffbb00; font-weight:900", "color: white; font-weight:400", ...Styling);
+	logRound(MSG: string, ...Styling: string[]) {
+		this.log(
+			"%c(Round: %c" +
+				(this.status.round + 1) +
+				"%c / %c" +
+				(!this.settings ? "?" : this.settings.trackCount) +
+				"%c)%c - " +
+				MSG,
+			"font-weight: 900",
+			"font-weight: 900; color: #0fbedd",
+			"font-weight: 900; color: white",
+			"font-weight: 900; color: #728bdd",
+			"font-weight: 900; color: white",
+			"font-weight: 400",
+			...Styling,
+		);
+	}
+	warn(MSG: string, ...Styling: string[]) {
+		this.log(
+			"%c" + MSG + "%c",
+			"color: #ffbb00; font-weight:900",
+			"color: white; font-weight:400",
+			...Styling,
+		);
+	}
+	warnRound(MSG: string, ...Styling: string[]) {
+		this.logRound(
+			"%c" + MSG + "%c",
+			"color: #ffbb00; font-weight:900",
+			"color: white; font-weight:400",
+			...Styling,
+		);
 	}
 }
-
 
 //--------------------------------------------------
 //                     UTILS

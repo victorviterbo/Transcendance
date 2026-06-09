@@ -2,7 +2,16 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGameChatMsg, IGamePlayer, IGamePlayerResult, IGameSettings, IGameTrack, IGameUser, TGamePhase, TGameVisibility } from "./game";
+import type {
+	IGameChatMsg,
+	IGamePlayer,
+	IGamePlayerResult,
+	IGameSettings,
+	IGameTrack,
+	IGameUser,
+	TGamePhase,
+	TGameVisibility,
+} from "./game";
 //import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
@@ -30,7 +39,6 @@ export interface IWSContextModule {
 	sendMessage: SendMessage;
 }
 
-
 //SHARED EVENT
 export type TWSRcv =
 	| {
@@ -48,7 +56,6 @@ export type TWSRcv =
 			event: "new-incoming";
 			user: IExtUserInfo;
 	  }
-
 
 	//OLD
 	// | {
@@ -125,46 +132,43 @@ export type TWSSend =
 			target: Extract<TWSModuleName, "test_counter_event">;
 	  };
 
-
 //--------------------------------------------------
 //                  GAME DATA
 //--------------------------------------------------
-	  //--------------------- DATA ---------------------
+//--------------------- DATA ---------------------
 export interface TWSGameInfo {
 	uid: string;
-    name: string;
-    owner: IGameUser,
-    status: TGamePhase,
-    round: number,
-    visibility: TGameVisibility,
+	name: string;
+	owner: IGameUser;
+	status: TGamePhase;
+	round: number;
+	visibility: TGameVisibility;
 	maxPlayers: number;
 }
 
 export interface TWSRoundInfo {
 	track: IGameTrack;
-    titleFound: boolean;
-    artistFound: boolean,
-    time: number,
-    ranking: number,
-    points: number,
+	titleFound: boolean;
+	artistFound: boolean;
+	time: number;
+	ranking: number;
+	points: number;
 	round: number;
 }
 
-
-
-	  //--------------------- EVENTS ---------------------
-export type IWSGameEventRcvList = 
-	| "game_join" 
-	| "settings_update" 
+//--------------------- EVENTS ---------------------
+export type IWSGameEventRcvList =
+	| "game_join"
+	| "settings_update"
 	| "game_start"
 	| "answer_submit"
-	| "message_send"
+	| "message_send";
 
-export type IWSGameEventSndList = 
-	| "player_joined" 
-	| "player_left" 
-	| "game_info" 
-	| "settings_updated" 
+export type IWSGameEventSndList =
+	| "player_joined"
+	| "player_left"
+	| "game_info"
+	| "settings_updated"
 	| "game_started"
 	| "round_preview"
 	| "round_started"
@@ -172,15 +176,14 @@ export type IWSGameEventSndList =
 	| "answer_broadcast"
 	| "round_ended"
 	| "message_history"
-	| "message_broadcast"
-
+	| "message_broadcast";
 
 export interface IWSGameEvent {
 	target: Extract<TWSModuleName, "game">;
 	event: IWSGameEventRcvList | IWSGameEventSndList;
 }
 
-	//RCV (Client to Server)
+//RCV (Client to Server)
 export interface IWSGameRCVEvent extends IWSGameEvent {
 	event: IWSGameEventRcvList;
 	uid: string;
@@ -192,15 +195,14 @@ export interface IWSGameRCVEventSettings extends IWSGameRCVEvent {
 export interface IWSGameRCVEventAnswer extends IWSGameRCVEvent {
 	event: Extract<IWSGameEventRcvList, "answer_submit">;
 	answer: string;
-	time: number
+	time: number;
 }
 export interface IWSGameRCVEventMsg extends IWSGameRCVEvent {
 	event: Extract<IWSGameEventRcvList, "message_send">;
 	message: string;
 }
 
-
-	//Send(Server to Client)
+//Send(Server to Client)
 export interface IWSGameSendEvent extends IWSGameEvent {
 	event: IWSGameEventSndList;
 	uid: string;
@@ -240,7 +242,6 @@ export interface IWSGameSendEventRoundAnswer extends IWSGameSendEvent {
 	track?: IGameTrack;
 }
 
-
 export interface IWSGameSendEventRoundAnswerBroadcast extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "answer_broadcast">;
 	player: IGameUser;
@@ -248,7 +249,7 @@ export interface IWSGameSendEventRoundAnswerBroadcast extends IWSGameSendEvent {
 	answer?: string;
 }
 
-export interface IWSGameSendEventRoundEnd  extends IWSGameSendEvent {
+export interface IWSGameSendEventRoundEnd extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "round_ended">;
 	track: IGameTrack;
 	leaderboard: IGamePlayer[];

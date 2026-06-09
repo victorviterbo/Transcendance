@@ -5,8 +5,13 @@ export interface CCircularProgressProps extends Omit<CircularProgressProps, "col
 	color?: string;
 }
 
-function CCircularProgress({sx, color, ...other }: CCircularProgressProps) {
-	return <CircularProgress  sx={[{color: color}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} {...other}></CircularProgress>;
+function CCircularProgress({ sx, color, ...other }: CCircularProgressProps) {
+	return (
+		<CircularProgress
+			sx={[{ color: color }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			{...other}
+		></CircularProgress>
+	);
 }
 
 export default CCircularProgress;

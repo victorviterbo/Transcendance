@@ -41,7 +41,9 @@ interface PGameSettingsProps extends GPageProps {
 
 function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) {
 	//====================== STATS ======================
-	const [tags, setTags] = useState<Record<string, boolean>>(!settings.tags ? {} : structuredClone(settings.tags));
+	const [tags, setTags] = useState<Record<string, boolean>>(
+		!settings.tags ? {} : structuredClone(settings.tags),
+	);
 	const [searchFilter, setSearchFilter] = useState<string>("");
 
 	const [nbSongs, setNBSongs] = useState<number>(settings.trackCount);
@@ -66,21 +68,11 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 			breakDuration: breakTimer,
 			reveal: seeOthers,
 			fuzzy: fuzzy,
-			mode: speedMode
+			mode: speedMode,
 		};
-		if(!game.current)
-			return;
-		game.current.settingsChanged(nSettings);	
-	}, [
-		tags,
-		nbSongs,
-		timer,
-		breakTimer,
-		seeOthers,
-		fuzzy,
-		speedMode,
-		game,
-	]);
+		if (!game.current) return;
+		game.current.settingsChanged(nSettings);
+	}, [tags, nbSongs, timer, breakTimer, seeOthers, fuzzy, speedMode, game]);
 
 	const handleOnReturn = () => {
 		handleSaveChanges();
@@ -139,7 +131,7 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 					step={step}
 					value={currentValue}
 					marks
-					sx={{width: "60%"}}
+					sx={{ width: "60%" }}
 					onChange={(_: Event, value: number | number[]) => {
 						let finalValue: number = Array.isArray(value) ? value[0] : value;
 						if (finalValue < min) finalValue = min;
