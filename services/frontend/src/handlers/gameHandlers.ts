@@ -64,6 +64,14 @@ export class GameInstance {
 		if (volumeStorage) this.volume = parseInt(volumeStorage);
 		const mutedStorage: string | null = localStorage.getItem("default_mute");
 		if (mutedStorage) this.muted = mutedStorage == "true";
+
+		navigator.mediaSession.setActionHandler('play', function() {});
+		navigator.mediaSession.setActionHandler('pause', function() {});
+		navigator.mediaSession.setActionHandler('seekbackward', function() {});
+		navigator.mediaSession.setActionHandler('seekforward', function() {});
+		navigator.mediaSession.setActionHandler('previoustrack', function() {});
+		navigator.mediaSession.setActionHandler('nexttrack', function() {});
+		navigator.mediaSession.setActionHandler('stop', function() {});
 	}
 	destroy() {
 		this.uid = "";
@@ -243,7 +251,6 @@ export class GameInstance {
 			if (!res.titleFound) changed = true;
 			res.titleFound = true;
 		}
-		console.log(player?.user.username, player && (data.kind == "incorrect" || !changed));
 		if (player && data.kind != "incorrect" && changed) this.addMessage(player, "found");
 		else if (player && (data.kind == "incorrect" || !changed))
 			this.addMessage(player, "guessed", data.answer);
