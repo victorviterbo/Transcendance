@@ -176,7 +176,8 @@ export type IWSGameEventSndList =
 	| "answer_broadcast"
 	| "round_ended"
 	| "message_history"
-	| "message_broadcast";
+	| "message_broadcast"
+	| "game_ended";
 
 export interface IWSGameEvent {
 	target: Extract<TWSModuleName, "game">;
@@ -264,4 +265,10 @@ export interface IWSGameSendEventMessageHistory extends IWSGameSendEvent {
 export interface IWSGameSendEventMessage extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "message_broadcast">;
 	message: IGameChatMsg;
+}
+
+export interface IWSGameSendEventGameEnd extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "game_ended">;
+	leaderboard: IGamePlayer[];
+	history: TWSRoundInfo[];
 }

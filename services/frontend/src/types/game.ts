@@ -124,6 +124,7 @@ export interface IGameRound {
 	points: number;
 	bonusPoints?: number;
 	time: number;
+	ranking: number;
 	answers: IGamePlayerAnswer[];
 }
 

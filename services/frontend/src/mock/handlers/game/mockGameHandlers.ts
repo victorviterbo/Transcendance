@@ -17,6 +17,7 @@ import type {
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
+	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
 	IWSGameSendEventMessage,
 	IWSGameSendEventMessageHistory,
@@ -77,10 +78,12 @@ export class MockGame {
 		else this.host = mockGameDB.getDefaultHost();
 		this.buildPlayers();
 		this.buildChat();
+		this.buildGame();
 		this.simulate();
 	}
 	buildPlayers() {}
 	buildChat() {}
+	buildGame() {}
 
 	//====================== DATA ======================
 	//--------------------- INFOS ---------------------
@@ -214,6 +217,7 @@ export class MockGame {
 		if (!currentUser) return;
 		this.newMSG(event.message, currentUser.user);
 	}
+	
 
 	//====================== FUNCTIONS ======================
 	//--------------------- WS ---------------------
@@ -355,6 +359,7 @@ export class MockGame {
 				points: 0,
 				time: -1,
 				answers: [],
+				ranking: 0
 			});
 		}
 
@@ -438,6 +443,16 @@ export class MockGame {
 			results: this.roundResult,
 		} as IWSGameSendEventRoundEnd);
 
+		if(this.status.round >= this.settings.trackCount -1)
+		{
+			setTimeout(
+				() => {
+					this.simulateGameEnd();
+				},
+				(this.settings.breakDuration ) * 1000,
+			);
+			return;
+		}
 		setTimeout(
 			() => {
 				this.status.round++;
@@ -513,6 +528,26 @@ export class MockGame {
 			}, sim.at * 1000);
 		});
 	}
+	simulateGameEnd() {
+		const history: TWSRoundInfo[] = [];
+		for (let i = 0; i < this.rounds.length; i++) {
+			history.push({
+				track: this.rounds[i].track,
+				titleFound: this.rounds[i].titleFound,
+				artistFound: this.rounds[i].artistFound,
+				time: this.rounds[i].time,
+				ranking: this.rounds[i].ranking,
+				points: this.rounds[i].points,
+				round: i + 1,
+			});
+		}
+		this.sendEvent({
+			...this.getBaseData("game_ended"),
+			event: "game_ended",
+			history,
+			leaderboard: this.players,
+		} as IWSGameSendEventGameEnd)
+	}
 
 	//--------------------- LOGs ---------------------
 	log(MSG: string, ...Styling: string[]) {
@@ -578,49 +613,7 @@ export class MockGameHosting extends MockGame {
 				this.joinPlayer(
 					convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				);
-				//const lastID = this.currentTarget;
 				this.currentTarget++;
-
-				// if (lastID == 4) {
-				// 	const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
-				// 		GameID,
-				// 		mockSocialDB.users[lastID].uid,
-				// 	);
-				// 	if (localPlayer)
-				// 		setTimeout(
-				// 			() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hey !!!"),
-				// 			1000,
-				// 		);
-				// }
-				// if (lastID == 5) {
-				// 	const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
-				// 		GameID,
-				// 		mockSocialDB.users[lastID].uid,
-				// 	);
-				// 	if (localPlayer)
-				// 		setTimeout(
-				// 			() =>
-				// 				mockPlayerSendMessage(GameID, localPlayer, "message", "Hello everyone"),
-				// 			1500,
-				// 		);
-				// }
-				// if (lastID == 9) {
-				// 	const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
-				// 		GameID,
-				// 		mockSocialDB.users[lastID].uid,
-				// 	);
-				// 	if (localPlayer)
-				// 		setTimeout(
-				// 			() =>
-				// 				mockPlayerSendMessage(
-				// 					GameID,
-				// 					localPlayer,
-				// 					"message",
-				// 					"Is everyone ready ?",
-				// 				),
-				// 			750,
-				// 		);
-				// }
 			}, time);
 		}
 	}
@@ -670,47 +663,6 @@ export class MockGameJoining extends MockGame {
 						this.leavePlayer(mockSocialDB.users[lastID].uid);
 					}, 6500);
 				}
-
-				// if (lastID == 4) {
-				// 	const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
-				// 		GameID,
-				// 		mockSocialDB.users[lastID].uid,
-				// 	);
-				// 	if (localPlayer)
-				// 		setTimeout(
-				// 			() => mockPlayerSendMessage(GameID, localPlayer, "message", "Hey !!!"),
-				// 			1000,
-				// 		);
-				// }
-				// if (lastID == 5) {
-				// 	const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
-				// 		GameID,
-				// 		mockSocialDB.users[lastID].uid,
-				// 	);
-				// 	if (localPlayer)
-				// 		setTimeout(
-				// 			() =>
-				// 				mockPlayerSendMessage(GameID, localPlayer, "message", "Hello everyone"),
-				// 			1500,
-				// 		);
-				// }
-				// if (lastID == 9) {
-				// 	const localPlayer: IGamePlayer | undefined = mockGetGamePlayer(
-				// 		GameID,
-				// 		mockSocialDB.users[lastID].uid,
-				// 	);
-				// 	if (localPlayer)
-				// 		setTimeout(
-				// 			() =>
-				// 				mockPlayerSendMessage(
-				// 					GameID,
-				// 					localPlayer,
-				// 					"message",
-				// 					"Is everyone ready ?",
-				// 				),
-				// 			750,
-				// 		);
-				// }
 			}, time);
 		}
 
@@ -910,5 +862,113 @@ export class MockGameJoiningSpeed extends MockGame {
 		setTimeout(() => {
 			this.simulateGame();
 		}, 1000);
+	}
+}
+
+//--------------------------------------------------
+//                     Ended
+//--------------------------------------------------
+
+export class MockGameJoiningEnded extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's ended room";
+		this.log("Game (Ended): '" + uid + "' created");
+
+		
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 4; this.currentTarget++) {
+			this.players.push({
+				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	buildChat() {
+		
+	}
+
+	buildGame(): void {
+		
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(0),
+			phase: "done",
+			titleFound: true,
+			artistFound: true,
+			points: 15,
+			time: 6.58,
+			ranking: 2,
+			answers: []
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(1),
+			phase: "done",
+			titleFound: false,
+			artistFound: true,
+			points: 5,
+			time: 15.25,
+			ranking: 4,
+			answers: []
+		})
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(2),
+			phase: "done",
+			titleFound: false,
+			artistFound: false,
+			points: 0,
+			time: 20,
+			ranking: 5,
+			answers: []
+		})
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(3),
+			phase: "done",
+			titleFound: true,
+			artistFound: true,
+			points: 15,
+			time: 19.4,
+			ranking: 10,
+			answers: []
+		})
+		
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(4),
+			phase: "done",
+			titleFound: true,
+			artistFound: false,
+			points: 0,
+			time: 5.25,
+			ranking: 5,
+			answers: []
+		})
+
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {
+		if (this.simStarted) return;
+		super.simulate();
+
+		setTimeout(() => {
+			this.players[4].points = 50;
+			this.simulateGameEnd();
+		}, 1000)
 	}
 }
