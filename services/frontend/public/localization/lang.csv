@@ -277,6 +277,7 @@ GAME_SETTINGS_VISIBILITY,Game visibility,,,Title for game visibility
 GAME_SETTINGS_BACK,Return to lobby,,,Button to return into the lobby
 GAME_NO_GENRE,No genre selected,,,Shown when no genre has been selected
 GAME_PLAYING_TITLE,Playing,,,Title of the view when the music is playing
+GAME_PLAYING_ENDED,Game ended,,,Title of the view when the game has ended
 GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
 GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
 GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title

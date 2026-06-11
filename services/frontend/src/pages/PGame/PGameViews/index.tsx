@@ -11,6 +11,7 @@ import PGameLobby from "./PGameLobby";
 import PGameSettings from "./PGameSettings";
 import PGameRound from "./PGameRound";
 import type { GameInstance } from "../../../handlers/gameHandlers";
+import PGameEnded from "./PGameEnded";
 
 interface PGameViewsProps {
 	game: React.RefObject<GameInstance | undefined>;
@@ -28,12 +29,14 @@ type ECurrentViewType = {
 	LOBBY: number;
 	SETTINGS: number;
 	PLAYING: number;
+	ENDED: number;
 };
 
 const ECurrentView: ECurrentViewType = {
 	LOBBY: 0,
 	SETTINGS: 1,
 	PLAYING: 2,
+	ENDED: 3,
 };
 
 function PGameViews({
@@ -51,6 +54,8 @@ function PGameViews({
 	const getCurrentView = useCallback((): number => {
 		if (status.phase == "playing_round" || status.phase == "playing_break")
 			return ECurrentView.PLAYING;
+		if (status.phase == "finish")
+			return ECurrentView.ENDED;
 		return ECurrentView.LOBBY;
 	}, [status]);
 
@@ -72,6 +77,8 @@ function PGameViews({
 				return "GAME_SETTINGS_TITLE";
 			case ECurrentView.PLAYING:
 				return "GAME_PLAYING_TITLE";
+			case ECurrentView.ENDED:
+				return "GAME_PLAYING_ENDED";
 		}
 		return "GAME_LOBBY_TITLE";
 	}, [currentView]);
@@ -123,6 +130,12 @@ function PGameViews({
 					muted={muted}
 					results={results}
 					answerRef={answerRef}
+				/>
+			)}
+			{currentView == ECurrentView.ENDED && (
+				<PGameEnded
+					rounds={rounds}
+					settings={settings}
 				/>
 			)}
 		</CGamePaper>

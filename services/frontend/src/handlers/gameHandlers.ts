@@ -18,6 +18,7 @@ import type {
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
+	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
 	IWSGameSendEventMessage,
 	IWSGameSendEventMessageHistory,
@@ -308,6 +309,15 @@ export class GameInstance {
 
 		this.updateAll();
 	}
+	onGameEnded(data: IWSGameSendEventGameEnd) {
+		this.checkRounds();
+		data.history.forEach((round: TWSRoundInfo) => {
+			this.applyWSRound(round);
+		});
+		this.players = data.leaderboard;
+		this.status.phase = "finish";
+		this.updateAll();
+	}
 
 	//Chat
 	onMessageHistory(data: IWSGameSendEventMessageHistory) {
@@ -502,6 +512,9 @@ export class GameInstance {
 			case "message_broadcast":
 				this.onNewMessage(event as IWSGameSendEventMessage);
 				break;
+			case "game_ended":
+				this.onGameEnded(event as IWSGameSendEventGameEnd);
+				break;
 		}
 	}
 
@@ -529,6 +542,7 @@ export class GameInstance {
 		target.artistFound = round.artistFound;
 		target.time = round.time;
 		target.points = round.points;
+		target.ranking = round.ranking;
 	}
 	checkRounds(): void {
 		if (this.settings && this.rounds.length != this.settings.trackCount) this.rounds = [];
@@ -542,6 +556,7 @@ export class GameInstance {
 				points: 0,
 				time: -1,
 				answers: [],
+				ranking: 0,
 			});
 	}
 	getResult(user: IGameUser): IGamePlayerResult {

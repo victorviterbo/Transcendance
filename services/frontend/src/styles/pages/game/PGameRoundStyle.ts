@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors, appSharedStyle } from "../../theme";
-import type { IGameRound } from "../../../types/game";
+import type { IGamePlayer, IGameRound, IGameSettings } from "../../../types/game";
 import type { IGamePlayerAnswer } from "../../../types/game";
 import { colorGetBackground } from "../../../utils/styles";
 
@@ -242,5 +242,81 @@ export const PGameRoundRevealStyle = (): IGameRoundRevealStyle => {
 			borderRadius: appSharedStyle.gameRadius,
 			//border: "solid 2px " + appColors.quinary[2]
 		},
+	};
+};
+
+//--------------------------------------------------
+//                       ENDED
+//--------------------------------------------------
+export interface IGameEndedRoundStyle {
+	main: SxProps<Theme>;
+	dataStack:  SxProps<Theme>;
+	rankingColor: string;
+	rankingText: SxProps<Theme>;
+	timeColor: string;
+	timeText: SxProps<Theme>;
+	artist:  SxProps<Theme>;
+	title: SxProps<Theme>;
+}
+
+export const PGameEndedRoundStyle = (
+	round: IGameRound,
+	settings: IGameSettings
+): IGameEndedRoundStyle => {
+	let bgColors = [appColors.greys[8], appColors.greys[5]];
+	if (round.artistFound !== round.titleFound) bgColors = [appColors.tertiary[1], appColors.secondary[1]];
+	if (round.artistFound && round.titleFound) bgColors = [appColors.primary[1], appColors.tertiary[1]];
+
+	const rankingColor: string = settings && round.ranking > 3 ? appColors.primary[0] : appColors.secondary[0];
+	const timeColor: string = round.time < 0 || (settings && round.time >= settings.playbackDuration) ? appColors.greys[4] : rankingColor
+
+	return {
+		main: {
+			py: "0px",
+			pl: "10px",
+
+			position: "relative",
+
+			flexShrink: 0,
+
+			overflow: "hidden",
+			alignItems: "stretch",
+
+			background: colorGetBackground(bgColors, undefined, "linear", 305),
+
+			borderRadius: appSharedStyle.gameRadius,
+			//border: "solid 2px " + appColors.quinary[2]
+			//boxShadow: "0px 4px 0px 0px " + appColors.greys[0],
+			mt: "10px",
+		},
+		dataStack: {
+			alignItems: "center",
+			backgroundColor: appColors.greys[5],
+			boxShadow: "-1px 0px 5px 0px " + appColors.greys[9],
+		},
+		rankingColor,
+		rankingText: {
+			mr: "15px",
+			ml: "2px",
+			my:0,
+			width: "20px",
+		},
+		timeColor,
+		timeText: {
+			mr: "15px",
+			ml: "2px",
+			my:0,
+			width: "50px",
+
+			color: round.time < 0 || (settings && round.time >= settings.playbackDuration) ? timeColor : undefined
+		},
+		artist: {
+			mr: "5px",
+			color: !round.artistFound ? appColors.greys[4] : rankingColor,
+		} ,
+		title: {
+			mr: "10px",
+			color: !round.titleFound ? appColors.greys[4] : rankingColor,
+		}
 	};
 };
