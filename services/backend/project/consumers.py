@@ -213,6 +213,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'trackArtist': event.get('trackArtist'),
             'tracktitle': event.get('tracktitle'),
             'correct': event.get('is_correct', False),
+            'time': event.get('time'),
         })
 
     async def game_answer_incorrect(self, event: dict) -> None:
@@ -242,6 +243,18 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'round_started',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'preview': event.get('preview'),
+            'playbackDuration': event.get('playbackDuration'),
+            'round': event.get('round'),
+        })
+
+    async def game_round_preview(self, event: dict) -> None:
+        """Broadcast the preview track before the round starts."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_preview',
             'uid': event.get('uid'),
             'self': self.profile_data,
             'preview': event.get('preview'),

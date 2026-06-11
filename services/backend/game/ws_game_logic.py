@@ -1,5 +1,6 @@
 """WebSocket handlers for game module."""
 
+from datetime import datetime
 import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING
@@ -22,6 +23,8 @@ from .ws_game_db_helpers import (
     _compute_round_stats,
     _get_game,
     _get_game_data,
+    _get_game_ended_data,
+    _get_game_info_data,
     _get_game_settings_data,
     _get_num_curr_players,
     _get_player_data,
@@ -34,8 +37,11 @@ from .ws_game_db_helpers import (
     _validate_answer,
 )
 from .ws_game_send_helpers import (
+    _send_game_ended,
+    _send_game_info,
     _send_game_stats,
     _send_new_player,
+    _send_round_preview,
     _send_round_stats,
     _send_start_signal,
     _send_track,
@@ -85,25 +91,26 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         await _setup_game_assets(consumer.current_game)
         serialized_game = await _get_game_data(consumer)
         serialized_settings = await _get_game_settings_data(consumer)
-        #TODO: Send "round_preview" before the round starts so clients can cache the track
         await _send_start_signal(consumer, serialized_game, serialized_settings)
-        buffer_time = countdown_time + answer_buffer_time
-        await asyncio.sleep(buffer_time)
+        await asyncio.sleep(answer_buffer_time)
         for round in range(1, consumer.current_game.trackCount + 1):
             ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].clear()
             await _set_current_round(consumer.current_game, round)
             await _init_round_stats(consumer.current_game)
-            buffer_time = answer_buffer_time
             serialized_game = await _get_game_data(consumer)
             serialized_track_full, serialized_track_blind = (
                 await _get_track_reveal_data(consumer, content)
             )
+            #Preview sent for buffering, countdown starts - Fabien
+            await _send_round_preview(consumer, serialized_game, serialized_track_blind)
+            await asyncio.sleep(countdown_time)
+            #Track sent to start the round (should we keep both? or just send the track in advance?) - Fabien
             await _send_track(consumer, serialized_game, serialized_track_blind)
             with suppress(TimeoutError):
                 await asyncio.wait_for(
                     ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].wait(),
                     timeout=consumer.current_game.playbackDuration
-                        + buffer_time
+                        + answer_buffer_time
                 )
             round_stats = await _compute_round_stats(consumer.current_game)
             serialized_game = await _get_game_data(consumer)
@@ -111,9 +118,14 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                                     round_stats,
                                     serialized_game,
                                     serialized_track_full)
-            await asyncio.sleep(consumer.current_game.breakDuration)
+            if round < consumer.current_game.trackCount:
+                await asyncio.sleep(consumer.current_game.breakDuration - countdown_time)
+            else:
+                await asyncio.sleep(consumer.current_game.breakDuration)
         game_stats = await _compute_game_stats(consumer.current_game)
         await _send_game_stats(consumer, game_stats, serialized_game)
+        serialized_game_ended = await _get_game_ended_data(consumer)
+        await _send_game_ended(consumer, serialized_game_ended)
     except serializers.ValidationError as e:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
@@ -191,12 +203,13 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
                             'message': 'Failed to join game'})
         return
     await consumer.add_to_layer(consumer.game_group_name)
-    await add_gameroom_participant(consumer.current_game, consumer.profile) #ensure room participant exist before sending history
+    await add_gameroom_participant(consumer.current_game, consumer.profile)
     serialized_game = await _get_game_data(consumer)
     serialized_player = await _get_player_data(consumer)
-    #TODO: add game_info event to the player who just joined
+    serialized_game_info = await _get_game_info_data(consumer)
+    await send_join_chatroom(consumer)
     await _send_new_player(consumer, serialized_game, serialized_player)
-    await send_join_chatroom(consumer) # send chat history to the joining player
+    await _send_game_info(consumer, serialized_game_info)
     return
 
 
@@ -237,7 +250,8 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
                 'answer': content.get('answer'),
                 'trackArtist': track_data['artist'] if artist_correct else None,
                 'tracktitle': track_data['title'] if title_correct else None,
-                'is_correct': True
+                'is_correct': True,
+                'time': content.get('answerTime')
             })
         else:
             # else send only to player who send the correct response
@@ -249,6 +263,7 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
                 'tracktitle': track_data['title'] if title_correct else None,
                 'answer': content.get('answer'),
                 'is_correct': True,
+                'time': content.get('answerTime')
             })
     else:
         if consumer.current_game.reveal:
