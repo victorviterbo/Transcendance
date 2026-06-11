@@ -130,6 +130,8 @@ async def handle_direct_message(consumer, content: dict) -> None:
 
     if recipient_profile.is_online:
         recipient_chat_open = await is_chat_open(recipient_profile.id, consumer.profile.id)
+        logger.info('ws.direct_message.chat_open_check recipient_id=%s sender_id=%s is_open=%s',
+                recipient_profile.id, consumer.profile.id, recipient_chat_open)
         if recipient_chat_open:
             await mark_message_seen(message.uid)
             message.delivered = True
@@ -137,7 +139,6 @@ async def handle_direct_message(consumer, content: dict) -> None:
         elif not message.delivered:
             await mark_message_delivered(message.uid)
             message.delivered = True
-
     logger.info('ws.direct_message.sent sender_id=%s recipient_profile_id=%s message_uid=%s',
                 getattr(getattr(consumer, 'profile', None), 'id', None),
                 recipient_profile.id,
@@ -187,32 +188,16 @@ async def handle_chat_state_change(consumer, content: dict) -> None:
         consumer.open_chat_recipient.add(recipient_profile.id)
     else:
         consumer.open_chat_recipient.discard(recipient_profile.id)
-
+        
 @database_sync_to_async
 def mark_message_delivered(message_uid) -> None:
-    """Mark direct message as delivered in the database."""
-    message = Message.objects.filter(uid=message_uid).first()
-    if not message:
-        return
-    if not message.delivered:
-        message.delivered = True
-        message.save(update_fields=['delivered'])
+    """Mark direct message as delivered only."""
+    Message.objects.filter(uid=message_uid, delivered=False).update(delivered=True)
 
 @database_sync_to_async
 def mark_message_seen(message_uid) -> None:
-    """Mark message as seen in the database."""
-    message = Message.objects.filter(uid=message_uid).first()
-    if not message:
-        return
-    update_fields = []
-    if not message.delivered:
-        message.delivered = True
-        update_fields.append('delivered')
-    if not message.seen:
-        message.seen = True
-        update_fields.append('seen')
-    if update_fields:
-        message.save(update_fields=update_fields)
+    """Mark message as both delivered and seen in one query."""
+    Message.objects.filter(uid=message_uid).update(delivered=True, seen=True)
 
 @database_sync_to_async
 def is_chat_open(sender_id: int, recipient_profile_id: int) -> bool:
@@ -223,8 +208,9 @@ def is_chat_open(sender_id: int, recipient_profile_id: int) -> bool:
 def set_chat_open(sender_id: int, recipient_profile_id: int, is_open: bool) -> None:
     """Set or clear the direct chat open state in cache."""
     key = f'chat_open:{sender_id}:{recipient_profile_id}'
+    logger.info('ws.set_chat_open key=%s is_open=%s', key, is_open)
     if is_open:
-        cache.set(key, True, timeout=180)
+        cache.set(key, True)
     else:
         cache.delete(key)
 

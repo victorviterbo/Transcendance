@@ -33,16 +33,21 @@ def accepted_friendship(profile_a: Profile, profile_b: Profile) -> bool:
         to_user__in=[user_a, user_b],
     ).exists()
 
-def create_direct_room(profile_a: Profile, profile_b: Profile) -> tuple[Room, bool]:
-    """Create direct room for two profiles."""
+def create_direct_room(profile_a: Profile, profile_b: Profile) -> Room:
+    """Return the direct room shared by two profiles, creating it if necessary."""
     key = direct_key(profile_a, profile_b)
-    return Room.objects.get_or_create(
+    
+    room, created = Room.objects.get_or_create(
         direct_key=key,
         defaults={
             'name': key,
             'is_direct': True,
         },
     )
+    if created:
+        room.participants.add(profile_a, profile_b)
+
+    return room
 
 def resolve_recipient_user(recipient_uid: str | None) -> SiteUser | None:
     """Resolve a recipient user from either SiteUser.uid or Profile.uid.

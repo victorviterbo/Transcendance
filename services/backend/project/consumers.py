@@ -379,10 +379,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             recipient_profile = recipient_user.profile
-            room, created = create_direct_room(self.profile, recipient_profile)
-            if created:
-                room.participants.add(self.profile)
-                room.participants.add(recipient_profile)
+            room = create_direct_room(self.profile, recipient_profile)
+            if room is None:
+                return False, {'type': 'error',
+                    'message': 'Chat room does not exist'}
+            
         elif event == 'chat-message':
             if getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
                 room = self.current_game.room
