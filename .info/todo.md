@@ -15,6 +15,7 @@
 - [ ] Modify API images in IExtUser and IFriendInfo:
 - [ ] Message failed not showing 
 - [ ] useParams(); for room id;
+- [ ] Check PGame room for host;
 
 # BUG
 

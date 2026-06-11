@@ -7,7 +7,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import PNotifNode from "./PNotifNode";
 import type { GPageProps } from "../common/GPageBases";
-import type { IWSContextModule, TWSRcv } from "../../types/websocket";
+import type { IWSContextModule, IWSGameSendEvent, TWSRcv } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { fetchNotifications, markNotificationsRead } from "../../api/social";
 
@@ -77,7 +77,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 	useEffect(() => {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
-				const last: TWSRcv | undefined = wsContext.getLast();
+				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
 				if (last?.target == "notif") {
 					if (last.event == "new") {
 						notifs.splice(0, 0, last.notif);

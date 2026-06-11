@@ -2,15 +2,28 @@ import { Box, Stack, type SxProps, type Theme } from "@mui/material";
 import CCircularProgress, { type CCircularProgressProps } from "./CCircularProgress";
 import CText from "../../text/CText";
 import { useMemo } from "react";
+import type { TSize } from "../../../types/string";
 
-interface CCounterCircularProps extends CCircularProgressProps {
+export interface CCounterCircularProps extends CCircularProgressProps {
 	min: number;
 	max: number;
 
+	displayedValue?: string;
 	stackSx?: SxProps<Theme>;
+	fontSize?: TSize;
 }
 
-function CCounterCircular({ min, max, sx, stackSx, value, ...other }: CCounterCircularProps) {
+function CCounterCircular({
+	min,
+	max,
+	displayedValue,
+	sx,
+	stackSx,
+	fontSize,
+	size,
+	value,
+	...other
+}: CCounterCircularProps) {
 	const currentPer: number = useMemo((): number => {
 		if (value == undefined) return 0;
 		if (value < min) return 0;
@@ -25,7 +38,13 @@ function CCounterCircular({ min, max, sx, stackSx, value, ...other }: CCounterCi
 				...(Array.isArray(stackSx) ? stackSx : stackSx ? [stackSx] : []),
 			]}
 		>
-			<Box sx={{ position: "relative" }}>
+			<Box
+				sx={{
+					height: typeof size == "number" ? size + "px" : size,
+					width: typeof size == "number" ? size + "px" : size,
+					position: "relative",
+				}}
+			>
 				<Stack
 					sx={{
 						position: "absolute",
@@ -34,11 +53,15 @@ function CCounterCircular({ min, max, sx, stackSx, value, ...other }: CCounterCi
 						alignItems: "center",
 					}}
 				>
-					<CText>{value}</CText>
+					<CText sx={{ m: 0 }} size={fontSize}>
+						{displayedValue ? displayedValue : value}
+					</CText>
 				</Stack>
 				<CCircularProgress
 					sx={[{}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 					value={currentPer}
+					variant="determinate"
+					size={size}
 					{...other}
 				></CCircularProgress>
 			</Box>

@@ -1,5 +1,5 @@
 import { Stack } from "@mui/material";
-import type { IGameTitle } from "../../../types/game";
+import type { IGameTrack } from "../../../types/game";
 import type { GPageProps } from "../../common/GPageBases";
 import CTitle from "../../../components/text/CTitle";
 import CText from "../../../components/text/CText";
@@ -11,7 +11,7 @@ import {
 import { useMemo } from "react";
 
 interface PGameRoundRevealProps extends GPageProps {
-	title: IGameTitle;
+	title: IGameTrack;
 }
 
 function PGameRoundReveal({ title }: PGameRoundRevealProps) {

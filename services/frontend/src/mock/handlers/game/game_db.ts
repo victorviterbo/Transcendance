@@ -1,496 +1,139 @@
-import type {
-	IGameChatMsg,
-	IGameData,
-	IGamePlayer,
-	IGameSettings,
-	TGameChatType,
-} from "../../../types/game";
-import { mockSocialDB, mockSocialSetDB } from "../social/social_dbs";
-import { mockBadgeStrings, mockDefaultPP, mockDefaultUserUID, mockDefaultUsername } from "../../db";
+import type { IGameSettings, IGameTrack, IGameUser } from "../../../types/game";
 import type { IExtUserInfo } from "../../../types/user";
-import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
-import type { TWSRcv } from "../../../types/websocket";
+import { mockDefaultPP, mockDefaultUsername, mockDefaultUserUID } from "../../db";
+import { mockSocialSetDB } from "../social/social_dbs";
 import {
-	MOCK_COLOR_CYAN_B,
-	MOCK_COLOR_GREEN_B,
-	MOCK_COLOR_NORMAL,
-	MOCK_COLOR_RED_B,
-} from "../styling";
-import { MUSIC_TAGS } from "../../../constants";
+	MockGame,
+	MockGameHosting,
+	MockGameJoining,
+	MockGameJoiningEnded,
+	MockGameJoiningSpeed,
+	MockGamePlaying,
+} from "./mockGameHandlers";
+import { WebSocketClientConnectionProtocol } from "@mswjs/interceptors/WebSocket";
 
-export interface IMockGameData extends IGameData {
-	lastId: number;
-	isOn: boolean;
-}
+// https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/49/91/bb/4991bbbc-300b-f07d-71e1-096f1db7b667/mzaf_6226001835790259080.plus.aac.p.m4a
 
-const EMockRoundResolvType: Record<string, number> = {
-	NONE: 0,
-	ARTIST: 1,
-	MUSIC: 2,
-	FULL: 3,
-};
+export class MockGameDB {
+	//====================== CONSTRUCTOR ======================
+	constructor() {
+		mockSocialSetDB();
+	}
 
-export const MOCK_JOIN_ROOM = "join";
-export const MOCK_HOST_ROOM = "host";
-export const MOCK_PLAYING_ROOM = "playing";
+	//====================== DATA ======================
+	games: MockGame[] = [];
+	client: WebSocketClientConnectionProtocol | undefined;
 
-//====================== DATA ======================
-let currentClient: WebSocketClientConnectionProtocol | undefined = undefined;
-let mockGameData: Record<string, IMockGameData> = {};
+	mockTracks: IGameTrack[] = [
+		{
+			title: "The Way I Are",
+			artist: "Timbaland",
+			preview:
+				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/9f/80/22/9f80221e-50ec-b690-a6c7-561e73901ccf/mzaf_17739549421108413963.plus.aac.p.m4a",
+			artwork: "/temp/temp01.jpg",
+		},
+		{
+			title: "C'est ma life",
+			artist: "Soprano",
+			preview:
+				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/07/18/dc/0718dc36-8c91-3a55-5e9d-c809926df677/mzaf_8339858598668446093.plus.aac.p.m4a",
+			artwork: "/temp/temp02.jpg",
+		},
+		{
+			title: "Morenas",
+			artist: "Lord Kossity",
+			preview:
+				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/42/e1/77/42e17719-bd48-ae1f-0541-e82589eefc3d/mzaf_15893395910114083994.plus.aac.p.m4a",
+			artwork: "/temp/temp03.jpg",
+		},
+		{
+			title: "Milkshake",
+			artist: "Kelis",
+			preview:
+				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview126/v4/27/9d/e9/279de9d5-873c-0285-7e16-bbb534be72df/mzaf_1701884203441386212.plus.aac.p.m4a",
+			artwork: "",
+		},
+		{
+			title: "Donnez Nous De La Funk",
+			artist: "DJ Abdel",
+			preview:
+				"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/49/91/bb/4991bbbc-300b-f07d-71e1-096f1db7b667/mzaf_6226001835790259080.plus.aac.p.m4a",
+			artwork: "",
+		},
+	];
 
-//--------------------------------------------------
-//                      MANAGE
-//--------------------------------------------------
-function mockCreateChat(Room: IMockGameData) {
-	Room.chat.push({
-		useruid: mockSocialDB.users[0].uid,
-		username: mockSocialDB.users[0].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "message",
-		message: "Hello everyone how are ?",
-	});
-
-	Room.chat.push({
-		useruid: mockSocialDB.users[1].uid,
-		username: mockSocialDB.users[1].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "message",
-		message: "Hey",
-	});
-
-	Room.chat.push({
-		useruid: mockSocialDB.users[0].uid,
-		username: mockSocialDB.users[0].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "message",
-		message: "Hey !!",
-	});
-
-	Room.chat.push({
-		useruid: mockSocialDB.users[1].uid,
-		username: mockSocialDB.users[1].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "message",
-		message:
-			"sloubi 1 sloubi 2 sloubi 3 sloubi 4 sloubi 5 sloubi 6 sloubi 7 sloubi 8 sloubi 9 sloubi 10 sloubi 11 sloubi 12 sloubi 13 sloubi 14 sloubi 15 sloubi 16 sloubi 17 sloubi 18 sloubi 19 sloubi 20",
-	});
-
-	Room.chat.push({
-		useruid: mockSocialDB.users[0].uid,
-		username: mockSocialDB.users[0].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "message",
-		message: "TG",
-	});
-
-	Room.chat.push({
-		useruid: mockSocialDB.users[0].uid,
-		username: mockSocialDB.users[0].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "guessed",
-		message: "o zone dragostea din tei",
-	});
-
-	Room.chat.push({
-		useruid: mockSocialDB.users[0].uid,
-		username: mockSocialDB.users[0].username,
-		messageuid: crypto.randomUUID(),
-
-		type: "found",
-	});
-}
-function mockCreateRounds(Room: IMockGameData) {
-	for (let i = 0; i < Room.settings.nbMusic; i++) {
-		let points: number = 0;
-		let titleFound: number = -1;
-		let artistFound: number = -1;
-
-		if (i < Room.status.round) {
-			const type: number = Math.trunc(Math.random() * 4);
-			if (type == EMockRoundResolvType.ARTIST || type == EMockRoundResolvType.FULL) {
-				points += 5;
-				artistFound = Math.round(Math.random() * Room.settings.timer - 5);
-			}
-			if (type == EMockRoundResolvType.MUSIC || type == EMockRoundResolvType.FULL) {
-				points += 5;
-				titleFound = Math.round(Math.random() * Room.settings.timer - 5);
-			}
-		}
-
-		if (i == Room.status.round) {
-			points += 10;
-			artistFound = 5;
-			titleFound = 15;
-		}
-
-		Room.rounds.push({
-			title: {
-				title: "Capitain abandonné",
-				artist: "Gold",
-				preview:
-					"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/35/b6/a0/35b6a026-26bc-cfb1-30d3-9c3c1820c63f/mzaf_8281785747956416426.plus.aac.p.m4a",
-				artwork:
-					"https://a1.mzstatic.com/r40/Music211/v4/ed/e8/1c/ede81c4b-593d-913a-cfe4-3b12496f67e5/5021732254870.jpg",
-			},
-			titleFound,
-			artistFound,
-			points,
-			time: 0.0,
-			phase: i < Room.status.round ? "done" : Room.status.round == i ? "playing" : "not-done",
-			answers: [],
+	//====================== FUNCTIONS ======================
+	createGame(uid: string): MockGame {
+		let game: MockGame | undefined = this.games.find((gameSearch: MockGame) => {
+			return gameSearch.uid == uid;
 		});
-	}
-}
-
-function mockCreateAnswers(Room: IMockGameData) {
-	Room.rounds[Room.status.round].answers.push({
-		message: "Joe dassin - coline",
-		time: 2.56,
-		titleFound: false,
-		artistFound: false,
-	});
-
-	Room.rounds[Room.status.round].answers.push({
-		message: "Gold - laisser moi",
-		time: 5,
-		titleFound: false,
-		artistFound: true,
-	});
-
-	Room.rounds[Room.status.round].answers.push({
-		message: "Joe dassin - Capitaine abandonné",
-		time: 15,
-		titleFound: true,
-		artistFound: false,
-	});
-
-	Room.rounds[Room.status.round].answers.push({
-		message: "Gold - Capitaine abandonné",
-		time: 20.589,
-		titleFound: true,
-		artistFound: true,
-	});
-}
-
-function mockCreateOtherDone(Room: IMockGameData) {
-	for (let i = 0; i < 3; i++) {
-		Room.players[i].current = {
-			lastestTime: 5.25 + 5.1 * i,
-			artistFound: i == 0 || i == 2,
-			titleFound: i == 0 || i == 1,
-		};
-	}
-}
-
-export function mockCreateRoom(GameID: string) {
-	mockSocialSetDB();
-
-	//Tags
-	const tags: Record<string, boolean> = {};
-	MUSIC_TAGS.forEach((tag: string, index: number) => {
-		tags[tag] = index < 2;
-	});
-
-	const nRoom: IMockGameData = {
-		id: GameID,
-		uid: crypto.randomUUID(),
-		name: GameID == MOCK_HOST_ROOM ? "John's own room" : "Sarah's room",
-		settings: {
-			tags: tags,
-			nbMusic: 15,
-			timer: 30,
-			breakTimer: 15,
-			seeOthers: true,
-			fuzzy: true,
-			scoreOption: "speed",
-			scope: "public",
-			code: "qwertyuiop",
-		},
-		status: {
-			phase: "waiting",
-			round: 0,
-			keyTime: 0,
-		},
-		rounds: [],
-		players: [],
-		chat: [],
-		maxPlayers: 100,
-		isHost: GameID == MOCK_HOST_ROOM,
-		lastId: 0,
-		isOn: false,
-	};
-
-	//UNIQUE CONF
-	if (GameID == MOCK_JOIN_ROOM) {
-		for (nRoom.lastId = 0; nRoom.lastId < 4; nRoom.lastId++) {
-			nRoom.players.push({
-				points: 0,
-				user: mockSocialDB.users[nRoom.lastId],
-				host: nRoom.lastId == 0,
-				colorid: nRoom.lastId % 10,
-				current: {
-					lastestTime: -1,
-					artistFound: false,
-					titleFound: false,
-				},
-			});
-
-			nRoom.chat.push({
-				useruid: mockSocialDB.users[nRoom.lastId].uid,
-				username: mockSocialDB.users[nRoom.lastId].username,
-				messageuid: crypto.randomUUID(),
-
-				type: "joined",
-			});
+		if (!game) {
+			switch (uid) {
+				case "host":
+					game = new MockGameHosting(uid);
+					break;
+				case "join":
+					game = new MockGameJoining(uid);
+					break;
+				case "join-speed":
+					game = new MockGameJoiningSpeed(uid);
+					break;
+				case "playing":
+					game = new MockGamePlaying(uid);
+					break;
+				case "ended":
+					game = new MockGameJoiningEnded(uid);
+					break;
+				default:
+					game = new MockGame(uid);
+					break;
+			}
+			this.games.push(game);
 		}
-
-		mockCreateChat(nRoom);
-	} else if (GameID == MOCK_PLAYING_ROOM) {
-		for (nRoom.lastId = 0; nRoom.lastId < 15; nRoom.lastId++) {
-			nRoom.players.push({
-				points: 0,
-				user: mockSocialDB.users[nRoom.lastId],
-				host: nRoom.lastId == 0,
-				colorid: nRoom.lastId % 10,
-				current: {
-					lastestTime: -1,
-					artistFound: false,
-					titleFound: false,
-				},
-			});
-
-			nRoom.chat.push({
-				useruid: mockSocialDB.users[nRoom.lastId].uid,
-				username: mockSocialDB.users[nRoom.lastId].username,
-				messageuid: crypto.randomUUID(),
-
-				type: "joined",
-			});
-		}
-
-		nRoom.status.phase = "playing_round";
-		nRoom.status.round = 5;
-		nRoom.status.keyTime = Date.now() - 5 * 1000;
-
-		mockCreateRounds(nRoom);
-		mockCreateAnswers(nRoom);
-		mockCreateOtherDone(nRoom);
+		return game;
+	}
+	getGame(uid: string): MockGame {
+		const game: MockGame | undefined = this.games.find((gameSearch: MockGame) => {
+			return gameSearch.uid == uid;
+		});
+		if (!game) return this.createGame(uid);
+		return game;
+	}
+	getRoundTrack(id: number) {
+		return this.mockTracks[id % this.mockTracks.length];
 	}
 
-	mockGameData[GameID] = nRoom;
-	return nRoom;
-}
-
-export function mockGetGameData(GameID: string): IMockGameData {
-	if (!mockGameData[GameID]) mockCreateRoom(GameID);
-	return mockGameData[GameID];
-}
-
-export function mockResetGames() {
-	mockGameData = {};
-}
-
-export function mockGetGameSelf(GameID: string): IGamePlayer | undefined {
-	const data: IMockGameData = mockGetGameData(GameID);
-	return data.players.find((player: IGamePlayer) => player.user.uid == mockDefaultUserUID);
-}
-
-export function mockGetGamePlayer(GameID: string, PlayerUID: string): IGamePlayer | undefined {
-	const data: IMockGameData = mockGetGameData(GameID);
-	return data.players.find((player: IGamePlayer) => player.user.uid == PlayerUID);
-}
-
-//--------------------------------------------------
-//                    PLAYER MANAGEMENT
-//--------------------------------------------------
-export function mockGameAddPlayer(GameID: string) {
-	const data: IMockGameData = mockGetGameData(GameID);
-	mockPlayerJoinRoom(GameID, mockSocialDB.users[data.lastId]);
-	data.lastId++;
-}
-export function mockPlayerJoinRoom(GameID: string, User: IExtUserInfo) {
-	const data: IMockGameData = mockGetGameData(GameID);
-	if (
-		data.players.find((player: IGamePlayer) => {
-			return player.user.uid == User.uid;
-		})
-	)
-		return;
-
-	data.players.push({
-		points: 0,
-		user: User,
-		host: GameID == MOCK_HOST_ROOM && User.username == mockDefaultUsername,
-		colorid: data.lastId % 10,
-		current: {
-			lastestTime: -1,
-			artistFound: false,
-			titleFound: false,
-		},
-	});
-
-	console.log(
-		"[mock] Player %c" + User.username + "%c has joined the game %c" + GameID + "%c",
-		MOCK_COLOR_CYAN_B,
-		MOCK_COLOR_NORMAL,
-		MOCK_COLOR_GREEN_B,
-		MOCK_COLOR_NORMAL,
-	);
-
-	if (!currentClient) return;
-	currentClient.send(
-		JSON.stringify({
-			target: "game",
-			event: "player-join",
-			player: data.players[data.players.length - 1],
-			gameid: GameID,
-			gameuid: data.uid,
-		} as TWSRcv),
-	);
-	mockPlayerSendMessage(GameID, data.players[data.players.length - 1], "joined");
-}
-export function mockPlayerLeaveRoom(GameID: string, ID: string, Update: boolean = false) {
-	const data: IMockGameData = mockGetGameData(GameID);
-	const pos: number = data.players.findIndex((player: IGamePlayer) => {
-		return player.user.uid == ID;
-	});
-	if (pos == -1) return;
-
-	const player: IGamePlayer[] = data.players.splice(pos, 1);
-	if (player.length == 0) return;
-
-	console.log(
-		"[mock] Player %c" +
-			player[0].user.username +
-			"%c has leaved the game %c" +
-			GameID +
-			"%c" +
-			(Update ? " (Update requested)" : ""),
-		MOCK_COLOR_RED_B,
-		MOCK_COLOR_NORMAL,
-		MOCK_COLOR_GREEN_B,
-		MOCK_COLOR_NORMAL,
-	);
-
-	if (!currentClient) return;
-	if (Update) {
-		currentClient.send(
-			JSON.stringify({
-				target: "game",
-				event: "players-update",
-				players: data.players,
-				gameid: GameID,
-				gameuid: data.uid,
-			} as TWSRcv),
-		);
-		mockPlayerSendMessage(GameID, player[0], "leaved", undefined, true);
-		return;
-	}
-	currentClient.send(
-		JSON.stringify({
-			target: "game",
-			event: "player-leave",
-			player: player[0],
-			gameid: GameID,
-			gameuid: data.uid,
-		} as TWSRcv),
-	);
-	mockPlayerSendMessage(GameID, player[0], "leaved");
-}
-
-//--------------------------------------------------
-//                 MESSAGE MANAGEMENT
-//--------------------------------------------------
-export function mockPlayerSendMessage(
-	GameID: string,
-	Target: IGamePlayer,
-	Type: TGameChatType,
-	Message?: string,
-	Update: boolean = false,
-) {
-	const data: IMockGameData = mockGetGameData(GameID);
-	const nMessage: IGameChatMsg = {
-		useruid: Target.user.uid,
-		username: Target.user.username,
-		messageuid: crypto.randomUUID(),
-
-		type: Type,
-		message: Message,
-	};
-	data.chat.push(nMessage);
-	if (!currentClient) return;
-	if (Update) {
-		currentClient.send(
-			JSON.stringify({
-				target: "game",
-				event: "message-update",
-				messages: data.chat,
-				gameid: GameID,
-				gameuid: data.uid,
-			} as TWSRcv),
-		);
-		return;
-	}
-	currentClient.send(
-		JSON.stringify({
-			target: "game",
-			event: "message-new",
-			message: nMessage,
-			gameid: GameID,
-			gameuid: data.uid,
-		} as TWSRcv),
-	);
-}
-
-export function mockGameUserSentChatMessage(GameID: string, Message: string) {
-	const selfUser: IGamePlayer | undefined = mockGetGameSelf(GameID);
-	if (!selfUser) return;
-	mockPlayerSendMessage(GameID, selfUser, "message", Message);
-}
-
-//--------------------------------------------------
-//                SETTINGS MANAGEMENT
-//--------------------------------------------------
-export function mockOnUserChangedSettings(GameID: string, Settings: IGameSettings) {
-	const data: IMockGameData = mockGetGameData(GameID);
-	data.settings = Settings;
-
-	if (!currentClient) return;
-	currentClient.send(
-		JSON.stringify({
-			target: "game",
-			event: "settings-update",
-			settings: Settings,
-			gameid: GameID,
-			gameuid: data.uid,
-		} as TWSRcv),
-	);
-}
-
-//--------------------------------------------------
-//                      EVENT
-//--------------------------------------------------
-export function mockClientJoinRoom(GameID: string, client: WebSocketClientConnectionProtocol) {
-	const data: IMockGameData = mockGetGameData(GameID);
-	currentClient = client;
-	if (
-		!data.players.find((player: IGamePlayer) => {
-			return player.user.uid == mockDefaultUserUID;
-		})
-	) {
-		mockPlayerJoinRoom(GameID, {
+	//====================== DEFAULT ======================
+	getDefaultHost(): IExtUserInfo {
+		return {
 			uid: mockDefaultUserUID,
 			username: mockDefaultUsername,
 			image: mockDefaultPP,
 
-			badges: mockBadgeStrings[0],
+			badges: "",
 			relation: "self",
-		});
+		};
+	}
+	getSelf(): IGameUser {
+		return {
+			uid: mockDefaultUserUID,
+			username: mockDefaultUsername,
+			avatar: mockDefaultPP,
+			guest: false,
+		};
+	}
+
+	getDefaultSettings(): IGameSettings {
+		return {
+			genres: ["TAG_POP", "TAG_RAP"],
+			mode: "speed",
+			trackCount: 15,
+			playbackDuration: 30,
+			breakDuration: 15,
+			reveal: true,
+			fuzzy: true,
+		};
 	}
 }
+
+export const mockGameDB = new MockGameDB();

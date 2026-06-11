@@ -256,6 +256,7 @@ GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んで
 GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
 GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
 GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
+GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorect guess,,,Chat message when a player made a guess (but no guess body given)
 GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
 GAME_WAITING_START,Waiting {USER} to start the game,,,Displayed message in the game lobby
 GAME_WAITING_START_NO_HOST,Waiting to start the game,,,Displayed message in the game lobby (With no host rooms)
@@ -268,11 +269,12 @@ GAME_SETTINGS_MUSIC_TIMER,Music timer: {COUNT}s,,,INformations about the time al
 GAME_SETTINGS_BREAK_TIMER,Break timer: {COUNT}s,,,INformations about the time btw Rounds (in seconds)
 GAME_SETTINGS_SEE_OTHERS,See others answer: ,,,Setting to display other people answers in the chat
 GAME_SETTINGS_FUZZY,Fuzzy match: ,,,Allow fuzzy match for answer
+GAME_SETTINGS_NOTAG,No tag,,,Used when no tag has been set
 GAME_SETTINGS_SCORE_OPTION,Score options: ,,,Scoring system option title
 GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,,,Scoring system option (Speed: option)
 GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,,,Scoring system option (Speed: Normal)
-GAME_SETTINGS_SCORE_OPTION_ARMA,Armagedon,,,Scoring system option (Speed: Armagedon)
-GAME_SETTINGS_CODE,Code: ,,,Title placed before the code
+GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armagedon,,,Scoring system option (Speed: Armagedon)
+GAME_SETTINGS_CODE,Room: ,,,Title placed before the code
 GAME_SETTINGS_CB,Copy to clipboard,,,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,,,Button to copy to the clipboard (when pressed)
 GAME_SETTINGS_GAME,Game settings,,,Title for game settings
@@ -280,6 +282,7 @@ GAME_SETTINGS_VISIBILITY,Game visibility,,,Title for game visibility
 GAME_SETTINGS_BACK,Return to lobby,,,Button to return into the lobby
 GAME_NO_GENRE,No genre selected,,,Shown when no genre has been selected
 GAME_PLAYING_TITLE,Playing,,,Title of the view when the music is playing
+GAME_PLAYING_ENDED,Game ended,,,Title of the view when the game has ended
 GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
 GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
 GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
@@ -297,3 +300,5 @@ ROOMS_LOADING,Loading rooms...,Chargement des salles...,ルームを読み込み
 ROOMS_LOADING_FAILED,Rooms loading failed,Échec du chargement des salles,ルームの読み込みに失敗しました,Shown when home room lists fail to load
 ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルームがありません,Shown when a home room list is empty
 REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button
+GAME_STARTING,Game is starting...,,,Message shown when host is pressing starting button.
+GAME_STARTING_IN,Game starting in,,,Count before game is starting

@@ -3,30 +3,20 @@ import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
 import PGameChat from "./PGameChat";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { createRef, useEffect, useRef, useState, type ReactNode } from "react";
 import type {
 	IGameChatMsg,
-	IGameData,
-	IGameDataRes,
 	IGamePlayer,
+	IGamePlayerResult,
 	IGameRound,
 	IGameSettings,
 	IGameStatus,
 } from "../../types/game";
 import { useWS } from "../../components/websocket/CWebsocket";
-import { gameFetchData } from "../../api/game";
 import CGamePaper from "../../components/surfaces/CGamePaper";
 import CText from "../../components/text/CText";
-import type { TWSRcv, TWSSend } from "../../types/websocket";
-import { API_GAME } from "../../constants";
-import {
-	gameOnMessageNew,
-	gameOnMessageUpdate,
-	gameOnPlayerJoin,
-	gameOnPlayerLeave,
-	gameOnPlayerUpdate,
-	gameOnSettingsUpdate,
-} from "../../handlers/gameHandlers";
+import type { IWSGameSendEvent, TWSRcv } from "../../types/websocket";
+import { GameInstance } from "../../handlers/gameHandlers";
 import PGameViews from "./PGameViews";
 import { useParams } from "react-router-dom";
 
@@ -39,99 +29,89 @@ function PGame() {
 
 	//GAME
 	const { gameid } = useParams();
-	const [gameData, setGameData] = useState<IGameData | undefined>();
+
+	const game: React.RefObject<GameInstance | undefined> = useRef<GameInstance | undefined>(
+		undefined,
+	);
+	const [ready, setReady] = useState<boolean>(false);
 	const [status, setStatus] = useState<IGameStatus | undefined>();
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
+	const [volume, setVolume] = useState<number>(50);
+	const [muted, setMuted] = useState<boolean>(false);
 
 	//Updatable Data
-	const [users, setUsers] = useState<IGamePlayer[]>([]);
+	const [players, setPlayers] = useState<IGamePlayer[]>([]);
+	const [results, setResults] = useState<IGamePlayerResult[]>([]);
 	const [chat, setChat] = useState<IGameChatMsg[]>([]);
 
 	//SETTINGS
 	const [settings, setSettings] = useState<IGameSettings | undefined>(undefined);
 
-	//WS
-	const wsContext = useWS("game");
-
-	//====================== HTTP ======================
-	useEffect(() => {
-		if (gameid == undefined) return;
-		gameFetchData<IGameData | undefined, IGameDataRes, "game">(
-			API_GAME.replaceAll("{ROOMID}", gameid),
-			"game",
-			setGameData,
-			setError,
-			undefined,
-			"GAME_ERROR_GLOBAL",
-			(data: IGameData | undefined) => {
-				if (!data) return;
-				setStatus(data.status);
-				setRounds(data.rounds);
-				setUsers(data.players);
-				setChat(data.chat);
-				setSettings(data.settings);
-			},
-		);
-	}, [setGameData, gameid]);
+	//REFS
+	const answerRef = createRef<HTMLDivElement | null>();
 
 	//====================== WS ======================
-	const sendWSMessage = useCallback(
-		(sentData: Omit<TWSSend, "target">) => {
-			if (!gameData) return;
-			const retData = {
-				target: "game",
-				gameid: gameData.id,
-				gameuid: gameData.uid,
-				...sentData,
-			};
-			wsContext.sendMessage(JSON.stringify(retData));
-		},
-		[gameData, wsContext],
-	);
+	const wsContext = useWS("game");
+
+	//====================== MANAGEMENT ======================
+	useEffect(() => {
+		async function setFalse() {
+			setReady(false);
+		}
+
+		if (!gameid || (game.current && game.current.uid == gameid)) return;
+
+		if (game.current) {
+			game.current.destroy();
+			delete game.current;
+			game.current = undefined;
+			setFalse();
+		}
+
+		game.current = new GameInstance(gameid, {
+			setReady,
+			setError,
+			setStatus,
+			setSettings,
+			setRounds,
+			setPlayers,
+			setResults,
+			setChat,
+			setVolume,
+			setMuted,
+			sendMessage: wsContext.sendMessage,
+			answerRef,
+		});
+	}, [gameid, wsContext, answerRef]);
+
+	useEffect(() => {
+		if (!game.current) return;
+		game.current.callbacks = {
+			setReady,
+			setError,
+			setStatus,
+			setSettings,
+			setRounds,
+			setPlayers,
+			setResults,
+			setChat,
+			setVolume,
+			setMuted,
+			sendMessage: wsContext.sendMessage,
+			answerRef,
+		};
+	}, [setReady, setError, setStatus, setSettings, setPlayers, wsContext, answerRef]);
 
 	useEffect(() => {
 		if (!gameid) return;
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
-				const last: TWSRcv | undefined = wsContext.getLast();
-				if (!last || last.target != "game" || !gameData) return;
-				else if (last.event == "player-join")
-					gameOnPlayerJoin(gameData, last.player, setUsers);
-				else if (last.event == "player-leave")
-					gameOnPlayerLeave(gameData, last.player, setUsers);
-				else if (last.event == "players-update")
-					gameOnPlayerUpdate(gameData, last.players, setUsers);
-				else if (last.event == "message-new")
-					gameOnMessageNew(gameData, last.message, setChat);
-				else if (last.event == "message-update")
-					gameOnMessageUpdate(gameData, last.messages, setChat);
-				else if (last.event == "settings-update")
-					gameOnSettingsUpdate(gameData, last.settings, setSettings);
+				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
+				if (!last || last.target != "game" || !game.current) return;
+				game.current.rcv(last);
 			}
 		});
-	}, [wsContext, gameid, gameData]);
-
-	useEffect(() => {
-		if (!gameData) return;
-		const nSentData: TWSSend = {
-			target: "game",
-			event: "join",
-			gameid: gameData.id,
-			gameuid: gameData.uid,
-		};
-		sendWSMessage(nSentData);
-	}, [gameData, sendWSMessage]);
-
-	//====================== EVENTS ======================
-	const onSettingsChanged = useCallback(
-		(newSettings: IGameSettings) => {
-			sendWSMessage({
-				event: "settings-update",
-				settings: newSettings,
-			});
-		},
-		[sendWSMessage],
-	);
+	}, [wsContext, gameid]);
 
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
@@ -160,7 +140,7 @@ function PGame() {
 	}
 
 	//--------------------- LOADIN ---------------------
-	if (!gameData || !settings || !status) {
+	if (!ready || !settings || !status) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -198,20 +178,23 @@ function PGame() {
 				}}
 			>
 				<Grid size={3}>
-					<PGameLBoard users={users} />
+					<PGameLBoard players={players} />
 				</Grid>
 				<Grid size={6}>
 					<PGameViews
-						onSettingsChanged={onSettingsChanged}
 						status={status}
 						rounds={rounds}
-						players={users}
-						game={gameData}
+						players={players}
+						results={results}
+						game={game}
 						settings={settings}
+						volume={volume}
+						muted={muted}
+						answerRef={answerRef}
 					/>
 				</Grid>
 				<Grid size={3}>
-					<PGameChat sendWSMessage={sendWSMessage} users={users} chat={chat} />
+					<PGameChat game={game} chat={chat} />
 				</Grid>
 			</Grid>
 		</Stack>

@@ -1,7 +1,5 @@
 import { Box, Stack } from "@mui/material";
-import CLinearProgress from "../../../components/feedback/loading/CLinearProgress";
 import type { IGameRound, IGameSettings, IGameStatus } from "../../../types/game";
-import { timeGetElapse } from "../../../utils/time";
 import PGameRoundTrackerPin from "./PGameRoundTrackerPin";
 import type { GPageProps } from "../../common/GPageBases";
 import {
@@ -9,6 +7,7 @@ import {
 	type IGameRoundTrackerStyle,
 } from "../../../styles/pages/game/PGameRoundStyle";
 import { useMemo } from "react";
+import CCountdownLinear from "../../../components/feedback/loading/CCountdownLinear";
 
 interface PGameRoundTrackerProps extends GPageProps {
 	settings: IGameSettings;
@@ -24,21 +23,25 @@ function PGameRoundTracker({ settings, status, round }: PGameRoundTrackerProps) 
 	return (
 		<Stack direction={"column"} sx={{ mb: "10px", mt: "20px" }}>
 			<Box sx={style.pinbox}>
-				<PGameRoundTrackerPin
-					type="artist"
-					percent={(round.artistFound / settings.timer) * 100}
-				/>
-				<PGameRoundTrackerPin
-					type="title"
-					percent={(round.titleFound / settings.timer) * 100}
-				/>
+				{round.artistFoundAt != undefined && (
+					<PGameRoundTrackerPin
+						type="artist"
+						percent={(round.artistFoundAt / settings.playbackDuration) * 100}
+					/>
+				)}
+				{round.titleFoundAt != undefined && (
+					<PGameRoundTrackerPin
+						type="title"
+						percent={(round.titleFoundAt / settings.playbackDuration) * 100}
+					/>
+				)}
 			</Box>
-			<CLinearProgress
+			<CCountdownLinear
 				sx={style.bar}
-				value={timeGetElapse(status.keyTime, "miliseconds") / 1000}
-				min={0}
-				max={settings.timer}
-			></CLinearProgress>
+				startTime={status.phase == "playing_break" ? 0 : status.keyTime}
+				timeMS={settings.playbackDuration * 1000}
+				inverse={true}
+			></CCountdownLinear>
 		</Stack>
 	);
 }

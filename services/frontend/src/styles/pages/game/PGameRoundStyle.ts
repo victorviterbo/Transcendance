@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors, appSharedStyle } from "../../theme";
-import type { IGameRound } from "../../../types/game";
+import type { IGamePlayer, IGameRound, IGameSettings } from "../../../types/game";
 import type { IGamePlayerAnswer } from "../../../types/game";
 import { colorGetBackground } from "../../../utils/styles";
 
@@ -70,10 +70,10 @@ export interface IGameRoundStateNodeStyle {
 
 export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNodeStyle => {
 	let bgColor = appColors.greys[7];
-	if (round.phase == "done" || round.phase == "break") {
-		if (round.points == 0) bgColor = appColors.cancel[0];
-		if (round.points == 5) bgColor = appColors.secondary[0];
-		if (round.points == 10) bgColor = appColors.primary[0];
+	if (round.phase == "done") {
+		if (round.artistFound && round.titleFound) bgColor = appColors.primary[0];
+		else if (round.artistFound || round.titleFound) bgColor = appColors.secondary[0];
+		else bgColor = appColors.cancel[0];
 	}
 
 	return {
@@ -89,6 +89,8 @@ export const PGameRoundStateNodeStyle = (round: IGameRound): IGameRoundStateNode
 			borderRadius: "100px",
 			border: round.phase == "playing" ? "solid 2px " + appColors.tertiary[0] : undefined,
 			boxShadow: round.phase == "done" ? "0px 2px 0px 0px white" : undefined,
+
+			transform: "translateY(5px)",
 		},
 	};
 };
@@ -201,12 +203,12 @@ export const PGameRoundAnswerStyle = (
 			ml: "7px",
 			flex: 0.075,
 			zIndex: 1,
-			color: answer.artistFound ? appColors.greys[4] : appColors.primary[0],
+			color: !answer.artistFound ? appColors.greys[4] : appColors.primary[0],
 		},
 		title: {
 			flex: 0.075,
 			zIndex: 1,
-			color: answer.titleFound ? appColors.greys[4] : appColors.primary[0],
+			color: !answer.titleFound ? appColors.greys[4] : appColors.primary[0],
 		},
 	};
 };
@@ -240,5 +242,81 @@ export const PGameRoundRevealStyle = (): IGameRoundRevealStyle => {
 			borderRadius: appSharedStyle.gameRadius,
 			//border: "solid 2px " + appColors.quinary[2]
 		},
+	};
+};
+
+//--------------------------------------------------
+//                       ENDED
+//--------------------------------------------------
+export interface IGameEndedRoundStyle {
+	main: SxProps<Theme>;
+	dataStack:  SxProps<Theme>;
+	rankingColor: string;
+	rankingText: SxProps<Theme>;
+	timeColor: string;
+	timeText: SxProps<Theme>;
+	artist:  SxProps<Theme>;
+	title: SxProps<Theme>;
+}
+
+export const PGameEndedRoundStyle = (
+	round: IGameRound,
+	settings: IGameSettings
+): IGameEndedRoundStyle => {
+	let bgColors = [appColors.greys[8], appColors.greys[5]];
+	if (round.artistFound !== round.titleFound) bgColors = [appColors.tertiary[1], appColors.secondary[1]];
+	if (round.artistFound && round.titleFound) bgColors = [appColors.primary[1], appColors.tertiary[1]];
+
+	const rankingColor: string = settings && round.ranking > 3 ? appColors.primary[0] : appColors.secondary[0];
+	const timeColor: string = round.time < 0 || (settings && round.time >= settings.playbackDuration) ? appColors.greys[4] : rankingColor
+
+	return {
+		main: {
+			py: "0px",
+			pl: "10px",
+
+			position: "relative",
+
+			flexShrink: 0,
+
+			overflow: "hidden",
+			alignItems: "stretch",
+
+			background: colorGetBackground(bgColors, undefined, "linear", 305),
+
+			borderRadius: appSharedStyle.gameRadius,
+			//border: "solid 2px " + appColors.quinary[2]
+			//boxShadow: "0px 4px 0px 0px " + appColors.greys[0],
+			mt: "10px",
+		},
+		dataStack: {
+			alignItems: "center",
+			backgroundColor: appColors.greys[5],
+			boxShadow: "-1px 0px 5px 0px " + appColors.greys[9],
+		},
+		rankingColor,
+		rankingText: {
+			mr: "15px",
+			ml: "2px",
+			my:0,
+			width: "20px",
+		},
+		timeColor,
+		timeText: {
+			mr: "15px",
+			ml: "2px",
+			my:0,
+			width: "50px",
+
+			color: round.time < 0 || (settings && round.time >= settings.playbackDuration) ? timeColor : undefined
+		},
+		artist: {
+			mr: "5px",
+			color: !round.artistFound ? appColors.greys[4] : rankingColor,
+		} ,
+		title: {
+			mr: "10px",
+			color: !round.titleFound ? appColors.greys[4] : rankingColor,
+		}
 	};
 };
