@@ -96,6 +96,16 @@ export type TWSRcv =
 
 	//GAME
 	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "player-join" | "player-leave";
+			player: IGamePlayer;
+	  }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "players-update";
+			players: IGamePlayer[];
+	  }
+	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
 	  };
@@ -128,6 +138,11 @@ export type TWSSend =
 	// 		gameuid: string;
 	// 		settings: IGameSettings;
 	//   }
+	| {
+			target: Extract<TWSModuleName, "game">;
+			event: "join";
+			gameid: string;
+	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;
 	  };

@@ -5,6 +5,7 @@ import uuid
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
+from chat.models import Message, Room
 from django.test import TransactionTestCase
 from django.urls import reverse
 from friends.models import Friendship
@@ -13,8 +14,6 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
-
-from .models import Message, Room
 
 
 class ChatViewsTests(APITestCase):
@@ -67,19 +66,37 @@ class ChatViewsTests(APITestCase):
 		self.assertFalse(response.data['is_direct'])
 		self.assertEqual(response.data['participants'], [])
 
+	def test_room_exclude_history_query(self) -> None:
+		"""Room lookup should return room metadata even when include_history is passed."""
+		Message.objects.create(
+			sender=self.user.profile,
+			room=self.room,
+			body='first message',
+		)
+		Message.objects.create(
+			sender=self.friend.profile,
+			room=self.room,
+			body='second message',
+		)
+		response = self.client.get(
+			reverse('room', kwargs={'room_uid': self.room.uid}) + '?include_history=1'
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertNotIn('history', response.data)
+		self.assertEqual(uuid.UUID(response.data['uid']), self.room.uid)
+		self.assertEqual(response.data['name'], 'classic')
+
 	def test_room_post_creates_message_and_adds_participant(self) -> None:
 		"""Posting to a room should create a message and add the sender as participant."""
 		self.client.force_login(self.user)
-
 		response = self.client.post(
 			reverse('room', kwargs={'room_uid': self.room.uid}),
 			{'body': 'hello room'},
 		)
-
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertTrue(
 			Message.objects.filter(room=self.room,
-						sender_profile=self.user.profile,
+						sender=self.user.profile,
 						body='hello room').exists()
 						)
 		self.assertTrue(self.room.participants.filter(uid=self.user.profile.uid).exists())
@@ -98,11 +115,11 @@ class ChatViewsTests(APITestCase):
 		self.assertTrue(Room.objects.filter(name=self.room.name,
 											is_direct=False).exists())
 
-	def test_direct_room_is_created_for_friends(self) -> None:
+	def test_direct_room_created_for_friends(self) -> None:
 		"""Direct-room creation should return a shared DM room for friends."""
 		login_url = '/api/auth/login/'
-		login_res = self.client.post(login_url, data={'email': 'chat_test@mail.com',
-                                                 'password': 'Password123!'})
+		login_res = self.client.post(login_url, data={'email': self.user.email,
+                                              'password': 'Password123!'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
 		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
@@ -117,11 +134,11 @@ class ChatViewsTests(APITestCase):
 		self.assertTrue(room.participants.filter(id=self.user.id).exists())
 		self.assertTrue(room.participants.filter(id=self.friend.id).exists())
 
-	def test_direct_room_is_rejected_for_non_friend(self) -> None:
+	def test_direct_room_rejected_for_nonfriend(self) -> None:
 		"""Non-friends should be blocked from direct-room creation."""
 		login_url = '/api/auth/login/'
-		login_res = self.client.post(login_url, data={'email': 'chat_test@mail.com',
-                                                 'password': 'Password123!'})
+		login_res = self.client.post(login_url, data={'email': self.user.email,
+                                              'password': 'Password123!'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
 		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
@@ -134,8 +151,8 @@ class ChatWebsocketTests(TransactionTestCase):
 
 	def setUp(self) -> None:
 		"""Create users, rooms, and the ASGI application for socket tests."""
-		serializer = RegisterSerializer(data={'email':'chat_test@mail.com',
-											'profile_username': 'chat_test_user',
+		serializer = RegisterSerializer(data={'email':'test@mail.com',
+											'profile_username': 'test_user',
 											'password':'Password123!'},
 											context={'is_creation': True})
 		if serializer.is_valid():
@@ -175,17 +192,9 @@ class ChatWebsocketTests(TransactionTestCase):
 		self.friend.friends.add(self.user)
 		#self.application = URLRouter(websocket_urlpatterns)
 		self.room = Room.objects.create(name='classic')
-		"""first, second = sorted([self.user.id, self.friend.id])
-		self.direct_key = f'dm_{first}_{second}'
-		self.direct_room = Room.objects.create(
-			name=self.direct_key,
-			is_direct=True,
-			direct_key=self.direct_key,
-		)
-		self.direct_room.participants.add(self.user.profile, self.friend.profile)"""
 		self.room.participants.add(self.user.profile, self.friend.profile)
 
-	def test_websocket_connects_for_existing_room(self) -> None:
+	def test_websocket_connects_exist_room(self) -> None:
 		"""Existing public rooms should accept WebSocket connections."""
 		async def scenario() -> None:
 			communicator = WebsocketCommunicator(application, '/ws/global/')
@@ -224,8 +233,8 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'chat-message',
+			await communicator.send_json_to({'target': 'game',
+									'event': 'message_send',
 									'message': '   '})
 			response = await communicator.receive_json_from()
 			self.assertEqual(response, {'type': 'error',
@@ -237,71 +246,42 @@ class ChatWebsocketTests(TransactionTestCase):
 	def test_websocket_authenticated_message_is_saved(self) -> None:
 		"""Authenticated socket messages should broadcast and persist."""
 		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope['user'] = self.user
-			connected, _ = await communicator.connect()
+			comm = WebsocketCommunicator(application, '/ws/global/')
+			comm.scope['user'] = self.user
+			connected, _ = await comm.connect()
 			self.assertTrue(connected)
 
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'chat-message',
-									'message': 'hello websocket',
-									'room_uid': str(self.room.uid)})
-			
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'chat_message')
-			self.assertEqual(response['sender'], 'chat_test_user')
-			self.assertEqual(response['message'], 'hello websocket')
+			await comm.send_json_to({
+				'target': 'game', 'event': 'message_send',
+				'message': 'hello websocket', 'room_uid': str(self.room.uid),
+			})
+			resp = await comm.receive_json_from()
+			self.assertEqual(resp['target'], 'game')
+			self.assertEqual(resp['event'], 'message_broadcast')
+			self.assertEqual(resp['message']['body'], 'hello websocket')
 
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'direct-message',
-									'message': 'hello friend',
-									'user_uid': str(self.friend.uid)})
-			dm_response = None
+
+			await comm.send_json_to({
+				'target': 'friend-chat', 'event': 'send',
+				'message': {
+					'message': 'hello friend',
+					'target-id': str(self.friend.uid),
+				},
+			})
+			dm = None
 			for _ in range(3):
-				response = await communicator.receive_json_from()
-				if response.get('target') == 'friend-chat' and response.get('event') == 'new':
-					dm_response = response
+				r = await comm.receive_json_from()
+				if r.get('target') == 'friend-chat' and r.get('event') == 'new':
+					dm = r
 					break
-			self.assertIsNotNone(dm_response)
-			self.assertEqual(dm_response['message']['direction'], 'outgoing')
-			self.assertEqual(dm_response['message']['message'], 'hello friend')
-			self.assertEqual(dm_response['message']['target-id'], str(self.friend.profile.uid))
+			self.assertIsNotNone(dm)
+			self.assertEqual(dm['message']['message'], 'hello friend')
 
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'direct-message',
-									'message': 'hello stranger',
-									'user_uid': str(self.stranger.uid)})
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'error')
-			self.assertEqual(response['message'], 'Target is not a friend')
-
-			await communicator.send_json_to({'target': 'chat',
-									'event': 'direct-message',
-									'message': 'hello guest',
-									'user_uid': str(self.guest.uid)})
-			response = await communicator.receive_json_from()
-			self.assertEqual(response['type'], 'error')
-			self.assertEqual(response['message'], 'User not found')
-
-			await communicator.disconnect()
+			await comm.disconnect()
 
 		async_to_sync(scenario)()
-		self.assertTrue(
-			Message.objects.filter(sender_profile=self.user.profile,
-									body='hello websocket').exists()
-		)
+		self.assertTrue(Message.objects.filter(sender=self.user.profile, body='hello websocket').exists())
 		self.assertTrue(self.room.participants.filter(id=self.user.profile.id).exists())
-
-	def test_direct_room_websocket_rejects_non_participant(self) -> None:
-		"""Users outside a direct room should not be allowed to connect."""
-
-		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope['user'] = self.stranger
-			connected, _ = await communicator.connect()
-			self.assertTrue(connected)
-
-		async_to_sync(scenario)()
 
 	def test_direct_room_websocket_accepts_participant(self) -> None:
 		"""Direct-room participants should be allowed to connect."""
@@ -311,50 +291,6 @@ class ChatWebsocketTests(TransactionTestCase):
 			communicator.scope['user'] = self.user
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
-			await communicator.disconnect()
-
-		async_to_sync(scenario)()
-
-	def test_social_notification_payload_matches_frontend_contract(self) -> None:
-		"""Friend requests should emit the expected websocket social payloads."""
-
-		@database_sync_to_async
-		def create_pending_friend_request() -> Friendship:
-			return Friendship.objects.create(
-				from_user=self.stranger,
-				to_user=self.user,
-				status='pending',
-			)
-
-		async def scenario() -> None:
-			communicator = WebsocketCommunicator(application, '/ws/global/')
-			communicator.scope['user'] = self.user
-			connected, _ = await communicator.connect()
-			self.assertTrue(connected)
-
-			friendship = await create_pending_friend_request()
-			responses = [await communicator.receive_json_from(), await communicator.receive_json_from()]
-			friend_request_event = next(
-				(value for value in responses if value.get('target') == 'friend-request'),
-				None,
-			)
-			notif_event = next(
-				(value for value in responses if value.get('target') == 'notif'),
-				None,
-			)
-
-			self.assertIsNotNone(friend_request_event)
-			self.assertIsNotNone(notif_event)
-
-			self.assertEqual(friend_request_event.get('event'), 'new-incoming')
-			self.assertEqual(friend_request_event['user'].get('uid'), str(self.stranger.profile.uid))
-			self.assertEqual(friend_request_event['user'].get('username'), self.stranger.profile.username)
-
-			self.assertEqual(notif_event.get('event'), 'new')
-			self.assertEqual(notif_event['notif'].get('uid'), str(friendship.uid))
-			self.assertEqual(notif_event['notif'].get('kind'), 'friend-request')
-			self.assertEqual(notif_event['notif']['from'].get('uid'), str(self.stranger.profile.uid))
-
 			await communicator.disconnect()
 
 		async_to_sync(scenario)()

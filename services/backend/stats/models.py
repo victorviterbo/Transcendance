@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-
 from django.db import models
+from django.db.models import Sum
+from django.utils.functional import cached_property
 from game.models import Game
 from music.models import Track
 
@@ -15,14 +15,10 @@ class GameRoundStats(models.Model):
     round_number = models.PositiveIntegerField()
     game = models.ForeignKey(Game,
                              on_delete=models.CASCADE)
-    winner = models.ForeignKey('userprofile.Profile',
-                               on_delete=models.SET_NULL,
-                               null=True,
-                               related_name='won_rounds')
     track = models.ForeignKey(Track,
                               on_delete=models.SET_NULL,
                               null=True)
-    player = models.ManyToManyField('userprofile.Profile',
+    players = models.ManyToManyField('userprofile.Profile',
                                through='UserRoundStats',
                                related_name='played_rounds')
     class Meta:
@@ -32,25 +28,39 @@ class GameRoundStats(models.Model):
 
 class UserRoundStats(models.Model):
     """Specific stats for ONE player in ONE specific round."""
-    #game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='stats')
-    #track = models.ForeignKey(Track, on_delete=models.SET_NULL, null=True)
+    game_stats = models.ForeignKey('UserGameStats',
+                                   on_delete=models.CASCADE,
+                                   related_name='round_stats',
+                                   null=True
+    )
     round = models.ForeignKey(GameRoundStats, on_delete=models.CASCADE)
     player = models.ForeignKey('userprofile.Profile',
                                on_delete=models.CASCADE)
-    is_won = models.BooleanField(default=False)
+    time = models.FloatField(default=30)
     artist_found = models.BooleanField(default=False)
-    song_found = models.BooleanField(default=False)
-    time = models.DurationField(default=timedelta(seconds=30))
-    xp_earned = models.IntegerField(default=0)
+    title_found = models.BooleanField(default=False)
+    artist_found_at = models.FloatField(default=30)
+    title_found_at = models.FloatField(default=30)
+    xp_earned = models.PositiveIntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
 
-    @property
-    def track(self):
+    @cached_property
+    def track(self) -> Track:
+        """Get the track associated with this round."""
         return self.round.track
 
-    @property
-    def game(self):
+    @cached_property
+    def game(self) -> Game:
+        """Get the game associated with this round."""
         return self.round.game
+
+    def save(self, *args: tuple, **kwargs: dict) -> None:
+        """Update time to be the sum of time to find artist and title."""
+        if self.title_found and self.artist_found:
+            self.time = max(self.title_found_at, self.artist_found_at)
+        else:
+            self.time = -1
+        super().save(*args, **kwargs)
 
 class UserGameStats(models.Model):
     """Define the model for a single player in a single game."""
@@ -63,6 +73,15 @@ class UserGameStats(models.Model):
                                related_name='round_played')
     is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def total_xp_earned(self) -> int:
+        """Dynamically sum XP from all rounds played by this player in this game."""
+        result = UserRoundStats.objects.filter(
+            round__game=self.game,
+            player=self.player
+        ).aggregate(total=Sum('xp_earned'))    
+        return result['total'] or 0
     
     class Meta:
         """Define special behaviour of database."""

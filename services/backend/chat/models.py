@@ -27,7 +27,7 @@ class Room(models.Model):
 class Message(models.Model):
 	"""Stores a single chat message along with delivery and read state."""
 
-	sender_profile = models.ForeignKey('userprofile.Profile', on_delete=models.CASCADE)
+	sender = models.ForeignKey('userprofile.Profile', on_delete=models.CASCADE)
 	room = models.ForeignKey(Room, on_delete=models.CASCADE)
 	body = models.TextField()
 	delivered = models.BooleanField(default=False)
@@ -43,4 +43,4 @@ class Message(models.Model):
 
 	def __str__(self) -> None:
 		"""Return a short preview of the message body."""
-		return f'{self.body[0:50]} from {self.sender_profile}'
+		return f'{self.body[0:50]} from {self.sender}'

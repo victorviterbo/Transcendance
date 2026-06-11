@@ -35,7 +35,7 @@ class Profile(models.Model):
     
     session_key = models.CharField(max_length=40, null=True, blank=True, db_index=True)
 
-    is_guest = models.BooleanField(default=True)
+    guest = models.BooleanField(default=True)
 
     is_online = models.BooleanField(default=True)
     
@@ -60,4 +60,5 @@ class Profile(models.Model):
     
     @property
     def badges(self) -> str:
+        """Compute the badge on the fly so we don't have to store it."""
         return get_badge(self.exp_points)

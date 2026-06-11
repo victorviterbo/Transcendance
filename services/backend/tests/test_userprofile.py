@@ -6,43 +6,17 @@ import shutil
 from pathlib import Path
 
 from django.conf import settings
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TransactionTestCase, override_settings
-from PIL import Image
 from rest_framework import status
+from PIL import Image
 from rest_framework.test import APIClient
+from tests.test_helpers import MEDIA_ROOT, TestBaseHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
+from userprofile.models import Profile
+from userprofile.serializers import LightProfileSerializer, ProfileSerializer
 
-from .models import Profile
-from .serializers import LightProfileSerializer, ProfileSerializer
 
-image_dict = {
-    'valid': '',
-    'invalid': b'this is just a text string, not an image',
-    'empty': b'',
-    'corrupt': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
-}
-
-def image_generator(image_type: str) -> SimpleUploadedFile:
-    """Helper function to generate images for tests."""
-    if image_type == 'valid':
-        file_obj = io.BytesIO()
-        image = Image.new('RGB', size=(1000, 1000), color=(0, 0, 255))
-        image.save(file_obj, 'png')
-        file_obj.seek(0)
-        img_content = file_obj.getvalue()
-    else:
-        img_content = image_dict.get(image_type)
-    return SimpleUploadedFile(name='large_test.png',
-                                content=img_content,
-                                content_type='image/png'
-                                )
-
-MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
-
-@override_settings(MEDIA_ROOT=MEDIA_ROOT)
-class ProfileTests(TransactionTestCase):
+class ProfileTests(TestBaseHelpers):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
@@ -63,7 +37,7 @@ class ProfileTests(TransactionTestCase):
         
         serializer = ProfileSerializer(data={'username': 'an_anonymous_user',
                                               'exp_points': '12',
-                                              'badges': 'Deaf Octopus'
+                                              'badges': 'BADGE_DEAF_OCTOPUS'
                                             },
                                             context={'is_creation': True})
         if serializer.is_valid():
@@ -114,7 +88,7 @@ class ProfileTests(TransactionTestCase):
         profile_url = '/api/profile/'
         new_data = {
             'username': 'a_new_user',
-            'avatar': image_generator('valid'),
+            'avatar': self.image_generator('valid'),
             'exp_points': 1000000000,
         }
         new_data['avatar'].seek(0)
@@ -131,7 +105,7 @@ class ProfileTests(TransactionTestCase):
         new_data = {
             'username': 'a_new_user',
             'email': 'anewemail@mail.com',
-            'avatar': image_generator('valid'),
+            'avatar': self.image_generator('valid'),
             'exp_points': 5001,
             'badges': 'Sonic Shark'
         }
@@ -143,7 +117,7 @@ class ProfileTests(TransactionTestCase):
         self.assertIn('username', response.data)
         self.assertEqual(response.data['username'], 'a_new_user')
 
-        new_data['avatar'] = image_generator('corrupt')
+        new_data['avatar'] = self.image_generator('corrupt')
         new_data['avatar'].seek(0)
         response = self.client.post(profile_url, data=new_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -157,7 +131,7 @@ class ProfileTests(TransactionTestCase):
         self.assertIn('username', response.data['error'])
         self.assertEqual('USERNAME_TAKEN', response.data['error']['username'])
 
-        new_data['avatar'] = image_generator('corrupt')
+        new_data['avatar'] = self.image_generator('corrupt')
         new_data['avatar'].seek(0)
         new_data['username'] = 'user2'
         response = self.client.post(profile_url, data=new_data)
@@ -214,7 +188,7 @@ class ProfileTests(TransactionTestCase):
         new_data = {
             'username': 'a_new_user',
             'email': 'anewemail@mail.com',
-            'avatar': image_generator('valid'),
+            'avatar': self.image_generator('valid'),
             'exp_points': 5001,
             'badges': 'Sonic Shark'
         }
@@ -256,7 +230,7 @@ class ProfileTests(TransactionTestCase):
 
         new_data = {
             'username': 'with_a_pic',
-            'avatar': image_generator('valid'),
+            'avatar': self.image_generator('valid'),
             'exp_points': 1000000000,
         }
         new_data['avatar'].seek(0)
@@ -278,9 +252,9 @@ class ProfileTests(TransactionTestCase):
         """Test success and failure of profile validation."""
         raw_data = {
             'username': 'a_new_user',
-            'avatar': image_generator('valid'),
+            'avatar': self.image_generator('valid'),
             'exp_points': '0',
-            'badges': 'Deaf Octopus'
+            'badges': 'BADGE_DEAF_OCTOPUS'
         }
         for username in ['a_new_user', 'user1', 'an_anonymous_user', 'asuperlongusernamethatshouldfailbutnotcrash']:
             raw_data['username'] = username
@@ -309,8 +283,8 @@ class ProfileTests(TransactionTestCase):
                 self.assertTrue(valid, serializer.errors)
                 self.assertTrue(valid_light, serializer_light.errors)
         raw_data['username'] = 'a_new_user'
-        for image in image_dict:
-            raw_data['avatar'] = image_generator(image)
+        for image in self.image_dict:
+            raw_data['avatar'] = self.image_generator(image)
             serializer = ProfileSerializer(data=raw_data, context={'is_creation': True})
             serializer_light = LightProfileSerializer(data=raw_data,
                                                       context={'is_creation': True})
@@ -332,9 +306,9 @@ class ProfileTests(TransactionTestCase):
                     self.assertEqual('empty', serializer.errors['avatar'][0].code)
                     self.assertEqual('empty', serializer_light.errors['avatar'][0].code)
             else:
-                raw_data['avatar'] = image_generator(image)
+                raw_data['avatar'] = self.image_generator(image)
                 raw_data['avatar'].seek(0)
                 self.assertTrue(valid, serializer.errors)
-                raw_data['avatar'] = image_generator(image)
+                raw_data['avatar'] = self.image_generator(image)
                 raw_data['avatar'].seek(0)
                 self.assertTrue(valid_light, serializer_light.errors)

@@ -2,12 +2,12 @@
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from tests.test_helpers import TestBaseHelpers
+from userauth.models import SiteUser
+from userauth.serializers import RegisterSerializer
 
-from .models import SiteUser
-from .serializers import RegisterSerializer
 
-
-class UserAccountTests(APITestCase):
+class UserAccountTests(TestBaseHelpers):
     """Test suit for the user module."""
 
     def setUp(self) -> None:

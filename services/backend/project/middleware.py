@@ -2,7 +2,8 @@
 
 import uuid
 
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from rest_framework import status
 from userprofile.models import Profile
 
 
@@ -26,8 +27,13 @@ class ProfileMiddleware:
             guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
             request.profile = Profile.objects.create(
                 username=guest_username,
-                is_guest=True
+                guest=True
             )
             request.session['guest_profile_uid'] = str(request.profile.uid)
             request.session.modified = True
+        if not request.profile:
+            return JsonResponse(
+                {"error": "Could not create or retrieve profile."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         return self.get_response(request)

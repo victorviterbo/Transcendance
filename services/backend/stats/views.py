@@ -1,8 +1,8 @@
 """Defines the views for the stats module."""
 
-from django.db.models import Avg, Sum
+from django.db.models import Avg, F, Sum
 from music.models import Track
-from project.defaults import get_avatar_url, genres, genres_to_label
+from project.defaults import genres, genres_to_label, get_avatar_url
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -21,12 +21,12 @@ from .serializers import (
 def _ranking(profile: Profile) -> int:
     """Return the 1-based global ranking of a profile by exp_points."""
     return (
-        Profile.objects.filter(is_guest=False, exp_points__gt=profile.exp_points).count() + 1
+        Profile.objects.filter(guest=False, exp_points__gt=profile.exp_points).count() + 1
     )
 
 def _total_players() -> int:
     """Return the total number of registered (non-guest) players."""
-    return Profile.objects.filter(is_guest=False).count()
+    return Profile.objects.filter(guest=False).count()
 
 
 class GlobalStatsView(APIView):
@@ -47,44 +47,54 @@ class GlobalStatsView(APIView):
 
         rounds = UserRoundStats.objects.filter(player=profile)
         total_rounds = rounds.count()
-        total_games = GameRoundStats.objects.filter(player=profile).values('game').distinct().count()
-        total_games_won = UserGameStats.objects.filter(player=profile, is_won=True).count()
-
-        agg = rounds.aggregate(avg_score=Avg('xp_earned'), avg_time=Avg('time'))
-        avg_score = round(agg['avg_score'] or 0.0, 2)
-        avg_time_duration = agg['avg_time']
-        avg_time = round(avg_time_duration.total_seconds(), 2) if avg_time_duration else 0.0
+        total_games = (GameRoundStats.objects.filter(players=profile)
+            .values('game')
+            .distinct()
+            .count()
+        )
+        total_games_won = (UserGameStats.objects.filter(player=profile,
+                                                       is_won=True)
+            .count()
+        )
+        avg_score = round(rounds.aggregate(avg_score=Avg('xp_earned'))['avg_score'] or 0.0, 2)
+        avg_time_duration = (
+            rounds.filter(artist_found=True, title_found=True)
+            .aggregate(avg_time=Avg('time'))['avg_time']
+        )
+        avg_time = round(avg_time_duration, 2) if avg_time_duration else 0.0
 
         if total_rounds > 0:
             artist_rate = round(
                 rounds.filter(artist_found=True).count() / total_rounds * 100, 2)
-            song_rate = round(
-                rounds.filter(song_found=True).count() / total_rounds * 100, 2)
+            title_rate = round(
+                rounds.filter(title_found=True).count() / total_rounds * 100, 2)
             complete_rate = round(
-                rounds.filter(artist_found=True, song_found=True).count() /
+                rounds.filter(artist_found=True, title_found=True).count() /
                                                             total_rounds * 100, 2)
         else:
-            artist_rate = song_rate = complete_rate = 0.0
+            artist_rate = title_rate = complete_rate = 0.0
         tag_rates = {}
         for tag in genres:
             tag_rounds = rounds.filter(round__track__genre=tag)
             tag_total = tag_rounds.count()
             if tag_total > 0:
-                tag_complete = tag_rounds.filter(artist_found=True, song_found=True).count()
-                tag_rates[genres_to_label.get(tag, tag)] = round(tag_complete / tag_total * 100, 2)
+                tag_complete = tag_rounds.filter(artist_found=True,
+                                                 title_found=True).count()
+                tag_rates[genres_to_label.get(tag, tag)] = round(tag_complete
+                                                                 / tag_total * 100, 2)
             else:
                 tag_rates[genres_to_label.get(tag, tag)] = 0.0
         serializer = GlobalStatsSerializer(data={
                                     'averageScore': avg_score,
                                     'xp': profile.exp_points,
                                     'totalGamesPlayed': total_games,
-                                    'totalSongsPlayed': total_rounds,
+                                    'totaltitlesPlayed': total_rounds,
                                     'totalGamesWon': total_games_won,
                                     'ranking': _ranking(profile),
                                     'totalPlayers': _total_players(),
                                     'averageTime': avg_time,
                                     'successRateArtist': artist_rate,
-                                    'successRateSong': song_rate,
+                                    'successRatetitle': title_rate,
                                     'successRateComplete': complete_rate,
                                     'successRatesCompleteByTag': tag_rates,
         })
@@ -100,7 +110,7 @@ class LeaderboardView(APIView):
     def get(self, request: Request) -> Response:
         """Return leaderboard data."""
         top_profiles = (
-            Profile.objects.filter(is_guest=False)
+            Profile.objects.filter(guest=False)
             .order_by('-exp_points')[:10]
         )
         entries = []
@@ -192,9 +202,9 @@ class HistoryView(APIView):
                 rounds_data.append({
                     'trackName': track.title if track else '',
                     'trackArtist': track.artist if track else '',
-                    'songFound': urs.song_found,
+                    'titleFound': urs.title_found,
                     'artistFound': urs.artist_found,
-                    'time': round(urs.time.total_seconds(), 2),
+                    'time': round(urs.time, 2),
                     'ranking': round_rank,
                     'previewUrl': track.preview_url if track else None,
                     'artworkUrl': track.artwork_url if track else None,
@@ -204,7 +214,7 @@ class HistoryView(APIView):
                 'playedAt': ugs.played_at,
                 'xpEarned': my_xp,
                 'ranking': my_rank,
-                'roomTitle': game.game_name,
+                'roomTitle': game.name,
                 'tags': [genres_to_label.get(t, t) for t in tags],
                 'players': players_data,
                 'rounds': rounds_data,

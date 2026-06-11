@@ -4,6 +4,9 @@ WORKDIR /backend
 
 COPY ./environment.yml .
 
+RUN conda env create -f environment.yml && \
+    conda clean -afy
+
 COPY init.sh .
 
 EXPOSE 8000

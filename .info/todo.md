@@ -1,3 +1,23 @@
+
+# TODO:
+- [ ] Review Game HTTP endpoints to see if they are needed (like what is the point of the patch ?)
+- [~] Transfer the game_loop_tasks ownership from owner's consumer instance to consumer class to ensure persistance
+- [ ] Handle game termination end task, etc.
+- [X] Handle exceptions in _add_player_to_game_stats
+- [X] Handle exceptions in _setup_game_assets
+- [~] Harmonize naming conventions (like song/title)
+- [~] Harmonize the use of id vs uid
+- [ ] What is 'Latin' genre in the music/genre_utils ? Also other genre names dont match with the rest
+- [ ] In stats, do we stick to 'time' or do we completely swap it with song_found_at and artist_found_at
+- [ ] In register endpoint, remove Profile creation security (investigate what path can lead to this happening if needed)
+- [ ] All times are currently as Floats in seconds: check with front if it is ok
+- [ ] Fix the chat tests
+- [ ] Review middleware and consumer to bounce connection if we cannot retrieve profile (check also with incognito mode)
+- [ ] Handle in-game disconnect (remove player, find new owner if player was owner)
+- [ ] Redo the serializers for game (first 3)
+- [ ] Receive leave_game explicit signal or should disconect kick the player out
+- [ ] Gerer le link invite
+
 # TODO: KRIS
 
 - [ ] Better localization for notification times: remove the (s)
@@ -16,6 +36,11 @@
 - [ ] Message failed not showing 
 - [ ] useParams(); for room id;
 - [ ] Check PGame room for host;
+
+# TODO: FAB
+- [ ] Add verification on who calls for game endpoints
+- [x] Check get_relation
+- [x] Ajouter game name au serialiser game get, ainsi que l'id plutot que l'uid + les genres et le public_level
 
 # BUG
 
@@ -39,6 +64,7 @@
 - Localization data is messy and order-dependent. ttr() in localization.ts (line 132) silently keeps the last matching ID, and lang.csv has duplicates like line 8 (line 8) and line 86 (line 86) for WELCOME, plus 3 (line 3) and 113 (line 113) for CHANGE_EMAIL.
 - Language switching is implemented by registering a global callback during render in CLanguageLayout.tsx (line 13) and forcing a subtree remount with key={lang} at line 18 (line 18). It’s effective, but it’s a brute-force reset, not a clean reactive localization model.
 - The frontend still has a lot of rough hygiene signals: magic-number friend tabs and the 1 -> 0 timeout hop in GPageBases.tsx (line 42), CMenu forgetting to call useId in CMenu.tsx (line 14), data-testid="hello" in CTitleBasePaper.tsx (line 54), and a lot of typo drift like WS_ADRESS, PWelcomLogin, USERS_ADD_EROOR, TAG_ELECRO, and recieved.
+- See if we need to create an 'emergency stop' in the game_loop if something went wrong elsewhere
 
 # ????
 
