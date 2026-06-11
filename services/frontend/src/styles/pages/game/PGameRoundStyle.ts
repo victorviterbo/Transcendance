@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors, appSharedStyle } from "../../theme";
-import type { IGamePlayer, IGameRound, IGameSettings } from "../../../types/game";
+import type { IGameRound, IGameSettings } from "../../../types/game";
 import type { IGamePlayerAnswer } from "../../../types/game";
 import { colorGetBackground } from "../../../utils/styles";
 
