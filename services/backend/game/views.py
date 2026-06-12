@@ -65,7 +65,7 @@ class FriendsGameView(APIView):
 			.exclude(visibility='private')
 		)
 		serialized_games = GameDetailSerializer(friends_games, many=True)
-		return Response(serialized_games.data, status=status.HTTP_200_OK)
+		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)
 
 
 class SingleGameView(APIView):
