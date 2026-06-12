@@ -12,6 +12,9 @@ conda run -n backend python /backend/manage.py makemigrations
 conda run -n backend python /backend/manage.py migrate
 conda run -n backend python /backend/manage.py collectstatic --noinput
 
+conda run -n backend python /backend/manage.py seed_playlists
+conda run -n backend python /backend/manage.py sync_playlists
+
 if [ "$APP_MODE" = "test" ]; then
     echo "Running Tests..."
     exec conda run --no-capture-output -n backend python /backend/manage.py test
