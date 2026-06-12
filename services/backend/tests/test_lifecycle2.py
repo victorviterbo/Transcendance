@@ -99,7 +99,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answerTime': 2,
+                            'time': 2,
                             },
                  'expected_response': 'answer_validation',
                  'is_correct' : True
@@ -115,7 +115,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_validation',
                  'is_correct' : True
@@ -125,7 +125,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Artist 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_validation',
                  'is_correct' : True
@@ -141,7 +141,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'wrong answer...',
-                            'answerTime': 1,
+                            'time': 1,
                             },
                  'expected_response': 'answer_incorrect',
                  'is_correct' : False
@@ -151,7 +151,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Artist 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_validation',
                  'is_correct' : True
@@ -161,7 +161,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_validation',
                  'is_correct' : True

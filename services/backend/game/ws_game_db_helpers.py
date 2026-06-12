@@ -141,7 +141,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		bool: Whether the title is correct
 	"""
 	try:
-		time = content.get('answerTime')
+		time = content.get('time')
 		player_answer = content.get('answer').lower().strip()
 		if track is None or time is None or player_answer is None:
 			return False, False

@@ -215,10 +215,10 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
 
 async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
     """Submit an answer to current game question."""
-    if 'answer' not in content or 'answerTime' not in content:
+    if 'answer' not in content or 'time' not in content:
         await consumer.send_json({'target': 'game',
                             'event': 'error',
-                            'message': 'answer and answeTime required'})
+                            'message': 'answer and time required'})
         return
     
     if consumer.current_game.status != 'playing_round':
@@ -251,7 +251,7 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
                 'trackArtist': track_data['artist'] if artist_correct else None,
                 'tracktitle': track_data['title'] if title_correct else None,
                 'is_correct': True,
-                'time': content.get('answerTime')
+                'time': content.get('time')
             })
         else:
             # else send only to player who send the correct response
@@ -263,7 +263,7 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
                 'tracktitle': track_data['title'] if title_correct else None,
                 'answer': content.get('answer'),
                 'is_correct': True,
-                'time': content.get('answerTime')
+                'time': content.get('time')
             })
     else:
         if consumer.current_game.reveal:

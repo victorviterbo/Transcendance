@@ -561,7 +561,7 @@ index a34c922..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Track 12',
--                            'answerTime': 2,
+-                            'time': 2,
 -                            },
 -                 'expected_response': 'answer_correct',
 -                 'is_correct' : True
@@ -577,7 +577,7 @@ index a34c922..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Track 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_correct',
 -                 'is_correct' : True
@@ -587,7 +587,7 @@ index a34c922..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Artist 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_correct',
 -                 'is_correct' : True
@@ -603,7 +603,7 @@ index a34c922..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'wrong answer...',
--                            'answerTime': 1,
+-                            'time': 1,
 -                            },
 -                 'expected_response': 'answer_validation',
 -                 'is_correct' : False
@@ -613,7 +613,7 @@ index a34c922..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Artist 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_correct',
 -                 'is_correct' : True
@@ -623,7 +623,7 @@ index a34c922..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Track 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_correct',
 -                 'is_correct' : True
@@ -847,7 +847,7 @@ index 26c63f8..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Track 12',
--                            'answerTime': 2,
+-                            'time': 2,
 -                            },
 -                 'expected_response': 'answer_validation',
 -                 'is_correct' : True
@@ -863,7 +863,7 @@ index 26c63f8..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Track 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_validation',
 -                 'is_correct' : True
@@ -873,7 +873,7 @@ index 26c63f8..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Artist 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_validation',
 -                 'is_correct' : True
@@ -889,7 +889,7 @@ index 26c63f8..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'wrong answer...',
--                            'answerTime': 1,
+-                            'time': 1,
 -                            },
 -                 'expected_response': 'answer_incorrect',
 -                 'is_correct' : False
@@ -899,7 +899,7 @@ index 26c63f8..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Artist 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_validation',
 -                 'is_correct' : True
@@ -909,7 +909,7 @@ index 26c63f8..0000000
 -                            'event': 'answer_submit',
 -                            'uid': str(game.uid),
 -                            'answer': 'Test Track 12',
--                            'answerTime': 3,
+-                            'time': 3,
 -                            },
 -                 'expected_response': 'answer_validation',
 -                 'is_correct' : True
