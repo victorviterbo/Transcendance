@@ -312,7 +312,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                 'error': format_validation_errors(exc)['error'],
             })
             return
-    consumer.current_game = updated_game
+    consumer.current_game = updated_game.save()
     serialized_game = await _get_game_data(consumer)
     settings_data = await _get_game_settings_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
