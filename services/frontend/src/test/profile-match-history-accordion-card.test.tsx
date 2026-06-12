@@ -119,7 +119,7 @@ describe("PProfileMatchHistoryAccordionCard", () => {
 						"TAG_POP",
 						"TAG_RAP",
 						"TAG_ROCK",
-						"TAG_ELECRO",
+						"TAG_ELECTRO",
 						"TAG_FRENCH_VARIETY",
 						"TAG_RNB",
 					],
