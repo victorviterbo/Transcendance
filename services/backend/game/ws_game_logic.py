@@ -59,8 +59,8 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
                             'event': 'error',
                             'message': 'Could not identify player'})
     
-    if game_event == 'join_game':
-        await join_game(consumer, content)
+    if game_event == 'player_join':
+        await player_join(consumer, content)
         return
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
@@ -135,7 +135,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     finally:
         ACTIVE_GAMES.pop(consumer.current_game.uid, None)
 
-async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
+async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
     if getattr(consumer, 'current_game', None):
         await consumer.send_json({'target': 'game',

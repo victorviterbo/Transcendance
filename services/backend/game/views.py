@@ -28,7 +28,7 @@ class GeneralGameView(APIView):
 		"""Handles the listing of all games."""
 		all_public_games = Game.objects.filter(visibility='public', status='waiting')
 		serialized_games = GameDetailSerializer(all_public_games, many=True)
-		return Response(serialized_games.data, status=status.HTTP_200_OK)
+		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)
 	
 	def post(self, request: Request) -> Response:
 		"""Handle the creation of a new game."""

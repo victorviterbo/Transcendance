@@ -37,7 +37,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             owner_socket = await self._connect_socket(self.owner)
 
             await owner_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             await self.expect_event(owner_socket, 'game_info')
             await self.expect_event(owner_socket, 'message_history')
@@ -46,7 +46,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             challenger_socket = await self._connect_socket(self.challenger)
 
             await challenger_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
 
             await self.expect_event(challenger_socket, 'message_history')

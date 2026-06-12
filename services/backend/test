@@ -505,7 +505,7 @@ index a34c922..0000000
 -            self.assertTrue(owner_connected)
 -
 -            await owner_socket.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            await expect_event(owner_socket, 'player_joined')
 -            
@@ -514,7 +514,7 @@ index a34c922..0000000
 -            self.assertTrue(challenger_connected)
 -
 -            await challenger_socket.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            await expect_event(challenger_socket, 'player_joined')
 -            await expect_event(owner_socket, 'player_joined')
@@ -791,7 +791,7 @@ index 26c63f8..0000000
 -            self.assertTrue(owner_connected)
 -
 -            await owner_socket.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            await expect_event(owner_socket, 'player_joined')
 -            
@@ -800,7 +800,7 @@ index 26c63f8..0000000
 -            self.assertTrue(challenger_connected)
 -
 -            await challenger_socket.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            await expect_event(challenger_socket, 'player_joined')
 -            await expect_event(owner_socket, 'player_joined')
@@ -1160,8 +1160,8 @@ index 160d854..0000000
 -        communicator.scope['user'] = user
 -        return communicator
 -
--    def test_join_game_rejects_unknown_game_uid(self) -> None:
--        """join_game should fail when the target game does not exist."""
+-    def test_player_join_rejects_unknown_game_uid(self) -> None:
+-        """player_join should fail when the target game does not exist."""
 -
 -        async def scenario() -> None:
 -            communicator = self._connect_socket(self.challenger)
@@ -1171,7 +1171,7 @@ index 160d854..0000000
 -            await communicator.send_json_to(
 -                {
 -                    'target': 'game',
--                    'event': 'join_game',
+-                    'event': 'player_join',
 -                    'uid': str(uuid.uuid4()),
 -                }
 -            )
@@ -1193,7 +1193,7 @@ index 160d854..0000000
 -            self.assertTrue(connected)
 -
 -            await communicator.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            response = await communicator.receive_json_from()
 -            self.assertEqual(response['event'], 'player_joined')
@@ -1239,7 +1239,7 @@ index 160d854..0000000
 -            self.assertTrue(connected)
 -
 -            await communicator.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            response = await communicator.receive_json_from()
 -            self.assertEqual(response['event'], 'player_joined')
@@ -1260,7 +1260,7 @@ index 160d854..0000000
 -
 -        async_to_sync(scenario)()
 -
--    def test_join_game_broadcasts_new_player(self) -> None:
+-    def test_player_join_broadcasts_new_player(self) -> None:
 -        """A challenger joining should notify existing members and persist membership."""
 -        _, game = self.create_game_via_http(self.owner, name='WS Join')
 -
@@ -1274,13 +1274,13 @@ index 160d854..0000000
 -            self.assertTrue(challenger_connected)
 -
 -            await owner_socket.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            owner_first_message = await owner_socket.receive_json_from()
 -            self.assertEqual(owner_first_message['event'], 'player_joined')
 -
 -            await challenger_socket.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            challenger_join_response = await challenger_socket.receive_json_from()
 -            owner_broadcast = await owner_socket.receive_json_from()
@@ -1310,7 +1310,7 @@ index 160d854..0000000
 -            self.assertTrue(connected)
 -
 -            await communicator.send_json_to(
--                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+-                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
 -            )
 -            response = await communicator.receive_json_from()
 -            self.assertEqual(response['event'], 'player_joined')
@@ -1897,7 +1897,7 @@ index 1831881..69f9298 100644
              owner_connected, _ = await owner_socket.connect()
 @@ -82,7 +47,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TransactionTestCase):
              await owner_socket.send_json_to(
-                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                 {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
              )
 -            await expect_event(owner_socket, 'player_joined')
 +            await self.expect_event(owner_socket, 'player_joined')
@@ -1906,7 +1906,7 @@ index 1831881..69f9298 100644
              challenger_connected, _ = await challenger_socket.connect()
 @@ -91,8 +56,8 @@ class GameWebsocketFlowTests(TestBaseHelpers, TransactionTestCase):
              await challenger_socket.send_json_to(
-                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                 {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
              )
 -            await expect_event(challenger_socket, 'player_joined')
 -            await expect_event(owner_socket, 'player_joined')

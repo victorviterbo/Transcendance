@@ -153,8 +153,8 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
         self.owner = self.create_user('ws-owner@mail.com', 'ws_owner')
         self.challenger = self.create_user('ws-challenger@mail.com', 'ws_challenger')
 
-    def test_join_game_rejects_unknown_game_uid(self) -> None:
-        """join_game should fail when the target game does not exist."""
+    def test_player_join_rejects_unknown_game_uid(self) -> None:
+        """player_join should fail when the target game does not exist."""
 
         async def scenario() -> str:
             communicator = await self._connect_socket(self.challenger)
@@ -162,7 +162,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             await communicator.send_json_to(
                 {
                     'target': 'game',
-                    'event': 'join_game',
+                    'event': 'player_join',
                     'uid': str(uuid.uuid4()),
                 }
             )
@@ -182,7 +182,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             communicator = await self._connect_socket(self.owner)
 
             await communicator.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             
             # await self.expect_event(communicator, 'message_history')
@@ -227,7 +227,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             owner_socket = await self._connect_socket(self.owner)
 
             await owner_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             await self.expect_event(owner_socket, 'game_info')
             await self.expect_event(owner_socket, 'message_history')
@@ -249,7 +249,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
 
         async_to_sync(scenario)()
 
-    def test_join_game_broadcasts_new_player(self) -> None:
+    def test_player_join_broadcasts_new_player(self) -> None:
         """A challenger joining should notify existing members and persist membership."""
         _, game = self.create_game_via_http(self.owner, name='WS Join')
 
@@ -259,13 +259,13 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             challenger_socket = await self._connect_socket(self.challenger)
 
             await owner_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             owner_first_message = await self.expect_event(owner_socket, 'message_history')
             owner_join_response = await self.expect_event(owner_socket, 'player_joined')
 
             await challenger_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             challenger_history = await self.expect_event(challenger_socket, 'message_history')
             challenger_join_response = await self.expect_event(challenger_socket, 'player_joined')
@@ -291,7 +291,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
         game.refresh_from_db()
         self.assertTrue(game.players.filter(id=self.challenger.profile.id).exists())
 
-    def test_join_game_sends_chat_history_to_joining_player(self) -> None:
+    def test_player_join_sends_chat_history_to_joining_player(self) -> None:
         """A player joining should receive the linked room's persisted chat history."""
         _, game = self.create_game_via_http(self.owner, name='WS History Join')
         room = Room.objects.create(name=f'chat-room-{game.uid}')
@@ -315,7 +315,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             challenger_socket = await self._connect_socket(self.challenger)
 
             await challenger_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             history_response = await self.expect_event(challenger_socket, 'message_history')
             join_response = await self.expect_event(challenger_socket, 'player_joined')
@@ -357,8 +357,8 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             challenger_socket = await self._connect_socket(self.challenger)
 
             # Both players join the game
-            await owner_socket.send_json_to({'target': 'game', 'event': 'join_game', 'uid': str(game.uid)})
-            await challenger_socket.send_json_to({'target': 'game', 'event': 'join_game', 'uid': str(game.uid)})
+            await owner_socket.send_json_to({'target': 'game', 'event': 'player_join', 'uid': str(game.uid)})
+            await challenger_socket.send_json_to({'target': 'game', 'event': 'player_join', 'uid': str(game.uid)})
 
             # Send a single chat message from owner
             await owner_socket.send_json_to({
@@ -418,7 +418,7 @@ class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
             communicator = await self._connect_socket(self.owner)
 
             await communicator.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
             response = await self.expect_event(communicator, 'message_history')
             response = await self.expect_event(communicator, 'player_joined')
