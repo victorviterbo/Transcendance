@@ -72,7 +72,7 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
         await consumer.add_to_layer(consumer.game_group_name)
     match game_event:
-        case 'start_game':
+        case 'game_start':
             await _start_game(consumer, content)
         case 'settings_update':
             await _update_game_settings(consumer, content)
