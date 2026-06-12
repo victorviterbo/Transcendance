@@ -68,7 +68,7 @@ function PRoomList({ isPublic }: PRoomListProps) {
 		return () => {
 			ignore = true;
 		};
-	}, [fetchRoomList]);
+	}, [fetchRoomList, error]);
 
 	useEffect(() => {
 		return () => {

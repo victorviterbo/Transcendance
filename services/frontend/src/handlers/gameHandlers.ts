@@ -141,7 +141,6 @@ export class GameInstance {
 		this.self = data.self;
 		this.maxPlayers = data.game.maxPlayers;
 		this.visibility = data.game.visibility;
-
 		this.status = {
 			phase:
 				data.game.status == "waiting" || data.game.status == "finish"
@@ -157,6 +156,7 @@ export class GameInstance {
 		data.history.forEach((round: TWSRoundInfo) => {
 			this.applyWSRound(round, true);
 		});
+		console.log("TEST");
 
 		this.updateAll();
 		this.callbacks.setSessionState("joined");
@@ -164,20 +164,23 @@ export class GameInstance {
 		this.log("Game ready");
 	}
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
-		this.log("Player: '" + data.player.user.username + "' has joined");
-		if (!this.players.find((player: IGamePlayer) => player.user.uid == data.player.user.uid)) {
-			this.players.push(data.player);
+		this.log("Player: '" + data.player.username + "' has joined");
+		if (!this.players.find((player: IGamePlayer) => player.player.uid == data.player.uid)) {
+			this.players.push({
+				player: data.player,
+				points: 0
+		});
 			this.updatePlayers();
-			this.addMessage(data.player, "joined");
+			this.addMessage(this.players[this.players.length - 1], "joined");
 		}
 	}
 	onPlayerLeft(data: IWSGameSendEventPlayerManage) {
 		const playerIndex: number = this.players.findIndex(
-			(player: IGamePlayer) => player.user.uid == data.player.user.uid,
+			(player: IGamePlayer) => player.player.uid == data.player.uid,
 		);
 		if (!playerIndex) return;
 		const player: IGamePlayer = this.players.splice(playerIndex, 1)[0];
-		this.log("Player: '" + player.user.username + "' has left");
+		this.log("Player: '" + player.player.username + "' has left");
 		this.addMessage(player, "leaved");
 		this.updatePlayers();
 	}
@@ -272,7 +275,7 @@ export class GameInstance {
 		this.logRound("Answer broadcast recieved for '" + data.player.username + "'");
 
 		const player: IGamePlayer | undefined = this.players.find(
-			(fPlayer: IGamePlayer) => fPlayer.user.uid == data.player.uid,
+			(fPlayer: IGamePlayer) => fPlayer.player.uid == data.player.uid,
 		);
 		const res: IGamePlayerResult = this.getResult(data.player);
 
@@ -322,7 +325,7 @@ export class GameInstance {
 		this.players = [];
 		data.leaderboard.forEach((player: IGamePlayer) => {
 			const old: IGamePlayer | undefined = prevLeaderboard.find(
-				(value: IGamePlayer) => (value.user.uid = player.user.uid),
+				(value: IGamePlayer) => (value.player.uid = player.player.uid),
 			);
 			if (old) {
 				player.host = old.host;
@@ -377,7 +380,7 @@ export class GameInstance {
 		this.chat.forEach((msg: IGameChatMsg) => {
 			msg.type = "message";
 			const senderPLayer: IGamePlayer | undefined = this.players.find(
-				(player) => player.user.uid == msg.sender.uid,
+				(player) => player.player.uid == msg.sender.uid,
 			);
 			if (senderPLayer) msg.colorID = senderPLayer.colorid;
 		});
@@ -390,7 +393,7 @@ export class GameInstance {
 		if (check) return;
 		data.message.type = "message";
 		const senderPLayer: IGamePlayer | undefined = this.players.find(
-			(player) => player.user.uid == data.message.sender.uid,
+			(player) => player.player.uid == data.message.sender.uid,
 		);
 		if (senderPLayer) data.message.colorID = senderPLayer.colorid;
 		this.chat.unshift(data.message);
@@ -401,7 +404,7 @@ export class GameInstance {
 	join() {
 		this.log("Joining game...");
 		this.send({
-			...this.getSendBaseData("game_join"),
+			...this.getSendBaseData("player_join"),
 		});
 	}
 	settingsChanged(nSettings: IGameSettings) {
@@ -489,13 +492,16 @@ export class GameInstance {
 		this.callbacks.setRounds(this.rounds);
 	}
 	updatePlayers() {
+		console.log(this.players);
 		this.players.forEach((player: IGamePlayer) => {
 			if (player.colorid == undefined) {
 				player.colorid = this.lastColorId % 10;
 				this.lastColorId++;
 			}
-			player.host = player.user.uid == this.host?.uid;
-			player.self = player.user.uid == this.self?.uid;
+			console.log(player.player);
+			console.log(player.player.uid);
+			player.host = player.player.uid == this.host?.uid;
+			player.self = player.player.uid == this.self?.uid;
 		});
 		this.players.sort((player1: IGamePlayer, player2: IGamePlayer) => {
 			return player2.points - player1.points;
@@ -710,7 +716,7 @@ export class GameInstance {
 	addMessage(user: IGamePlayer, type: TGameChatType, msg?: string) {
 		const nMessage: IGameChatMsg = {
 			uid: crypto.randomUUID(),
-			sender: user.user,
+			sender: user.player,
 			type,
 			colorID: user.colorid,
 			body: msg,

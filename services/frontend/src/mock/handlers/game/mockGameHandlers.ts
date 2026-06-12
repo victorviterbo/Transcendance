@@ -226,7 +226,7 @@ export class MockGame {
 
 		this.simulateAnswer({
 			playerNumber: this.players.findIndex(
-				(player: IGamePlayer) => player.user.uid == mockDefaultUserUID,
+				(player: IGamePlayer) => player.player.uid == mockDefaultUserUID,
 			),
 			try: event.answer,
 			at: event.time,
@@ -236,17 +236,17 @@ export class MockGame {
 	onUserMessage(event: IWSGameRCVEventMsg) {
 		this.log("User has sent a message  message: " + event.message);
 		const currentUser: IGamePlayer | undefined = this.players.find(
-			(player: IGamePlayer) => player.user.uid == mockDefaultUserUID,
+			(player: IGamePlayer) => player.player.uid == mockDefaultUserUID,
 		);
 		if (!currentUser) return;
-		this.newMSG(event.message, currentUser.user);
+		this.newMSG(event.message, currentUser.player);
 	}
 
 	//====================== FUNCTIONS ======================
 	//--------------------- WS ---------------------
 	rcvEvent(e: IWSGameRCVEvent) {
 		switch (e.event) {
-			case "game_join":
+			case "player_join":
 				this.onJoin();
 				break;
 			case "settings_update":
@@ -278,45 +278,45 @@ export class MockGame {
 	}
 
 	//--------------------- Manage ---------------------
-	joinPlayer(user: IGameUser) {
-		const check: IGamePlayer | undefined = this.players.find((player: IGamePlayer) => {
-			return player.user.uid == user.uid;
+	joinPlayer(player: IGameUser) {
+		const check: IGamePlayer | undefined = this.players.find((targetPlayer: IGamePlayer) => {
+			return targetPlayer.player.uid == player.uid;
 		});
 		if (!check) {
 			this.players.push({
-				user,
+				player,
 				points: 0,
 			});
 		}
 
 		this.log(
-			"Player: '" + user.username + "' has %cjoined%c (" + this.players.length + ")",
+			"Player: '" + player.username + "' has %cjoined%c (" + this.players.length + ")",
 			"font-weight: 900; color:rgb(103, 209, 82)",
 			"font-weight: 400; color: white",
 		);
 		const event: IWSGameSendEventPlayerManage = {
 			...this.getBaseData("player_joined"),
 			event: "player_joined",
-			player: this.players[this.players.length - 1],
+			player: this.players[this.players.length - 1].player,
 		};
 		this.sendEvent(event as IWSGameSendEvent);
 	}
 	leavePlayer(uid: string) {
 		const playerIndex: number = this.players.findIndex((player: IGamePlayer) => {
-			return player.user.uid == uid;
+			return player.player.uid == uid;
 		});
 		if (playerIndex == -1) return;
 
 		const player = this.players.splice(playerIndex, 1)[0];
 		this.log(
-			"Player: '" + player.user.username + "' has %cleft%c (" + this.players.length + ")",
+			"Player: '" + player.player.username + "' has %cleft%c (" + this.players.length + ")",
 			"font-weight: 900; color: #d81e1e",
 			"font-weight: 400; color: white",
 		);
 		const event: IWSGameSendEventPlayerManage = {
 			...this.getBaseData("player_left"),
 			event: "player_left",
-			player: player,
+			player: player.player
 		};
 		this.sendEvent(event as IWSGameSendEvent);
 	}
@@ -471,7 +471,7 @@ export class MockGame {
 	}
 	simulateRoundEnd() {
 		this.players.forEach((player: IGamePlayer) => {
-			this.getResult(player.user);
+			this.getResult(player.player);
 		});
 
 		this.roundResult.forEach((res: IGamePlayerResult) => {
@@ -485,7 +485,7 @@ export class MockGame {
 		this.roundResult.forEach((res: IGamePlayerResult, index: number) => {
 			res.ranking = index + 1;
 			const player: IGamePlayer | undefined = this.players.find(
-				(targetPlayer: IGamePlayer) => targetPlayer.user.uid == res.user.uid,
+				(targetPlayer: IGamePlayer) => targetPlayer.player.uid == res.user.uid,
 			);
 			if (!player) return;
 			player.points += res.points;
@@ -531,7 +531,7 @@ export class MockGame {
 		const player: IGamePlayer = this.players[sim.playerNumber];
 		this.logRound(
 			"Answer recieved from '" +
-				player.user.username +
+				player.player.username +
 				"': '" +
 				sim.try +
 				"' at " +
@@ -539,12 +539,12 @@ export class MockGame {
 		);
 		let res: IGamePlayerResult | undefined = this.roundResult.find(
 			(result: IGamePlayerResult) => {
-				return result.user.uid == player.user.uid;
+				return result.user.uid == player.player.uid;
 			},
 		);
 		if (!res) {
 			res = {
-				user: player.user,
+				user: player.player,
 				titleFound: false,
 				artistFound: false,
 				time: -1,
@@ -581,7 +581,7 @@ export class MockGame {
 		this.sendEvent({
 			...this.getBaseData("answer_broadcast"),
 			event: "answer_broadcast",
-			player: player.user,
+			player: player.player,
 			kind:
 				res.artistFound && res.titleFound
 					? "bothFound"
@@ -597,7 +597,7 @@ export class MockGame {
 	simulateMessages() {
 		this.messageSimulation.forEach((sim: mockMsgSim) => {
 			setTimeout(() => {
-				this.newMSG(sim.body, this.players[sim.playerNumber].user);
+				this.newMSG(sim.body, this.players[sim.playerNumber].player);
 			}, sim.at * 1000);
 		});
 	}
@@ -780,7 +780,7 @@ export class MockGameJoining extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 4; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: 0,
 			});
 		}
@@ -838,7 +838,7 @@ export class MockGameJoiningSpeed extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 4; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: 0,
 			});
 		}
@@ -927,32 +927,32 @@ export class MockGameJoiningSpeed extends MockGame {
 	buildChat() {
 		this.chat.push({
 			uid: crypto.randomUUID(),
-			sender: this.players[0].user,
+			sender: this.players[0].player,
 			body: "Helly everyone",
 		});
 		this.chat.push({
 			uid: crypto.randomUUID(),
-			sender: this.players[1].user,
+			sender: this.players[1].player,
 			body: "hey !!",
 		});
 		this.chat.push({
 			uid: crypto.randomUUID(),
-			sender: this.players[1].user,
+			sender: this.players[1].player,
 			body: "Woaaaa I have to  write a long message to test if it displays goods on the screen and I don't look like nothing !!!!",
 		});
 		this.chat.push({
 			uid: crypto.randomUUID(),
-			sender: this.players[0].user,
+			sender: this.players[0].player,
 			body: "TG",
 		});
 		this.chat.push({
 			uid: crypto.randomUUID(),
-			sender: this.players[1].user,
+			sender: this.players[1].player,
 			body: "Hey !!! j'essaie d'etre utile moi au moin...",
 		});
 		this.chat.push({
 			uid: crypto.randomUUID(),
-			sender: this.players[2].user,
+			sender: this.players[2].player,
 			body: "Calma",
 		});
 
@@ -1035,7 +1035,7 @@ export class MockGameJoiningEnded extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 4; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: this.currentTarget * 5,
 			});
 		}

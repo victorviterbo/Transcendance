@@ -158,7 +158,7 @@ export interface TWSRoundInfo {
 
 //--------------------- EVENTS ---------------------
 export type IWSGameEventRcvList =
-	| "game_join"
+	| "player_join"
 	| "settings_update"
 	| "game_start"
 	| "answer_submit"
@@ -217,7 +217,7 @@ export interface IWSGameSendEvent extends IWSGameEvent {
 
 export interface IWSGameSendEventPlayerManage extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "player_joined" | "player_left">;
-	player: IGamePlayer;
+	player: IGameUser;
 }
 
 export interface IWSGameSendEventGameInfo extends IWSGameSendEvent {

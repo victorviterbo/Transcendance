@@ -35,7 +35,7 @@ function PGameLBoard({ players }: PGameLBoardProps) {
 						<PGameLBoardNode
 							position={index}
 							player={player}
-							key={player.user.uid}
+							key={player.player.uid}
 						></PGameLBoardNode>
 					);
 				})}

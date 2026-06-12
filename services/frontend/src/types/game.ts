@@ -63,7 +63,7 @@ export interface IGamePlayerResult {
 }
 
 export interface IGamePlayer {
-	user: IGameUser;
+	player: IGameUser;
 	points: number;
 	host?: boolean;
 	self?: boolean;

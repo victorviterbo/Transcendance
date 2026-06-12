@@ -72,7 +72,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 												),
 											}}
 										>
-											{host ? host.user.username : ""}
+											{host ? host.player.username : ""}
 										</span>
 									),
 								})
