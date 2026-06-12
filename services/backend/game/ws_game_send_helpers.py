@@ -36,6 +36,7 @@ async def _send_round_preview(consumer: 'GlobalConsumer',
         'uid': serialized_game.get('uid'),
         'preview': serialized_track.get('preview'),
         'playbackDuration': consumer.current_game.playbackDuration,
+        'round': consumer.current_game.current_round,
     })
 
 async def _send_round_stats(consumer: 'GlobalConsumer',

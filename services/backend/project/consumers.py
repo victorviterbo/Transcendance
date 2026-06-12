@@ -259,6 +259,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': self.profile_data,
             'preview': event.get('preview'),
             'playbackDuration': event.get('playbackDuration'),
+            'round': event.get('round'),
         })
 
     async def game_round_end(self, event: dict) -> None:

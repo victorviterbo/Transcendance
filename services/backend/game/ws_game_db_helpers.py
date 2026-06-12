@@ -56,22 +56,19 @@ def _setup_game_assets(game: Game) -> None:
 				code='MISSING_FIELD_GENRE',
 			)
 
-	tracks_per_genre = game.trackCount // len(game.genres)
+	base = game.trackCount // len(game.genres)
+	remainder = game.trackCount % len(game.genres)
 	all_tracks = list()
-	for genre in game.genres:
+	for i, genre in enumerate(game.genres):
+		tracks_per_genre = base + (1 if i < remainder else 0)
 		genre_tracks = list(
 			Track.objects.filter(genre__iexact=genre).order_by('?')[:tracks_per_genre]
 		)
-		if len(genre_tracks) < tracks_per_genre:
-			raise serializers.ValidationError(
-				f'Not enough tracks for genre: {genre}',
-				code='NOT_ENOUGH_TRACKS_GENRE',
-			)
 		all_tracks.extend(genre_tracks)
-	if not len(all_tracks) == game.trackCount:
+	if len(all_tracks) < game.trackCount:
 		raise serializers.ValidationError(
-			'Error in playlist creation process',
-			code='NO_TRACKS_FOUND',
+			f'Only {len(all_tracks)} tracks found, need {game.trackCount}',
+			code='NOT_ENOUGH_TRACKS',
 		)
 	if not all_tracks:
 		raise serializers.ValidationError(
