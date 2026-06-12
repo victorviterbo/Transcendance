@@ -42,7 +42,7 @@ genres_to_label = {
     'Rock': 'TAG_ROCK',
     'Pop': 'TAG_POP',
     'Rap': 'TAG_RAP',
-    'Electro': 'TAG_ELECRO',
+    'Electro': 'TAG_ELECTRO',
     'French Variety': 'TAG_FRENCH_VARIETY',
     'R&B/Soul': 'TAG_RNB'
 }

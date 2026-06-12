@@ -13,7 +13,7 @@ from userprofile.models import Profile
 
 def _default_genres() -> list:
     """Callable for default genres values."""
-    return ['Pop']
+    return ['TAG_POP', 'TAG_ROCK', 'TAG_RAP', 'TAG_ELECTRO', 'TAG_FRENCH_VARIETY', 'TAG_RNB']
 
 class Game(models.Model):
     """Define the model for a single game session."""

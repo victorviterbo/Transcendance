@@ -1,43 +1,42 @@
 """Utilities for normalizing music genres."""
-#TODO why the values not match with the ones elsewhere ? Like 'Latin' or 'R&B/Soul'
 GENRE_MAPPING = {
 	# Rap variants
-	"Hip-Hop/Rap": "Rap",
-	"Hip Hop/Rap": "Rap",
+	"Rap": "TAG_RAP",
+	"Hip-Hop/Rap": "TAG_RAP",
+	"Hip Hop/Rap": "TAG_RAP",
 
 	# Pop variants
-	"K-Pop": "Pop",
-	"French Pop": "French Variety",
-	"Indie Pop": "Pop",
-	"Pop in Spanish": "Pop",
-	"Pop Latino": "Pop",
-	"Afro-Pop": "Pop",
-	"Variété française": "French Variety",
+	"Pop": "TAG_POP",
+	"K-Pop": "TAG_POP",
+	"French Pop": "TAG_FRENCH_VARIETY",
+	"Indie Pop": "TAG_POP",
+	"Pop in Spanish": "TAG_POP",
+	"Pop Latino": "TAG_POP",
+	"Afro-Pop": "TAG_POP",
+	"Variété française": "TAG_FRENCH_VARIETY",
 
 	# Rock variants
-	"Hard Rock": "Rock",
-	"Indie Rock": "Rock",
-	"Heavy Metal": "Rock",
-	"Punk": "Rock",
-	"Alternative": "Rock",
-	"New Wave": "Rock",
-	"British Invasion": "Rock",
+	"Rock": "TAG_ROCK",
+	"Hard Rock": "TAG_ROCK",
+	"Indie Rock": "TAG_ROCK",
+	"Heavy Metal": "TAG_ROCK",
+	"Punk": "TAG_ROCK",
+	"Alternative": "TAG_ROCK",
+	"New Wave": "TAG_ROCK",
+	"British Invasion": "TAG_ROCK",
 
 	# R&B/Soul variants
-	"Soul": "R&B/Soul",
-	"Neo-Soul": "R&B/Soul",
+	"R&B/Soul": "TAG_RNB",
+	"Soul": "TAG_RNB",
+	"Neo-Soul": "TAG_RNB",
 
 	# Electro variants
-	"House": "Electro",
-	"Disco": "Electro",
-	"Electronic": "Electro",
-	"Afro House": "Electro",
-	"Dance": "Electro",
-
-	# Latin variants
-	"Latin": "Latin",
-	"Latin Urban": "Latin",
-	"Latin Rap": "Latin",
+	"Electro": "TAG_ELECTRO",
+	"House": "TAG_ELECTRO",
+	"Disco": "TAG_ELECTRO",
+	"Electronic": "TAG_ELECTRO",
+	"Afro House": "TAG_ELECTRO",
+	"Dance": "TAG_ELECTRO",
 }
 
 
