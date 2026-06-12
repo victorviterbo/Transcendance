@@ -34,7 +34,7 @@ def get_avatar_url(profile) -> str:  # noqa: ANN001
             f"default_avatars/default_avatar_{profile.pk % 18}.png")
 
 
-genres = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']
+genres = ['TAG_ROCK', 'TAG_POP', 'TAG_RAP', 'TAG_ELECTRO', 'TAG_FRENCH_VARIETY', 'TAG_RNB']
 
 num_genres = len(genres)
 

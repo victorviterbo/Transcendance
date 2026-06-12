@@ -299,8 +299,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'event': 'error',
                             'message': 'Only owner can edit game'})
         return
-    settings_payload = {key: value for key, value in content.items() if key not in
-                        {'target', 'event'}}
+    settings_payload = content.get('settings', {})
     try:
         updated_game = await _apply_game_settings(consumer.current_game,
                                                     settings_payload,
@@ -312,12 +311,15 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                 'error': format_validation_errors(exc)['error'],
             })
             return
-    consumer.current_game = updated_game.save()
+    consumer.current_game = updated_game
     serialized_game = await _get_game_data(consumer)
     settings_data = await _get_game_settings_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_settings_updated',
+        'target': 'game',
+        'event': 'settings_updated',
         'uid': serialized_game.get('uid'),
+        'self': consumer.profile_data,
         'settings': settings_data,
     })
 
