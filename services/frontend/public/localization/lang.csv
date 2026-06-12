@@ -203,7 +203,7 @@ PROFILE_STATS_LOAD_FAILED,Statistics loading failed,Le chargement des statistiqu
 TAG_POP,Pop,Pop,ポップ,Music tag associated to songs
 TAG_RAP,Rap,Rap,ラップ,Music tag associated to songs
 TAG_ROCK,Rock,Rock,ロック,Music tag associated to songs
-TAG_ELECRO,Electro,Electro,エレクトロ,Music tag associated to songs
+TAG_ELECTRO,Electro,Electro,エレクトロ,Music tag associated to songs
 TAG_FRENCH_VARIETY,French,Variété,フレンチ,Music tag associated to songs
 TAG_RNB,RNB,RNB,R&B,Music tag associated to songs
 STATS_GAMES_PLAYED,Games played,Parties jouées,プレイしたゲーム,Shown in the stats panel

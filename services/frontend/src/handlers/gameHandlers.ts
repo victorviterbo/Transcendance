@@ -140,7 +140,6 @@ export class GameInstance {
 		data.history.forEach((round: TWSRoundInfo) => {
 			this.applyWSRound(round);
 		});
-		console.log("TEST");
 
 		this.updateAll();
 		this.callbacks.setReady(true);
@@ -367,7 +366,10 @@ export class GameInstance {
 		this.log("Updating settings...");
 		this.send({
 			...this.getSendBaseData("settings_update"),
-			settings: nSettings,
+			settings: {
+				...nSettings,
+				tags: undefined
+			},
 		} as IWSGameRCVEventSettings);
 	}
 	start() {
@@ -437,14 +439,11 @@ export class GameInstance {
 		this.callbacks.setRounds(this.rounds);
 	}
 	updatePlayers() {
-		console.log(this.players);
 		this.players.forEach((player: IGamePlayer) => {
 			if (player.colorid == undefined) {
 				player.colorid = this.lastColorId % 10;
 				this.lastColorId++;
 			}
-			console.log(player.player);
-			console.log(player.player.uid);
 			player.host = player.player.uid == this.host?.uid;
 			player.self = player.player.uid == this.self?.uid;
 		});

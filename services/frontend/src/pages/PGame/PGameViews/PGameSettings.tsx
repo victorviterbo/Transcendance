@@ -261,7 +261,7 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 							options={[
 								{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
 								{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
-								{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
+								{ value: "armageddon", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
 							]}
 							data-testid={"PGameSettings_ScoreOption"}
 						></CToggle>

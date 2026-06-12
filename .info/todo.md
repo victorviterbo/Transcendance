@@ -54,6 +54,7 @@
 - [ ] BUG#0008: default profile picture is not the same from friends list and profile page;
 - [ ] BUG#0009: When loging / lougout an error is triggered on the backend logs;
 - [ ] BUG#0010: Error in page console logs (front): duplicated ID;
+- [ ] BUG#0011: Can deselect button gorups;
 
 # TO CHECK
 

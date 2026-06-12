@@ -43,7 +43,7 @@ export const MUSIC_TAGS = [
 	"TAG_POP",
 	"TAG_RAP",
 	"TAG_ROCK",
-	"TAG_ELECRO",
+	"TAG_ELECTRO",
 	"TAG_FRENCH_VARIETY",
 	"TAG_RNB",
 ] as const;

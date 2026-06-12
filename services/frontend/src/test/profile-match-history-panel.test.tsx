@@ -96,7 +96,7 @@ describe("PProfileMatchHistoryPanel", () => {
 						xpEarned: 71,
 						ranking: 2,
 						roomTitle: "French Touch Session",
-						tags: ["TAG_ELECRO"],
+						tags: ["TAG_ELECTRO"],
 						players: [{ username: "john", avatar: "/john.jpg", ranking: 2 }],
 						rounds: [
 							{
