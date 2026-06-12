@@ -108,7 +108,7 @@ function PGame() {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
 				if (!last || last.target != "game" || !game.current) return;
-				game.current.rcv(last);
+				game.current.rcv(last as IWSGameSendEvent);
 			}
 		});
 	}, [wsContext, gameid]);

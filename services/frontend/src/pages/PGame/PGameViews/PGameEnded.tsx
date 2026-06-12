@@ -9,19 +9,20 @@ interface PGameEndedProps extends GPageProps {
 	settings: IGameSettings;
 }
 
-function PGameEnded({rounds, settings}: PGameEndedProps) {
-
-
-
+function PGameEnded({ rounds, settings }: PGameEndedProps) {
 	const roundList = useMemo((): ReactNode => {
 		return rounds.map((round: IGameRound, index: number) => {
-			return <PGameEndedRound key={"PGameEndedRound-" + index} round={round} settings={settings}  />
-		})	
-	}, [rounds, settings])
+			return (
+				<PGameEndedRound
+					key={"PGameEndedRound-" + index}
+					round={round}
+					settings={settings}
+				/>
+			);
+		});
+	}, [rounds, settings]);
 
-	return <Stack direction={"column"}>
-		{roundList}
-	</Stack>
+	return <Stack direction={"column"}>{roundList}</Stack>;
 }
 
 export default PGameEnded;

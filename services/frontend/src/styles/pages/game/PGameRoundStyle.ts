@@ -250,25 +250,31 @@ export const PGameRoundRevealStyle = (): IGameRoundRevealStyle => {
 //--------------------------------------------------
 export interface IGameEndedRoundStyle {
 	main: SxProps<Theme>;
-	dataStack:  SxProps<Theme>;
+	dataStack: SxProps<Theme>;
 	rankingColor: string;
 	rankingText: SxProps<Theme>;
 	timeColor: string;
 	timeText: SxProps<Theme>;
-	artist:  SxProps<Theme>;
+	artist: SxProps<Theme>;
 	title: SxProps<Theme>;
 }
 
 export const PGameEndedRoundStyle = (
 	round: IGameRound,
-	settings: IGameSettings
+	settings: IGameSettings,
 ): IGameEndedRoundStyle => {
 	let bgColors = [appColors.greys[8], appColors.greys[5]];
-	if (round.artistFound !== round.titleFound) bgColors = [appColors.tertiary[1], appColors.secondary[1]];
-	if (round.artistFound && round.titleFound) bgColors = [appColors.primary[1], appColors.tertiary[1]];
+	if (round.artistFound !== round.titleFound)
+		bgColors = [appColors.tertiary[1], appColors.secondary[1]];
+	if (round.artistFound && round.titleFound)
+		bgColors = [appColors.primary[1], appColors.tertiary[1]];
 
-	const rankingColor: string = settings && round.ranking > 3 ? appColors.primary[0] : appColors.secondary[0];
-	const timeColor: string = round.time < 0 || (settings && round.time >= settings.playbackDuration) ? appColors.greys[4] : rankingColor
+	const rankingColor: string =
+		settings && round.ranking > 3 ? appColors.primary[0] : appColors.secondary[0];
+	const timeColor: string =
+		round.time < 0 || (settings && round.time >= settings.playbackDuration)
+			? appColors.greys[4]
+			: rankingColor;
 
 	return {
 		main: {
@@ -298,25 +304,28 @@ export const PGameEndedRoundStyle = (
 		rankingText: {
 			mr: "15px",
 			ml: "2px",
-			my:0,
+			my: 0,
 			width: "20px",
 		},
 		timeColor,
 		timeText: {
 			mr: "15px",
 			ml: "2px",
-			my:0,
+			my: 0,
 			width: "50px",
 
-			color: round.time < 0 || (settings && round.time >= settings.playbackDuration) ? timeColor : undefined
+			color:
+				round.time < 0 || (settings && round.time >= settings.playbackDuration)
+					? timeColor
+					: undefined,
 		},
 		artist: {
 			mr: "5px",
 			color: !round.artistFound ? appColors.greys[4] : rankingColor,
-		} ,
+		},
 		title: {
 			mr: "10px",
 			color: !round.titleFound ? appColors.greys[4] : rankingColor,
-		}
+		},
 	};
 };

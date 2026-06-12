@@ -28,9 +28,9 @@ function PGameLBoardNode({ player, position }: PGameLBoardNodeProps) {
 			data-testid="PGameLBoardNode"
 		>
 			<CText sx={PGameLBoardNodePosStyle}>{position + 1 + "."}</CText>
-			<CAvatar src={player.user.avatar} />
+			<CAvatar src={player.player.avatar} />
 			<CText noTr={true} sx={PGameLBoardNodeUsernameStyle}>
-				{player.user.username}
+				{player.player.username}
 			</CText>
 			<CText sx={PGameLBoardNodePtsStyle}>{player.points}</CText>
 		</Stack>

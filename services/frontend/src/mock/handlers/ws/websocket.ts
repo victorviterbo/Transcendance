@@ -37,7 +37,7 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 			else if (dataRcv.event == "open") onMessageStatus(dataRcv);
 			else if (dataRcv.event == "close") onMessageStatus(dataRcv);
 		} else if (dataRcv.target == "game") {
-			mockHandleGameMessages(dataRcv, client);
+			mockHandleGameMessages(dataRcv as IWSGameRCVEvent, client);
 		}
 	});
 
