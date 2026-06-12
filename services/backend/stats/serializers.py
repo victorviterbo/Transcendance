@@ -111,7 +111,7 @@ class LiveGameSerializer(serializers.ModelSerializer):
 class GameLeaderboardSerializer(serializers.ModelSerializer):
     """Serialize a single leaderboard entry for in-game use."""
     player = LightProfileSerializer()
-    points = serializers.IntegerField(source='total_points')
+    points = serializers.IntegerField(source='total_points', default=0, allow_null=False)
 
     class Meta:
         model = UserGameStats
