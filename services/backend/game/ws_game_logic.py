@@ -74,7 +74,7 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     match game_event:
         case 'start_game':
             await _start_game(consumer, content)
-        case 'update_settings':
+        case 'settings_update':
             await _update_game_settings(consumer, content)
         case 'answer_submit':
             await _answer_submit(consumer, content)
