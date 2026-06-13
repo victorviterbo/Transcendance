@@ -146,7 +146,7 @@ export class GameInstance {
 				data.game.status == "waiting" || data.game.status == "finish"
 					? data.game.status
 					: "recover",
-			round: data.game.round,
+			round: data.game.round - 1,
 			keyTime: 0,
 		};
 		this.settings = data.settings;
