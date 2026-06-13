@@ -7,6 +7,17 @@ const stripesIMG = "imgs/shared/BG_Lines.png";
 export const CNavbarStyle: SxProps<Theme> = (_) => ({
 	background: appSharedStyle.bg.header ? appSharedStyle.bg.header : appSharedStyle.bg.paper,
 	height: sizeMakeString(appPositions.sizes.header),
+	minHeight: sizeMakeString(appPositions.sizes.header),
+	"& .MuiToolbar-root": {
+		height: "100%",
+		minHeight: "inherit !important",
+		alignItems: "center",
+		py: 0,
+	},
+	"& .CNavbarHomeButton": {
+		alignSelf: "center",
+		flexShrink: 0,
+	},
 });
 
 export const CNavbarLinkStyle = (active: boolean): SxProps => {
@@ -15,11 +26,12 @@ export const CNavbarLinkStyle = (active: boolean): SxProps => {
 		position: "relative",
 
 		height: appPositions.sizes.buttons.nav,
-		px: 1.5,
+		minWidth: appPositions.sizes.buttons.nav,
+		px: { xs: 1, md: 1.5 },
 
 		m: 0,
 
-		gap: 1,
+		gap: { xs: 0, md: 1 },
 
 		borderRadius: 1,
 		//border: "solid " +  (active ? 3 : 0) +  "px" + appColors.text.light,
@@ -27,6 +39,7 @@ export const CNavbarLinkStyle = (active: boolean): SxProps => {
 
 		color: "inherit",
 		alignItems: "center",
+		justifyContent: "center",
 		textDecoration: "none",
 
 		overflow: "hidden",
@@ -37,6 +50,10 @@ export const CNavbarLinkStyle = (active: boolean): SxProps => {
 
 		"& > *": {
 			zIndex: 1,
+		},
+
+		"& .CNavbarLink-label": {
+			display: { xs: "none", md: "inline" },
 		},
 
 		"&::before":
