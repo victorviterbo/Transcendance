@@ -130,7 +130,7 @@ export class GameInstance {
 		this.visibility = data.game.visibility;
 		this.status = {
 			phase: data.game.status,
-			round: data.game.round,
+			round: data.game.round - 1,
 			keyTime: 0,
 		};
 		this.settings = data.settings;
