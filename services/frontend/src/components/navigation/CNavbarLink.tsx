@@ -16,7 +16,15 @@ export interface CNavbarLinkProps extends CTitleProps {
 //TODO change style
 function CNavbarLink({ to, sx, label, icon, active = false }: CNavbarLinkProps) {
 	return (
-		<Link to={to} style={{ textDecoration: "none", color: "inherit" }} aria-label={ttr(label)}>
+		<Box
+			component={Link}
+			to={to}
+			aria-label={ttr(label)}
+			sx={{
+				textDecoration: "none",
+				color: "inherit",
+			}}
+		>
 			<CText
 				size="lg"
 				noTr={true}
@@ -27,7 +35,7 @@ function CNavbarLink({ to, sx, label, icon, active = false }: CNavbarLinkProps) 
 					{ttr(label)}
 				</Box>
 			</CText>
-		</Link>
+		</Box>
 	);
 }
 

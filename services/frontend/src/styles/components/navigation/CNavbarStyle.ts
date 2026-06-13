@@ -2,7 +2,7 @@ import type { SxProps, Theme } from "@mui/material";
 import { appAnimation, appColors, appPositions, appSharedStyle } from "../../theme";
 import { colorAlterColor, sizeMakeString } from "../../../utils/styles";
 import { makeMaskTranslationAnim } from "../../animations/CommonAnimations";
-const stripesIMG = "imgs/shared/BG_Lines.png";
+const stripesIMG = "/imgs/shared/BG_Lines.png";
 
 export const CNavbarStyle: SxProps<Theme> = (_) => ({
 	background: appSharedStyle.bg.header ? appSharedStyle.bg.header : appSharedStyle.bg.paper,
@@ -26,18 +26,21 @@ export const CNavbarLinkStyle = (active: boolean): SxProps => {
 		position: "relative",
 
 		height: appPositions.sizes.buttons.nav,
-		minWidth: appPositions.sizes.buttons.nav,
-		px: { xs: 1, md: 1.5 },
+		width: { xs: "48px", md: "auto" },
+		px: { xs: 0, md: 1.5 },
 
 		m: 0,
 
 		gap: { xs: 0, md: 1 },
 
-		borderRadius: 1,
-		//border: "solid " +  (active ? 3 : 0) +  "px" + appColors.text.light,
-		backgroundColor: active ? appColors.primary[0] : appColors.primary[1],
+		borderRadius: appSharedStyle.radius + "px",
+		backgroundColor: active ? appColors.secondary[0] : appColors.tertiary[0],
+		transform: active ? "translateY(5px)" : "translateY(0px)",
+		boxShadow: active
+			? "0px 0px 0px 0px " + appColors.greys[0]
+			: "0px 5px 0px 0px " + appColors.greys[0],
 
-		color: "inherit",
+		color: active ? appColors.text.dark : appColors.text.light,
 		alignItems: "center",
 		justifyContent: "center",
 		textDecoration: "none",
@@ -45,7 +48,7 @@ export const CNavbarLinkStyle = (active: boolean): SxProps => {
 		overflow: "hidden",
 
 		"&:hover": {
-			backgroundColor: active ? appColors.primary[0] : appColors.primary[0],
+			backgroundColor: active ? appColors.secondary[0] : appColors.tertiary[1],
 		},
 
 		"& > *": {
@@ -66,7 +69,7 @@ export const CNavbarLinkStyle = (active: boolean): SxProps => {
 
 						opacity: 1,
 
-						backgroundColor: colorAlterColor(appColors.primary[0], "shift-hue", 15),
+						backgroundColor: colorAlterColor(appColors.secondary[0], "shift-hue", -15),
 
 						maskImage: `url(${stripesIMG})`,
 						maskSize: appAnimation.bg.buttonHover.size
