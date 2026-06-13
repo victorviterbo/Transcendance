@@ -162,7 +162,8 @@ export type IWSGameEventRcvList =
 	| "settings_update"
 	| "game_start"
 	| "answer_submit"
-	| "message_send";
+	| "message_send"
+	| "player_leave";
 
 export type IWSGameEventSndList =
 	| "player_joined"
@@ -201,6 +202,9 @@ export interface IWSGameRCVEventAnswer extends IWSGameRCVEvent {
 export interface IWSGameRCVEventMsg extends IWSGameRCVEvent {
 	event: Extract<IWSGameEventRcvList, "message_send">;
 	message: string;
+}
+export interface IWSGameRCVEventLeave extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "player_leave">;
 }
 
 //Send(Server to Client)

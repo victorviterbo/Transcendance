@@ -1,21 +1,26 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { CAuthProvider } from "./components/auth/CAuthProvider.tsx";
-import { BrowserRouter } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
 import { startLocalization } from "./localization/localization.ts";
 import CLanguageLayout from "./components/layout/CLanguageLayout.tsx";
 //import { startWS } from "./system/websocket.ts";
 
+const router = createBrowserRouter([
+	{
+		path: "*",
+		element: <App />,
+	},
+]);
+
 const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
 		<StrictMode>
 			<CAuthProvider>
 				<CLanguageLayout>
-					<BrowserRouter>
-						<App />
-					</BrowserRouter>
+					<RouterProvider router={router} />
 				</CLanguageLayout>
 			</CAuthProvider>
 		</StrictMode>,

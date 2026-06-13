@@ -3,8 +3,9 @@ import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
 import PGameChat from "./PGameChat";
-import { createRef, useEffect, useRef, useState, type ReactNode } from "react";
+import { createRef, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type {
+	TGameSessionState,
 	IGameChatMsg,
 	IGamePlayer,
 	IGamePlayerResult,
@@ -19,6 +20,8 @@ import type { IWSGameSendEvent, TWSRcv } from "../../types/websocket";
 import { GameInstance } from "../../handlers/gameHandlers";
 import PGameViews from "./PGameViews";
 import { useParams } from "react-router-dom";
+import PGameLeaveConfirmDialog from "./PGameLeaveConfirmDialog";
+import useGameLeaveGuard from "./useGameLeaveGuard";
 
 function PGame() {
 	//STYLING
@@ -33,7 +36,12 @@ function PGame() {
 	const game: React.RefObject<GameInstance | undefined> = useRef<GameInstance | undefined>(
 		undefined,
 	);
-	const [ready, setReady] = useState<boolean>(false);
+	const [sessionState, setSessionState] = useState<TGameSessionState>("loading");
+	const leaveGuard = useGameLeaveGuard(sessionState);
+	const handleLeaveGame = useCallback(() => {
+		game.current?.leave();
+		leaveGuard.leave();
+	}, [leaveGuard]);
 	const [status, setStatus] = useState<IGameStatus | undefined>();
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 	const [volume, setVolume] = useState<number>(50);
@@ -55,8 +63,8 @@ function PGame() {
 
 	//====================== MANAGEMENT ======================
 	useEffect(() => {
-		async function setFalse() {
-			setReady(false);
+		async function setLoading() {
+			setSessionState("loading");
 		}
 
 		if (!gameid || (game.current && game.current.uid == gameid)) return;
@@ -65,11 +73,11 @@ function PGame() {
 			game.current.destroy();
 			delete game.current;
 			game.current = undefined;
-			setFalse();
+			setLoading();
 		}
 
 		game.current = new GameInstance(gameid, {
-			setReady,
+			setSessionState,
 			setError,
 			setStatus,
 			setSettings,
@@ -87,7 +95,7 @@ function PGame() {
 	useEffect(() => {
 		if (!game.current) return;
 		game.current.callbacks = {
-			setReady,
+			setSessionState,
 			setError,
 			setStatus,
 			setSettings,
@@ -100,7 +108,7 @@ function PGame() {
 			sendMessage: wsContext.sendMessage,
 			answerRef,
 		};
-	}, [setReady, setError, setStatus, setSettings, setPlayers, wsContext, answerRef]);
+	}, [setSessionState, setError, setStatus, setSettings, setPlayers, wsContext, answerRef]);
 
 	useEffect(() => {
 		if (!gameid) return;
@@ -140,7 +148,7 @@ function PGame() {
 	}
 
 	//--------------------- LOADIN ---------------------
-	if (!ready || !settings || !status) {
+	if (sessionState === "loading" || !settings || !status) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -162,42 +170,49 @@ function PGame() {
 
 	//--------------------- FINAL ---------------------
 	return (
-		<Stack
-			sx={{
-				position: "absolute",
-				inset: 0,
-			}}
-		>
-			<Grid
-				container
-				spacing={spacing}
+		<>
+			<Stack
 				sx={{
 					position: "absolute",
 					inset: 0,
-					p: spacing,
 				}}
 			>
-				<Grid size={3}>
-					<PGameLBoard players={players} />
+				<Grid
+					container
+					spacing={spacing}
+					sx={{
+						position: "absolute",
+						inset: 0,
+						p: spacing,
+					}}
+				>
+					<Grid size={3}>
+						<PGameLBoard players={players} />
+					</Grid>
+					<Grid size={6}>
+						<PGameViews
+							status={status}
+							rounds={rounds}
+							players={players}
+							results={results}
+							game={game}
+							settings={settings}
+							volume={volume}
+							muted={muted}
+							answerRef={answerRef}
+						/>
+					</Grid>
+					<Grid size={3}>
+						<PGameChat game={game} chat={chat} />
+					</Grid>
 				</Grid>
-				<Grid size={6}>
-					<PGameViews
-						status={status}
-						rounds={rounds}
-						players={players}
-						results={results}
-						game={game}
-						settings={settings}
-						volume={volume}
-						muted={muted}
-						answerRef={answerRef}
-					/>
-				</Grid>
-				<Grid size={3}>
-					<PGameChat game={game} chat={chat} />
-				</Grid>
-			</Grid>
-		</Stack>
+			</Stack>
+			<PGameLeaveConfirmDialog
+				open={leaveGuard.blocked}
+				onStay={leaveGuard.stay}
+				onLeave={handleLeaveGame}
+			/>
+		</>
 	);
 }
 

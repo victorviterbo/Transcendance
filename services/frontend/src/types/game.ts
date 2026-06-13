@@ -85,6 +85,8 @@ export interface IGameSettings {
 }
 
 //====================== STATUS ======================
+export type TGameSessionState = "loading" | "joined" | "ended";
+
 export type TGamePhase =
 	| "waiting"
 	| "started"

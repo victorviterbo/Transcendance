@@ -1,5 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
 import type {
+	TGameSessionState,
 	IGameChatMsg,
 	IGamePlayer,
 	IGamePlayerAnswer,
@@ -15,6 +16,7 @@ import type {
 	IWSGameEventRcvList,
 	IWSGameRCVEvent,
 	IWSGameRCVEventAnswer,
+	IWSGameRCVEventLeave,
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
@@ -34,7 +36,7 @@ import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 
 export interface IGameInstanceCallbacks {
-	setReady: React.Dispatch<React.SetStateAction<boolean>>;
+	setSessionState: React.Dispatch<React.SetStateAction<TGameSessionState>>;
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>;
 	setStatus: React.Dispatch<React.SetStateAction<IGameStatus | undefined>>;
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>;
@@ -143,7 +145,7 @@ export class GameInstance {
 		});
 
 		this.updateAll();
-		this.callbacks.setReady(true);
+		this.callbacks.setSessionState("joined");
 		this.log("Game ready");
 	}
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
@@ -315,6 +317,7 @@ export class GameInstance {
 			this.applyWSRound(round);
 		});
 		this.players = data.leaderboard;
+		this.callbacks.setSessionState("ended");
 		this.status.phase = "finish";
 		this.updateAll();
 	}
@@ -393,6 +396,10 @@ export class GameInstance {
 			answer: answer,
 			time,
 		} as IWSGameRCVEventAnswer);
+	}
+	leave() {
+		this.log("Leaving game");
+		this.send(this.getSendBaseData("player_leave") as IWSGameRCVEventLeave);
 	}
 
 	//====================== FUNCTIONS ======================

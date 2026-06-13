@@ -255,6 +255,10 @@ GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Title of the loading messa
 GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Content of the loading message paper
 GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
 GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
+GAME_LEAVE_CONFIRM_TITLE,Leave game?,Quitter la partie ?,ゲームを退出しますか？,Title for confirmation dialog shown before leaving a joined game
+GAME_LEAVE_CONFIRM_MESSAGE,You are currently in a game. Are you sure you want to leave?,Vous êtes actuellement dans une partie. Voulez-vous vraiment quitter ?,現在ゲームに参加しています。本当に退出しますか？,Confirmation message shown before leaving a joined game
+GAME_LEAVE_STAY,Stay,Rester,残る,Button to stay in the current game
+GAME_LEAVE_CONFIRM,Leave,Quitter,退出する,Button to confirm leaving the current game
 GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
 GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorect guess,,,Chat message when a player made a guess (but no guess body given)
 GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
