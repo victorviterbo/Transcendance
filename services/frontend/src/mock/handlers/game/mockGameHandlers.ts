@@ -217,7 +217,6 @@ export class MockGame {
 		if (!currentUser) return;
 		this.newMSG(event.message, currentUser.user);
 	}
-	
 
 	//====================== FUNCTIONS ======================
 	//--------------------- WS ---------------------
@@ -359,7 +358,7 @@ export class MockGame {
 				points: 0,
 				time: -1,
 				answers: [],
-				ranking: 0
+				ranking: 0,
 			});
 		}
 
@@ -443,14 +442,10 @@ export class MockGame {
 			results: this.roundResult,
 		} as IWSGameSendEventRoundEnd);
 
-		if(this.status.round >= this.settings.trackCount -1)
-		{
-			setTimeout(
-				() => {
-					this.simulateGameEnd();
-				},
-				(this.settings.breakDuration ) * 1000,
-			);
+		if (this.status.round >= this.settings.trackCount - 1) {
+			setTimeout(() => {
+				this.simulateGameEnd();
+			}, this.settings.breakDuration * 1000);
 			return;
 		}
 		setTimeout(
@@ -546,7 +541,7 @@ export class MockGame {
 			event: "game_ended",
 			history,
 			leaderboard: this.players,
-		} as IWSGameSendEventGameEnd)
+		} as IWSGameSendEventGameEnd);
 	}
 
 	//--------------------- LOGs ---------------------
@@ -876,7 +871,6 @@ export class MockGameJoiningEnded extends MockGame {
 		this.name = "Sarah's ended room";
 		this.log("Game (Ended): '" + uid + "' created");
 
-		
 		this.settings.genres.splice(1, 1);
 		this.settings.genres.push("TAG_RNB");
 		this.settings.mode = "speed";
@@ -896,12 +890,9 @@ export class MockGameJoiningEnded extends MockGame {
 		}
 	}
 
-	buildChat() {
-		
-	}
+	buildChat() {}
 
 	buildGame(): void {
-		
 		this.rounds.push({
 			track: mockGameDB.getRoundTrack(0),
 			phase: "done",
@@ -910,7 +901,7 @@ export class MockGameJoiningEnded extends MockGame {
 			points: 15,
 			time: 6.58,
 			ranking: 2,
-			answers: []
+			answers: [],
 		});
 
 		this.rounds.push({
@@ -921,8 +912,8 @@ export class MockGameJoiningEnded extends MockGame {
 			points: 5,
 			time: 15.25,
 			ranking: 4,
-			answers: []
-		})
+			answers: [],
+		});
 
 		this.rounds.push({
 			track: mockGameDB.getRoundTrack(2),
@@ -932,8 +923,8 @@ export class MockGameJoiningEnded extends MockGame {
 			points: 0,
 			time: 20,
 			ranking: 5,
-			answers: []
-		})
+			answers: [],
+		});
 
 		this.rounds.push({
 			track: mockGameDB.getRoundTrack(3),
@@ -943,9 +934,8 @@ export class MockGameJoiningEnded extends MockGame {
 			points: 15,
 			time: 19.4,
 			ranking: 10,
-			answers: []
-		})
-		
+			answers: [],
+		});
 
 		this.rounds.push({
 			track: mockGameDB.getRoundTrack(4),
@@ -955,9 +945,8 @@ export class MockGameJoiningEnded extends MockGame {
 			points: 0,
 			time: 5.25,
 			ranking: 5,
-			answers: []
-		})
-
+			answers: [],
+		});
 	}
 
 	//====================== FUNCTIONS ======================
@@ -969,6 +958,6 @@ export class MockGameJoiningEnded extends MockGame {
 		setTimeout(() => {
 			this.players[4].points = 50;
 			this.simulateGameEnd();
-		}, 1000)
+		}, 1000);
 	}
 }

@@ -1,0 +1,78 @@
+import { cloneElement, useMemo, type ReactElement } from "react";
+import type { GCompProps } from "../../../components/common/GProps";
+import { Box, Stack, type SvgIconProps } from "@mui/material";
+import CText from "../../../components/text/CText";
+import {
+	PGameEndedRecapStyle,
+	type IGameEndedRecapStyle,
+} from "../../../styles/pages/game/PGameRoundStyle";
+
+export type TDataInfo = {
+	avr: number;
+	best: number;
+	total?: number;
+	lead?: number;
+	worst?: number;
+};
+
+interface PGameEndedRecapProsp extends GCompProps {
+	node: ReactElement<SvgIconProps>;
+	info: TDataInfo;
+}
+
+function PGameEndedRecap({ node, info }: PGameEndedRecapProsp) {
+	const style: IGameEndedRecapStyle = useMemo(() => {
+		return PGameEndedRecapStyle();
+	}, []);
+
+	const icon = useMemo(() => {
+		return cloneElement(node, {
+			fontSize: "large",
+			sx: style.icon,
+		});
+	}, [node, style]);
+
+	return (
+		<Box sx={style.card}>
+			<Stack sx={{ alignItems: "stretch" }} direction={"column"}>
+				<Stack sx={{ alignItems: "center" }} direction={"column"}>
+					<Stack sx={style.iconBox} direction={"column"}>
+						{icon}
+					</Stack>
+				</Stack>
+				<Stack direction={"row"}>
+					<Stack direction={"column"} sx={style.dataStack}>
+						<CText sx={style.valueText}>{info.avr}</CText>
+						<CText size="2xs">GAME_ENDED_AVR</CText>
+					</Stack>
+					<Box sx={style.split}></Box>
+					<Stack direction={"column"} sx={style.dataStack}>
+						<CText sx={style.valueText}>{info.best}</CText>
+						<CText size="2xs">GAME_ENDED_BEST</CText>
+					</Stack>
+					<Box sx={style.split}></Box>
+					{info.total != undefined && (
+						<Stack direction={"column"} sx={style.dataStack}>
+							<CText sx={style.valueText}>{info.total}</CText>
+							<CText size="2xs">GAME_ENDED_TOTAL</CText>
+						</Stack>
+					)}
+					{info.lead != undefined && (
+						<Stack direction={"column"} sx={style.dataStack}>
+							<CText sx={style.valueText}>{info.lead}</CText>
+							<CText size="2xs">GAME_ENDED_LEAD</CText>
+						</Stack>
+					)}
+					{info.worst != undefined && (
+						<Stack direction={"column"} sx={style.dataStack}>
+							<CText sx={style.valueText}>{info.worst}</CText>
+							<CText size="2xs">GAME_ENDED_WORST</CText>
+						</Stack>
+					)}
+				</Stack>
+			</Stack>
+		</Box>
+	);
+}
+
+export default PGameEndedRecap;

@@ -302,3 +302,10 @@ ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルーム�
 REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button
 GAME_STARTING,Game is starting...,,,Message shown when host is pressing starting button.
 GAME_STARTING_IN,Game starting in,,,Count before game is starting
+GAME_ENDED_AVR,Average,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BEST,Best,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_TOTAL,Total,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_LEAD,Global,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_WORST,Worst,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BACK,Back to home,,,Button to go back to the home page
+GAME_ENDED_AGAIN,Play again,,,Button to start a new game

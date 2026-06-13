@@ -54,8 +54,7 @@ function PGameViews({
 	const getCurrentView = useCallback((): number => {
 		if (status.phase == "playing_round" || status.phase == "playing_break")
 			return ECurrentView.PLAYING;
-		if (status.phase == "finish")
-			return ECurrentView.ENDED;
+		if (status.phase == "finish") return ECurrentView.ENDED;
 		return ECurrentView.LOBBY;
 	}, [status]);
 
@@ -133,10 +132,7 @@ function PGameViews({
 				/>
 			)}
 			{currentView == ECurrentView.ENDED && (
-				<PGameEnded
-					rounds={rounds}
-					settings={settings}
-				/>
+				<PGameEnded game={game} rounds={rounds} settings={settings} players={players} />
 			)}
 		</CGamePaper>
 	);

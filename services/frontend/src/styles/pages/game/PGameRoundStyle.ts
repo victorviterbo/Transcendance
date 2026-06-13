@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from "@mui/material";
 import { appColors, appSharedStyle } from "../../theme";
-import type { IGamePlayer, IGameRound, IGameSettings } from "../../../types/game";
+import type { IGameRound, IGameSettings } from "../../../types/game";
 import type { IGamePlayerAnswer } from "../../../types/game";
 import { colorGetBackground } from "../../../utils/styles";
 
@@ -248,27 +248,118 @@ export const PGameRoundRevealStyle = (): IGameRoundRevealStyle => {
 //--------------------------------------------------
 //                       ENDED
 //--------------------------------------------------
-export interface IGameEndedRoundStyle {
+export interface IGameRoundEndedStyle {
+	box: SxProps<Theme>;
+	bottom: SxProps<Theme>;
+}
+
+export const PGameRoundEndedStyle = (): IGameRoundEndedStyle => {
+	return {
+		box: {
+			px: "15px",
+			py: "10px",
+
+			mx: "5px",
+
+			backgroundColor: appColors.greys[6],
+			borderRadius: appSharedStyle.gameRadius,
+		},
+		bottom: {
+			backgroundColor: appColors.greys[7],
+			ml: "-5px",
+			mr: "-5px",
+			mb: "-5px",
+			pt: "7px",
+			pb: "12px",
+			justifyContent: "center",
+			boxShadow: "0px -2px 10px 0px " + appColors.greys[9],
+			zIndex: 1,
+		},
+	};
+};
+
+export interface IGameEndedRecapStyle {
+	card: SxProps<Theme>;
+	iconBox: SxProps<Theme>;
+	icon: SxProps<Theme>;
+	split: SxProps<Theme>;
+	dataStack: SxProps<Theme>;
+	valueText: SxProps<Theme>;
+}
+
+export const PGameEndedRecapStyle = (): IGameEndedRecapStyle => {
+	return {
+		card: {
+			flex: 1,
+			mx: "10px",
+			px: "5px",
+			pb: "10px",
+			borderRadius: appSharedStyle.gameRadius,
+			border: "solid 2px " + appColors.primary[1],
+			background: colorGetBackground(
+				[appColors.quaternary[2], appColors.primary[1]],
+				undefined,
+				"linear",
+				15,
+			),
+		},
+		iconBox: {
+			my: "10px",
+			p: "5px",
+			borderRadius: appSharedStyle.smallGameRadius,
+			border: "outset 3px " + appColors.secondary[0],
+			background: colorGetBackground(
+				[appColors.greys[8], appColors.greys[5]],
+				undefined,
+				"linear",
+				15 + 180,
+			),
+		},
+		icon: {
+			color: appColors.secondary[0],
+		},
+		split: {
+			width: "3px",
+			my: "7px",
+			backgroundColor: appColors.secondary[0],
+		},
+		dataStack: {
+			flex: 1,
+			alignItems: "center",
+		},
+		valueText: {
+			m: 0,
+		},
+	};
+};
+
+export interface IGameRoundEndedNodeStyle {
 	main: SxProps<Theme>;
-	dataStack:  SxProps<Theme>;
+	dataStack: SxProps<Theme>;
 	rankingColor: string;
 	rankingText: SxProps<Theme>;
 	timeColor: string;
 	timeText: SxProps<Theme>;
-	artist:  SxProps<Theme>;
+	artist: SxProps<Theme>;
 	title: SxProps<Theme>;
 }
 
-export const PGameEndedRoundStyle = (
+export const PGameRoundEndedNodeStyle = (
 	round: IGameRound,
-	settings: IGameSettings
-): IGameEndedRoundStyle => {
+	settings: IGameSettings,
+): IGameRoundEndedNodeStyle => {
 	let bgColors = [appColors.greys[8], appColors.greys[5]];
-	if (round.artistFound !== round.titleFound) bgColors = [appColors.tertiary[1], appColors.secondary[1]];
-	if (round.artistFound && round.titleFound) bgColors = [appColors.primary[1], appColors.tertiary[1]];
+	if (round.artistFound !== round.titleFound)
+		bgColors = [appColors.tertiary[1], appColors.secondary[1]];
+	if (round.artistFound && round.titleFound)
+		bgColors = [appColors.primary[1], appColors.tertiary[1]];
 
-	const rankingColor: string = settings && round.ranking > 3 ? appColors.primary[0] : appColors.secondary[0];
-	const timeColor: string = round.time < 0 || (settings && round.time >= settings.playbackDuration) ? appColors.greys[4] : rankingColor
+	const rankingColor: string =
+		settings && round.ranking > 3 ? appColors.primary[0] : appColors.secondary[0];
+	const timeColor: string =
+		round.time < 0 || (settings && round.time >= settings.playbackDuration)
+			? appColors.greys[4]
+			: rankingColor;
 
 	return {
 		main: {
@@ -287,7 +378,7 @@ export const PGameEndedRoundStyle = (
 			borderRadius: appSharedStyle.gameRadius,
 			//border: "solid 2px " + appColors.quinary[2]
 			//boxShadow: "0px 4px 0px 0px " + appColors.greys[0],
-			mt: "10px",
+			mb: "10px",
 		},
 		dataStack: {
 			alignItems: "center",
@@ -298,25 +389,28 @@ export const PGameEndedRoundStyle = (
 		rankingText: {
 			mr: "15px",
 			ml: "2px",
-			my:0,
+			my: 0,
 			width: "20px",
 		},
 		timeColor,
 		timeText: {
 			mr: "15px",
 			ml: "2px",
-			my:0,
+			my: 0,
 			width: "50px",
 
-			color: round.time < 0 || (settings && round.time >= settings.playbackDuration) ? timeColor : undefined
+			color:
+				round.time < 0 || (settings && round.time >= settings.playbackDuration)
+					? timeColor
+					: undefined,
 		},
 		artist: {
 			mr: "5px",
 			color: !round.artistFound ? appColors.greys[4] : rankingColor,
-		} ,
+		},
 		title: {
 			mr: "10px",
 			color: !round.titleFound ? appColors.greys[4] : rankingColor,
-		}
+		},
 	};
 };

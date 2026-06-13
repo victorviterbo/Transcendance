@@ -66,13 +66,13 @@ export class GameInstance {
 		const mutedStorage: string | null = localStorage.getItem("default_mute");
 		if (mutedStorage) this.muted = mutedStorage == "true";
 
-		navigator.mediaSession.setActionHandler('play', function() {});
-		navigator.mediaSession.setActionHandler('pause', function() {});
-		navigator.mediaSession.setActionHandler('seekbackward', function() {});
-		navigator.mediaSession.setActionHandler('seekforward', function() {});
-		navigator.mediaSession.setActionHandler('previoustrack', function() {});
-		navigator.mediaSession.setActionHandler('nexttrack', function() {});
-		navigator.mediaSession.setActionHandler('stop', function() {});
+		navigator.mediaSession.setActionHandler("play", function () {});
+		navigator.mediaSession.setActionHandler("pause", function () {});
+		navigator.mediaSession.setActionHandler("seekbackward", function () {});
+		navigator.mediaSession.setActionHandler("seekforward", function () {});
+		navigator.mediaSession.setActionHandler("previoustrack", function () {});
+		navigator.mediaSession.setActionHandler("nexttrack", function () {});
+		navigator.mediaSession.setActionHandler("stop", function () {});
 	}
 	destroy() {
 		this.uid = "";
