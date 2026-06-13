@@ -259,6 +259,10 @@ GAME_LEAVE_CONFIRM_TITLE,Leave game?,Quitter la partie ?,ゲームを退出し�
 GAME_LEAVE_CONFIRM_MESSAGE,You are currently in a game. Are you sure you want to leave?,Vous êtes actuellement dans une partie. Voulez-vous vraiment quitter ?,現在ゲームに参加しています。本当に退出しますか？,Confirmation message shown before leaving a joined game
 GAME_LEAVE_STAY,Stay,Rester,残る,Button to stay in the current game
 GAME_LEAVE_CONFIRM,Leave,Quitter,退出する,Button to confirm leaving the current game
+GAME_ALREADY_IN_GAME_TITLE,Already in a game,Déjà dans une partie,すでにゲームに参加しています,Title for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_MESSAGE,You are already in a game. Leave it to join this one?,Vous êtes déjà dans une partie. Voulez-vous la quitter pour rejoindre celle-ci ?,すでにゲームに参加しています。このゲームに参加するために退出しますか？,Message for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_RETURN,Return to current game,Retourner à la partie en cours,現在のゲームに戻る,Button to go back to the current game
+GAME_ALREADY_IN_GAME_JOIN,Leave and join,Quitter et rejoindre,退出して参加する,Button to leave the current game and join a new one
 GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
 GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorect guess,,,Chat message when a player made a guess (but no guess body given)
 GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
