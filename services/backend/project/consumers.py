@@ -201,6 +201,22 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'settings': event.get('settings', {}),
         })
 
+    async def game_answer_validation(self, event: dict) -> None:
+        """Notify of an answer validation with title/artist found status."""
+        payload = {
+            'target': 'game',
+            'event': 'answer_validation',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'titleFound': event.get('titleFound', False),
+            'artistFound': event.get('artistFound', False),
+            'time': event.get('time'),
+        }
+        if event.get('titleFound') and event.get('artistFound'):
+            payload['track'] = event.get('track', {})
+        await self.send_json(payload)
+
+    #TODO: Legacy methods for answer validation, to be removed
     async def game_answer_correct(self, event: dict) -> None:
         """Notify of an answer submission."""
         await self.send_json({
@@ -270,8 +286,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'uid': event.get('uid'),
             'self': self.profile_data,
             'track': event.get('track'),
-            #TODO: add leaderboard
-            'results': event.get('results'),
+            'leaderboard': event.get('leaderboard', []),
+            'results': event.get('results', []),
             'is_last_round': event.get('is_last_round', False),
         })
     

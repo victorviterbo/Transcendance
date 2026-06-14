@@ -238,52 +238,16 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
     if ((artist_correct or title_correct)
         and consumer.current_game.mode == 'armageddon'):
         await check_all_answers_received(consumer, consumer.current_game)
-    #TODO: Harmonize answer validation send and broadcasts
     serialized_game = await _get_game_data(consumer)
-    if artist_correct or title_correct:
-        if consumer.current_game.mode == 'armageddon':
-            # if mode is armageddon, send the response to everyone
-            await consumer.group_send(consumer.game_group_name, {
-                'type': 'game_answer_correct',
-                'uid': serialized_game.get('uid'),
-                'senderPlayer': consumer.profile_data,
-                'answer': content.get('answer'),
-                'trackArtist': track_data['artist'] if artist_correct else None,
-                'tracktitle': track_data['title'] if title_correct else None,
-                'is_correct': True,
-                'time': content.get('time')
-            })
-        else:
-            # else send only to player who send the correct response
-            await consumer.send_json({
-                'target': 'game',
-                'event': 'answer_correct',
-                'uid': serialized_game.get('uid'),
-                'trackArtist': track_data['artist'] if artist_correct else None,
-                'tracktitle': track_data['title'] if title_correct else None,
-                'answer': content.get('answer'),
-                'is_correct': True,
-                'time': content.get('time')
-            })
-    else:
-        if consumer.current_game.reveal:
-            #Broadcast wrong answer to everyone
-            await consumer.group_send(consumer.game_group_name, {
-                'type': 'game_answer_incorrect',
-                'uid': serialized_game.get('uid'),
-                'senderPlayer': consumer.profile_data,
-                'answer': content.get('answer'),
-                'is_correct': False
-                })
-        else:
-            # Tell incorrect players their answer was wrong
-            await consumer.send_json({
-                'target': 'game',
-                'event': 'answer_incorrect',
-                'uid': serialized_game.get('uid'),
-                'answerString': content.get('answer'),
-                'is_correct': False
-                })
+
+    await consumer.channel_layer.send(consumer.channel_name, {
+        'type': 'game_answer_validation',
+        'uid': serialized_game.get('uid'),
+        'titleFound': title_correct,
+        'artistFound': artist_correct,
+        'time': content.get('time'),
+        'track': track_data,
+    })
 
 
 async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> None:
