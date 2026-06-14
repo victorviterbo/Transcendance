@@ -44,11 +44,17 @@ async def _send_round_stats(consumer: 'GlobalConsumer',
                             serialized_game: dict,
                             serialized_track: dict) -> None:
     """Send final game stats to players at the end of a game."""
+    if isinstance(serialized_round_stats, list):
+        leaderboard = serialized_round_stats
+        results = serialized_round_stats
+    else:
+        leaderboard = serialized_round_stats.get('leaderboard', [])
+        results = serialized_round_stats.get('results', [])
     event = {'type': 'game_round_end',
             'uid': serialized_game.get('uid'),
             'track': serialized_track,
-            'leaderboard': serialized_round_stats.get('leaderboard', []),
-            'results': serialized_round_stats.get('results', []),
+            'leaderboard': leaderboard,
+            'results': results,
             'is_last_round': (consumer.current_game.current_round
                                 >= consumer.current_game.trackCount)}
     await consumer.group_send(consumer.game_group_name, event)

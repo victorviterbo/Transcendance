@@ -59,6 +59,7 @@ default_pts = {
     },
     'normal': {
         'both': 10,
+        'partial': 4,
         'artist': 4,
         'title': 4
     }
