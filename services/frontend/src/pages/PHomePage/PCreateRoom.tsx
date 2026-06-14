@@ -47,6 +47,9 @@ function PCreateRoom() {
 					label={ttr("GAME_NAME")}
 					value={name}
 					onChange={(event) => setName(event.target.value)}
+					onKeyUp={(event) => {
+						if (event.code == "Enter") handleCreateRoom();
+					}}
 				/>
 				<Box sx={{ minHeight: 24, mt: 1, mb: 1 }}>
 					{error ? (

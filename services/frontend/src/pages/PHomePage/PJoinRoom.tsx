@@ -25,6 +25,9 @@ function PJoinRoom() {
 					label={ttr("GAME_ROOM_CODE")}
 					value={gameCode}
 					onChange={(event) => setGameCode(event.target.value)}
+					onKeyUp={(event) => {
+						if (event.code == "Enter") handleJoinRoom();
+					}}
 				/>
 				<Box sx={{ minHeight: 24, mt: 1, mb: 1 }} />
 				<CButtonText

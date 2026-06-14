@@ -37,7 +37,7 @@ LEADERBOARD,Leaderboard,Classement,ランキング,Page showing global rankings
 LOGGING_IN,Logging in,Connexion en cours,ログイン中,Shows when a user presses Log in
 LOGIN,Log in,Se connecter,ログイン,To log in
 LOGOUT,Log out,Se déconnecter,ログアウト,To log out
-MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Shown in the user profile
+MATCH_HISTORY,Match History,Historique,対戦履歴,Shown in the user profile
 MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Shown when a required field is missing
 MY_PROFILE,My profile,Mon profil,マイプロフィール,Menu item to open profile page
 PASSWORD_LOWERCASE,Include at least 1 lowercase letter,Incluez au moins 1 lettre minuscule,小文字を1つ以上含めてください,Shown when password has no lowercase
