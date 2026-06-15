@@ -205,8 +205,8 @@ def _init_round_stats(game: Game) -> None:
 @database_sync_to_async
 def _compute_round_stats(game: Game) -> None:
 	"""Collect and store game statistics after a round finishes."""
-	stats = UserRoundStats.objects.filter(round__round_number=game.current_round,
-										round__game=game)
+	stats = list(UserRoundStats.objects.filter(round__round_number=game.current_round,
+										round__game=game).order_by('-xp_earned', 'time'))
 	if game.mode == 'armageddon':
 		first_artist = stats.filter(artist_found=True).order_by('artist_found_at').first()
 		first_title = stats.filter(title_found=True).order_by('title_found_at').first()

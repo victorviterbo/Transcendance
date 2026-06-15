@@ -125,8 +125,8 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 await asyncio.sleep(consumer.current_game.breakDuration - countdown_time)
             else:
                 await asyncio.sleep(consumer.current_game.breakDuration)
-        game_stats = await _compute_game_stats(consumer.current_game)
-        await _send_game_stats(consumer, game_stats, serialized_game)
+        # game_stats = await _compute_game_stats(consumer.current_game)
+        # await _send_game_stats(consumer, game_stats, serialized_game)
         serialized_game_ended = await _get_game_ended_data(consumer)
         await _send_game_ended(consumer, serialized_game_ended)
     except serializers.ValidationError as e:

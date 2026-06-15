@@ -311,6 +311,17 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': self.profile_data,
             'leaderboard': event.get('leaderboard'),
         })
+
+    async def game_ended_event(self, event: dict) -> None:
+        """Broadcast game end with final leaderboard and history."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_ended',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'leaderboard': event.get('leaderboard'),
+            'history': event.get('history'),
+        })
     
     def _sender_name(self) -> str:
         """Return the authenticated sender username or an anonymous fallback."""
