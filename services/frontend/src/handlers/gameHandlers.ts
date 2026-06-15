@@ -268,7 +268,7 @@ export class GameInstance {
 
 		const selfRes: IGamePlayerResult | undefined = data.results.find(
 			(res: IGamePlayerResult) => {
-				return res.user.uid == data.self.uid;
+				return res.player.uid == data.self.uid;
 			},
 		);
 		if (selfRes) {
@@ -567,12 +567,12 @@ export class GameInstance {
 	getResult(user: IGameUser): IGamePlayerResult {
 		let res: IGamePlayerResult | undefined = this.roundResult.find(
 			(result: IGamePlayerResult) => {
-				return result.user.uid == user.uid;
+				return result.player.uid == user.uid;
 			},
 		);
 		if (!res) {
 			res = {
-				user,
+				player: user,
 				titleFound: false,
 				artistFound: false,
 				time: -1,

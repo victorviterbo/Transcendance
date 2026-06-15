@@ -54,7 +54,7 @@ export interface IGamePlayerRoundStatus {
 }
 
 export interface IGamePlayerResult {
-	user: IGameUser;
+	player: IGameUser;
 	titleFound: boolean;
 	artistFound: boolean;
 	time: number;
