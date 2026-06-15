@@ -115,10 +115,12 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 )
             round_stats = await _compute_round_stats(consumer.current_game)
             serialized_game = await _get_game_data(consumer)
+            game_leaderboard_data = await _get_game_ended_data(consumer)
             await _send_round_stats(consumer,
                                     round_stats,
                                     serialized_game,
-                                    serialized_track_full)
+                                    serialized_track_full,
+                                    game_leaderboard_data.get('leaderboard'))
             if round < consumer.current_game.trackCount:
                 await asyncio.sleep(consumer.current_game.breakDuration - countdown_time)
             else:

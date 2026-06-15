@@ -44,18 +44,19 @@ async def _send_round_preview(consumer: 'GlobalConsumer',
 async def _send_round_stats(consumer: 'GlobalConsumer',
                             serialized_round_stats: dict,
                             serialized_game: dict,
-                            serialized_track: dict) -> None:
+                            serialized_track: dict,
+                            game_leaderboard: dict | None = None) -> None:
     """Send final game stats to players at the end of a game."""
     if isinstance(serialized_round_stats, list):
-        leaderboard = serialized_round_stats
+        round_leaderboard = serialized_round_stats
         results = serialized_round_stats
     else:
-        leaderboard = serialized_round_stats.get('leaderboard', [])
+        round_leaderboard = serialized_round_stats.get('leaderboard', [])
         results = serialized_round_stats.get('results', [])
     event = {'type': 'game_round_end',
             'uid': serialized_game.get('uid'),
             'track': serialized_track,
-            'leaderboard': leaderboard,
+            'leaderboard': game_leaderboard if game_leaderboard else round_leaderboard,
             'results': results,
             'is_last_round': (consumer.current_game.current_round
                                 >= consumer.current_game.trackCount)}

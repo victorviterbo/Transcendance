@@ -66,34 +66,30 @@ class HistoryEntrySerializer(serializers.Serializer):
 
 class LiveRoundSerializer(serializers.ModelSerializer):
     """Serialize the results of the round to be sent as the game progress."""
-    track = TrackSerializer(source='round.track', read_only=True)
     player = LightProfileSerializer()
-    totalXpEarned = serializers.IntegerField(source='game_stats.total_xp_earned')
+    artistFound = serializers.BooleanField(source='artist_found')
+    titleFound = serializers.BooleanField(source='title_found')
+    points = serializers.IntegerField(source='xp_earned')
+    ranking = serializers.IntegerField(required=False, allow_null=True, default=1)
 
     class Meta:
         """Define on what is the model based."""
         model = UserRoundStats
         fields = [
                 'player',
-                'track',
-                'artist_found',
-                'title_found',
-                'artist_found_at',
-                'title_found_at',
+                'artistFound',
+                'titleFound',
                 'time',
-                'xp_earned',
-                'totalXpEarned',
+                'points',
+                'ranking',
                 ]
         read_only_fields = [
                 'player',
-                'track',
-                'artist_found',
-                'title_found',
-                'artist_found_at',
-                'title_found_at',
+                'artistFound',
+                'titleFound',
                 'time',
-                'xp_earned',
-                'totalXpEarned',
+                'points',
+                'ranking',
                 ]
 
 class LiveGameSerializer(serializers.ModelSerializer):
