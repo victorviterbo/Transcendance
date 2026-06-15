@@ -102,7 +102,8 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 await _get_track_reveal_data(consumer, content)
             )
             #Preview sent for buffering, countdown starts - Fabien
-            await _send_round_preview(consumer, serialized_game, serialized_track_blind)
+            #TODO: put serialized_track_blind for  _send_round_preview for prod
+            await _send_round_preview(consumer, serialized_game, serialized_track_full)
             await asyncio.sleep(countdown_time)
             #Track sent to start the round (should we keep both? or just send the track in advance?) - Fabien
             await _send_track(consumer, serialized_game, serialized_track_blind)

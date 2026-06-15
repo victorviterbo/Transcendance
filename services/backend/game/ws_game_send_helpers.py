@@ -31,6 +31,8 @@ async def _send_round_preview(consumer: 'GlobalConsumer',
                               serialized_game: dict,
                               serialized_track: dict) -> None:
     """Send the preview track before the round begins."""
+    #TODO: REMOVE LOG
+    print(f"Artist: {serialized_track.get('artist')}, Title: {serialized_track.get('title')}")
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_round_preview',
         'uid': serialized_game.get('uid'),
