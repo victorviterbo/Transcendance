@@ -323,12 +323,12 @@ export class MockGame {
 	getResult(user: IGameUser): IGamePlayerResult {
 		let res: IGamePlayerResult | undefined = this.roundResult.find(
 			(result: IGamePlayerResult) => {
-				return result.user.uid == user.uid;
+				return result.player.uid == user.uid;
 			},
 		);
 		if (!res) {
 			res = {
-				user,
+				player: user,
 				titleFound: false,
 				artistFound: false,
 				time: -1,
@@ -485,7 +485,7 @@ export class MockGame {
 		this.roundResult.forEach((res: IGamePlayerResult, index: number) => {
 			res.ranking = index + 1;
 			const player: IGamePlayer | undefined = this.players.find(
-				(targetPlayer: IGamePlayer) => targetPlayer.player.uid == res.user.uid,
+				(targetPlayer: IGamePlayer) => targetPlayer.player.uid == res.player.uid,
 			);
 			if (!player) return;
 			player.points += res.points;
@@ -539,12 +539,12 @@ export class MockGame {
 		);
 		let res: IGamePlayerResult | undefined = this.roundResult.find(
 			(result: IGamePlayerResult) => {
-				return result.user.uid == player.player.uid;
+				return result.player.uid == player.player.uid;
 			},
 		);
 		if (!res) {
 			res = {
-				user: player.player,
+				player: player.player,
 				titleFound: false,
 				artistFound: false,
 				time: -1,

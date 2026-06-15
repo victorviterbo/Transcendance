@@ -216,10 +216,10 @@ function PGameRound({
 			return (
 				<PGameRoundAnswer
 					variant="time"
-					key={result.user.uid}
+					key={result.player.uid}
 					answer={{
 						validated: true,
-						message: result.user.username,
+						message: result.player.username,
 						time: result.time,
 						titleFound: result.titleFound,
 						artistFound: result.artistFound,
