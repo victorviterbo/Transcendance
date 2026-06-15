@@ -19,7 +19,7 @@ import CText from "../../components/text/CText";
 import type { IWSGameSendEvent, TWSRcv } from "../../types/websocket";
 import { GameInstance } from "../../handlers/gameHandlers";
 import PGameViews from "./PGameViews";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, type NavigateFunction } from "react-router-dom";
 import PGameLeaveConfirmDialog from "./PGameLeaveConfirmDialog";
 import useGameLeaveGuard from "./useGameLeaveGuard";
 
@@ -29,6 +29,9 @@ function PGame() {
 
 	//ERROR
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
+
+	//SYSTEM
+	const navigate: NavigateFunction = useNavigate();
 
 	//GAME
 	const { gameid } = useParams();
@@ -46,6 +49,7 @@ function PGame() {
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 	const [volume, setVolume] = useState<number>(50);
 	const [muted, setMuted] = useState<boolean>(false);
+
 
 	//Updatable Data
 	const [players, setPlayers] = useState<IGamePlayer[]>([]);
@@ -88,9 +92,10 @@ function PGame() {
 			setVolume,
 			setMuted,
 			sendMessage: wsContext.sendMessage,
+			navigate,
 			answerRef,
 		});
-	}, [gameid, wsContext, answerRef]);
+	}, [gameid, setSessionState, setError, setStatus, setSettings, setPlayers, wsContext, answerRef, navigate]);
 
 	useEffect(() => {
 		if (!game.current) return;
@@ -106,9 +111,10 @@ function PGame() {
 			setVolume,
 			setMuted,
 			sendMessage: wsContext.sendMessage,
+			navigate,
 			answerRef,
 		};
-	}, [setSessionState, setError, setStatus, setSettings, setPlayers, wsContext, answerRef]);
+	}, [setSessionState, setError, setStatus, setSettings, setPlayers, wsContext, answerRef, navigate]);
 
 	useEffect(() => {
 		if (!gameid) return;

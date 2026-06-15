@@ -34,6 +34,7 @@ import type {
 } from "../types/websocket";
 import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
+import type { NavigateFunction } from "react-router-dom";
 
 export interface IGameInstanceCallbacks {
 	setSessionState: React.Dispatch<React.SetStateAction<TGameSessionState>>;
@@ -47,6 +48,7 @@ export interface IGameInstanceCallbacks {
 	setVolume: React.Dispatch<React.SetStateAction<number>>;
 	setMuted: React.Dispatch<React.SetStateAction<boolean>>;
 	sendMessage: SendMessage;
+	navigate: NavigateFunction;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -178,6 +180,7 @@ export class GameInstance {
 		this.status.keyTime = Date.now();
 		this.status.phase = "count";
 		this.updateStatus();
+		this.callbacks.navigate("/", {state: []})
 	}
 	onPreviewRecieve(data: IWSGameSendEventRoundStart) {
 		this.logRound("Preview recieved");

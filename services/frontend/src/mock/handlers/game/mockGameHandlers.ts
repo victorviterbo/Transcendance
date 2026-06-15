@@ -863,7 +863,6 @@ export class MockGameJoiningSpeed extends MockGame {
 //--------------------------------------------------
 //                     Ended
 //--------------------------------------------------
-
 export class MockGameJoiningEnded extends MockGame {
 	//====================== CONSTRUCTOR ======================
 	constructor(uid: string) {
