@@ -241,6 +241,20 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
     if ((artist_correct or title_correct)
         and consumer.current_game.mode == 'armageddon'):
         await check_all_answers_received(consumer, consumer.current_game)
+    if consumer.current_game.reveal:
+        serialized_player = await _get_player_data(consumer)
+        payload = {
+            'type': 'game_answer_broadcast',
+            'target': 'game',
+            'event': 'answer_broadcast',
+            'uid': str(consumer.current_game.uid),
+            'self': consumer.profile_data,
+            'player': serialized_player,
+            'kind': 'correct' if (artist_correct or title_correct) else 'incorrect',
+        }
+        if not (artist_correct or title_correct):
+            payload['answer'] = content.get('answer')
+        await consumer.group_send(consumer.game_group_name, payload)
     serialized_game = await _get_game_data(consumer)
 
     await consumer.channel_layer.send(consumer.channel_name, {

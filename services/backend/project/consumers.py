@@ -312,6 +312,18 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'leaderboard': event.get('leaderboard'),
         })
 
+    async def game_answer_broadcast(self, event: dict) -> None:
+        """Broadcast incorrect answer to all players."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'answer_broadcast',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'player': event.get('player'),
+            'kind': event.get('kind'),
+            'answer': event.get('answer'),
+        })
+
     async def game_ended_event(self, event: dict) -> None:
         """Broadcast game end with final leaderboard and history."""
         await self.send_json({
