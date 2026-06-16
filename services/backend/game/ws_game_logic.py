@@ -170,7 +170,7 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     if is_already_in_game:
         await consumer.send_json({'target': 'game',
                                 'event': 'player_joined',
-                                'currentGameUid': consumer.current_game.uid,
+                                'currentGameUid': str(consumer.current_game.uid),
                                 'message': 'Already in game.'})
         return
     if getattr(consumer, 'game_group_name', None) is None:

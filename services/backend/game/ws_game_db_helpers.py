@@ -177,7 +177,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				title_correct = True
 				update_fields.extend(['title_found', 'title_found_at'])
 		if update_fields:
-			player_stats.save(update_fields=update_fields)
+			player_stats.save()
 		return artist_correct, title_correct
 	except Game.DoesNotExist:
 		return False, False
@@ -245,6 +245,8 @@ def _compute_round_stats(game: Game) -> None:
 			stat.save(update_fields=['xp_earned'])
 	game.status = 'playing_break'
 	game.save(update_fields=['status'])
+	for rank, stat in enumerate(stats, 1):
+		stat.ranking = rank
 	return LiveRoundSerializer(stats, many=True).data
 
 
