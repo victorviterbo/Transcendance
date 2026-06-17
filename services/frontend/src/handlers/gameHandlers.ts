@@ -32,13 +32,12 @@ import type {
 	IWSGameSendEventSettings,
 	TWSRoundInfo,
 } from "../types/websocket";
-import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
 import type { NavigateFunction } from "react-router-dom";
+import type { IAppNotif } from "../types/events";
 
 export interface IGameInstanceCallbacks {
 	setSessionState: React.Dispatch<React.SetStateAction<TGameSessionState>>;
-	setError: React.Dispatch<React.SetStateAction<ReactNode>>;
 	setStatus: React.Dispatch<React.SetStateAction<IGameStatus | undefined>>;
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>;
 	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>;
@@ -180,7 +179,17 @@ export class GameInstance {
 		this.status.keyTime = Date.now();
 		this.status.phase = "count";
 		this.updateStatus();
-		this.callbacks.navigate("/", {state: []})
+		this.callbacks.setSessionState("ended");
+		setTimeout(() => {
+			this.callbacks.navigate("/", {
+				state: [
+					{
+						severity: "error",
+						message: "FRIEND_ERROR",
+					} as IAppNotif,
+				],
+			});
+		}, 500);
 	}
 	onPreviewRecieve(data: IWSGameSendEventRoundStart) {
 		this.logRound("Preview recieved");

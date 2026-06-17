@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
 import { startLocalization } from "./localization/localization.ts";
 import CLanguageLayout from "./components/layout/CLanguageLayout.tsx";
+import CAppNotifContext from "./components/contexts/CAppNotifContext.tsx";
 //import { startWS } from "./system/websocket.ts";
 
 const router = createBrowserRouter([
@@ -20,7 +21,9 @@ const startApp = () => {
 		<StrictMode>
 			<CAuthProvider>
 				<CLanguageLayout>
-					<RouterProvider router={router} />
+					<CAppNotifContext>
+						<RouterProvider router={router} />
+					</CAppNotifContext>
 				</CLanguageLayout>
 			</CAuthProvider>
 		</StrictMode>,

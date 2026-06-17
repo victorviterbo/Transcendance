@@ -7,8 +7,12 @@ export interface IEventStatus {
 	resetOnSuccess?: boolean;
 }
 
-
 export interface IAppNotif {
-	severity: AlertColor,
-	message: string,
+	severity: AlertColor;
+	message: string;
+	uid?: string;
+}
+
+export interface IAppNotifContext {
+	notifications: IAppNotif[];
 }

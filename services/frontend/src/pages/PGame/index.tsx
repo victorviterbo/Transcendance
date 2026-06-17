@@ -3,7 +3,7 @@ import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
 import PGameChat from "./PGameChat";
-import { createRef, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import type {
 	TGameSessionState,
 	IGameChatMsg,
@@ -27,9 +27,6 @@ function PGame() {
 	//STYLING
 	const spacing: number = appPositions.gameSpacing;
 
-	//ERROR
-	const [error, setError] = useState<ReactNode | undefined>(undefined);
-
 	//SYSTEM
 	const navigate: NavigateFunction = useNavigate();
 
@@ -49,7 +46,6 @@ function PGame() {
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 	const [volume, setVolume] = useState<number>(50);
 	const [muted, setMuted] = useState<boolean>(false);
-
 
 	//Updatable Data
 	const [players, setPlayers] = useState<IGamePlayer[]>([]);
@@ -82,7 +78,6 @@ function PGame() {
 
 		game.current = new GameInstance(gameid, {
 			setSessionState,
-			setError,
 			setStatus,
 			setSettings,
 			setRounds,
@@ -95,13 +90,21 @@ function PGame() {
 			navigate,
 			answerRef,
 		});
-	}, [gameid, setSessionState, setError, setStatus, setSettings, setPlayers, wsContext, answerRef, navigate]);
+	}, [
+		gameid,
+		setSessionState,
+		setStatus,
+		setSettings,
+		setPlayers,
+		wsContext,
+		answerRef,
+		navigate,
+	]);
 
 	useEffect(() => {
 		if (!game.current) return;
 		game.current.callbacks = {
 			setSessionState,
-			setError,
 			setStatus,
 			setSettings,
 			setRounds,
@@ -114,7 +117,7 @@ function PGame() {
 			navigate,
 			answerRef,
 		};
-	}, [setSessionState, setError, setStatus, setSettings, setPlayers, wsContext, answerRef, navigate]);
+	}, [setSessionState, setStatus, setSettings, setPlayers, wsContext, answerRef, navigate]);
 
 	useEffect(() => {
 		if (!gameid) return;
@@ -129,7 +132,7 @@ function PGame() {
 
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
-	if (gameid == undefined || error) {
+	if (gameid == undefined) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -142,13 +145,9 @@ function PGame() {
 				}}
 				title={"GAME_ERROR_TITLE"}
 			>
-				{gameid == undefined ? (
-					<CText align="center" sx={{ my: "auto", color: appColors.cancel[0] }}>
-						GAME_ERROR_INVALID_ROOM
-					</CText>
-				) : (
-					error
-				)}
+				<CText align="center" sx={{ my: "auto", color: appColors.cancel[0] }}>
+					GAME_ERROR_INVALID_ROOM
+				</CText>
 			</CGamePaper>
 		);
 	}
