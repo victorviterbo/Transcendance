@@ -117,10 +117,11 @@ export class MockGame {
 	gameStarted: boolean = false;
 	answerSimulation: mockPlayerAnswerSim[] = [];
 	messageSimulation: mockMsgSim[] = [];
+	alreadyIn: string | undefined = undefined;
 
 	//====================== EVENTS ======================
 	onJoin() {
-		this.log("User has join");
+		this.log("User has join (" + this.uid + ")");
 		this.log("Sending to new user all game info");
 
 		if (this.players.length >= 20) {
@@ -130,6 +131,17 @@ export class MockGame {
 				message: "ERROR_FULL",
 				critical: true,
 			} as IWSGameSendEventError);
+			return;
+		}
+		if (this.alreadyIn != undefined) {
+			this.log("Already in room");
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "ALREADY_IN_GAME",
+				currentGameUid: this.alreadyIn,
+				critical: true,
+			} as IWSGameSendEventError);
+			this.alreadyIn = undefined;
 			return;
 		}
 		const history: TWSRoundInfo[] = [];
@@ -1043,6 +1055,38 @@ export class MockGameJoiningFull extends MockGame {
 	buildPlayers(): void {
 		super.buildPlayers();
 		for (; this.currentTarget < 20; this.currentTarget++) {
+			this.players.push({
+				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {}
+}
+
+export class MockGameJoiningInGame extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's full room";
+		this.log("Game (Error - In Game): '" + uid + "' created");
+		this.alreadyIn = "join-speed";
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 4; this.currentTarget++) {
 			this.players.push({
 				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: this.currentTarget * 5,

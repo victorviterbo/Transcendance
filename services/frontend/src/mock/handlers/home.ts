@@ -58,6 +58,14 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 	});
 
 	tempRooms.push({
+		uid: "ended",
+		name: "Ended room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
 		uid: "error",
 		name: "Error room",
 		genres: [...MUSIC_TAGS],
@@ -68,6 +76,14 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 	tempRooms.push({
 		uid: "full",
 		name: "Error full room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "in-game",
+		name: "Error In Game",
 		genres: [...MUSIC_TAGS],
 		playerCount: Math.floor(Math.random() * 100),
 		playerMax: 100,

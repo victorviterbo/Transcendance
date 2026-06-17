@@ -9,6 +9,7 @@ import {
 	MockGameJoiningEnded,
 	MockGameJoiningError,
 	MockGameJoiningFull,
+	MockGameJoiningInGame,
 	MockGameJoiningSpeed,
 	MockGamePlaying,
 } from "./mockGameHandlers";
@@ -91,6 +92,9 @@ export class MockGameDB {
 					break;
 				case "full":
 					game = new MockGameJoiningFull(uid);
+					break;
+				case "in-game":
+					game = new MockGameJoiningInGame(uid);
 					break;
 				default:
 					game = new MockGame(uid);

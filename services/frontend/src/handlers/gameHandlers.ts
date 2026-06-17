@@ -49,6 +49,7 @@ export interface IGameInstanceCallbacks {
 	sendMessage: SendMessage;
 	push: (notif: IAppNotif) => void;
 	setError: React.Dispatch<React.SetStateAction<string | undefined>>;
+	setInGame: React.Dispatch<React.SetStateAction<string | undefined>>;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -57,7 +58,7 @@ export class GameInstance {
 	constructor(uid: string, callbacks: IGameInstanceCallbacks) {
 		this.uid = uid;
 		this.callbacks = callbacks;
-		this.log("New game instance created");
+		this.log("New game instance created (" + uid + ")");
 		this.log("Loading....");
 
 		//Joining
@@ -80,6 +81,8 @@ export class GameInstance {
 	}
 	destroy() {
 		this.uid = "";
+		this.stopAll();
+		this.leave();
 		this.log("Destroying game instance");
 	}
 
@@ -324,6 +327,10 @@ export class GameInstance {
 		this.updateAll();
 	}
 	onError(data: IWSGameSendEventError) {
+		if (data.message == "ALREADY_IN_GAME") {
+			this.callbacks.setInGame(data.currentGameUid);
+			return;
+		}
 		this.callbacks.push({
 			severity: "error",
 			message: data.message,
@@ -498,6 +505,7 @@ export class GameInstance {
 	}
 	rcv(event: IWSGameSendEvent) {
 		if (event.target != "game") return;
+		if (event.uid != this.uid) return;
 		switch (event.event) {
 			case "player_joined":
 				this.onPlayerJoined(event as IWSGameSendEventPlayerManage);
