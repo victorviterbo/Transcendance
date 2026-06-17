@@ -1,7 +1,7 @@
 import {
 	createContext,
+	useCallback,
 	useContext,
-	useEffect,
 	useMemo,
 	useState,
 	type Context,
@@ -14,6 +14,7 @@ import CAlert from "../feedback/alerts/CAlert";
 //====================== CONTEXT ======================
 const notifContext: Context<IAppNotifContext> = createContext<IAppNotifContext>({
 	notifications: [],
+	push: (_) => {},
 });
 
 export const useNotif = (): IAppNotifContext => {
@@ -26,34 +27,22 @@ interface CAppNotifContextProps {
 }
 
 function CAppNotifContext({ children }: CAppNotifContextProps) {
-	const [notifications, setNotifications] = useState<IAppNotif[]>([
-		{
-			severity: "error",
-			message: "this is a test",
-		},
-		{
-			severity: "info",
-			message: "this is a test 2",
-		},
-	]);
-
-	useEffect(() => {
-		if (notifications.length > 4) return;
-		setTimeout(() => {
-			notifications.push({
-				severity: "warning",
-				message: "random warning",
-			});
-			setNotifications(structuredClone(notifications));
-		}, 2000);
-	}, [setNotifications, notifications]);
+	const [notifications, setNotifications] = useState<IAppNotif[]>([]);
 
 	const notifs: ReactNode[] = useMemo((): ReactNode[] => {
 		return notifications.map((notif: IAppNotif) => {
 			if (!notif.uid) notif.uid = crypto.randomUUID();
-			return <CAlert sx={{ mt: "5px" }} time={3000} key={notif.uid} notif={notif} />;
+			return <CAlert sx={{ mt: "5px" }} time={6000} key={notif.uid} notif={notif} />;
 		});
 	}, [notifications]);
+
+	const pushNotif = useCallback(
+		(notif: IAppNotif) => {
+			notifications.push(notif);
+			setNotifications(structuredClone(notifications));
+		},
+		[notifications, setNotifications],
+	);
 
 	return (
 		<>
@@ -63,7 +52,9 @@ function CAppNotifContext({ children }: CAppNotifContextProps) {
 			>
 				{notifs}
 			</Stack>
-			{children}
+			<notifContext.Provider value={{ notifications, push: pushNotif }}>
+				{children}
+			</notifContext.Provider>
 		</>
 	);
 }
