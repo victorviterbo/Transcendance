@@ -17,6 +17,7 @@ import type {
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
+	IWSGameSendEventError,
 	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
 	IWSGameSendEventMessage,
@@ -121,6 +122,16 @@ export class MockGame {
 	onJoin() {
 		this.log("User has join");
 		this.log("Sending to new user all game info");
+
+		if (this.players.length >= 20) {
+			this.log("Room full");
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "ERROR_FULL",
+				critical: true,
+			} as IWSGameSendEventError);
+			return;
+		}
 		const history: TWSRoundInfo[] = [];
 		for (let i = 0; i < this.status.round; i++) {
 			history.push({
@@ -959,4 +970,87 @@ export class MockGameJoiningEnded extends MockGame {
 			this.simulateGameEnd();
 		}, 1000);
 	}
+}
+
+//--------------------------------------------------
+//                     ERROR
+//--------------------------------------------------
+export class MockGameJoiningError extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's error room";
+		this.log("Game (Error): '" + uid + "' created");
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 4; this.currentTarget++) {
+			this.players.push({
+				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {
+		if (this.simStarted) return;
+		super.simulate();
+
+		setTimeout(() => {
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "Failed to load chat history",
+			} as IWSGameSendEventError);
+		}, 1000);
+
+		setTimeout(() => {
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "Failed to load game",
+				critical: true,
+			} as IWSGameSendEventError);
+		}, 5000);
+	}
+}
+
+export class MockGameJoiningFull extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's full room";
+		this.log("Game (Error - full): '" + uid + "' created");
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 20; this.currentTarget++) {
+			this.players.push({
+				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {}
 }

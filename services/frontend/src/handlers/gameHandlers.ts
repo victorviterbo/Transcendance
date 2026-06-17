@@ -20,6 +20,7 @@ import type {
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
+	IWSGameSendEventError,
 	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
 	IWSGameSendEventMessage,
@@ -33,7 +34,6 @@ import type {
 	TWSRoundInfo,
 } from "../types/websocket";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
-import type { NavigateFunction } from "react-router-dom";
 import type { IAppNotif } from "../types/events";
 
 export interface IGameInstanceCallbacks {
@@ -47,7 +47,8 @@ export interface IGameInstanceCallbacks {
 	setVolume: React.Dispatch<React.SetStateAction<number>>;
 	setMuted: React.Dispatch<React.SetStateAction<boolean>>;
 	sendMessage: SendMessage;
-	navigate: NavigateFunction;
+	push: (notif: IAppNotif) => void;
+	setError: React.Dispatch<React.SetStateAction<string | undefined>>;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -179,17 +180,6 @@ export class GameInstance {
 		this.status.keyTime = Date.now();
 		this.status.phase = "count";
 		this.updateStatus();
-		this.callbacks.setSessionState("ended");
-		setTimeout(() => {
-			this.callbacks.navigate("/", {
-				state: [
-					{
-						severity: "error",
-						message: "FRIEND_ERROR",
-					} as IAppNotif,
-				],
-			});
-		}, 500);
 	}
 	onPreviewRecieve(data: IWSGameSendEventRoundStart) {
 		this.logRound("Preview recieved");
@@ -332,6 +322,20 @@ export class GameInstance {
 		this.callbacks.setSessionState("ended");
 		this.status.phase = "finish";
 		this.updateAll();
+	}
+	onError(data: IWSGameSendEventError) {
+		this.callbacks.push({
+			severity: "error",
+			message: data.message,
+		});
+		if (data.critical) {
+			this.stopAll();
+			this.send({
+				...this.getSendBaseData("player_leave"),
+			} as IWSGameRCVEventLeave);
+			this.callbacks.setSessionState("ended");
+			this.callbacks.setError(data.message);
+		}
 	}
 
 	//Chat
@@ -533,6 +537,9 @@ export class GameInstance {
 				break;
 			case "game_ended":
 				this.onGameEnded(event as IWSGameSendEventGameEnd);
+				break;
+			case "error":
+				this.onError(event as IWSGameSendEventError);
 				break;
 		}
 	}

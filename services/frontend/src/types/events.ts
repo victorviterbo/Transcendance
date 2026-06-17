@@ -15,4 +15,5 @@ export interface IAppNotif {
 
 export interface IAppNotifContext {
 	notifications: IAppNotif[];
+	push: (notif: IAppNotif) => void;
 }

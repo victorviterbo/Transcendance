@@ -317,3 +317,4 @@ GAME_ENDED_LEAD,Global,,,Displayed bellow value icon to specify nature of the in
 GAME_ENDED_WORST,Worst,,,Displayed bellow value icon to specify nature of the information
 GAME_ENDED_BACK,Back to home,,,Button to go back to the home page
 GAME_ENDED_AGAIN,Play again,,,Button to start a new game
+ERROR_FULL,Game is already full,,,Error triggered when game is fulll

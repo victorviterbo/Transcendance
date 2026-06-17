@@ -22,6 +22,7 @@ import PGameViews from "./PGameViews";
 import { useNavigate, useParams, type NavigateFunction } from "react-router-dom";
 import PGameLeaveConfirmDialog from "./PGameLeaveConfirmDialog";
 import useGameLeaveGuard from "./useGameLeaveGuard";
+import { useNotif } from "../../components/contexts/CAppNotifContext";
 
 function PGame() {
 	//STYLING
@@ -29,6 +30,8 @@ function PGame() {
 
 	//SYSTEM
 	const navigate: NavigateFunction = useNavigate();
+	const { push } = useNotif();
+	const [error, setError] = useState<string | undefined>(undefined);
 
 	//GAME
 	const { gameid } = useParams();
@@ -87,19 +90,11 @@ function PGame() {
 			setVolume,
 			setMuted,
 			sendMessage: wsContext.sendMessage,
-			navigate,
+			push,
+			setError,
 			answerRef,
 		});
-	}, [
-		gameid,
-		setSessionState,
-		setStatus,
-		setSettings,
-		setPlayers,
-		wsContext,
-		answerRef,
-		navigate,
-	]);
+	}, [gameid, wsContext, answerRef, push]);
 
 	useEffect(() => {
 		if (!game.current) return;
@@ -114,10 +109,25 @@ function PGame() {
 			setVolume,
 			setMuted,
 			sendMessage: wsContext.sendMessage,
-			navigate,
+			push,
+			setError,
 			answerRef,
 		};
-	}, [setSessionState, setStatus, setSettings, setPlayers, wsContext, answerRef, navigate]);
+	}, [
+		setSessionState,
+		setStatus,
+		setSettings,
+		setRounds,
+		setPlayers,
+		setResults,
+		setChat,
+		setVolume,
+		setMuted,
+		push,
+		setError,
+		wsContext,
+		answerRef,
+	]);
 
 	useEffect(() => {
 		if (!gameid) return;
@@ -130,9 +140,15 @@ function PGame() {
 		});
 	}, [wsContext, gameid]);
 
+	useEffect(() => {
+		if (sessionState != "joined" && error != undefined) {
+			navigate("/");
+		}
+	}, [error, sessionState, navigate]);
+
 	//====================== BUILD ======================
 	//--------------------- EROR ---------------------
-	if (gameid == undefined) {
+	if (gameid == undefined || error != undefined) {
 		return (
 			<CGamePaper
 				contentFlex={1}
@@ -146,7 +162,7 @@ function PGame() {
 				title={"GAME_ERROR_TITLE"}
 			>
 				<CText align="center" sx={{ my: "auto", color: appColors.cancel[0] }}>
-					GAME_ERROR_INVALID_ROOM
+					{error != undefined ? error : "GAME_ERROR_INVALID_ROOM"}
 				</CText>
 			</CGamePaper>
 		);

@@ -57,6 +57,22 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 		playerMax: 100,
 	});
 
+	tempRooms.push({
+		uid: "error",
+		name: "Error room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "full",
+		name: "Error full room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
 	for (let i = 0; i < 10; i++) {
 		tempRooms.push(GenerateRoom(i % 5 === 0 ? MUSIC_TAGS.length : undefined));
 	}
