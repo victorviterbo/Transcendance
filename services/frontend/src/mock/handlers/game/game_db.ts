@@ -81,7 +81,10 @@ export class MockGameDB {
 				case "join-speed":
 					game = new MockGameJoiningSpeed(uid);
 					break;
-				case "playing":
+				case "playing_round":
+					game = new MockGamePlaying(uid);
+					break;
+				case "playing_break":
 					game = new MockGamePlaying(uid);
 					break;
 				case "ended":

@@ -42,13 +42,16 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 	//====================== DATA ======================
 	const ptsInfo: TDataInfo = useMemo(() => {
 		let best = 0;
+		let count = 0;
 		let value = 0;
 		rounds.forEach((round: IGameRound) => {
+			if (round.ranking == 0) return;
 			value += round.points;
+			count++;
 			if (round.points > best) best = round.points;
 		});
 		return {
-			avr: Math.round((value / rounds.length) * 10) / 10,
+			avr: Math.round((value / count) * 10) / 10,
 			best,
 			total: value,
 		};
@@ -56,13 +59,16 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 
 	const rankInfo: TDataInfo = useMemo(() => {
 		let best = 9999;
+		let count = 0;
 		let value = 0;
 		rounds.forEach((round: IGameRound) => {
+			if (round.ranking == 0) return;
 			value += round.ranking;
+			count++;
 			if (round.ranking < best) best = round.ranking;
 		});
 		return {
-			avr: Math.round((value / rounds.length) * 10) / 10,
+			avr: Math.round((value / count) * 10) / 10,
 			best,
 			lead:
 				!game.current || !game.current.self
@@ -73,15 +79,18 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 
 	const timeInfo: TDataInfo = useMemo(() => {
 		let best = 9999;
+		let count = 0;
 		let worst = 0;
 		let value = 0;
 		rounds.forEach((round: IGameRound) => {
+			if (round.ranking == 0) return;
 			value += round.time;
+			count++;
 			if (round.time < best) best = round.time;
 			if (round.time > worst && round.time < settings.playbackDuration) worst = round.time;
 		});
 		return {
-			avr: Math.round((value / rounds.length) * 100) / 100,
+			avr: Math.round((value / count) * 100) / 100,
 			best: Math.round(best * 100) / 100,
 			worst: Math.round(worst * 100) / 100,
 		};

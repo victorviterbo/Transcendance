@@ -7,6 +7,7 @@ import type {
 	IGameStatus,
 	IGameTrack,
 	IGameUser,
+	TGamePhase,
 	TGameVisibility,
 } from "../../../types/game";
 import { convExtUserToGameUser, type IExtUserInfo } from "../../../types/user";
@@ -30,7 +31,7 @@ import type {
 	IWSGameSendEventSettings,
 	TWSRoundInfo,
 } from "../../../types/websocket";
-import { mockDefaultUserUID } from "../../db";
+import { mockDefaultPP, mockDefaultUsername, mockDefaultUserUID } from "../../db";
 
 import { mockSocialDB } from "../social/social_dbs";
 import { mockGameDB } from "./game_db";
@@ -264,7 +265,7 @@ export class MockGame {
 	}
 	sendEvent(data: IWSGameSendEvent) {
 		if (!mockGameDB.client) return;
-		//console.log(data);
+		console.log(data);
 		mockGameDB.client.send(JSON.stringify(data));
 	}
 	getBaseData(event: IWSGameEventSndList): IWSGameSendEvent {
@@ -371,6 +372,11 @@ export class MockGame {
 		if (this.gameStarted) return;
 		this.gameStarted = true;
 
+		if (this.status.phase != "waiting") {
+			this.simulatePlaying();
+			return;
+		}
+
 		//Creating rounds
 		for (let i = 0; i < this.settings.trackCount; i++) {
 			this.rounds.push({
@@ -396,6 +402,29 @@ export class MockGame {
 
 			this.simulateGameRound();
 		}, 1000);
+	}
+	simulatePlaying(): void {
+		//Creating rounds
+		for (let i = this.rounds.length; i < this.settings.trackCount; i++) {
+			this.rounds.push({
+				track: mockGameDB.getRoundTrack(i),
+				phase: "not-done",
+				titleFound: false,
+				artistFound: false,
+				points: 0,
+				time: -1,
+				answers: [],
+				ranking: 0,
+			});
+		}
+
+		if (this.status.phase == "playing_round") {
+			setTimeout(() => {
+				this.simulateRoundEnd();
+			}, this.settings.playbackDuration * 1000);
+		} else if (this.status.phase == "playing_break") {
+			this.simulateGameRound();
+		}
 	}
 	simulateGameRound() {
 		//Sending preview
@@ -599,13 +628,87 @@ export class MockGame {
 //                     PLAYING
 //--------------------------------------------------
 export class MockGamePlaying extends MockGame {
-	//====================== CONSTRUCTOR ======================
+	//====================== NAME ======================
 	constructor(uid: string) {
-		super(uid);
-		this.name = "Active game room";
-		this.log("Game (Playing): '" + uid + "' created");
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's ended room";
+		this.log("Game (Ended): '" + uid + "' created");
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 6; this.currentTarget++) {
+			this.players.push({
+				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+
+		this.players.push({
+			user: {
+				username: mockDefaultUsername,
+				uid: mockDefaultUserUID,
+				avatar: mockDefaultPP,
+				guest: false,
+			},
+			points: 20,
+		});
 	}
 
+	buildGame(): void {
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+
+		this.status = {
+			phase: this.uid as TGamePhase,
+			round: this.status.phase == "playing_round" ? 2 : 3,
+			keyTime: 0,
+		};
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(0),
+			phase: "done",
+			titleFound: true,
+			artistFound: true,
+			points: 15,
+			time: 6.58,
+			ranking: 2,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(1),
+			phase: "done",
+			titleFound: false,
+			artistFound: true,
+			points: 5,
+			time: 15.25,
+			ranking: 4,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(2),
+			phase: this.status.phase == "playing_round" ? "playing" : "done",
+			titleFound: false,
+			artistFound: false,
+			points: 0,
+			time: 20,
+			ranking: 5,
+			answers: [],
+		});
+	}
+
+	simulate(): void {
+		if (this.simStarted) return;
+		super.simulate();
+		this.simulateGame();
+	}
 	//====================== DATA ======================
 }
 

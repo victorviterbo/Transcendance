@@ -58,7 +58,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 
 		return (
 			<>
-				{!game.current.isHost && (
+				{!game.current.isHost && status.phase != "recover" && (
 					<CText size="lg" align="center" testid="PGameLobby-Waiting">
 						{host
 							? ttrfn("GAME_WAITING_START", {
@@ -79,6 +79,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 							: "GAME_WAITING_START_NO_HOST"}
 					</CText>
 				)}
+				{status.phase == "recover" && <CText>GAME_WAITING_WAITING_NEXT</CText>}
 				{game.current.isHost && (
 					<>
 						<CButtonText
@@ -105,7 +106,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 						MAX: ttrn(game.current.maxPlayers),
 					})}
 				</CText>
-				{status.phase != "waiting" && (
+				{status.phase != "waiting" && status.phase != "recover" && (
 					<CText sx={{ color: appColors.secondary[0] }} align="center" size="sm">
 						GAME_STARTING
 					</CText>

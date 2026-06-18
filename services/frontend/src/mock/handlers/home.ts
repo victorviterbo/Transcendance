@@ -50,8 +50,40 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 	const tempRooms: IGameListEntry[] = [];
 
 	tempRooms.push({
+		uid: "host",
+		name: "Hosted",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "join",
+		name: "Join",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
 		uid: "join-speed",
 		name: "Join Speed",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "playing_round",
+		name: "Playing Round",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "playing_break",
+		name: "Playing Break",
 		genres: [...MUSIC_TAGS],
 		playerCount: Math.floor(Math.random() * 100),
 		playerMax: 100,

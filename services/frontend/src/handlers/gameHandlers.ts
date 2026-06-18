@@ -123,6 +123,7 @@ export class GameInstance {
 	gameLink: string;
 	volume = 50;
 	muted = false;
+	ready = false;
 
 	//====================== EVENTS ======================
 	//Server events
@@ -137,7 +138,10 @@ export class GameInstance {
 		this.visibility = data.game.visibility;
 
 		this.status = {
-			phase: data.game.status,
+			phase:
+				data.game.status == "waiting" || data.game.status == "finish"
+					? data.game.status
+					: "recover",
 			round: data.game.round,
 			keyTime: 0,
 		};
@@ -146,11 +150,12 @@ export class GameInstance {
 
 		this.checkRounds();
 		data.history.forEach((round: TWSRoundInfo) => {
-			this.applyWSRound(round);
+			this.applyWSRound(round, true);
 		});
 
 		this.updateAll();
 		this.callbacks.setSessionState("joined");
+		this.ready = true;
 		this.log("Game ready");
 	}
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
@@ -177,6 +182,7 @@ export class GameInstance {
 		this.updateSettings();
 	}
 	onGameStart(data: IWSGameSendEventSettings) {
+		if (!this.ready) return;
 		this.log("Game started");
 		this.settings = data.settings;
 		this.updateSettings();
@@ -185,12 +191,14 @@ export class GameInstance {
 		this.updateStatus();
 	}
 	onPreviewRecieve(data: IWSGameSendEventRoundStart) {
+		if (!this.ready) return;
 		this.logRound("Preview recieved");
 		this.checkRounds();
 		this.setRound(data.preview, data.round - 1);
 		this.updateRounds();
 	}
 	onRoundStart(data: IWSGameSendEventRoundStart) {
+		if (!this.ready) return;
 		this.status.round = data.round - 1;
 		this.logRound("Starting round");
 		this.status.keyTime = Date.now();
@@ -211,6 +219,7 @@ export class GameInstance {
 		}, 50);
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer) {
+		if (!this.ready) return;
 		this.logRound("Answer validation recieved for " + data.time.toString());
 		const answer: IGamePlayerAnswer | undefined = this.getRound().answers.find(
 			(answer: IGamePlayerAnswer) => {
@@ -242,6 +251,7 @@ export class GameInstance {
 		this.updateRounds();
 	}
 	onAnswerBroadcast(data: IWSGameSendEventRoundAnswerBroadcast) {
+		if (!this.ready) return;
 		this.logRound("Answer broadcast recieved for '" + data.player.username + "'");
 
 		const player: IGamePlayer | undefined = this.players.find(
@@ -266,6 +276,7 @@ export class GameInstance {
 		this.updateResults();
 	}
 	onRoundEnd(data: IWSGameSendEventRoundEnd) {
+		if (!this.ready) return;
 		this.logRound("Round ended");
 		this.logRound("Starting break");
 		this.getRound().track = data.track;
@@ -317,6 +328,7 @@ export class GameInstance {
 		this.updateAll();
 	}
 	onGameEnded(data: IWSGameSendEventGameEnd) {
+		if (!this.ready) return;
 		this.checkRounds();
 		data.history.forEach((round: TWSRoundInfo) => {
 			this.applyWSRound(round);
@@ -506,6 +518,7 @@ export class GameInstance {
 	rcv(event: IWSGameSendEvent) {
 		if (event.target != "game") return;
 		if (event.uid != this.uid) return;
+
 		switch (event.event) {
 			case "player_joined":
 				this.onPlayerJoined(event as IWSGameSendEventPlayerManage);
@@ -568,9 +581,10 @@ export class GameInstance {
 	getRound(index?: number) {
 		return this.rounds[index == undefined ? this.status.round : index];
 	}
-	applyWSRound(round: TWSRoundInfo) {
+	applyWSRound(round: TWSRoundInfo, done: boolean = false) {
 		const target: IGameRound | undefined = this.rounds[round.round - 1];
 		if (!target) return;
+		if (done) target.phase = "done";
 		target.track = round.track;
 		target.titleFound = round.titleFound;
 		target.artistFound = round.artistFound;
