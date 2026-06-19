@@ -25,6 +25,7 @@ import useGameLeaveGuard from "./useGameLeaveGuard";
 import { useNotif } from "../../components/contexts/CAppNotifContext";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
 import { PAGE_GAME } from "../../constants";
+import PGameInteractDialog from "./PGameInteractDialog";
 
 function PGame() {
 	//STYLING
@@ -35,6 +36,7 @@ function PGame() {
 	const { push } = useNotif();
 	const [error, setError] = useState<string | undefined>(undefined);
 	const [inGame, setInGame] = useState<string | undefined>(undefined);
+	const [songPlayable, setSongPlayable] = useState<boolean>(true);
 
 	//GAME
 	const { gameid } = useParams();
@@ -136,6 +138,7 @@ function PGame() {
 			push,
 			setError,
 			setInGame,
+			setSongPlayable,
 			answerRef,
 		});
 	}, [gameid, wsContext, answerRef, push, sessionState]);
@@ -156,6 +159,7 @@ function PGame() {
 			push,
 			setError,
 			setInGame,
+			setSongPlayable,
 			answerRef,
 		};
 	}, [
@@ -171,6 +175,7 @@ function PGame() {
 		push,
 		setError,
 		setInGame,
+		setSongPlayable,
 		wsContext,
 		answerRef,
 	]);
@@ -312,6 +317,12 @@ function PGame() {
 				onStay={leaveGuard.stay}
 				onLeave={handleLeaveGame}
 			/>
+			<PGameInteractDialog
+				open={!songPlayable}
+				onInteract={() => {
+					if (game.current) game.current.updatePlayable(true);
+				}}
+			></PGameInteractDialog>
 		</>
 	);
 }

@@ -265,7 +265,7 @@ export class MockGame {
 	}
 	sendEvent(data: IWSGameSendEvent) {
 		if (!mockGameDB.client) return;
-		console.log(data);
+		//console.log(data);
 		mockGameDB.client.send(JSON.stringify(data));
 	}
 	getBaseData(event: IWSGameEventSndList): IWSGameSendEvent {

@@ -50,6 +50,7 @@ export interface IGameInstanceCallbacks {
 	push: (notif: IAppNotif) => void;
 	setError: React.Dispatch<React.SetStateAction<string | undefined>>;
 	setInGame: React.Dispatch<React.SetStateAction<string | undefined>>;
+	setSongPlayable: React.Dispatch<React.SetStateAction<boolean>>;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -78,6 +79,8 @@ export class GameInstance {
 		navigator.mediaSession.setActionHandler("previoustrack", function () {});
 		navigator.mediaSession.setActionHandler("nexttrack", function () {});
 		navigator.mediaSession.setActionHandler("stop", function () {});
+
+		this.pingAudio();
 	}
 	destroy() {
 		this.uid = "";
@@ -121,9 +124,11 @@ export class GameInstance {
 	self?: IGameUser;
 	lastColorId: number = 0;
 	gameLink: string;
-	volume = 50;
-	muted = false;
-	ready = false;
+	volume: number = 50;
+	muted: boolean = false;
+	ready: boolean = false;
+	songPlayable: boolean = false;
+	songPlayed: number = -1;
 
 	//====================== EVENTS ======================
 	//Server events
@@ -208,7 +213,14 @@ export class GameInstance {
 		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
 		if (song) {
 			song.volume = this.muted ? 0 : this.volume / 100;
-			song.play();
+			song.play()
+				.then(() => {
+					this.updatePlayable(true);
+				})
+				.catch((reason) => {
+					if (reason.name == "NotAllowedError") this.updatePlayable(false);
+				});
+			this.songPlayed = this.status.round;
 		}
 		this.roundResult = [];
 		this.updateRounds();
@@ -502,6 +514,15 @@ export class GameInstance {
 		this.callbacks.setVolume(this.volume);
 		this.callbacks.setMuted(this.muted);
 	}
+	updatePlayable(value: boolean) {
+		if (value && this.songPlayed >= 0 && this.songs[this.songPlayed]) {
+			this.songs[this.songPlayed]?.play().catch((reason) => {
+				this.warn("Failled to recover song: " + this.songPlayed + "(" + reason.name + ")");
+			});
+		}
+		this.songPlayable = value;
+		this.callbacks.setSongPlayable(value);
+	}
 
 	//--------------------- WS ---------------------
 	send(data: IWSGameRCVEvent) {
@@ -651,6 +672,7 @@ export class GameInstance {
 			if (!el) return;
 			el.pause();
 		});
+		this.songPlayed = -1;
 	}
 	focusInput() {
 		if (this.callbacks.answerRef.current) {
@@ -659,8 +681,24 @@ export class GameInstance {
 			if (el.length > 0) el[0].focus();
 		}
 	}
+	async pingAudio() {
+		const audioPing = new Audio();
+		const playPromise = audioPing.play();
+		const toPromise = new Promise((resolve) => {
+			setTimeout(resolve, 1000);
+		});
+		await Promise.race([playPromise, toPromise])
+			.then((_) => {
+				audioPing.src = "";
+				audioPing.load();
+				this.updatePlayable(true);
+			})
+			.catch((reason) => {
+				if (reason.name == "NotAllowedError") this.updatePlayable(false);
+			});
+	}
 
-	//--------------------- Messages ---------------------
+	//-------------------  Messages ---------------------
 	sendChatMessage(msg: string) {
 		this.log("Sending message: " + msg);
 		this.send({

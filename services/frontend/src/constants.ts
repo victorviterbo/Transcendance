@@ -57,6 +57,8 @@ export const MINUTE_MS = 1000 * 60;
 export const GAME_COUNTDOWNM_TIME_MS = 3000;
 export const GAME_MAX_ROUND_DISPLAYED = 11;
 export const GAME_ROUND_PASSED_DISPLAYED = 8;
+export const GAME_ENDED_MAX = 9999;
+
 
 // SETTINGS
 export const SETTINGS_NGSONGS_MIN = 5;

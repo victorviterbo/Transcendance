@@ -319,3 +319,6 @@ GAME_ENDED_BACK,Back to home,,,Button to go back to the home page
 GAME_ENDED_AGAIN,Play again,,,Button to start a new game
 ERROR_FULL,Game is already full,,,Error triggered when game is full
 GAME_WAITING_WAITING_NEXT,You've rejoined during a round please wait this round to end....,,,Display a player already in  game joined after lost connections
+GAME_LEAVE_INTERACT_TITLE,Interaction required,,,Title of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio please click bellow to interact with the page,,,Content of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_BUTTON,Go,,,Button of the popup use to request a user interaction to ba abale to play the songs
