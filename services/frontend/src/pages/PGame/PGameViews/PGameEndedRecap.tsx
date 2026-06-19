@@ -6,6 +6,7 @@ import {
 	PGameEndedRecapStyle,
 	type IGameEndedRecapStyle,
 } from "../../../styles/pages/game/PGameRoundStyle";
+import { GAME_ENDED_MAX } from "../../../constants";
 
 export type TDataInfo = {
 	avr: number;
@@ -42,12 +43,12 @@ function PGameEndedRecap({ node, info }: PGameEndedRecapProsp) {
 				</Stack>
 				<Stack direction={"row"}>
 					<Stack direction={"column"} sx={style.dataStack}>
-						<CText sx={style.valueText}>{info.avr}</CText>
+						<CText sx={style.valueText}>{info.avr == GAME_ENDED_MAX ? "--" : info.avr}</CText>
 						<CText size="2xs">GAME_ENDED_AVR</CText>
 					</Stack>
 					<Box sx={style.split}></Box>
 					<Stack direction={"column"} sx={style.dataStack}>
-						<CText sx={style.valueText}>{info.best}</CText>
+						<CText sx={style.valueText}>{info.best == GAME_ENDED_MAX ? "--" : info.best}</CText>
 						<CText size="2xs">GAME_ENDED_BEST</CText>
 					</Stack>
 					<Box sx={style.split}></Box>
@@ -65,7 +66,7 @@ function PGameEndedRecap({ node, info }: PGameEndedRecapProsp) {
 					)}
 					{info.worst != undefined && (
 						<Stack direction={"column"} sx={style.dataStack}>
-							<CText sx={style.valueText}>{info.worst}</CText>
+							<CText sx={style.valueText}>{info.worst == 0 ? "--" : info.worst}</CText>
 							<CText size="2xs">GAME_ENDED_WORST</CText>
 						</Stack>
 					)}
