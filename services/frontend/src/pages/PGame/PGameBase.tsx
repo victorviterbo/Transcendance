@@ -6,7 +6,7 @@ function PGameBase() {
 	const { gameid } = useParams();
 
 	return (
-		<GPageBase key={gameid}>
+		<GPageBase inGame={true} key={gameid}>
 			<PGame />
 		</GPageBase>
 	);

@@ -972,9 +972,9 @@ export class MockGameJoiningSpeed extends MockGame {
 			this.settings.genres.splice(1, 1);
 			this.settings.genres.push("TAG_RNB");
 			this.settings.mode = "speed";
-			this.settings.trackCount = 5;
-			this.settings.playbackDuration = 20;
-			this.settings.breakDuration = 15;
+			this.settings.trackCount = 10;
+			this.settings.playbackDuration = 5;
+			this.settings.breakDuration = 5;
 			this.settings.reveal = true;
 			this.settings.fuzzy = true;
 			this.changeSettings();

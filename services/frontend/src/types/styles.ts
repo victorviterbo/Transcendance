@@ -79,6 +79,7 @@ export interface IThemeTextSize {
 	sm: number;
 	xs: number;
 	"2xs": number;
+	"3xs": number;
 }
 
 export interface IThemeText {

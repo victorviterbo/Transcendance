@@ -52,7 +52,7 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 			if (round.points > best) best = round.points;
 		});
 		return {
-			avr: count == 0 ? 0 : (Math.round((value / count) * 10) / 10),
+			avr: count == 0 ? 0 : Math.round((value / count) * 10) / 10,
 			best,
 			total: value,
 		};
@@ -69,7 +69,7 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 			if (round.ranking < best) best = round.ranking;
 		});
 		return {
-			avr: count == 0 ? GAME_ENDED_MAX : (Math.round((value / count) * 10) / 10),
+			avr: count == 0 ? GAME_ENDED_MAX : Math.round((value / count) * 10) / 10,
 			best,
 			lead:
 				!game.current || !game.current.self
@@ -91,7 +91,7 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 			if (round.time > worst && round.time < settings.playbackDuration) worst = round.time;
 		});
 		return {
-			avr: count == 0 ? GAME_ENDED_MAX : (Math.round((value / count) * 100) / 100),
+			avr: count == 0 ? GAME_ENDED_MAX : Math.round((value / count) * 100) / 100,
 			best: Math.round(best * 100) / 100,
 			worst: Math.round(worst * 100) / 100,
 		};
@@ -101,7 +101,7 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 		<Stack sx={{ flex: 1, position: "absolute", inset: "5px" }} direction={"column"}>
 			<Box sx={style.box}>
 				<Stack direction={"column"}>
-					<Stack direction={"row"}>
+					<Stack direction={{ xs: "column", sm: "row" }}>
 						<PGameEndedRecap node={<StarIcon />} info={ptsInfo} />
 						<PGameEndedRecap node={<LeaderboardIcon />} info={rankInfo} />
 						<PGameEndedRecap node={<AccessTimeIcon />} info={timeInfo} />

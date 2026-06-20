@@ -14,9 +14,10 @@ import CWebsocket from "../../components/websocket/CWebsocket";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
+	inGame?: boolean;
 }
 
-function GPageBase({ children }: GPageProps) {
+function GPageBase({ inGame, children }: GPageProps) {
 	const { user, status } = useAuth();
 	const [friendOpen, setFriendOpen] = useState<boolean>(false);
 	// 0: friendList, 1: addFriends, 2: friendRequests
@@ -86,11 +87,12 @@ function GPageBase({ children }: GPageProps) {
 											sizeMakeString(appPositions.sizes.friends) +
 											")"
 										: "100%",
+								overflow: "auto",
 							})}
 						>
 							{children}
 						</Box>
-						<CFooter />
+						<CFooter hide={inGame ? true : false} />
 					</Stack>
 					{user && (
 						<CDrawer

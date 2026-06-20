@@ -27,8 +27,8 @@ function PGameEndedRound({ round, settings }: PGameEndedRoundProps) {
 	}, [round, settings]);
 
 	return (
-		<Stack sx={style.main} direction={"row"}>
-			<Stack direction={"row"} sx={{ my: "5px", flex: 1 }}>
+		<Stack sx={style.main} direction={{ xs: "column", sm: "row" }}>
+			<Stack direction={"row"} sx={{ pl: { xs: "10px", sm: "0px" }, my: "5px", flex: 1 }}>
 				<CCover
 					url={round.track.artwork}
 					alt={round.track.artist + " - " + round.track.title}

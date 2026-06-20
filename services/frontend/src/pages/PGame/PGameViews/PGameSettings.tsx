@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import CText from "../../../components/text/CText";
 import CTextField from "../../../components/inputs/textFields/CTextField";
 import CSlider from "../../../components/inputs/slider/CSlider";
@@ -57,6 +57,9 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 	const [copied, setCopied] = useState<boolean>(false);
 	const lastCallBack: React.RefObject<number> = useRef(-1);
 	const [codeVisible, setCodeVisible] = useState<boolean>(false);
+
+	const theme = useTheme();
+	const mobile = useMediaQuery(theme.breakpoints.down("md"));
 
 	//====================== HANDLERS ======================
 	const handleSaveChanges = useCallback(() => {
@@ -131,7 +134,7 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 					step={step}
 					value={currentValue}
 					marks
-					sx={{ width: "60%" }}
+					sx={{ ml: { xs: "5%", md: "0%" }, width: { xs: "90%", md: "60%" } }}
 					onChange={(_: Event, value: number | number[]) => {
 						let finalValue: number = Array.isArray(value) ? value[0] : value;
 						if (finalValue < min) finalValue = min;
@@ -176,12 +179,69 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 		}, 2000);
 	}, [game]);
 
+	//====================== MEMOS ======================
+	const toggles = useMemo(() => {
+		return (
+			<Stack direction={"row"} sx={{ alignItems: "stretch", minHeight: "150px", mt: "30px" }}>
+				<Stack direction={"column"} sx={{ justifyContent: "space-between", mt: "4px" }}>
+					<CText>GAME_SETTINGS_SEE_OTHERS</CText>
+					<CText>GAME_SETTINGS_FUZZY</CText>
+					<CText>GAME_SETTINGS_SCORE_OPTION</CText>
+				</Stack>
+				<Stack direction={"column"} sx={{ justifyContent: "space-between", ml: "20px" }}>
+					{getToggle(seeOthers, "GAME_SETTINGS_SEE_OTHERS", setSeeOthers)}
+					{getToggle(fuzzy, "GAME_SETTINGS_FUZZY", setFuzzy)}
+					<CToggle
+						fontSize="xs"
+						padding="7px"
+						value={speedMode}
+						onValueChanged={(value: string) => {
+							setSpeedMode(value as TScoreOption);
+						}}
+						options={[
+							{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
+							{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
+							{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
+						]}
+						data-testid={"PGameSettings_ScoreOption"}
+					></CToggle>
+				</Stack>
+			</Stack>
+		);
+	}, [speedMode, fuzzy, seeOthers]);
+
+	const togglesMobiles = useMemo(() => {
+		return (
+			<Stack direction={"column"} sx={{ mt: "20px", alignItems: "center" }}>
+				<CText>GAME_SETTINGS_SEE_OTHERS</CText>
+				{getToggle(seeOthers, "GAME_SETTINGS_SEE_OTHERS", setSeeOthers)}
+				<CText sx={{ mt: "15px" }}>GAME_SETTINGS_FUZZY</CText>
+				{getToggle(fuzzy, "GAME_SETTINGS_FUZZY", setFuzzy)}
+				<CText sx={{ mt: "15px" }}>GAME_SETTINGS_SCORE_OPTION</CText>
+				<CToggle
+					fontSize="xs"
+					padding="7px"
+					value={speedMode}
+					onValueChanged={(value: string) => {
+						setSpeedMode(value as TScoreOption);
+					}}
+					options={[
+						{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
+						{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
+						{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
+					]}
+					data-testid={"PGameSettings_ScoreOption"}
+				></CToggle>
+			</Stack>
+		);
+	}, [speedMode, fuzzy, seeOthers]);
+
 	return (
 		<Stack
 			sx={{ position: "absolute", inset: "15px", overflowY: "auto", overflowX: "hidden" }}
-			direction={"row"}
+			direction={{ sm: "column", md: "row" }}
 		>
-			<Stack direction={"column"} sx={{ mr: "50px" }}>
+			<Stack direction={"column"} sx={{ mr: { sm: "0px", md: "50px" } }}>
 				<CText size="lg" sx={{ my: 0, ml: "15px" }}>
 					GAME_SETTINGS_PLAYLIST
 				</CText>
@@ -198,15 +258,17 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 					data-testid="PGameSettings_TagSearch"
 				></CTextField>
 				<Stack sx={PGameSettingsTagListStyle}>{tagList}</Stack>
-				<CButton
-					sx={{ mt: "20px", mb: "5px", minHeight: "35px" }}
-					onClick={handleOnReturn}
-					data-testid="PGameSettings_Back"
-				>
-					<CText size="xs">GAME_SETTINGS_BACK</CText>
-				</CButton>
+				{!mobile && (
+					<CButton
+						sx={{ mt: "20px", mb: "5px", minHeight: "35px" }}
+						onClick={handleOnReturn}
+						data-testid="PGameSettings_Back"
+					>
+						<CText size="xs">GAME_SETTINGS_BACK</CText>
+					</CButton>
+				)}
 			</Stack>
-			<Stack direction={"column"} sx={{ flex: 1, mr: "10px" }}>
+			<Stack direction={"column"} sx={{ mt: { xs: "15px", md: "0px" }, flex: 1, mr: "10px" }}>
 				<CText size="lg" sx={{ mx: 0 }}>
 					GAME_SETTINGS_GAME
 				</CText>
@@ -236,37 +298,8 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 					setBreakTimer,
 				)}
 
-				<Stack
-					direction={"row"}
-					sx={{ alignItems: "stretch", minHeight: "150px", mt: "30px" }}
-				>
-					<Stack direction={"column"} sx={{ justifyContent: "space-between", mt: "4px" }}>
-						<CText>GAME_SETTINGS_SEE_OTHERS</CText>
-						<CText>GAME_SETTINGS_FUZZY</CText>
-						<CText>GAME_SETTINGS_SCORE_OPTION</CText>
-					</Stack>
-					<Stack
-						direction={"column"}
-						sx={{ justifyContent: "space-between", ml: "20px" }}
-					>
-						{getToggle(seeOthers, "GAME_SETTINGS_SEE_OTHERS", setSeeOthers)}
-						{getToggle(fuzzy, "GAME_SETTINGS_FUZZY", setFuzzy)}
-						<CToggle
-							fontSize="xs"
-							padding="7px"
-							value={speedMode}
-							onValueChanged={(value: string) => {
-								setSpeedMode(value as TScoreOption);
-							}}
-							options={[
-								{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
-								{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
-								{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
-							]}
-							data-testid={"PGameSettings_ScoreOption"}
-						></CToggle>
-					</Stack>
-				</Stack>
+				{!mobile && toggles}
+				{mobile && togglesMobiles}
 
 				<CText size="lg" sx={{ mx: 0, mt: "50px" }}>
 					GAME_SETTINGS_VISIBILITY
@@ -315,6 +348,15 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 
 				<Box sx={{ flex: 1 }}></Box>
 			</Stack>
+			{mobile && (
+				<CButton
+					sx={{ mt: "20px", mb: "5px", minHeight: "35px" }}
+					onClick={handleOnReturn}
+					data-testid="PGameSettings_Back"
+				>
+					<CText size="xs">GAME_SETTINGS_BACK</CText>
+				</CButton>
+			)}
 		</Stack>
 	);
 }

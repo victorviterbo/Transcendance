@@ -95,6 +95,8 @@ function PGameViews({
 				height: "100%",
 				display: "flex",
 				overflow: "hidden",
+				minHeight:
+					currentView == ECurrentView.SETTINGS ? undefined : { xs: "700px", sm: "600px" },
 			}}
 			title={currentTitle}
 		>

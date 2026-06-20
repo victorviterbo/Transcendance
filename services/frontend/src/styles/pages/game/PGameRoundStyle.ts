@@ -27,8 +27,10 @@ export const PGameRoundStyle = (): IGameRoundStyle => {
 			borderRadius: appSharedStyle.gameRadius,
 		},
 		pointBox: {
-			mt: "15px",
+			mt: { xs: "0px", md: "15px" },
 			mr: "5px",
+			flex: 0.25,
+			minWidth: "155px",
 			background: colorGetBackground(
 				[appColors.primary[1], appColors.tertiary[1]],
 				undefined,
@@ -225,13 +227,16 @@ export const PGameRoundRevealStyle = (): IGameRoundRevealStyle => {
 
 	return {
 		main: {
-			mb: "10px",
+			mb: { xs: "0px", md: "10px" },
+			mt: { xs: "10px", sm: "0px" },
+			mr: { xs: "0px", sm: "10px", md: "0px" },
 			py: "15px",
 			px: "20px",
 
 			position: "relative",
 
 			flexShrink: 0,
+			flex: 1,
 
 			overflow: "hidden",
 			alignItems: "center",
@@ -291,9 +296,11 @@ export const PGameEndedRecapStyle = (): IGameEndedRecapStyle => {
 	return {
 		card: {
 			flex: 1,
+			my: { xs: "5px", sm: "0px" },
 			mx: "10px",
 			px: "5px",
-			pb: "10px",
+			pt: { xs: "3px", sm: "0px" },
+			pb: { xs: "3px", sm: "10px" },
 			borderRadius: appSharedStyle.gameRadius,
 			border: "solid 2px " + appColors.primary[1],
 			background: colorGetBackground(
@@ -326,6 +333,7 @@ export const PGameEndedRecapStyle = (): IGameEndedRecapStyle => {
 		dataStack: {
 			flex: 1,
 			alignItems: "center",
+			justifyContent: "center",
 		},
 		valueText: {
 			m: 0,
@@ -364,7 +372,7 @@ export const PGameRoundEndedNodeStyle = (
 	return {
 		main: {
 			py: "0px",
-			pl: "10px",
+			pl: { xs: "0px", sm: "10px" },
 
 			position: "relative",
 
@@ -381,6 +389,8 @@ export const PGameRoundEndedNodeStyle = (
 			mb: "10px",
 		},
 		dataStack: {
+			mt: { xs: "5px", sm: "0px" },
+			py: "5px",
 			alignItems: "center",
 			backgroundColor: appColors.greys[5],
 			boxShadow: "-1px 0px 5px 0px " + appColors.greys[9],

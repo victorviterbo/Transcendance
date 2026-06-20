@@ -176,14 +176,24 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 		<Box data-testid="PGameLobby">
 			<Stack direction="column">
 				<CTitle
-					sx={{ color: appColors.secondary[0], mt: "20px", mb: 0 }}
+					sx={{
+						color: appColors.secondary[0],
+						mt: "20px",
+						mb: 0,
+						textOverflow: "ellipsis",
+						whiteSpace: "nowrap",
+						overflow: "hidden",
+					}}
 					noTr={true}
 					align="center"
 					size="xl"
 				>
 					{game.current.name}
 				</CTitle>
-				<Stack sx={{ mt: 0, mb: 0, justifyContent: "center" }} direction={"row"}>
+				<Stack
+					sx={{ mt: 0, mb: 0, justifyContent: "center", flexWrap: "wrap" }}
+					direction={"row"}
+				>
 					{genreTags}
 				</Stack>
 			</Stack>
@@ -201,16 +211,16 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 			</Stack>
 
 			<Stack
-				direction="row"
+				direction={{ xs: "column", sm: "row" }}
 				sx={{
 					position: "absolute",
 					inset: 0,
-					alignItems: "flex-end",
-					justifyContent: "center",
+					alignItems: { xs: "center", sm: "flex-end" },
+					justifyContent: { xs: "flex-end", sm: "center" },
 					mb: "10px",
 				}}
 			>
-				<Stack direction={"column"} sx={{ mr: "50px" }}>
+				<Stack direction={"column"} sx={{ mr: { xs: "0px", sm: "50px" } }}>
 					<Stack
 						direction={"row"}
 						sx={{

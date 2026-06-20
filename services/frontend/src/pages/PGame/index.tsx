@@ -1,4 +1,4 @@
-import { Grid, Stack } from "@mui/material";
+import { Grid, Stack, useMediaQuery } from "@mui/material";
 import { appColors, appPositions } from "../../styles/theme";
 //import { useRef } from "react";
 import PGameLBoard from "./PGameLBoard";
@@ -26,6 +26,10 @@ import { useNotif } from "../../components/contexts/CAppNotifContext";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
 import { PAGE_GAME } from "../../constants";
 import PGameInteractDialog from "./PGameInteractDialog";
+import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
+import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import CToggle from "../../components/inputs/toggle/CToggle";
 
 function PGame() {
 	//STYLING
@@ -61,6 +65,10 @@ function PGame() {
 
 	//REFS
 	const answerRef = createRef<HTMLDivElement | null>();
+
+	//MOBILE
+	const viewBreakPoints = useMediaQuery("(min-width:1200px)");
+	const [currentView, setCurrentView] = useState<"chat" | "game" | "leaderboard">("game");
 
 	//====================== WS ======================
 	const wsContext = useWS("game");
@@ -280,37 +288,90 @@ function PGame() {
 				sx={{
 					position: "absolute",
 					inset: 0,
+					alignItems: "stretch",
+					overflow: { md: "auto" },
 				}}
+				direction={"column"}
 			>
-				<Grid
-					container
-					spacing={spacing}
-					sx={{
-						position: "absolute",
-						inset: 0,
-						p: spacing,
-					}}
-				>
-					<Grid size={3}>
-						<PGameLBoard players={players} />
+				{viewBreakPoints && (
+					<Grid
+						container
+						spacing={spacing}
+						sx={{
+							position: "absolute",
+							inset: 0,
+							p: spacing,
+						}}
+					>
+						<Grid size={3}>
+							<PGameLBoard players={players} />
+						</Grid>
+						<Grid size={6}>
+							<PGameViews
+								status={status}
+								rounds={rounds}
+								players={players}
+								results={results}
+								game={game}
+								settings={settings}
+								volume={volume}
+								muted={muted}
+								answerRef={answerRef}
+							/>
+						</Grid>
+						<Grid size={3}>
+							<PGameChat game={game} chat={chat} />
+						</Grid>
 					</Grid>
-					<Grid size={6}>
-						<PGameViews
-							status={status}
-							rounds={rounds}
-							players={players}
-							results={results}
-							game={game}
-							settings={settings}
-							volume={volume}
-							muted={muted}
-							answerRef={answerRef}
-						/>
-					</Grid>
-					<Grid size={3}>
-						<PGameChat game={game} chat={chat} />
-					</Grid>
-				</Grid>
+				)}
+				{!viewBreakPoints && (
+					<>
+						<Stack
+							sx={{ justifyContent: "center", mt: "5px", mb: "15px" }}
+							direction={"row"}
+						>
+							<CToggle
+								options={[
+									{
+										value: "leaderboard",
+										label: "",
+										icon: <LeaderboardIcon fontSize="small" />,
+									},
+									{
+										value: "game",
+										label: "",
+										icon: <MicExternalOnIcon fontSize="small" />,
+									},
+									{
+										value: "chat",
+										label: "",
+										icon: <ChatBubbleIcon fontSize="small" />,
+									},
+								]}
+								value={currentView}
+								onValueChanged={(value: string) => {
+									setCurrentView(value as "chat" | "game" | "leaderboard");
+								}}
+								allowUnselect={false}
+							></CToggle>
+						</Stack>
+						{currentView == "leaderboard" && <PGameLBoard players={players} />}
+						{currentView == "game" && (
+							<PGameViews
+								status={status}
+								rounds={rounds}
+								players={players}
+								results={results}
+								game={game}
+								settings={settings}
+								volume={volume}
+								muted={muted}
+								answerRef={answerRef}
+							/>
+						)}
+						{currentView == "chat" && <PGameChat game={game} chat={chat} />}
+					</>
+				)}
 			</Stack>
 			<PGameLeaveConfirmDialog
 				open={leaveGuard.blocked}

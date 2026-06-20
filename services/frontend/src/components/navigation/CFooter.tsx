@@ -31,7 +31,11 @@ function CFooterLink({ to, label }: CFooterLinkProps) {
 	);
 }
 
-function CFooter() {
+interface CFooterProps {
+	hide: boolean;
+}
+
+function CFooter({ hide }: CFooterProps) {
 	return (
 		<Box
 			component="footer"
@@ -44,6 +48,7 @@ function CFooter() {
 				borderTop: "1px solid rgba(255, 255, 255, 0.14)",
 				backgroundColor: "rgba(7, 11, 24, 0.76)",
 				backdropFilter: "blur(10px)",
+				display: hide ? "none" : "block",
 			}}
 		>
 			<Stack
