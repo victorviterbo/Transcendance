@@ -78,11 +78,11 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 						{!error ? (
 							<>
 								<CUserProfileLink username={user.username}>
-									<CTitle noTr={true} sx={PFriendNodeNameStyle} size="sm">
+									<CTitle noTr={true} sx={PFriendNodeNameStyle} size="xs">
 										{user.username}
 									</CTitle>
 								</CUserProfileLink>
-								<CText sx={PFriendNodeBadgeStyle} size="sm">
+								<CText sx={PFriendNodeBadgeStyle} size="xs">
 									{user.badges}
 								</CText>
 							</>

@@ -18,6 +18,7 @@ export const CNavbarStyle: SxProps<Theme> = (_) => ({
 		alignSelf: "center",
 		flexShrink: 0,
 	},
+	zIndex: 2000,
 });
 
 export const CNavbarLinkStyle = (active: boolean): SxProps => {

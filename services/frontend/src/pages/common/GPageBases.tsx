@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import type { GProps } from "../../components/common/GProps";
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery } from "@mui/material";
 import GBackground from "./GBackground";
 import CNavbar from "../../components/navigation/CNavbar";
 import { appAnimation, appPositions } from "../../styles/theme";
@@ -24,6 +24,9 @@ function GPageBase({ inGame, children }: GPageProps) {
 	const [friendTab, setFriendTab] = useState<number>(0);
 	const [notifOpen, setNotifOpen] = useState<boolean>(false);
 	const [notifCount, setNotifCount] = useState<number>(0);
+
+	const breakpoint = useMediaQuery("(max-width:1600px)");
+	const drawerOver: boolean = inGame || breakpoint ? true : false;
 
 	const handleOpenFriend = () => {
 		setFriendOpen(!friendOpen);
@@ -82,9 +85,11 @@ function GPageBase({ inGame, children }: GPageProps) {
 								flex: 1,
 								position: "relative",
 								width:
-									friendOpen || notifOpen
+									(friendOpen || notifOpen) && !drawerOver
 										? "calc( 100% - " +
-											sizeMakeString(appPositions.sizes.friends) +
+											(typeof appPositions.sizes.friends == "object"
+												? appPositions.sizes.friends.xl
+												: sizeMakeString(appPositions.sizes.friends)) +
 											")"
 										: "100%",
 								overflow: "auto",
@@ -108,6 +113,10 @@ function GPageBase({ inGame, children }: GPageProps) {
 							}}
 							open={friendOpen}
 							data-testid="PSocialDrawer"
+							over={drawerOver}
+							onClose={() => {
+								setFriendOpen(false);
+							}}
 						>
 							<PSocial
 								activeTab={friendTab}
@@ -132,6 +141,10 @@ function GPageBase({ inGame, children }: GPageProps) {
 							}}
 							open={notifOpen}
 							data-testid="PNotifDrawer"
+							over={drawerOver}
+							onClose={() => {
+								setNotifOpen(false);
+							}}
 						>
 							<PNotif
 								isOpen={notifOpen}

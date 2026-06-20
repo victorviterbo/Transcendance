@@ -70,7 +70,7 @@ export const appPositions: IThemePosition = {
 			nav: "35px",
 		},
 
-		friends: "25%",
+		friends: { xs: "90%", sm: "75%", md: "50%", lg: "35%", xl: "25%" },
 
 		header: 68,
 		footer: 50,

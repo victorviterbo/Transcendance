@@ -1,5 +1,8 @@
 //--------------------------------------------------
 //                    CSS
+
+import type { Breakpoint } from "@mui/material";
+
 //--------------------------------------------------
 export type TDropShadow = {
 	offsetX: number | string;
@@ -101,7 +104,7 @@ export interface IThemeSize {
 		nav: number | string;
 	};
 
-	friends: number | string;
+	friends: number | string | Partial<Record<Breakpoint, string>>;
 
 	header: number | number;
 	footer: number | string;
