@@ -26,6 +26,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             await owner_socket.send_json_to(
                 {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
             )
+            await self.expect_event(owner_socket, 'game_info')
             await self.expect_event(owner_socket, 'message_history')
             await self.expect_event(owner_socket, 'player_joined')
             
@@ -71,6 +72,9 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             self.assertTrue(payloads['end'])
             #print(json.dumps(payloads, indent=4))
             for i in range(len(players)):
+                self.assertEqual(payloads['preview'][i]['uid'], str(game.uid))
+                self.assertEqual(payloads['preview'][i]['playbackDuration'], 10)
+                self.assertIsNotNone(payloads['preview'][i]['preview'])
                 self.assertEqual(payloads['start'][i]['uid'], str(game.uid))
                 self.assertEqual(payloads['start'][i]['playbackDuration'], 10)
                 self.assertIsNotNone(payloads['start'][i]['preview'])

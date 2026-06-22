@@ -1,4 +1,5 @@
 """Handle all DB hits for the game."""
+import json
 import uuid
 from typing import TYPE_CHECKING, Any
 
@@ -10,7 +11,7 @@ from music.serializers import TrackSerializer
 from project.defaults import default_pts
 from rest_framework import serializers
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
-from stats.serializers import LiveGameSerializer, LiveRoundSerializer
+from stats.serializers import GameHistorySerializer, GameLeaderboardSerializer, LiveGameSerializer, LiveRoundSerializer
 from thefuzz import fuzz
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
@@ -330,6 +331,51 @@ def _get_game_settings_data(consumer: 'GlobalConsumer') -> dict:
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:
 	"""Retrieve player data."""
 	return LightProfileSerializer(consumer.profile).data
+
+def _build_base_game_payload(consumer: 'GlobalConsumer') -> dict:
+    """Helper to build the shared payload data (leaderboard, history, self, uid)."""
+    game = consumer.current_game
+    current_player = consumer.profile
+
+    leaderboard_rows = (
+        UserGameStats.objects.filter(game=game)
+        .select_related('player')
+        .annotate(total_points=Sum('round_stats__xp_earned'))
+        .order_by('-total_points', 'player__username')
+    )
+    round_rows = (
+        UserRoundStats.objects.filter(round__game=game, player=current_player)
+        .select_related('round__track')
+        .order_by('round__round_number')
+    )
+
+    leaderboard = GameLeaderboardSerializer(leaderboard_rows, many=True).data
+    history = GameHistorySerializer(round_rows, many=True).data
+
+    payload = {
+        'uid': str(game.uid),
+        'self': LightProfileSerializer(current_player).data,
+        'leaderboard': leaderboard,
+        'history': history,
+    }
+    return payload
+
+
+@database_sync_to_async
+def _get_game_info_data(consumer: 'GlobalConsumer') -> dict:
+    """Build the game_info payload for a joining player."""
+    payload = _build_base_game_payload(consumer)
+
+    payload['game'] = GameHeaderSerializer(consumer.current_game).data
+    payload['settings'] = GameSettingsSerializer(consumer.current_game).data
+    
+    return payload
+
+
+@database_sync_to_async
+def _get_game_ended_data(consumer: 'GlobalConsumer') -> dict:
+    """Build the game_ended payload for all players."""
+    return _build_base_game_payload(consumer)
 
 @database_sync_to_async
 def _check_game_membership(game: Game, player: Profile) -> bool:

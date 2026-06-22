@@ -61,7 +61,7 @@ class Game(models.Model):
                                         blank=True,
                                         default=10,
                                         validators=[
-                                            MinValueValidator(1),
+                                            MinValueValidator(5),
                                             MaxValueValidator(30),
                                         ]
                                 )

@@ -176,9 +176,13 @@ class TestWebsocketHelpers(APITransactionTestCase):
                          armageddon: bool=False
                         ) -> dict:
         """Handle a game round."""
-        payloads = {'start': [],
+        payloads = {'preview': [],
+                    'start': [],
                     'in_game': [],
                     'end': []}
+        for p in players:
+            payload = await self.expect_event(p, 'round_preview')
+            payloads['preview'].append(payload)
         for p in players:
             payload = await self.expect_event(p, 'round_started')
             payloads['start'].append(payload)

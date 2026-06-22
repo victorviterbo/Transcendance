@@ -106,3 +106,27 @@ class LiveGameSerializer(serializers.ModelSerializer):
         """Define the fields in the game stats serializer."""
         model = UserGameStats
         fields = ['uid', 'name', 'rounds']
+
+
+class GameLeaderboardSerializer(serializers.ModelSerializer):
+    """Serialize a single leaderboard entry for in-game use."""
+    player = LightProfileSerializer()
+    points = serializers.IntegerField(source='total_points')
+
+    class Meta:
+        model = UserGameStats
+        fields = ['player', 'points']
+
+
+class GameHistorySerializer(serializers.ModelSerializer):
+    """Serialize a single history entry for in-game use."""
+    track = TrackSerializer(source='round.track', read_only=True)
+    titleFound = serializers.BooleanField(source='title_found')
+    artistFound = serializers.BooleanField(source='artist_found')
+    points = serializers.IntegerField(source='xp_earned')
+    round = serializers.IntegerField(source='round.round_number')
+
+    class Meta:
+        """"Define the fields in the game history serializer."""
+        model = UserRoundStats
+        fields = ['track', 'titleFound', 'artistFound', 'time', 'points', 'round']

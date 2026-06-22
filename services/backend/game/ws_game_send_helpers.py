@@ -23,8 +23,20 @@ async def _send_track(consumer: 'GlobalConsumer',
             'uid': serialized_game.get('uid'),
             'preview': serialized_track.get('preview'),
             'playbackDuration': consumer.current_game.playbackDuration,
+            'round': consumer.current_game.current_round
         }
     await consumer.group_send(consumer.game_group_name, event)
+
+async def _send_round_preview(consumer: 'GlobalConsumer',
+                              serialized_game: dict,
+                              serialized_track: dict) -> None:
+    """Send the preview track before the round begins."""
+    await consumer.group_send(consumer.game_group_name, {
+        'type': 'game_round_preview',
+        'uid': serialized_game.get('uid'),
+        'preview': serialized_track.get('preview'),
+        'playbackDuration': consumer.current_game.playbackDuration,
+    })
 
 async def _send_round_stats(consumer: 'GlobalConsumer',
                             serialized_stats: dict,
@@ -64,4 +76,27 @@ async def _send_start_signal(consumer: 'GlobalConsumer', serialized_game: dict, 
         'uid': serialized_game.get('uid'),
         'settings': serialized_settings,
         'delay': countdown_time,
+    })
+
+async def _send_game_info(consumer: 'GlobalConsumer', game_info: dict) -> None:
+    """Send game_info directly to the joining player."""
+    await consumer.send_json({
+        'target': 'game',
+        'event': 'game_info',
+        'uid': game_info['uid'],
+        'self': game_info['self'],
+        'game': game_info['game'],
+        'settings': game_info['settings'],
+        'leaderboard': game_info['leaderboard'],
+        'history': game_info['history']
+    })
+
+async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict) -> None:
+    """Broadcast game_ended to all players."""
+    await consumer.group_send(consumer.game_group_name, {
+        'type': 'game_ended_event',
+        'uid': game_ended['uid'],
+        'self': game_ended['self'],
+        'leaderboard': game_ended['leaderboard'],
+        'history': game_ended['history']
     })
