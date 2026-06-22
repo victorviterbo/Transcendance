@@ -6,42 +6,25 @@ import shutil
 from pathlib import Path
 
 from django.conf import settings
-from rest_framework import status
 from PIL import Image
+from rest_framework import status
 from rest_framework.test import APIClient
-from tests.test_helpers import MEDIA_ROOT, TestBaseHelpers, urls
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer, ProfileSerializer
 
+from tests.test_helpers import MEDIA_ROOT, TestBaseHelpers, TestImageHelpers, urls
 
-class ProfileTests(TestBaseHelpers):
+
+class ProfileTests(TestBaseHelpers, TestImageHelpers):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
         """Set up the common variables for the tests."""
-        self.client = APIClient()
-        serializer = RegisterSerializer(data={'email': 'user1@mail.com',
-                                              'profile_username': 'user1',
-                                              'password': 'Password123+'},
-                                              context={'is_creation': True})
-        if serializer.is_valid():
-            self.user1 = serializer.save()
-        serializer = RegisterSerializer(data={'email': 'user2@mail.com',
-                                              'profile_username': 'user2',
-                                              'password': 'Password123+'},
-                                              context={'is_creation': True})
-        if serializer.is_valid():
-            self.user2 = serializer.save()
-        
-        serializer = ProfileSerializer(data={'username': 'an_anonymous_user',
-                                              'exp_points': '12',
-                                              'badges': 'BADGE_DEAF_OCTOPUS'
-                                            },
-                                            context={'is_creation': True})
-        if serializer.is_valid():
-            self.user3 = serializer.save()
+        self.user1 = self.create_user('user1@mail.com', 'user1')
+        self.user2 = self.create_user('user2@mail.com', 'user2')
+        self.profile = self.create_profile('an_anonymous_user', 12, 'BADGE_DEAF_OCTOPUS')
     
     @classmethod
     def tearDownClass(cls) -> None:
@@ -59,10 +42,8 @@ class ProfileTests(TestBaseHelpers):
     
     def test_profile_get(self) -> None:
         """Test success and failure of profile access operation."""
-        profile_url = '/api/profile/'
         for query in ['?q=user2', '?q=user1', '?q=an_anonymous_user', '?q=not_a_user', '?q=', '']:
-            profile_query =  query
-            response = self.client.get(profile_url + profile_query)
+            response = self.client.get(urls['profile'] + query)
             if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertStartsWith(response.data['avatar'],
@@ -84,19 +65,17 @@ class ProfileTests(TestBaseHelpers):
 
     def test_profile_post(self) -> None:
         """Test success and failure of profile modification operation."""
-        profile_url = '/api/profile/'
         new_data = {
             'username': 'a_new_user',
             'avatar': self.image_generator('valid'),
             'exp_points': 1000000000,
         }
         new_data['avatar'].seek(0)
-        response = self.client.post(profile_url, data=new_data, format='multipart')
+        response = self.client.post(urls['profile'], data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
-        
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
@@ -109,7 +88,7 @@ class ProfileTests(TestBaseHelpers):
             'badges': 'Sonic Shark'
         }
         new_data['avatar'].seek(0)
-        response = self.client.post(profile_url, data=new_data, format='multipart')
+        response = self.client.post(urls['profile'], data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('email', response.data)
         self.assertEqual(response.data['email'], 'anewemail@mail.com')
@@ -118,13 +97,13 @@ class ProfileTests(TestBaseHelpers):
 
         new_data['avatar'] = self.image_generator('corrupt')
         new_data['avatar'].seek(0)
-        response = self.client.post(profile_url, data=new_data)
+        response = self.client.post(urls['profile'], data=new_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('avatar', response.data['error'])
         self.assertEqual('INVALID_IMAGE', response.data['error']['avatar'])
 
-        response = self.client.post(profile_url, data={'username': 'user2'})
+        response = self.client.post(urls['profile'], data={'username': 'user2'})
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertIn('error', response.data)
         self.assertIn('username', response.data['error'])
@@ -133,7 +112,7 @@ class ProfileTests(TestBaseHelpers):
         new_data['avatar'] = self.image_generator('corrupt')
         new_data['avatar'].seek(0)
         new_data['username'] = 'user2'
-        response = self.client.post(profile_url, data=new_data)
+        response = self.client.post(urls['profile'], data=new_data)
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertIn('error', response.data)
         self.assertIn('username', response.data['error'])
@@ -141,7 +120,7 @@ class ProfileTests(TestBaseHelpers):
         self.assertEqual('USERNAME_TAKEN', response.data['error']['username'])
         self.assertEqual('INVALID_IMAGE', response.data['error']['avatar'])
 
-        response = self.client.get(profile_url + "?q=a_new_user")
+        response = self.client.get(urls['profile'] + "?q=a_new_user")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['username'], 'a_new_user')
         self.assertEqual(response.data['exp_points'], 0)
@@ -150,35 +129,30 @@ class ProfileTests(TestBaseHelpers):
 
     def test_profile_delete(self) -> None:
         """Test profile deletion operation."""
-        account_delete_url = '/api/auth/delete/'
-
         login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
-        
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
-        response = self.client.post(account_delete_url, data={'password': 'Password123+'})
+        response = self.client.post(urls['delete_account'],
+                                    data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Profile.objects.filter(username='user1').exists())
+        self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
         login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertFalse(Profile.objects.filter(username='user1').exists())
-        self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
 
     def test_profile_create_update_delete(self) -> None:
         """Test all profile operation."""
-        profile_url = '/api/profile/'
-        account_delete_url = '/api/auth/delete/'
-
         login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
         
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         username = login_res.data.get('username')
-        profile_res = self.client.get(profile_url+'?q='+username)
+        profile_res = self.client.get(urls['profile'] +'?q='+username)
         image = profile_res.data.get('avatar')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
         self.assertIn('refresh-token', self.client.cookies)
@@ -190,14 +164,14 @@ class ProfileTests(TestBaseHelpers):
             'badges': 'Sonic Shark'
         }
         new_data['avatar'].seek(0)
-        response = self.client.post(profile_url, data=new_data, format='multipart')
+        response = self.client.post(urls['profile'], data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         new_data['avatar'].seek(0)
-        response = self.client.post(profile_url, data=new_data, format='multipart')
+        response = self.client.post(urls['profile'], data=new_data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = self.client.post(account_delete_url, data={'password': 'Password123+'})
+        response = self.client.post(urls['delete_account'], data={'password': 'Password123+'})
         self.assertTrue(response.status_code, status.HTTP_204_NO_CONTENT)
         login_res = self.client.post(urls['login'], data={'email': 'user1@mail.com',
                                                  'password': 'Password123+'})
@@ -211,18 +185,15 @@ class ProfileTests(TestBaseHelpers):
 
     def test_guest_profile(self) -> None:
         """Test creation updating and deleting guests users."""
-        guest_create_url = '/api/profile/guest-create/'
-        guest_delete_url = '/api/profile/guest-delete/'
-        profile_search_url = '/api/profile/search/'
-        response = self.client.post(guest_create_url,
+        response = self.client.post(urls['guest_create_url'],
                                     data={'username': 'a_brand_new_guest'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('sessionid', self.client.cookies)
-        response = self.client.get(profile_search_url + "?q=a_brand_new_guest")
+        response = self.client.get(urls['profile_search_url'] + "?q=a_brand_new_guest")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.client.post(guest_create_url, data={'username': 'updating_guest'})
+        response = self.client.post(urls['guest_create_url'], data={'username': 'updating_guest'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.client.get(profile_search_url + "?q=updating_guest")
+        response = self.client.get(urls['profile_search_url'] + "?q=updating_guest")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         new_data = {
@@ -231,17 +202,17 @@ class ProfileTests(TestBaseHelpers):
             'exp_points': 1000000000,
         }
         new_data['avatar'].seek(0)
-        response = self.client.post(guest_create_url, data=new_data)
+        response = self.client.post(urls['guest_create_url'], data=new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         original_img_path = Path(str(MEDIA_ROOT) + response.data['avatar'].removeprefix('/media'))
         self.assertTrue(original_img_path.is_file())
         self.assertNotIn('exp_points', response.data)
 
-        response = self.client.post(guest_create_url, data={'username': 'new_username'})
+        response = self.client.post(urls['guest_create_url'], data={'username': 'new_username'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(original_img_path.is_file())
 
-        response = self.client.post(guest_delete_url)
+        response = self.client.post(urls['guest_delete_url'])
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(original_img_path.is_file())
 

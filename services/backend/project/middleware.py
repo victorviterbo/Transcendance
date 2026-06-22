@@ -3,7 +3,7 @@
 import uuid
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from rest_framework import status
+from rest_framework import serializers, status
 from userprofile.models import Profile
 
 

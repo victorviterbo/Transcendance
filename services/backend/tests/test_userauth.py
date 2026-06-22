@@ -8,7 +8,7 @@ from userauth.serializers import RegisterSerializer
 from tests.test_helpers import TestBaseHelpers, urls
 
 
-class UserAccountTests(TestBaseHelpers):
+class UserAccountTests(TestBaseHelpers, APITestCase):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
@@ -23,7 +23,6 @@ class UserAccountTests(TestBaseHelpers):
 
     def test_login_user(self) -> None:
         """Test success and failure of login."""
-        urls['login'] = '/api/auth/login/'
         for email in ['test@mail.com', '', 'test']:
             for password in ['Password123+', '', 'wrongpassword']:
                 response = self.client.post(urls['login'], {'email': email, 'password': password})
@@ -41,7 +40,6 @@ class UserAccountTests(TestBaseHelpers):
 
     def test_login_rejects_sql_injection_payloads(self) -> None:
         """Injection-shaped credentials must not bypass authentication."""
-        urls['login'] = '/api/auth/login/'
         payloads = [
             {'email': "test@mail.com' OR '1'='1", 'password': 'anything'},
             {'email': 'test@mail.com', 'password': "' OR '1'='1"},
@@ -137,17 +135,10 @@ class UserAccountTests(TestBaseHelpers):
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""
-        urls['logout'] = '/api/auth/logout/'
-        urls['profile'] = '/api/profile/'
-
         response = self.client.post(urls['profile'], data={'username': 'should_fail'})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        login_res = self.client.post(urls['login'], data={'email': 'test@mail.com',
-                                                          'password': 'Password123+'},
-                                                          format='json')
-        access_token = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        self.authenticate('test@mail.com')
 
         refresh_token_copy = self.client.cookies.get('refresh-token').value
 
@@ -168,7 +159,6 @@ class UserAccountTests(TestBaseHelpers):
     
     def test_refresh(self) -> None:
         """Test success and failure of access token regeneration operation."""
-        urls['refresh'] = '/api/auth/refresh/'
         response = self.client.post(urls['refresh'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertNotIn('access', response.data)

@@ -40,7 +40,7 @@ profiles = []
 # Create 1 Admin
 admin_user, _ = SiteUser.objects.get_or_create(email='admin@example.com',
                                                defaults={'is_staff': True, 'is_superuser': True})
-admin_user.set_password('Password123!')
+admin_user.set_password('Password123+')
 admin_user.save()
 
 admin_profile, _ = Profile.objects.get_or_create(
@@ -55,7 +55,7 @@ for i in range(1, 21):
     email = f"player{i}@mail.com"
     user, created = SiteUser.objects.get_or_create(email=email)
     if created:
-        user.set_password('Password123!')
+        user.set_password('Password123+')
         user.save()
     users.append(user)
     

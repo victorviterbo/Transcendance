@@ -5,18 +5,19 @@ from unittest.mock import Mock, patch
 
 import requests
 from django.core.management import call_command
-from django.test import TestCase
 from music.itunes_client import batch_lookup, fetch_ids_from_rss, full_lookup
 from music.management.commands.seed_playlists import PLAYLISTS, STATIC_TRACK_IDS
 from music.models import Playlist, Track
 from music.serializers import PlaylistTracksSerializer, TrackSerializer
+from rest_framework.test import APITestCase
+
 from tests.test_helpers import TestBaseHelpers
 
 
-class MusicModelsTests(TestBaseHelpers):
+class MusicModelsTests(TestBaseHelpers, APITestCase):
 	"""Validate Playlist and Track model behavior."""
 
-	def test_track_many_to_many_playlist(self):
+	def test_track_many_to_many_playlist(self) -> None:
 		"""A track should be attachable to multiple playlists."""
 		rock = Playlist.objects.create(name='Rock', rss_url='https://example.org/rock')
 		pop = Playlist.objects.create(name='Pop', rss_url='https://example.org/pop')
@@ -36,11 +37,11 @@ class MusicModelsTests(TestBaseHelpers):
 		self.assertTrue(pop.tracks.filter(itunes_id=1234).exists())
 
 
-class ITunesClientTests(TestBaseHelpers):
+class ITunesClientTests(TestBaseHelpers, APITestCase):
 	"""Validate iTunes parsing and error handling logic."""
 
 	@patch('music.itunes_client.requests.get')
-	def test_fetch_ids_from_rss_parses_valid_entries_and_skips_bad_ones(self, mock_get):
+	def test_fetch_ids_from_rss_parses_valid_entries_and_skips_bad_ones(self, mock_get) -> None:
 		"""RSS parser should keep valid rows and skip malformed data."""
 		response = Mock()
 		response.raise_for_status.return_value = None
@@ -77,7 +78,7 @@ class ITunesClientTests(TestBaseHelpers):
 		self.assertEqual(tracks[0]['artwork_url'], 'https://img.example/500x500bb.jpg')
 
 	@patch('music.itunes_client.requests.get')
-	def test_fetch_ids_from_rss_returns_empty_on_http_error(self, mock_get):
+	def test_fetch_ids_from_rss_returns_empty_on_http_error(self, mock_get) -> None:
 		"""RSS fetch errors should return an empty list."""
 		mock_get.side_effect = requests.RequestException('Apple go kaboom')
 
@@ -86,7 +87,7 @@ class ITunesClientTests(TestBaseHelpers):
 		self.assertEqual(tracks, [])
 
 	@patch('music.itunes_client.requests.get')
-	def test_batch_lookup_maps_preview_urls(self, mock_get):
+	def test_batch_lookup_maps_preview_urls(self, mock_get) -> None:
 		"""Batch lookup should map each trackId to previewUrl."""
 		response = Mock()
 		response.raise_for_status.return_value = None
@@ -105,12 +106,12 @@ class ITunesClientTests(TestBaseHelpers):
 		self.assertEqual(previews[202], 'https://example.org/202.m4a')
 		self.assertEqual(len(previews), 2)
 
-	def test_batch_lookup_returns_empty_for_empty_input(self):
+	def test_batch_lookup_returns_empty_for_empty_input(self) -> None:
 		"""No track ids should skip the HTTP call and return empty mapping."""
 		self.assertEqual(batch_lookup([]), {})
 
 	@patch('music.itunes_client.requests.get')
-	def test_full_lookup_returns_metadata_and_resized_artwork(self, mock_get):
+	def test_full_lookup_returns_metadata_and_resized_artwork(self, mock_get) -> None:
 		"""Full lookup should normalize the payload shape expected by sync."""
 		response = Mock()
 		response.raise_for_status.return_value = None
@@ -138,10 +139,10 @@ class ITunesClientTests(TestBaseHelpers):
 		self.assertEqual(metadata[333]['preview_url'], 'https://example.org/333.m4a')
 
 
-class MusicManagementCommandsTests(TestBaseHelpers):
+class MusicManagementCommandsTests(TestBaseHelpers, APITestCase):
 	"""Validate playlist seed and sync commands behavior."""
 
-	def test_seed_playlists_is_idempotent(self):
+	def test_seed_playlists_is_idempotent(self) -> None:
 		"""Running seed twice should not duplicate playlist rows."""
 		out = StringIO()
 		call_command('seed_playlists', stdout=out)
@@ -150,7 +151,7 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 		call_command('seed_playlists', stdout=out)
 		self.assertEqual(Playlist.objects.count(), len(PLAYLISTS))
 
-	def test_sync_playlists_warns_when_no_playlist_exists(self):
+	def test_sync_playlists_warns_when_no_playlist_exists(self) -> None:
 		"""Sync command should stop early when no playlist exists."""
 		out = StringIO()
 
@@ -160,7 +161,7 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 		self.assertEqual(Track.objects.count(), 0)
 
 	@patch('music.management.commands.sync_playlists.fetch_ids_from_rss')
-	def test_sync_playlists_handles_api_timeout_without_crashing(self, mock_fetch_ids):
+	def test_sync_playlists_handles_api_timeout_without_crashing(self, mock_fetch_ids) -> None:
 		"""A provider timeout should be logged and the command should continue cleanly."""
 		Playlist.objects.create(
 			name='Timeout RSS',
@@ -180,7 +181,7 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 		self,
 		mock_fetch_ids,
 		mock_batch_lookup,
-	):
+	) -> None:
 		"""Existing tracks should be updated in place by update_or_create."""
 		playlist = Playlist.objects.create(
 			name='Update RSS',
@@ -222,7 +223,7 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 		self,
 		mock_fetch_ids,
 		mock_batch_lookup,
-	):
+	) -> None:
 		"""The same iTunes ID should create one Track linked to multiple playlists."""
 		playlist_a = Playlist.objects.create(
 			name='Global',
@@ -257,7 +258,7 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 		self,
 		mock_fetch_ids,
 		mock_batch_lookup,
-	):
+	) -> None:
 		"""RSS playlists should persist the full feed when previews exist."""
 		playlist = Playlist.objects.create(
 			name=PLAYLISTS[0]['name'],
@@ -290,7 +291,8 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 	@patch('music.management.commands.sync_playlists.STATIC_TRACK_IDS', {'bestof-usa-80s': STATIC_TRACK_IDS['bestof-usa-80s']})
 	@patch('music.management.commands.sync_playlists.NAME_TO_SLUG_KEY', {'Best of USA 80s': 'bestof-usa-80s'})
 	@patch('music.management.commands.sync_playlists.full_lookup')
-	def test_sync_playlists_static_playlist_uses_full_lookup(self, mock_full_lookup):
+
+	def test_sync_playlists_static_playlist_uses_full_lookup(self, mock_full_lookup) -> None:
 		"""Static playlists should resolve metadata through the full lookup API."""
 		playlist = Playlist.objects.create(name='Best of USA 80s', rss_url='')
 		static_ids = STATIC_TRACK_IDS['bestof-usa-80s']
@@ -315,10 +317,10 @@ class MusicManagementCommandsTests(TestBaseHelpers):
 		mock_full_lookup.assert_any_call(static_ids, country='US')
 
 
-class MusicSerializersTests(TestBaseHelpers):
+class MusicSerializersTests(TestBaseHelpers, APITestCase):
 	"""Validate serialization for tracks and playlists."""
 
-	def test_track_serializer_fields(self):
+	def test_track_serializer_fields(self) -> None:
 		"""Track serializer should expose expected public fields."""
 		track = Track.objects.create(
 			itunes_id=9001,
@@ -338,7 +340,7 @@ class MusicSerializersTests(TestBaseHelpers):
 		self.assertEqual(data['preview_url'], 'https://example.org/preview.m4a')
 		self.assertEqual(data['artwork_url'], 'https://example.org/artwork.jpg')
 
-	def test_playlist_serializer_includes_nested_tracks(self):
+	def test_playlist_serializer_includes_nested_tracks(self) -> None:
 		"""Playlist serializer should include all attached tracks."""
 		playlist = Playlist.objects.create(
 			name='Serialize Playlist',

@@ -1,24 +1,11 @@
 """Tests for game HTTP endpoints and websocket flow."""
 
-import json
-import random
-import uuid
-
 from asgiref.sync import async_to_sync
-from channels.testing import WebsocketCommunicator
-from django.test import TransactionTestCase
-from friends.models import Friendship
-from game.models import Game
-from music.models import Track
-from project.defaults import genres
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+
 from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers
-from userauth.models import SiteUser
-from userauth.serializers import RegisterSerializer
 
 
-class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
+class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
     """Validate websocket game lifecycle after HTTP creation."""
 
     def setUp(self) -> None:

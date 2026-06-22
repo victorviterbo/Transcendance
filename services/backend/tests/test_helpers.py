@@ -20,6 +20,7 @@ from project.asgi import application
 from project.defaults import genres
 from rest_framework import status
 from rest_framework.test import (
+    APITestCase,
     APITransactionTestCase,
 )
 from userauth.models import SiteUser
@@ -33,10 +34,13 @@ urls = {
     'refresh': '/api/auth/refresh/',
     'pw_change': '/api/auth/password/',
     'game': '/api/game/',
-    'delete_account': '/api/auth/delete-account/',
+    'friend_game': '/api/game/friends/',
+    'delete_account': '/api/auth/delete/',
     'register': '/api/auth/register/',
     'profile': '/api/profile/',
-    'guest_create_url': '/api/auth/guest-create/',
+    'guest_create_url': '/api/profile/guest-create/',
+    'guest_delete_url': '/api/profile/guest-delete/',
+    'profile_search_url': '/api/profile/search/',
     'friend_request': '/api/social/friends-request/',
     'friend_request_send': '/api/social/friend-request/send/',
     'friend_request_respond': '/api/social/friend-request/respond/',
@@ -45,35 +49,29 @@ urls = {
     'friend_search': '/api/social/friends-search/',
     'friends_notif': '/api/social/notifs/',
     'chat': '/api/chat/room/',
+    'direct_chat': '/api/chat/direct/',
 }
 
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
 
-@override_settings(MEDIA_ROOT=MEDIA_ROOT)
-class TestBaseHelpers(APITransactionTestCase):
+class TestBaseHelpers:
     """Shared setup and helper functions for game tests."""
-
-    image_dict = {
-        'valid': '',
-        'invalid': b'this is just a text string, not an image',
-        'empty': b'',
-        'corrupt': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
-    }
 
     def create_user(self, email: str, username: str) -> SiteUser:
         """Create a new user for tests."""
         serializer = RegisterSerializer(
-            data={
-                'email': email,
-                'profile_username': username,
-                'password': 'Password123!',
-            },
-            context={'is_creation': True},
+            data={'email': email,
+                  'password': 'Password123+',
+                  'profile_username': username},
+            context={'is_creation': True}
         )
-        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.is_valid(raise_exception=True)
         return serializer.save()
 
-    def create_profile(self, username: str, exp_points: str = '12',
+
+    def create_profile(self,
+                       username: str,
+                       exp_points: str = '12',
                        badges: str = 'BADGE_DEAF_OCTOPUS') -> Profile:
         """Create a new profile for tests."""
         serializer = ProfileSerializer(
@@ -83,28 +81,15 @@ class TestBaseHelpers(APITransactionTestCase):
         serializer.is_valid(raise_exception=True)
         return serializer.save()
 
-    def image_generator(self, image_type: str) -> SimpleUploadedFile:
-        """Helper function to generate images for tests."""
-        if image_type == 'valid':
-            file_obj = io.BytesIO()
-            image = Image.new('RGB', size=(1000, 1000), color=(0, 0, 255))
-            image.save(file_obj, 'png')
-            file_obj.seek(0)
-            img_content = file_obj.getvalue()
-        else:
-            img_content = self.image_dict.get(image_type)
-        return SimpleUploadedFile(name='large_test.png',
-                                    content=img_content,
-                                    content_type='image/png'
-                                    )
-
-    def authenticate(self, email: str, password: str='Password123!') -> None:
+    def authenticate(self, email: str, client=None, password: str='Password123+') -> None:
         """Authenticate a user and set credentials for future requests."""
-        login_res = self.client.post(urls['login'], data={'email': email,
+        if client is None:
+            client = self.client
+        login_res = client.post(urls['login'], data={'email': email,
                                                       'password': password})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+        client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
         return
 
     def create_game_via_http(self,
@@ -113,13 +98,9 @@ class TestBaseHelpers(APITransactionTestCase):
                                 visibility: str = 'public',
                                 ) -> tuple[dict, Game]:
         """self.owner will create a new game via http."""
-        login_res = self.client.post(urls['login'], data={'email': user.email,
-                                                    'password': 'Password123!'})
-        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
-        access = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+        self.authenticate(user.email)
         response = self.client.post(
-            '/api/game/',
+            urls['game'],
             {
                 'name': name,
                 'visibility': visibility,
@@ -141,6 +122,31 @@ class TestBaseHelpers(APITransactionTestCase):
                 genre=random.choice(genres),
                 preview_url='https://example.com/track.mp3',
             )
+
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
+class TestImageHelpers(APITransactionTestCase):
+    """Shared setup and helper functions for image-related tests."""
+    
+    image_dict = {
+        'valid': '',
+        'invalid': b'this is just a text string, not an image',
+        'empty': b'',
+        'corrupt': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00'
+    }
+    def image_generator(self, image_type: str) -> SimpleUploadedFile:
+        """Helper function to generate images for tests."""
+        if image_type == 'valid':
+            file_obj = io.BytesIO()
+            image = Image.new('RGB', size=(1000, 1000), color=(0, 0, 255))
+            image.save(file_obj, 'png')
+            file_obj.seek(0)
+            img_content = file_obj.getvalue()
+        else:
+            img_content = self.image_dict.get(image_type)
+        return SimpleUploadedFile(name='large_test.png',
+                                    content=img_content,
+                                    content_type='image/png'
+                                    )
 
 class TestWebsocketHelpers(APITransactionTestCase):
     """Shared setup and helper functions for websocket game tests."""
@@ -190,3 +196,4 @@ class TestWebsocketHelpers(APITransactionTestCase):
             payload = await self.expect_event(p, 'round_ended')
             payloads['end'].append(payload)
         return payloads
+    

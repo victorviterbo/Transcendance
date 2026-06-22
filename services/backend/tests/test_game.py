@@ -21,33 +21,21 @@ from userauth.serializers import RegisterSerializer
 from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers, urls
 
 
-class GameHTTPViewTests(TestBaseHelpers):
+class GameHTTPViewTests(TestBaseHelpers, APITestCase):
     """Validate game HTTP endpoints and creation contract."""
 
     def setUp(self) -> None:
         self.owner = self.create_user('owner@mail.com', 'game_owner')
         self.friend = self.create_user('friend@mail.com', 'game_friend')
         self.stranger = self.create_user('stranger@mail.com', 'game_stranger')
-        login_res = self.client.post(urls['login'], data={'email': 'owner@mail.com',
-                                                 'password': 'Password123!'})
-        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
-        access = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
+        self.authenticate('owner@mail.com')
 
     def test_create_game_with_required_payload_only(self) -> None:
         """Game creation should only require name and visibility."""
-        login_res = self.client.post(urls['login'], data={'email': 'owner@mail.com',
-                                                 'password': 'Password123!'})
-        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
-        access = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
-        response = self.client.post(
-            '/api/game/',
-            {
-                'name': 'Friday Quiz',
-                'visibility': 'public',
-            },
-            format='json',
+        response = self.client.post(urls['game'], {'name': 'Friday Quiz',
+                                        'visibility': 'public',
+                                    },
+                                    format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
         self.assertIn('uid', response.data)
@@ -62,7 +50,7 @@ class GameHTTPViewTests(TestBaseHelpers):
     def test_create_game_missing_name_returns_structured_error(self) -> None:
         """Missing required fields should use normalized error codes."""
         response = self.client.post(
-            '/api/game/',
+            urls['game'],
             {'visibility': 'public'},
             format='json',
         )
@@ -72,7 +60,7 @@ class GameHTTPViewTests(TestBaseHelpers):
     def test_create_game_invalid_visibility_returns_structured_error(self) -> None:
         """Invalid visibility values should return an explicit validation code."""
         response = self.client.post(
-            '/api/game/',
+            urls['game'],
             {'name': 'Bad Level', 'visibility': 'everyone'},
             format='json',
         )
@@ -95,7 +83,7 @@ class GameHTTPViewTests(TestBaseHelpers):
             owned_by=self.owner.profile,
         )
 
-        response = self.client.get('/api/game/')
+        response = self.client.get(urls['game'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         returned_uids = {entry['uid'] for entry in response.data}
         self.assertIn(str(public_game.uid), returned_uids)
@@ -118,13 +106,8 @@ class GameHTTPViewTests(TestBaseHelpers):
             visibility='friends',
             owned_by=self.stranger.profile,
         )
-        login_res = self.client.post(urls['login'], data={'email': 'owner@mail.com',
-                                                 'password': 'Password123!'})
-        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
-        access = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
 
-        response = self.client.get('/api/game/friends/')
+        response = self.client.get(urls['friend_game'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         returned_uids = {entry['uid'] for entry in response.data}
         self.assertIn(str(friend_game.uid), returned_uids)
@@ -138,13 +121,13 @@ class GameHTTPViewTests(TestBaseHelpers):
             owned_by=self.owner.profile,
         )
 
-        response = self.client.get(f'/api/game/{game.uid}/')
+        response = self.client.get(f'{urls["game"]}{game.uid}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['uid'], str(game.uid))
         self.assertEqual(response.data['name'], 'Single Lookup')
 
 
-class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
+class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
     """Validate websocket game lifecycle after HTTP creation."""
 
     def setUp(self) -> None:

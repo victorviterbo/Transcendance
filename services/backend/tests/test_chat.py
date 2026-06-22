@@ -14,31 +14,32 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
 from userprofile.serializers import ProfileSerializer
+
 from tests.test_helpers import TestBaseHelpers, urls
 
-class ChatViewsTests(APITestCase):
+
+class ChatViewsTests(TestBaseHelpers, APITestCase):
 	"""Validate chat HTTP endpoints."""
 
 	def setUp(self) -> None:
 		"""Create users and rooms used by the view tests."""
-		self.client = APIClient()
 		serializer = RegisterSerializer(data={'email':'chat_test@mail.com',
 											'profile_username': 'chat_test_user',
-											'password':'Password123!'},
+											'password':'Password123+'},
 											context={'is_creation': True})
 		if serializer.is_valid():
 			self.user = serializer.save()
 	
 		serializer = RegisterSerializer(data={'email': 'friend@mail.com',
 											'profile_username': 'friend_user',
-											'password': 'Password123!'},
+											'password': 'Password123+'},
 										context={'is_creation': True})
 		if serializer.is_valid():
 			self.friend = serializer.save()
 	
 		serializer = RegisterSerializer(data={'email':'other@mail.com',
 											'profile_username':'other_user',
-											'password': 'Password123!'},
+											'password': 'Password123+'},
 										context={'is_creation': True})
 		if serializer.is_valid():
 			self.other_user = serializer.save()
@@ -53,7 +54,7 @@ class ChatViewsTests(APITestCase):
 
 	def test_room_not_found_returns_404(self) -> None:
 		"""Missing rooms should return a 404 response."""
-		response = self.client.get('/api/chat/room/' + str(self.user.uid) + '/')
+		response = self.client.get(urls['chat'] + str(self.user.uid) + '/')
 		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 		self.assertEqual(response.data, {'error': {'room': 'ROOM_NOT_FOUND'}})
 
@@ -118,12 +119,12 @@ class ChatViewsTests(APITestCase):
 	def test_direct_room_created_for_friends(self) -> None:
 		"""Direct-room creation should return a shared DM room for friends."""
 		login_res = self.client.post(urls['login'], data={'email': self.user.email,
-                                              'password': 'Password123!'})
+                                              'password': 'Password123+'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
 		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
 	
-		response = self.client.post('/api/chat/direct/',
+		response = self.client.post(urls['direct_chat'],
 									data={'user_uid': self.friend.uid})
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		payload = response.data
@@ -136,11 +137,11 @@ class ChatViewsTests(APITestCase):
 	def test_direct_room_rejected_for_nonfriend(self) -> None:
 		"""Non-friends should be blocked from direct-room creation."""
 		login_res = self.client.post(urls['login'], data={'email': self.user.email,
-                                              'password': 'Password123!'})
+                                              'password': 'Password123+'})
 		self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 		access = login_res.data.get('access')
 		self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access)
-		response = self.client.post('/api/chat/direct/',
+		response = self.client.post(urls['direct_chat'],
 									data={'user_uid': self.other_user.uid})
 		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -151,14 +152,14 @@ class ChatWebsocketTests(TransactionTestCase):
 		"""Create users, rooms, and the ASGI application for socket tests."""
 		serializer = RegisterSerializer(data={'email':'test@mail.com',
 											'profile_username': 'test_user',
-											'password':'Password123!'},
+											'password':'Password123+'},
 											context={'is_creation': True})
 		if serializer.is_valid():
 			self.user = serializer.save()
 	
 		serializer = RegisterSerializer(data={'email': 'friend@mail.com',
 											'profile_username': 'friend_user',
-											'password': 'Password123!'},
+											'password': 'Password123+'},
 										context={'is_creation': True})
 		if serializer.is_valid():
 			self.friend = serializer.save()
@@ -167,7 +168,7 @@ class ChatWebsocketTests(TransactionTestCase):
 							status='accepted')
 		serializer = RegisterSerializer(data={'email':'other@mail.com',
 											'profile_username':'other_user',
-											'password': 'Password123!'},
+											'password': 'Password123+'},
 										context={'is_creation': True})
 		if serializer.is_valid():
 			self.stranger = serializer.save()

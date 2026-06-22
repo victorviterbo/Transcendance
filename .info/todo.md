@@ -63,6 +63,9 @@
 - Language switching is implemented by registering a global callback during render in CLanguageLayout.tsx (line 13) and forcing a subtree remount with key={lang} at line 18 (line 18). It’s effective, but it’s a brute-force reset, not a clean reactive localization model.
 - The frontend still has a lot of rough hygiene signals: magic-number friend tabs and the 1 -> 0 timeout hop in GPageBases.tsx (line 42), CMenu forgetting to call useId in CMenu.tsx (line 14), data-testid="hello" in CTitleBasePaper.tsx (line 54), and a lot of typo drift like WS_ADRESS, PWelcomLogin, USERS_ADD_EROOR, TAG_ELECRO, and recieved.
 - See if we need to create an 'emergency stop' in the game_loop if something went wrong elsewhere
+- you can acces directly to django when you go to http://localhost/api/
+- you can change your password to itself ?
+
 
 # ????
 

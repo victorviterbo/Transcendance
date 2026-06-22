@@ -19,7 +19,7 @@ from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
 
 
-class GameWebsocketFlowTests(TestWebsocketHelpers, TestBaseHelpers):
+class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
     """Validate websocket game lifecycle after HTTP creation."""
 
     def setUp(self) -> None:
