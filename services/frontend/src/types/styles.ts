@@ -39,6 +39,11 @@ export type TColor = {
 	saturation: number;
 	brightness: number;
 };
+export type TColorSimple = {
+	r: number;
+	g: number;
+	b: number;
+};
 export type TColorAlteration = "shift-saturation" | "shift-brightness" | "shift-hue";
 
 //--------------------------------------------------
@@ -55,6 +60,8 @@ export interface IThemeColor {
 	greys: string[];
 	cancel: string[];
 	validate: string[];
+	white: string;
+	black: string;
 	text: IThemeTextColor;
 }
 
@@ -120,7 +127,8 @@ export interface IThemeShared {
 	bg: IThemeBGs;
 	radius: number | string;
 	paperRadius: number | string;
-	gameRadius: number | string;
+	gameRadius: string;
+	smallGameRadius: string;
 }
 
 //====================== ANIMATIONS ======================

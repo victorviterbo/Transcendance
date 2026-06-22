@@ -1,5 +1,29 @@
+import type { SxProps, Theme } from "@mui/material";
 import { appColors } from "../styles/theme";
-import type { TColor, TColorAlteration, TDropShadow } from "../types/styles";
+import type { TColor, TColorAlteration, TColorSimple, TDropShadow } from "../types/styles";
+
+//--------------------------------------------------
+//                    SX
+//--------------------------------------------------
+export function sxMerger(...sx: SxProps<Theme>[]): SxProps<Theme> | undefined {
+	if (sx.length == 0) return undefined;
+	if (sx.length == 1) return sx[0];
+	const sx0 = sx.splice(0, 1)[0];
+	const sx1 = sx.splice(0, 1)[0];
+	if (sx.length == 0)
+		return [
+			...(Array.isArray(sx0) ? sx0 : sx0 ? [sx0] : []),
+			...(Array.isArray(sx1) ? sx1 : sx1 ? [sx1] : []),
+		];
+	else
+		return sxMerger(
+			[
+				...(Array.isArray(sx0) ? sx0 : sx0 ? [sx0] : []),
+				...(Array.isArray(sx1) ? sx1 : sx1 ? [sx1] : []),
+			],
+			...sx,
+		);
+}
 
 //--------------------------------------------------
 //                    CSS
@@ -34,6 +58,7 @@ export function getScaledRadius(borderRadius: number | string, divisor = 1) {
 //               COLOR MANAGEMENT
 //--------------------------------------------------
 export function colorFromID(ID: number) {
+	if (ID == -1) return appColors.greys[5];
 	const colors: string[] = [];
 	colors.push(appColors.primary[0]);
 	colors.push(appColors.primary[1]);
@@ -53,7 +78,7 @@ export function colorGetBackground(
 	colors: string | string[],
 	positions?: number[],
 	type?: "linear" | "radial",
-	angle?: number,
+	angle?: number | string,
 ): string {
 	if (typeof colors == "string") return colors;
 
@@ -67,7 +92,7 @@ export function colorGetBackground(
 	}
 
 	let finalStr = type + "-gradient(";
-	if (type == "linear") finalStr += angle + "deg";
+	if (type == "linear") finalStr += typeof angle == "string" ? angle : angle + "deg";
 	colors.forEach((item, index) => {
 		if (finalStr.lastIndexOf("(") != finalStr.length - 1) finalStr += ", ";
 		finalStr += item + " " + positions[index] + "%";
@@ -114,6 +139,17 @@ export function colorAlterColor(
 		colorOut.brightness *
 			(255 * (1 - colorOut.saturation) + colorOut.saturation * colorOut.bBase),
 	);
+	return colorColorToHex(colorOut);
+}
+
+export function colorGetAtPos(colorStart: string, colorEnd: string, per: number): string {
+	const colorStartObj = colorHexToColor(colorStart);
+	const colorEndObj = colorHexToColor(colorEnd);
+	const colorOut: TColorSimple = {
+		r: Math.trunc(colorStartObj.r + (colorEndObj.r - colorStartObj.r) * per),
+		g: Math.trunc(colorStartObj.g + (colorEndObj.g - colorStartObj.g) * per),
+		b: Math.trunc(colorStartObj.b + (colorEndObj.b - colorStartObj.b) * per),
+	};
 	return colorColorToHex(colorOut);
 }
 
@@ -188,7 +224,7 @@ export function colorHexToColor(hexa: string): TColor {
 	return color;
 }
 
-export function colorColorToHex(color: TColor): string {
+export function colorColorToHex(color: TColor | TColorSimple): string {
 	return (
 		"#" +
 		(color.r.toString(16).length == 1 ? "0" : "") +

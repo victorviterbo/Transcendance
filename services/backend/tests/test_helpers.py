@@ -165,6 +165,10 @@ class TestWebsocketHelpers(APITransactionTestCase):
         """Wait for a specific event from the game socket and return its payload."""
         payload = await communicator.receive_json_from(timeout=timeout)
         self.assertEqual(payload.get('target'), 'game')
+        if payload.get('event') != event_name:
+            self.fail(f'Expected event "{event_name}", \
+                      but got "{payload.get("event")}". \
+                        Payload: {json.dumps(payload, indent=4)}')
         self.assertEqual(payload.get('event'), event_name, payload.get('messgae'))
         return payload
     
@@ -190,6 +194,7 @@ class TestWebsocketHelpers(APITransactionTestCase):
             await answers['socket'].send_json_to(answers['payload'])
             if (answers['is_correct'] and armageddon) or (not answers['is_correct'] and public):
                 for p in players:
+                    print(p)
                     payload = await self.expect_event(p, answers['expected_response'])
                     payloads['in_game'].append(payload)
             else:

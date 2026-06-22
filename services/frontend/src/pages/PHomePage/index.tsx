@@ -1,74 +1,37 @@
-// import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../../components/auth/CAuthProvider";
-import { Box, Grid, Stack } from "@mui/material";
+import { Box, Container, Grid } from "@mui/material";
 import GPageBase from "../common/GPageBases";
 import { appPositions } from "../../styles/theme";
 import PCreateRoom from "./PCreateRoom";
 import PJoinRoom from "./PJoinRoom";
-import PRooms from "./PRooms";
+import PRoomList from "./PRoomList";
+import { useAuth } from "../../components/auth/CAuthProvider";
 
 const PHomePage = () => {
-	//const navigate = useNavigate();
-	//const { status, user, logout } = useAuth();
-
 	const spacing: number = appPositions.mainSpacing;
+	const { status } = useAuth();
 
 	return (
 		<GPageBase>
-			<Stack
-				sx={{
-					width: "100%",
-					pt: spacing,
-					pb: spacing,
-					pr: spacing,
-					pl: spacing,
-				}}
-			>
-				<Grid container spacing={spacing} sx={{ width: "100%" }}>
-					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
+			<Container sx={{ p: spacing }}>
+				<Grid container spacing={spacing} columns={{ xs: 12, md: 5 }}>
+					<Grid size={{ xs: 12, md: 3 }}>
 						<PCreateRoom></PCreateRoom>
 					</Grid>
-					<Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
+					<Grid size={{ xs: 12, md: 2 }}>
 						<PJoinRoom></PJoinRoom>
 					</Grid>
 				</Grid>
-				<Box sx={{ flex: 1, mt: spacing }}>
-					<PRooms isPublic={false}></PRooms>
+				{status === "authed" ? (
+					<Box sx={{ mt: spacing }}>
+						<PRoomList isPublic={false}></PRoomList>
+					</Box>
+				) : null}
+				<Box sx={{ mt: spacing }}>
+					<PRoomList isPublic={true}></PRoomList>
 				</Box>
-				<Box sx={{ flex: 1, mt: spacing }}>
-					<PRooms isPublic={true}></PRooms>
-				</Box>
-			</Stack>
+			</Container>
 		</GPageBase>
 	);
 };
 
 export default PHomePage;
-
-// <Container maxWidth="sm" sx={{ mt: 8 }}>
-// 	<Box display="flex" flexDirection="column" gap={2} alignItems="center">
-// 		<CTitle align="center" size="lg">
-// 			Welcome
-// 		</CTitle>
-// 		{status === "authed" && (
-// 			<CTitle align="center" size="sm">
-// 				Hello {user?.username ?? "there"}!
-// 			</CTitle>
-// 		)}
-// 		{status === "authed" ? (
-// 			<>
-// 				<CButton onClick={() => navigate("/profile")}>My Profile</CButton>
-// 				<CButton
-// 					onClick={async () => {
-// 						logout();
-// 						navigate("/");
-// 					}}
-// 				>
-// 					Log out
-// 				</CButton>
-// 			</>
-// 		) : (
-// 			<CButton onClick={() => navigate("/auth")}>Go to Auth</CButton>
-// 		)}
-// 	</Box>
-// </Container>

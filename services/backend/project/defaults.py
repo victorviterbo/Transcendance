@@ -34,7 +34,7 @@ def get_avatar_url(profile) -> str:  # noqa: ANN001
             f"default_avatars/default_avatar_{profile.pk % 18}.png")
 
 
-genres = ['Rock', 'Pop', 'Rap', 'Electro', 'French Variety', 'RNB']
+genres = ['TAG_ROCK', 'TAG_POP', 'TAG_RAP', 'TAG_ELECTRO', 'TAG_FRENCH_VARIETY', 'TAG_RNB']
 
 num_genres = len(genres)
 
@@ -42,7 +42,7 @@ genres_to_label = {
     'Rock': 'TAG_ROCK',
     'Pop': 'TAG_POP',
     'Rap': 'TAG_RAP',
-    'Electro': 'TAG_ELECRO',
+    'Electro': 'TAG_ELECTRO',
     'French Variety': 'TAG_FRENCH_VARIETY',
     'R&B/Soul': 'TAG_RNB'
 }
@@ -59,6 +59,7 @@ default_pts = {
     },
     'normal': {
         'both': 10,
+        'partial': 4,
         'artist': 4,
         'title': 4
     }

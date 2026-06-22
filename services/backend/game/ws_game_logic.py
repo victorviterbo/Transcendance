@@ -1,12 +1,9 @@
 """WebSocket handlers for game module."""
 
-from datetime import datetime
 import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
-import channels.layers
-from asgiref.sync import async_to_sync
 from chat.ws_game_chat import add_gameroom_participant, send_join_chatroom
 from project.defaults import answer_buffer_time, countdown_time, max_players
 from rest_framework import serializers
@@ -19,7 +16,6 @@ from .ws_game_db_helpers import (
     _add_player_to_game_stats,
     _apply_game_settings,
     _check_game_membership,
-    _compute_game_stats,
     _compute_round_stats,
     _get_game,
     _get_game_data,
@@ -39,7 +35,6 @@ from .ws_game_db_helpers import (
 from .ws_game_send_helpers import (
     _send_game_ended,
     _send_game_info,
-    _send_game_stats,
     _send_new_player,
     _send_round_preview,
     _send_round_stats,
@@ -59,8 +54,8 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
                             'event': 'error',
                             'message': 'Could not identify player'})
     
-    if game_event == 'join_game':
-        await join_game(consumer, content)
+    if game_event == 'player_join':
+        await player_join(consumer, content)
         return
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
@@ -72,9 +67,9 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
         await consumer.add_to_layer(consumer.game_group_name)
     match game_event:
-        case 'start_game':
-            await _start_game(consumer, content)
-        case 'update_settings':
+        case 'game_start':
+            await _game_start(consumer, content)
+        case 'settings_update':
             await _update_game_settings(consumer, content)
         case 'answer_submit':
             await _answer_submit(consumer, content)
@@ -102,7 +97,8 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 await _get_track_reveal_data(consumer, content)
             )
             #Preview sent for buffering, countdown starts - Fabien
-            await _send_round_preview(consumer, serialized_game, serialized_track_blind)
+            #TODO: put serialized_track_blind for  _send_round_preview for prod
+            await _send_round_preview(consumer, serialized_game, serialized_track_full)
             await asyncio.sleep(countdown_time)
             #Track sent to start the round (should we keep both? or just send the track in advance?) - Fabien
             await _send_track(consumer, serialized_game, serialized_track_blind)
@@ -114,16 +110,18 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 )
             round_stats = await _compute_round_stats(consumer.current_game)
             serialized_game = await _get_game_data(consumer)
+            game_leaderboard_data = await _get_game_ended_data(consumer)
             await _send_round_stats(consumer,
                                     round_stats,
                                     serialized_game,
-                                    serialized_track_full)
+                                    serialized_track_full,
+                                    game_leaderboard_data.get('leaderboard'))
             if round < consumer.current_game.trackCount:
                 await asyncio.sleep(consumer.current_game.breakDuration - countdown_time)
             else:
                 await asyncio.sleep(consumer.current_game.breakDuration)
-        game_stats = await _compute_game_stats(consumer.current_game)
-        await _send_game_stats(consumer, game_stats, serialized_game)
+        # game_stats = await _compute_game_stats(consumer.current_game)
+        # await _send_game_stats(consumer, game_stats, serialized_game)
         serialized_game_ended = await _get_game_ended_data(consumer)
         await _send_game_ended(consumer, serialized_game_ended)
     except serializers.ValidationError as e:
@@ -135,7 +133,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     finally:
         ACTIVE_GAMES.pop(consumer.current_game.uid, None)
 
-async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
+async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
     if getattr(consumer, 'current_game', None):
         await consumer.send_json({'target': 'game',
@@ -167,7 +165,7 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
     if is_already_in_game:
         await consumer.send_json({'target': 'game',
                                 'event': 'player_joined',
-                                'currentGameUid': consumer.current_game.uid,
+                                'currentGameUid': str(consumer.current_game.uid),
                                 'message': 'Already in game.'})
         return
     if getattr(consumer, 'game_group_name', None) is None:
@@ -176,7 +174,7 @@ async def join_game(consumer: 'GlobalConsumer', content: dict) -> None:
     return
 
 
-async def _start_game(consumer: 'GlobalConsumer', content: dict) -> None:
+async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
     """Start a game session / Begin the round loop."""
     if not getattr(consumer, 'current_game', None):
         await consumer.send_json({'target': 'game',
@@ -215,10 +213,10 @@ async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> Non
 
 async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
     """Submit an answer to current game question."""
-    if 'answer' not in content or 'answerTime' not in content:
+    if 'answer' not in content or 'time' not in content:
         await consumer.send_json({'target': 'game',
                             'event': 'error',
-                            'message': 'answer and answeTime required'})
+                            'message': 'answer and time required'})
         return
     
     if consumer.current_game.status != 'playing_round':
@@ -235,55 +233,34 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
                                                         content,
                                                         track_data)
                         
+    if ((consumer.current_game.reveal and not (artist_correct or title_correct)) or
+        ((artist_correct or title_correct) and consumer.current_game.mode == 'armageddon')):
+        serialized_player = await _get_player_data(consumer)
+        payload = {
+            'type': 'game_answer_broadcast',
+            'target': 'game',
+            'event': 'answer_broadcast',
+            'uid': str(consumer.current_game.uid),
+            'self': consumer.profile_data,
+            'player': serialized_player,
+            'kind': 'correct' if (artist_correct or title_correct) else 'incorrect',
+        }
+        if not (artist_correct or title_correct):
+            payload['answer'] = content.get('answer')
+        await consumer.group_send(consumer.game_group_name, payload)
     if ((artist_correct or title_correct)
         and consumer.current_game.mode == 'armageddon'):
         await check_all_answers_received(consumer, consumer.current_game)
-    #TODO: Harmonize answer validation send and broadcasts
     serialized_game = await _get_game_data(consumer)
-    if artist_correct or title_correct:
-        if consumer.current_game.mode == 'armageddon':
-            # if mode is armageddon, send the response to everyone
-            await consumer.group_send(consumer.game_group_name, {
-                'type': 'game_answer_correct',
-                'uid': serialized_game.get('uid'),
-                'senderPlayer': consumer.profile_data,
-                'answer': content.get('answer'),
-                'trackArtist': track_data['artist'] if artist_correct else None,
-                'tracktitle': track_data['title'] if title_correct else None,
-                'is_correct': True,
-                'time': content.get('answerTime')
-            })
-        else:
-            # else send only to player who send the correct response
-            await consumer.send_json({
-                'target': 'game',
-                'event': 'answer_correct',
-                'uid': serialized_game.get('uid'),
-                'trackArtist': track_data['artist'] if artist_correct else None,
-                'tracktitle': track_data['title'] if title_correct else None,
-                'answer': content.get('answer'),
-                'is_correct': True,
-                'time': content.get('answerTime')
-            })
-    else:
-        if consumer.current_game.reveal:
-            #Broadcast wrong answer to everyone
-            await consumer.group_send(consumer.game_group_name, {
-                'type': 'game_answer_incorrect',
-                'uid': serialized_game.get('uid'),
-                'senderPlayer': consumer.profile_data,
-                'answer': content.get('answer'),
-                'is_correct': False
-                })
-        else:
-            # Tell incorrect players their answer was wrong
-            await consumer.send_json({
-                'target': 'game',
-                'event': 'answer_incorrect',
-                'uid': serialized_game.get('uid'),
-                'answerString': content.get('answer'),
-                'is_correct': False
-                })
+
+    await consumer.channel_layer.send(consumer.channel_name, {
+        'type': 'game_answer_broadcast',
+        'uid': serialized_game.get('uid'),
+        'titleFound': title_correct,
+        'artistFound': artist_correct,
+        'time': content.get('time'),
+        'track': track_data,
+    })
 
 
 async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> None:
@@ -299,12 +276,13 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'event': 'error',
                             'message': 'Only owner can edit game'})
         return
-    settings_payload = {key: value for key, value in content.items() if key not in
-                        {'target', 'event'}}
+    settings_payload = content#.get('settings', {})
+    print(f"Settings payload: {settings_payload}\n")
     try:
         updated_game = await _apply_game_settings(consumer.current_game,
                                                     settings_payload,
                                                     partial=True)
+        print(f"Updated game settings: {updated_game.__dict__}\n")
     except serializers.ValidationError as exc:
             await consumer.send_json({
                 'target': 'game',
@@ -317,7 +295,10 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
     settings_data = await _get_game_settings_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_settings_updated',
+        'target': 'game',
+        'event': 'settings_updated',
         'uid': serialized_game.get('uid'),
+        'self': consumer.profile_data,
         'settings': settings_data,
     })
 

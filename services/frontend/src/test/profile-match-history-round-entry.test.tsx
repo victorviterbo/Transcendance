@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PProfileMatchHistoryRoundEntry from "../pages/PProfilePage/PProfileMatchHistoryRoundEntry";
 import type { IHistoryRound } from "../types/stats";
 
@@ -16,15 +16,31 @@ const createRound = (overrides: Partial<IHistoryRound> = {}): IHistoryRound => (
 	...overrides,
 });
 
+class LoadedImageMock {
+	onload: (() => void) | null = null;
+
+	set src(_value: string) {
+		queueMicrotask(() => this.onload?.());
+	}
+}
+
 describe("PProfileMatchHistoryRoundEntry", () => {
-	it("renders artwork, artist, title, ranking and time when the round is fully found", () => {
+	beforeEach(() => {
+		vi.stubGlobal("Image", LoadedImageMock);
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("renders artwork, artist, title, ranking and time when the round is fully found", async () => {
 		render(
 			<PProfileMatchHistoryRoundEntry
 				round={createRound({ songFound: true, artistFound: true })}
 			/>,
 		);
 
-		expect(screen.getByAltText("Fleetwood Mac - The Chain")).toBeInTheDocument();
+		expect(await screen.findByAltText("Fleetwood Mac - The Chain")).toBeInTheDocument();
 		expect(screen.getByText("Fleetwood Mac")).toBeInTheDocument();
 		expect(screen.getByText("The Chain")).toBeInTheDocument();
 		expect(screen.getByText("2")).toBeInTheDocument();
@@ -59,10 +75,10 @@ describe("PProfileMatchHistoryRoundEntry", () => {
 		expect(screen.queryByTestId("AccessTimeIcon")).not.toBeInTheDocument();
 	});
 
-	it("shows a visual placeholder when artwork fails to load", () => {
+	it("shows a visual placeholder when artwork fails to load", async () => {
 		render(<PProfileMatchHistoryRoundEntry round={createRound()} />);
 
-		fireEvent.error(screen.getByAltText("Fleetwood Mac - The Chain"));
+		fireEvent.error(await screen.findByAltText("Fleetwood Mac - The Chain"));
 
 		expect(screen.getByTestId("MusicNoteIcon")).toBeInTheDocument();
 	});

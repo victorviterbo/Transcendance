@@ -135,38 +135,33 @@ WS-friend-request:
 WS-game:
   post:
     summary: WS about all game data
-    description: Websocket object for game lifecycle and round events.
+    description: Websocket object for recieved data from the server about all game data
     operationId: WSStoCGame
     tags: [websockets]
     requestBody:
       required: true
       content:
-        application/json:
+        join:
           schema:
             $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
           examples:
-            join_game:
+            join:
               value:
                 target: "game"
-                event: "join_game"
-                game_uid: "123456"
-            start_game:
+                event: "join"
+                gameid: "123456"
+                gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+        message-send:
+          schema:
+            $ref: ../openapi.yaml#/components/schemas/WS - CtoS - game
+          examples:
+            join:
               value:
                 target: "game"
-                event: "start_game"
-                game_uid: "123456"
-            answer_submit:
-              value:
-                target: "game"
-                event: "answer_submit"
-                game_uid: "123456"
-                answer: "My answer"
-                answerTime: 1.42
-            leave_game:
-              value:
-                target: "game"
-                event: "leave_game"
-                game_uid: "123456"
+                event: "message-send"
+                gameid: "123456"
+                gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                message: "Hey everyone"
         
     responses:
       "200":
@@ -175,104 +170,91 @@ WS-game:
             schema:
               $ref: ../openapi.yaml#/components/schemas/WS - StoC - game
             examples:
-              joined_game:
+              player-join:
                 value:
                   target: "game"
-                  event: "joined_game"
-                  game_uid: "123456"
-              player_joined:
+                  event: "player-join"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  player:
+                    user: 
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                      points: 150
+                      host: true
+                      colorid: 5
+              player-leave::
                 value:
                   target: "game"
-                  event: "player_joined"
-                  game_uid: "123456"
-                  player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                  player_name: "alice"
-              game_started:
+                  event: "player-leave"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  player:
+                    user: 
+                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      image: "path/to/image"
+                      badges: "deaf octopus"
+                      relation: "incoming"
+                    points: 150
+                    host: true
+                    colorid: 5
+              players-update::
                 value:
                   target: "game"
-                  event: "game_started"
-                  game_uid: "123456"
-                  started_by: "alice"
-              round_started:
+                  event: "players-update"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  players:
+                    - user: 
+                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "alice"
+                        image: "path/to/image"
+                        badges: "deaf octopus"
+                        relation: "incoming"
+                      points: 150
+                      host: true
+                      colorid: 5
+                    - user: 
+                        uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        image: "path/to/image"
+                        badges: "deaf octopus"
+                        relation: "self"
+                      points: 50
+                      host: false
+                      colorid: 8
+              message-new:
                 value:
                   target: "game"
-                  event: "round_started"
-                  game_uid: "123456"
-                  round_number: 1
-                  track:
-                    preview_url: "https://example.com/preview.mp3"
-              track_revealed:
+                  event: "message-new"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  message:
+                    useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                    username: "alice"
+                    messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                    type: "message"
+                    message: "Hey everyone"
+              message-update:
                 value:
                   target: "game"
-                  event: "track_revealed"
-                  game_uid: "123456"
-                  track:
-                    itunes_id: 123456
-                    title: "Song title"
-                    artist: "Artist name"
-                    genre: "pop"
-                    preview_url: "https://example.com/preview.mp3"
-                    artwork_url: "https://example.com/artwork.jpg"
-              round_end:
-                value:
-                  target: "game"
-                  event: "round_end"
-                  game_uid: "123456"
-                  round_number: 1
-                  next_round_in: 5
-                  results:
-                    correct_answer:
-                      artist: "Artist name"
-                      song: "Song title"
-                    answers:
-                      - player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        player_name: "alice"
-                        answer: "Song title"
-                        is_correct: true
-              answer_correct:
-                value:
-                  target: "game"
-                  event: "answer_correct"
-                  game_uid: "123456"
-                  track:
-                    itunes_id: 123456
-                    title: "Song title"
-                    artist: "Artist name"
-                    genre: "pop"
-                    preview_url: "https://example.com/preview.mp3"
-                    artwork_url: "https://example.com/artwork.jpg"
-              answer_incorrect:
-                value:
-                  target: "game"
-                  event: "answer_incorrect"
-                  message: "Wrong answer"
-              player_answered:
-                value:
-                  target: "game"
-                  event: "player_answered"
-                  game_uid: "123456"
-                  player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                  player_name: "alice"
-              player_left:
-                value:
-                  target: "game"
-                  event: "player_left"
-                  game_uid: "123456"
-                  player_uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                  player_name: "alice"
-              round_advanced:
-                value:
-                  target: "game"
-                  event: "round_advanced"
-                  game_uid: "123456"
-                  round_number: 2
-              game_completed:
-                value:
-                  target: "game"
-                  event: "game_completed"
-                  game_uid: "123456"
-              error:
-                value:
-                  target: "game"
-                  event: "error"
-                  message: "Game not found"
+                  event: "message-new"
+                  gameid: "123456"
+                  gameuid: "0b76ddd0-c8ca-4850-b770-fb1e3fdfa565"
+                  messages:
+                    - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "alice"
+                      messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                      type: "message"
+                      message: "Hey everyone"
+                    - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                      username: "john"
+                      messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                      type: "joined"

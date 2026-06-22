@@ -1,5 +1,5 @@
 import { type Theme } from "@mui/material";
-import { appAnimation, appColors, appTexts } from "../../theme";
+import { appAnimation, appColors, appSharedStyle, appTexts } from "../../theme";
 
 export interface CTextFieldStyleProps {
 	fontFamily?: string;
@@ -7,15 +7,24 @@ export interface CTextFieldStyleProps {
 	fontWeight?: number;
 
 	borderWidth?: string;
+	borderRadius?: string;
 	verticalPadding?: string;
 }
 
 export function CTextFieldStyle(
 	theme: Theme,
-	{ fontSize, fontFamily, fontWeight, borderWidth, verticalPadding }: CTextFieldStyleProps,
+	{
+		fontSize,
+		fontFamily,
+		fontWeight,
+		borderWidth,
+		borderRadius,
+		verticalPadding,
+	}: CTextFieldStyleProps,
 ) {
 	return {
 		//Label
+
 		"& .MuiInputLabel-root": {
 			color: appColors.greys[0],
 			pl: "5px",
@@ -58,6 +67,10 @@ export function CTextFieldStyle(
 			backgroundColor: appColors.greys[7],
 		},
 
+		"& .MuiOutlinedInput-root.Mui-disabled": {
+			backgroundColor: appColors.greys[8],
+		},
+
 		//INput objkect
 		"& .MuiOutlinedInput-root .MuiInputBase-input": {
 			py: verticalPadding,
@@ -66,6 +79,7 @@ export function CTextFieldStyle(
 		//Outline
 		"& .MuiOutlinedInput-notchedOutline": {
 			borderColor: appColors.primary[0],
+			borderRadius: borderRadius == undefined ? appSharedStyle.radius : borderRadius,
 			borderWidth: borderWidth ? borderWidth : "4px",
 			transition: theme.transitions.create(["border-color"], {
 				duration: appAnimation.timing.medium_fast,
@@ -77,6 +91,10 @@ export function CTextFieldStyle(
 		},
 		"& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
 			borderColor: appColors.secondary[0],
+			borderWidth: borderWidth ? borderWidth : "4px",
+		},
+		"& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+			borderColor: appColors.greys[9],
 			borderWidth: borderWidth ? borderWidth : "4px",
 		},
 

@@ -8,6 +8,7 @@ export interface CTextFieldProps extends GCompProps, Omit<TextFieldProps, "varia
 	fontWeight?: number;
 
 	borderWidth?: string;
+	borderRadius?: string;
 	verticalPadding?: string;
 }
 
@@ -16,8 +17,9 @@ function CTextField({
 	fontFamily,
 	fontSize,
 	fontWeight,
-	verticalPadding,
 	borderWidth,
+	borderRadius,
+	verticalPadding,
 	...other
 }: CTextFieldProps) {
 	return (
@@ -30,6 +32,7 @@ function CTextField({
 						fontSize,
 						fontWeight,
 						verticalPadding,
+						borderRadius,
 						borderWidth,
 					}),
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),

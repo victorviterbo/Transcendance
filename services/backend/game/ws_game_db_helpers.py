@@ -56,22 +56,13 @@ def _setup_game_assets(game: Game) -> None:
 				code='MISSING_FIELD_GENRE',
 			)
 
-	tracks_per_genre = game.trackCount // len(game.genres)
-	all_tracks = list()
-	for genre in game.genres:
-		genre_tracks = list(
-			Track.objects.filter(genre__iexact=genre).order_by('?')[:tracks_per_genre]
-		)
-		if len(genre_tracks) < tracks_per_genre:
-			raise serializers.ValidationError(
-				f'Not enough tracks for genre: {genre}',
-				code='NOT_ENOUGH_TRACKS_GENRE',
-			)
-		all_tracks.extend(genre_tracks)
-	if not len(all_tracks) == game.trackCount:
+	all_tracks = list(
+		Track.objects.filter(genre__in=game.genres).order_by('?')[:game.trackCount]
+	)
+	if len(all_tracks) < game.trackCount:
 		raise serializers.ValidationError(
-			'Error in playlist creation process',
-			code='NO_TRACKS_FOUND',
+			f'Only {len(all_tracks)} tracks found, need {game.trackCount}',
+			code='NOT_ENOUGH_TRACKS',
 		)
 	if not all_tracks:
 		raise serializers.ValidationError(
@@ -94,6 +85,7 @@ def _setup_game_assets(game: Game) -> None:
 			defaults={'is_direct': False, 'uid': room_uid},
 		)
 	game.playlist = playlist
+	game.room = room
 	game.current_track = all_tracks[0]
 	game.status = 'playing_round'
 	game.save(update_fields=['playlist', 'current_track', 'room', 'status'])
@@ -124,8 +116,14 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 	try:
 		if not consumer.current_game.current_track:
 			return None, None
-		track_data = TrackSerializer(consumer.current_game.current_track).data
-		track_data_hidden = {'preview': track_data['preview_url']}
+		serialized_track = TrackSerializer(consumer.current_game.current_track).data
+		track_data = {
+			'title': serialized_track['title'],
+			'artist': serialized_track['artist'],
+			'preview': serialized_track['preview_url'],
+			'artwork': serialized_track['artwork_url'],
+		}
+		track_data_hidden = {'preview': track_data['preview']}
 		return track_data, track_data_hidden
 	except Game.DoesNotExist:
 		return None, None
@@ -144,7 +142,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		bool: Whether the title is correct
 	"""
 	try:
-		time = content.get('answerTime')
+		time = content.get('time')
 		player_answer = content.get('answer').lower().strip()
 		if track is None or time is None or player_answer is None:
 			return False, False
@@ -157,6 +155,9 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 													).first()
 		if not player_stats:
 			return False, False
+		artist_correct = player_stats.artist_found
+		title_correct = player_stats.title_found
+		update_fields = []
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_artist) >= 80
@@ -164,8 +165,8 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				or player_answer == track_artist):
 				player_stats.artist_found = True
 				player_stats.artist_found_at = time
-				player_stats.save(update_fields=['artist_found'])
-				return True, False
+				artist_correct = True
+				update_fields.extend(['artist_found', 'artist_found_at'])
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
 			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
@@ -173,9 +174,11 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				or player_answer == track_title):
 				player_stats.title_found = True
 				player_stats.title_found_at = time
-				player_stats.save(update_fields=['title_found'])
-				return False, True
-		return False, False
+				title_correct = True
+				update_fields.extend(['title_found', 'title_found_at'])
+		if update_fields:
+			player_stats.save()
+		return artist_correct, title_correct
 	except Game.DoesNotExist:
 		return False, False
 
@@ -242,6 +245,8 @@ def _compute_round_stats(game: Game) -> None:
 			stat.save(update_fields=['xp_earned'])
 	game.status = 'playing_break'
 	game.save(update_fields=['status'])
+	for rank, stat in enumerate(stats, 1):
+		stat.ranking = rank
 	return LiveRoundSerializer(stats, many=True).data
 
 

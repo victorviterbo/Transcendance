@@ -201,11 +201,27 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'settings': event.get('settings', {}),
         })
 
+    async def game_answer_broadcast(self, event: dict) -> None:
+        """Notify of an answer validation with title/artist found status."""
+        payload = {
+            'target': 'game',
+            'event': 'answer_broadcast',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'titleFound': event.get('titleFound', False),
+            'artistFound': event.get('artistFound', False),
+            'time': event.get('time'),
+        }
+        if event.get('titleFound') and event.get('artistFound'):
+            payload['track'] = event.get('track', {})
+        await self.send_json(payload)
+
+    #TODO: Legacy methods for answer validation, to be removed
     async def game_answer_correct(self, event: dict) -> None:
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_validation',
+            'event': 'answer_broadcast',
             'uid': event.get('uid'),
             'senderPlayer': event.get('sender_player'),
             'self': self.profile_data,
@@ -220,7 +236,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_validation',
+            'event': 'answer_broadcast',
             'uid': event.get('uid'),
             'senderPlayer': event.get('senderPlayer'),
             'self': self.profile_data,
@@ -259,6 +275,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': self.profile_data,
             'preview': event.get('preview'),
             'playbackDuration': event.get('playbackDuration'),
+            'round': event.get('round'),
         })
 
     async def game_round_end(self, event: dict) -> None:
@@ -269,8 +286,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'uid': event.get('uid'),
             'self': self.profile_data,
             'track': event.get('track'),
-            #TODO: add leaderboard
-            'results': event.get('results'),
+            'leaderboard': event.get('leaderboard', []),
+            'results': event.get('results', []),
             'is_last_round': event.get('is_last_round', False),
         })
     
@@ -293,6 +310,29 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'game': event.get('game'),
             'self': self.profile_data,
             'leaderboard': event.get('leaderboard'),
+        })
+
+    async def game_answer_broadcast(self, event: dict) -> None:
+        """Broadcast incorrect answer to all players."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'answer_broadcast',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'player': event.get('player'),
+            'kind': event.get('kind'),
+            'answer': event.get('answer'),
+        })
+
+    async def game_ended_event(self, event: dict) -> None:
+        """Broadcast game end with final leaderboard and history."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_ended',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'leaderboard': event.get('leaderboard'),
+            'history': event.get('history'),
         })
     
     def _sender_name(self) -> str:
@@ -392,10 +432,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             recipient_profile = recipient_user.profile
-            room, created = create_direct_room(self.profile, recipient_profile)
-            if created:
-                room.participants.add(self.profile)
-                room.participants.add(recipient_profile)
+            room = create_direct_room(self.profile, recipient_profile)
+            if room is None:
+                return False, {'type': 'error',
+                    'message': 'Chat room does not exist'}
+            
         elif event == 'chat-message':
             if getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
                 room = self.current_game.room

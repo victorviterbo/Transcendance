@@ -11,7 +11,7 @@ import PGameLBoardNode from "../../pages/PGame/PGameLBoardNode";
 import type { IGamePlayer } from "../../types/game";
 import { mockDefaultUsername } from "../../mock/db";
 
-describe("Common game page tests", () => {
+describe("Tests for leaderboard view", () => {
 	beforeAll(() => {
 		setAccessToken("authed");
 		server.listen();
@@ -114,7 +114,7 @@ describe("Common game page tests", () => {
 			<CAuthProvider>
 				<MemoryRouter initialEntries={["/game/123456"]}>
 					<Routes>
-						<Route path="/game/*" element={<PGameBase />} />
+						<Route path="/game/:gameid" element={<PGameBase />} />
 					</Routes>
 				</MemoryRouter>
 			</CAuthProvider>,

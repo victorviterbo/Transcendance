@@ -3,13 +3,23 @@ import type { IErrorStruct } from "../types/error";
 import api from "./client";
 import type { ReactNode } from "react";
 import { getErrorNode } from "../utils/error";
+import { API_CREATE_GAME, API_GAME_FRIENDS, API_GAME_PUBLIC } from "../constants";
+import type { IGameCreationRequest, IGameCreationResponse, IGameListResponse } from "../types/game";
 
-export function gameGetRoom(): string | undefined {
-	const reg = /game\/(\d+)/gm;
-	const res = reg.exec(location.href);
-	if (!res || res.length < 2) return undefined;
-	return res[1];
-}
+export const createGame = async (payload: IGameCreationRequest): Promise<IGameCreationResponse> => {
+	const response = await api.post<IGameCreationResponse>(API_CREATE_GAME, payload);
+	return response.data;
+};
+
+export const fetchPublicGames = async (): Promise<IGameListResponse> => {
+	const response = await api.get<IGameListResponse>(API_GAME_PUBLIC);
+	return response.data;
+};
+
+export const fetchFriendsGames = async (): Promise<IGameListResponse> => {
+	const response = await api.get<IGameListResponse>(API_GAME_FRIENDS);
+	return response.data;
+};
 
 export function gameCheckErrors<_RES_T extends { error?: IErrorStruct }, Key extends keyof _RES_T>(
 	res: AxiosResponse<_RES_T, unknown, {}>,
@@ -29,18 +39,20 @@ export async function gameFetchData<
 >(
 	Request: string,
 	target: Key,
-	setTarget: React.Dispatch<React.SetStateAction<_DATA>>,
+	setTarget: React.Dispatch<React.SetStateAction<_DATA>> | null,
 	setError: React.Dispatch<React.SetStateAction<ReactNode>>,
 	defaultValue: _DATA,
 	fallbackMSG: string,
+	cb: (data: _DATA) => void,
 ) {
 	try {
 		const response = await api.get<_RES_T>(Request);
 		gameCheckErrors(response, target);
-		setTarget(response.data[target] as _DATA);
+		if (setTarget) setTarget(response.data[target] as _DATA);
 		setError(undefined);
+		cb(response.data[target] as _DATA);
 	} catch (error) {
 		setError(getErrorNode(error, fallbackMSG));
-		setTarget(defaultValue);
+		if (setTarget) setTarget(defaultValue);
 	}
 }

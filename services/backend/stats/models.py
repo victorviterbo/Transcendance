@@ -39,8 +39,8 @@ class UserRoundStats(models.Model):
     time = models.FloatField(default=30)
     artist_found = models.BooleanField(default=False)
     title_found = models.BooleanField(default=False)
-    artist_found_at = models.FloatField(default=30)
-    title_found_at = models.FloatField(default=30)
+    artist_found_at = models.FloatField(default=-1)
+    title_found_at = models.FloatField(default=-1)
     xp_earned = models.PositiveIntegerField(default=0)
     played_at = models.DateTimeField(auto_now_add=True)
 
@@ -55,11 +55,8 @@ class UserRoundStats(models.Model):
         return self.round.game
 
     def save(self, *args: tuple, **kwargs: dict) -> None:
-        """Update time to be the sum of time to find artist and title."""
-        if self.title_found and self.artist_found:
-            self.time = max(self.title_found_at, self.artist_found_at)
-        else:
-            self.time = -1
+        """Update time to be the max of found times."""
+        self.time = max(self.title_found_at, self.artist_found_at)
         super().save(*args, **kwargs)
 
 class UserGameStats(models.Model):

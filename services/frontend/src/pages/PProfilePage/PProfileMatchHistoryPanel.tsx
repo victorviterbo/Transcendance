@@ -1,10 +1,18 @@
 import { Stack } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, type ReactNode, useState } from "react";
 import { fetchHistory } from "../../api/stats";
 import CText from "../../components/text/CText";
 import type { IHistoryEntry } from "../../types/stats";
 import { getErrorMessage } from "../../utils/error";
-import PProfileMatchHistoryDrawerCard from "./PProfileMatchHistoryDrawerCard";
+import PProfileMatchHistoryAccordionCard from "./PProfileMatchHistoryAccordionCard";
+import {
+	PProfileLayoutStyle,
+	type IProfileLayoutStyle,
+} from "../../styles/pages/profile/PProfileLayoutStyle";
+import {
+	PProfileTextStyle,
+	type IProfileTextStyle,
+} from "../../styles/pages/profile/PProfileTextStyle";
 
 type ProfileMatchHistoryStatus = "idle" | "loading" | "ready" | "error";
 
@@ -20,6 +28,12 @@ function ProfileMatchHistoryPanel({
 	const [status, setStatus] = useState<ProfileMatchHistoryStatus>("loading");
 	const [history, setHistory] = useState<IHistoryEntry[]>([]);
 	const [error, setError] = useState<string | null>(null);
+	const style: IProfileTextStyle = useMemo(() => {
+		return PProfileTextStyle();
+	}, []);
+	const layoutStyle: IProfileLayoutStyle = useMemo(() => {
+		return PProfileLayoutStyle();
+	}, []);
 
 	useEffect(() => {
 		let ignore = false;
@@ -43,8 +57,17 @@ function ProfileMatchHistoryPanel({
 		};
 	}, []);
 
+	const historyCards = useMemo((): ReactNode[] => {
+		return history.map((entry) => (
+			<PProfileMatchHistoryAccordionCard
+				key={`${entry.playedAt}-${entry.roomTitle}`}
+				entry={entry}
+			/>
+		));
+	}, [history]);
+
 	return (
-		<Stack spacing={2}>
+		<Stack spacing={2} sx={layoutStyle.tabContent}>
 			{title ? <CText size="md">{title}</CText> : null}
 
 			{status === "loading" ? ( //TODO Loading component?
@@ -52,7 +75,7 @@ function ProfileMatchHistoryPanel({
 			) : null}
 
 			{status === "error" ? (
-				<CText size="sm" color="error.main">
+				<CText size="sm" sx={style.error}>
 					{error ?? "HISTORY_LOADING_FAILED"}
 				</CText>
 			) : null}
@@ -60,14 +83,7 @@ function ProfileMatchHistoryPanel({
 			{status === "ready" && history.length === 0 ? <CText>{emptyMessage}</CText> : null}
 
 			{status === "ready" && history.length > 0 ? (
-				<Stack spacing={1.5}>
-					{history.map((entry) => (
-						<PProfileMatchHistoryDrawerCard
-							key={`${entry.playedAt}-${entry.roomTitle}`}
-							entry={entry}
-						/>
-					))}
-				</Stack>
+				<Stack spacing={1.5}>{historyCards}</Stack>
 			) : null}
 		</Stack>
 	);

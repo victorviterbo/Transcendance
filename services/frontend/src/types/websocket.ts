@@ -2,7 +2,17 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
-import type { IGamePlayer } from "./game";
+import type {
+	IGameChatMsg,
+	IGamePlayer,
+	IGamePlayerResult,
+	IGameSettings,
+	IGameTrack,
+	IGameUser,
+	TGamePhase,
+	TGameVisibility,
+} from "./game";
+//import type { IGameChatMsg, IGamePlayer, IGameSettings } from "./game";
 
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 
@@ -21,14 +31,15 @@ export interface IWSContext {
 
 export interface IWSContextModule {
 	target: string;
-	messages: TWSRcv[];
+	messages: (TWSRcv | IWSGameSendEvent)[];
 	count: number;
-	getLast(this: IWSContextModule): TWSRcv | undefined;
+	getLast(this: IWSContextModule): TWSRcv | IWSGameSendEvent | undefined;
 	setOnUpdate(func: () => void): void;
 	onUpdate?: () => void;
 	sendMessage: SendMessage;
 }
 
+//SHARED EVENT
 export type TWSRcv =
 	| {
 			target: Extract<TWSModuleName, "friend-chat">;
@@ -45,6 +56,43 @@ export type TWSRcv =
 			event: "new-incoming";
 			user: IExtUserInfo;
 	  }
+
+	//OLD
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "player-join" | "player-leave";
+	// 		player: IGamePlayer;
+	// 		gameid: string;
+	// 		gameuid: string;
+	//   }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "players-update";
+	// 		players: IGamePlayer[];
+	// 		gameid: string;
+	// 		gameuid: string;
+	//   }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "message-new";
+	// 		message: IGameChatMsg;
+	// 		gameid: string;
+	// 		gameuid: string;
+	//   }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "message-update";
+	// 		messages: IGameChatMsg[];
+	// 		gameid: string;
+	// 		gameuid: string;
+	//   }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "settings-update";
+	// 		gameid: string;
+	// 		gameuid: string;
+	// 		settings: IGameSettings;
+	//   }
 
 	//GAME
 	| {
@@ -70,6 +118,26 @@ export type TWSSend =
 			to?: string;
 			toUid?: string;
 	  }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "join";
+	// 		gameid: string;
+	// 		gameuid: string;
+	//   }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "message-send";
+	// 		gameid: string;
+	// 		gameuid: string;
+	// 		message: string;
+	//   }
+	// | {
+	// 		target: Extract<TWSModuleName, "game">;
+	// 		event: "settings-update";
+	// 		gameid: string;
+	// 		gameuid: string;
+	// 		settings: IGameSettings;
+	//   }
 	| {
 			target: Extract<TWSModuleName, "game">;
 			event: "join";
@@ -78,3 +146,144 @@ export type TWSSend =
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;
 	  };
+
+//--------------------------------------------------
+//                  GAME DATA
+//--------------------------------------------------
+//--------------------- DATA ---------------------
+export interface TWSGameInfo {
+	uid: string;
+	name: string;
+	owner: IGameUser;
+	status: TGamePhase;
+	round: number;
+	visibility: TGameVisibility;
+	maxPlayers: number;
+}
+
+export interface TWSRoundInfo {
+	track: IGameTrack;
+	titleFound: boolean;
+	artistFound: boolean;
+	time: number;
+	ranking: number;
+	points: number;
+	round: number;
+}
+
+//--------------------- EVENTS ---------------------
+export type IWSGameEventRcvList =
+	| "player_join"
+	| "settings_update"
+	| "game_start"
+	| "answer_submit"
+	| "message_send";
+
+export type IWSGameEventSndList =
+	| "player_joined"
+	| "player_left"
+	| "game_info"
+	| "settings_updated"
+	| "game_started"
+	| "round_preview"
+	| "round_started"
+	| "answer_validation"
+	| "answer_broadcast"
+	| "round_ended"
+	| "message_history"
+	| "message_broadcast"
+	| "game_ended";
+
+export interface IWSGameEvent {
+	target: Extract<TWSModuleName, "game">;
+	event: IWSGameEventRcvList | IWSGameEventSndList;
+}
+
+//RCV (Client to Server)
+export interface IWSGameRCVEvent extends IWSGameEvent {
+	event: IWSGameEventRcvList;
+	uid: string;
+}
+export interface IWSGameRCVEventSettings extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "settings_update">;
+	settings: IGameSettings;
+}
+export interface IWSGameRCVEventAnswer extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "answer_submit">;
+	answer: string;
+	time: number;
+}
+export interface IWSGameRCVEventMsg extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "message_send">;
+	message: string;
+}
+
+//Send(Server to Client)
+export interface IWSGameSendEvent extends IWSGameEvent {
+	event: IWSGameEventSndList;
+	uid: string;
+	self: IGameUser;
+}
+
+export interface IWSGameSendEventPlayerManage extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "player_joined" | "player_left">;
+	player: IGameUser;
+}
+
+export interface IWSGameSendEventGameInfo extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "game_info">;
+	game: TWSGameInfo;
+	settings: IGameSettings;
+	leaderboard: IGamePlayer[];
+	history: TWSRoundInfo[];
+}
+
+export interface IWSGameSendEventSettings extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "settings_updated" | "game_started">;
+	settings: IGameSettings;
+}
+
+export interface IWSGameSendEventRoundStart extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "round_preview" | "round_started">;
+	round: number;
+	preview: string;
+	playbackDuration: number;
+}
+
+export interface IWSGameSendEventRoundAnswer extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "answer_validation">;
+	titleFound: boolean;
+	artistFound: boolean;
+	time: number;
+	track?: IGameTrack;
+}
+
+export interface IWSGameSendEventRoundAnswerBroadcast extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "answer_broadcast">;
+	player: IGameUser;
+	kind: "incorrect" | "titleFound" | "artistFound" | "bothFound";
+	answer?: string;
+}
+
+export interface IWSGameSendEventRoundEnd extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "round_ended">;
+	track: IGameTrack;
+	leaderboard: IGamePlayer[];
+	results: IGamePlayerResult[];
+}
+
+export interface IWSGameSendEventMessageHistory extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "message_history">;
+	messages: IGameChatMsg[];
+}
+
+export interface IWSGameSendEventMessage extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "message_broadcast">;
+	message: IGameChatMsg;
+}
+
+export interface IWSGameSendEventGameEnd extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "game_ended">;
+	leaderboard: IGamePlayer[];
+	history: TWSRoundInfo[];
+}

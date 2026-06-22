@@ -6,7 +6,7 @@ to JSON and vice-versa, namely:
 """
 from typing import Any
 
-from project.defaults import genres
+from project.defaults import genres, max_players
 from rest_framework import serializers
 from userprofile.serializers import LightProfileSerializer
 
@@ -79,21 +79,21 @@ class GameHeaderSerializer(serializers.ModelSerializer):
 
     owner = LightProfileSerializer(source='owned_by', read_only=True)
     roomUID = serializers.CharField(source='room__uid', read_only=True)
-    players = LightProfileSerializer(many=True, read_only=True)
     round = serializers.IntegerField(source='current_round')
+    maxPlayers = serializers.IntegerField(default=max_players, read_only=True)
     class Meta:
         """Meta config for GameWSSerializer."""
         model = Game
         fields = [
             'uid',
             'name',
-            'players',
             'owner',
             'status',
             'roomUID',
             'round',
             'genres',
             'visibility',
+            'maxPlayers'
         ]
         read_only_fields = fields
 

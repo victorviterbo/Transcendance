@@ -18,7 +18,7 @@ function App() {
 			<Routes>
 				<Route path="/" element={<PHomePage />} />
 				<Route path="/auth" element={<PAuthPage />} />
-				<Route path="/game/*" element={<PGameBase />} />
+				<Route path="/game/:gameid" element={<PGameBase />} />
 				<Route path="/contact" element={<PContact />} />
 				<Route path="/qa" element={<PQA />} />
 				<Route path="/terms-of-service" element={<PTermsOfService />} />

@@ -14,9 +14,10 @@ from project.asgi import application
 from project.defaults import genres
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers
 from userauth.models import SiteUser
 from userauth.serializers import RegisterSerializer
+
+from tests.test_helpers import TestBaseHelpers, TestWebsocketHelpers
 
 
 class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
@@ -37,26 +38,27 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             owner_socket = await self._connect_socket(self.owner)
 
             await owner_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
-            await self.expect_event(owner_socket, 'game_info')
             await self.expect_event(owner_socket, 'message_history')
+            await self.expect_event(owner_socket, 'game_info')
             await self.expect_event(owner_socket, 'player_joined')
             
             challenger_socket = await self._connect_socket(self.challenger)
 
             await challenger_socket.send_json_to(
-                {'target': 'game', 'event': 'join_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'player_join', 'uid': str(game.uid)}
             )
 
             await self.expect_event(challenger_socket, 'message_history')
+            await self.expect_event(owner_socket, 'game_info')
             await self.expect_event(challenger_socket, 'player_joined')
             await self.expect_event(owner_socket, 'player_joined')
 
             await owner_socket.send_json_to(
                 {
                     'target': 'game',
-                    'event': 'update_settings',
+                    'event': 'settings_update',
                     'uid': str(game.uid),
                     'genres': ['Rock'],
                     'mode': 'speed',
@@ -72,7 +74,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             await self.expect_event(challenger_socket, 'settings_updated')
 
             await owner_socket.send_json_to(
-                {'target': 'game', 'event': 'start_game', 'uid': str(game.uid)}
+                {'target': 'game', 'event': 'game_start', 'uid': str(game.uid)}
             )
 
             await self.expect_event(owner_socket, 'game_started')
@@ -98,7 +100,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answerTime': 2,
+                            'time': 2,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
@@ -114,7 +116,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
@@ -124,7 +126,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Artist 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
@@ -140,9 +142,9 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'wrong answer...',
-                            'answerTime': 1,
+                            'time': 1,
                             },
-                 'expected_response': 'answer_validation',
+                 'expected_response': 'answer_broadcast',
                  'is_correct' : False
                 },
                 {'socket': owner_socket,
@@ -150,7 +152,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Artist 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True
@@ -160,7 +162,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                             'event': 'answer_submit',
                             'uid': str(game.uid),
                             'answer': 'Test Track 12',
-                            'answerTime': 3,
+                            'time': 3,
                             },
                  'expected_response': 'answer_correct',
                  'is_correct' : True

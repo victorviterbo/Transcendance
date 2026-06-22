@@ -4,11 +4,18 @@ GameData:
   description:  All data about the current game
   properties:
     id: { type: string, descripion: "Current game / room id"}
+    uid: { type: string, descripion: "Current game / room uid"}
+    name: { type: string, descripion: "Current game / room name"}
     maxPlayers: { type: int, descripion: "Maximum allowed player in that game"}
     players: 
       type: array
       items:
         $ref: "../openapi.yaml#/components/schemas/Game - GamePlayer"
+    chat:
+      type: array
+      items:
+        $ref: "../openapi.yaml#/components/schemas/Game - GameChat"
+    isHost: {type: boolean, descripion: "define if current  user is host"}
 
 GamePlayer:
   type: object
@@ -17,55 +24,73 @@ GamePlayer:
     user:
       $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
     points: { type: int, descripion: "Current player points"}
+    host: {type: boolean, descripion: "define if target user is host"}
+    colorid: {type: int, descripion: "define the session color id of that user", format: "0-9"}
+
+GameChat:
+  type: object
+  description:  Data about a chat message
+  properties:
+    useruid: {type: string}
+    username: {type: string}
+    messageuid: {type: string}
+    type: { type: string, format: "message | joined | leaved | guessed | found"}
+    message: { type: string, descripion: "message: msg content | guessed: what the user tried to guess"}
+
+GameListEntry:
+  type: object
+  description: Brief game data displayed in the home page room lists.
+  properties:
+    uid:
+      type: string
+      format: uuid
+      description: Game UID used by the frontend route `/game/{uid}`.
+    name:
+      type: string
+      description: Display name of the game room.
+    genres:
+      type: array
+      description: Selected music tag localization IDs. Can be empty when the host has not configured the room yet.
+      items:
+        type: string
+        enum: [TAG_POP, TAG_RAP, TAG_ROCK, TAG_ELECRO, TAG_FRENCH_VARIETY, TAG_RNB]
+    playerCount:
+      type: integer
+      description: Current number of players in the room.
+    playerMax:
+      type: integer
+      description: Maximum allowed number of players in the room.
+  required: [uid, name, genres, playerCount, playerMax]
+
+GameListResponse:
+  type: object
+  description: Home page game list payload.
+  properties:
+    rooms:
+      type: array
+      items:
+        $ref: "../openapi.yaml#/components/schemas/Game - GameListEntry"
+  required: [rooms]
 
 GameCreationRequest:
   type: object
-  description: Request body for creating a new game
-  required:
-    - game_name
-    - public_level
+  description: Payload used to create a game room.
   properties:
-    game_name:
+    name:
       type: string
-      description: Name of the game (required)
-    genres:
-      type: array
-      items:
-        type: string
-      description: List of music genres for the game (optional)
-    game_mode:
+      description: Display name of the new game room.
+    visibility:
       type: string
-      description: Game mode (optional)
-    public_level:
-      type: string
-      description: Privacy level of the game (required) - public, friends, or private
-    trackCount:
-      type: integer
-      minimum: 1
-      maximum: 100
-      description: Number of tracks to include in the game (optional)
-    breakDuration:
-      type: integer
-      description: Duration of break between rounds in seconds (optional)
-    playbackDuration:
-      type: integer
-      minimum: 5
-      maximum: 30
-      description: Duration for track playback in seconds (optional)
-    fuzzy:
-      type: boolean
-      description: Whether to enable fuzzy matching for answers (optional)
-    reveal:
-      type: boolean
-      description: Whether answers should be public (optional)
+      enum: [public, private, friends]
+      description: Visibility of the new game room.
+  required: [name, visibility]
 
 GameCreationResponse:
   type: object
-  description: Response for game creation
+  description: Successful game creation payload.
   properties:
-    success:
-      type: boolean
-      description: Whether the game was created successfully
-    game_id:
-      type: integer
-      description: ID of the newly created game
+    uid:
+      type: string
+      format: uuid
+      description: Game UID used by the frontend route `/game/{uid}`.
+  required: [uid]

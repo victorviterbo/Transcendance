@@ -1,17 +1,24 @@
-import { alpha, Box, Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
+import { useMemo } from "react";
 import { resolveProfileImage } from "../../api/profile";
 import type { ILeaderboardEntry } from "../../types/stats";
 import CAvatar from "../../components/images/CAvatar";
 import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
-import { getScaledRadius } from "../../utils/styles";
+import {
+	PLeaderboardStyle,
+	type ILeaderboardStyle,
+} from "../../styles/pages/leaderboard/PLeaderboardStyle";
 
 interface PLeaderboardRowProps {
 	entry: ILeaderboardEntry;
 }
 
 function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
+	const style: ILeaderboardStyle = useMemo(() => {
+		return PLeaderboardStyle();
+	}, []);
 	const isTopThree = entry.ranking <= 3;
 
 	return (
@@ -19,50 +26,11 @@ function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 			direction="row"
 			spacing={2}
 			alignItems="center"
-			sx={(theme) => ({
-				px: { xs: 1.5, md: 2 },
-				py: { xs: 1.5, md: 1.75 },
-				borderRadius: getScaledRadius(theme.shape.borderRadius, 2),
-				borderLeft: `4px solid ${
-					entry.isCurrentUser
-						? theme.palette.primary.main
-						: isTopThree
-							? theme.palette.secondary.main
-							: "transparent"
-				}`,
-				background: entry.isCurrentUser
-					? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.14)} 0%, ${alpha(theme.palette.primary.dark, 0.04)} 100%)`
-					: "transparent",
-			})}
+			sx={style.row(entry.isCurrentUser, isTopThree)}
 			data-testid="leaderboard-row"
 		>
-			<Box
-				sx={(theme) => ({
-					minWidth: { xs: 44, sm: 52 },
-					height: { xs: 44, sm: 52 },
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					borderRadius: getScaledRadius(theme.shape.borderRadius, 2),
-					background: isTopThree
-						? `linear-gradient(180deg, ${theme.palette.secondary.light} 0%, ${theme.palette.secondary.main} 100%)`
-						: alpha(theme.palette.primary.main, 0.08),
-					boxShadow: `inset 0 0 0 1px ${
-						isTopThree
-							? alpha(theme.palette.secondary.main, 0.55)
-							: alpha(theme.palette.primary.main, 0.16)
-					}`,
-				})}
-			>
-				<CText
-					size="lg"
-					weight={700}
-					sx={{
-						mb: 0,
-						color: "text.primary",
-						fontVariantNumeric: "tabular-nums",
-					}}
-				>
+			<Box sx={style.ranking(isTopThree)}>
+				<CText size="lg" weight={700} sx={style.rankingText}>
 					{entry.ranking}
 				</CText>
 			</Box>
@@ -70,19 +38,7 @@ function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 			<CAvatar
 				profileUsername={entry.username}
 				src={resolveProfileImage(entry.avatar)}
-				sx={(theme) => ({
-					width: { xs: 48, sm: 56 },
-					height: { xs: 48, sm: 56 },
-					bgcolor: isTopThree ? "secondary.main" : "primary.dark",
-					fontWeight: 700,
-					border: `2px solid ${
-						entry.isCurrentUser
-							? theme.palette.primary.main
-							: isTopThree
-								? theme.palette.secondary.light
-								: alpha(theme.palette.primary.main, 0.16)
-					}`,
-				})}
+				sx={style.avatar(entry.isCurrentUser, isTopThree)}
 			>
 				{entry.username.charAt(0).toUpperCase()}
 			</CAvatar>
@@ -99,62 +55,19 @@ function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 						</CTitle>
 					</CUserProfileLink>
 				</Stack>
-				<Box
-					sx={(theme) => ({
-						alignSelf: "flex-start",
-						mt: 0.6,
-						px: 1.25,
-						py: 0.6,
-						borderRadius: getScaledRadius(theme.shape.borderRadius, 2.25),
-						backgroundColor: alpha(theme.palette.secondary.main, 0.12),
-						border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-					})}
-				>
-					<CText size="xs" sx={{ color: "text.primary", mb: 0 }}>
+				<Box sx={style.badge(entry.isCurrentUser, isTopThree)}>
+					<CText size="xs" sx={style.badgeText}>
 						{entry.badges}
 					</CText>
 				</Box>
 			</Stack>
 
 			<Stack alignItems="flex-end" spacing={0.45} sx={{ minWidth: { xs: 80, sm: 108 } }}>
-				<CText
-					size="xs"
-					sx={(theme) => ({
-						mb: 0,
-						color: alpha(theme.palette.text.primary, 0.72),
-						letterSpacing: "0.08em",
-						textTransform: "uppercase",
-					})}
-				>
+				<CText size="xs" sx={style.pointsLabel(entry.isCurrentUser, isTopThree)}>
 					LEADERBOARD_POINTS
 				</CText>
-				<Box
-					sx={(theme) => ({
-						minWidth: { xs: 74, sm: 88 },
-						px: 1.25,
-						py: 0.75,
-						borderRadius: getScaledRadius(theme.shape.borderRadius, 2),
-						backgroundColor: alpha(
-							entry.isCurrentUser
-								? theme.palette.primary.main
-								: theme.palette.primary.dark,
-							entry.isCurrentUser ? 0.18 : 0.22,
-						),
-						boxShadow: `inset 0 0 0 1px ${
-							entry.isCurrentUser
-								? alpha(theme.palette.primary.main, 0.32)
-								: alpha(theme.palette.primary.light, 0.2)
-						}`,
-					})}
-				>
-					<CTitle
-						size="sm"
-						align="right"
-						sx={{
-							mb: 0,
-							fontVariantNumeric: "tabular-nums",
-						}}
-					>
+				<Box sx={style.pointsValue(entry.isCurrentUser, isTopThree)}>
+					<CTitle size="sm" align="right" sx={style.pointsText}>
 						{entry.xp}
 					</CTitle>
 				</Box>

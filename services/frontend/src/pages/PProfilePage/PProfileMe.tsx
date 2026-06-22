@@ -1,4 +1,4 @@
-import { Container, Stack } from "@mui/material";
+import { Box, Container, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTitle from "../../components/text/CTitle";
@@ -37,27 +37,45 @@ const ProfileInfo = ({ profile, onAvatarUploaded }: ProfileInfoProps) => {
 
 	return (
 		<CBasePaper sx={{ p: 2 }}>
-			<Stack
-				direction={{ xs: "column", sm: "row" }}
-				spacing={2}
-				alignItems={{ xs: "flex-start", sm: "center" }}
+			<Box
+				sx={{
+					display: "grid",
+					gridTemplateColumns: {
+						xs: "1fr",
+						sm: "minmax(0, 1fr) minmax(260px, 400px)",
+					},
+					gap: 3,
+					alignItems: "center",
+				}}
 			>
-				<PProfileAvatarEditor
-					username={displayUsername}
-					avatar={profile.avatar}
-					onUploaded={onAvatarUploaded}
-				/>
-				<Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-					<CTitle noTr={true} size="md">
+				<Stack direction="row" spacing={2.5} alignItems="center" sx={{ minWidth: 0 }}>
+					<PProfileAvatarEditor
+						username={displayUsername}
+						avatar={profile.avatar}
+						onUploaded={onAvatarUploaded}
+					/>
+					<CTitle
+						noTr={true}
+						size="md"
+						sx={{ minWidth: 0, mb: 0, overflowWrap: "anywhere" }}
+					>
 						{displayUsername}
 					</CTitle>
+				</Stack>
+				<Box
+					sx={{
+						width: "100%",
+						maxWidth: 400,
+						justifySelf: { xs: "stretch", sm: "end" },
+					}}
+				>
 					<CLevelProgress
 						level={levelProgress.level}
 						progressPercent={levelProgress.progressPercent}
 						title={badge}
 					/>
-				</Stack>
-			</Stack>
+				</Box>
+			</Box>
 		</CBasePaper>
 	);
 };

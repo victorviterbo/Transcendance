@@ -2,7 +2,7 @@ import type { SxProps, Theme } from "@mui/material";
 import { appAnimation, appColors, appSharedStyle } from "../../theme";
 import { makeMaskTranslationAnim } from "../../animations/CommonAnimations";
 import { colorAlterColor } from "../../../utils/styles";
-const stripesIMG = "imgs/shared/BG_Lines.png";
+const stripesIMG = "/imgs/shared/BG_Lines.png";
 
 export const CButtonStyle: SxProps<Theme> = (theme) => ({
 	transition: (theme) => {
@@ -28,6 +28,12 @@ export const CButtonStyle: SxProps<Theme> = (theme) => ({
 		transform: "translateY(5px)",
 		boxShadow: "0px 0px 0px 0px " + appColors.greys[0],
 		color: theme.palette.grey[900],
+	},
+
+	"&.Mui-disabled": {
+		background: appColors.greys[6],
+		boxShadow: "0px 5px 0px 0px " + appColors.greys[4],
+		color: appColors.greys[0],
 	},
 
 	"&::before": appAnimation.bg.buttonHover?.active

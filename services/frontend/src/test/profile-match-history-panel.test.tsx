@@ -9,7 +9,7 @@ vi.mock("../api/stats", () => ({
 	fetchHistory: (...args: unknown[]) => fetchHistoryMock(...args),
 }));
 
-vi.mock("../pages/PProfilePage/PProfileMatchHistoryDrawerCard", () => ({
+vi.mock("../pages/PProfilePage/PProfileMatchHistoryAccordionCard", () => ({
 	default: ({ entry }: { entry: { roomTitle: string } }) => <div>{entry.roomTitle}</div>,
 }));
 
@@ -96,7 +96,7 @@ describe("PProfileMatchHistoryPanel", () => {
 						xpEarned: 71,
 						ranking: 2,
 						roomTitle: "French Touch Session",
-						tags: ["TAG_ELECRO"],
+						tags: ["TAG_ELECTRO"],
 						players: [{ username: "john", avatar: "/john.jpg", ranking: 2 }],
 						rounds: [
 							{

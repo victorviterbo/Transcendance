@@ -31,22 +31,33 @@ async def _send_round_preview(consumer: 'GlobalConsumer',
                               serialized_game: dict,
                               serialized_track: dict) -> None:
     """Send the preview track before the round begins."""
+    #TODO: REMOVE LOG
+    print(f"Artist: {serialized_track.get('artist')}, Title: {serialized_track.get('title')}")
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_round_preview',
         'uid': serialized_game.get('uid'),
         'preview': serialized_track.get('preview'),
         'playbackDuration': consumer.current_game.playbackDuration,
+        'round': consumer.current_game.current_round,
     })
 
 async def _send_round_stats(consumer: 'GlobalConsumer',
-                            serialized_stats: dict,
+                            serialized_round_stats: dict,
                             serialized_game: dict,
-                            serialized_track: dict) -> None:
+                            serialized_track: dict,
+                            game_leaderboard: dict | None = None) -> None:
     """Send final game stats to players at the end of a game."""
+    if isinstance(serialized_round_stats, list):
+        round_leaderboard = serialized_round_stats
+        results = serialized_round_stats
+    else:
+        round_leaderboard = serialized_round_stats.get('leaderboard', [])
+        results = serialized_round_stats.get('results', [])
     event = {'type': 'game_round_end',
-            'game': serialized_game,
+            'uid': serialized_game.get('uid'),
             'track': serialized_track,
-            'results': serialized_stats,
+            'leaderboard': game_leaderboard if game_leaderboard else round_leaderboard,
+            'results': results,
             'is_last_round': (consumer.current_game.current_round
                                 >= consumer.current_game.trackCount)}
     await consumer.group_send(consumer.game_group_name, event)
@@ -70,7 +81,9 @@ async def _send_new_player(consumer: 'GlobalConsumer',
         'player': serialized_player
     })
 
-async def _send_start_signal(consumer: 'GlobalConsumer', serialized_game: dict, serialized_settings: dict) -> None:
+async def _send_start_signal(consumer: 'GlobalConsumer',
+                             serialized_game: dict,
+                             serialized_settings: dict) -> None:
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_start_signal',
         'uid': serialized_game.get('uid'),

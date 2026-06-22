@@ -1,234 +1,37 @@
-game-create:
-  post:
-    summary: Create a new game
-    description: Create a new game (with only name and privacy required) with specified settings, genres, and tracks
-    operationId: createGame
-    tags: [game]
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: ../openapi.yaml#/components/schemas/GameCreationRequest
-          examples:
-            basic:
-              summary: Basic game creation
-              value:
-                game_name: "My Game"
-                public_level: "public"
-                game_mode: "armageddon"
-                trackCount: 10
-                breakDuration: 15
-                playbackDuration: 30
-                fuzzy: false
-                reveal: true
-            with_genres:
-              summary: Game creation with genres
-              value:
-                game_name: "Music Quiz"
-                public_level: "private"
-                genres: ["pop", "rock"]
-                game_mode: "speed"
-                trackCount: 20
-                breakDuration: 30
-                playbackDuration: 15
-                fuzzy: true
-                reveal: false
-            party_mode:
-              summary: Public party setup
-              value:
-                game_name: "Friday Party"
-                public_level: "public"
-                genres: ["electro", "rap", "rock"]
-                game_mode: "normal"
-                trackCount: 15
-                breakDuration: 12
-                playbackDuration: 18
-                fuzzy: true
-                reveal: true
-    responses:
-      "201":
-        description: Game created successfully
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/GameCreationResponse
-            examples:
-              ok_42:
-                value:
-                  success: true
-                  game_id: 42
-              ok_87:
-                value:
-                  success: true
-                  game_id: 87
-              ok_133:
-                value:
-                  success: true
-                  game_id: 133
-      "400":
-        description: Validation error or invalid game parameters
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: object
-                  additionalProperties:
-                    oneOf:
-                      - type: string
-                      - type: array
-                        items:
-                          type: string
-            examples:
-              insufficient_tracks:
-                value:
-                  error:
-                    global: ["NOT_ENOUGH_TRACKS"]
-              invalid_genre:
-                value:
-                  error:
-                    global: ["NOT_ENOUGH_TRACKS_GENRE"]
-              no_tracks:
-                value:
-                  error:
-                    global: ["NO_TRACKS_FOUND"]
-
 game:
   get:
-    summary: List games
-    description: Return a list of games (brief info)
-    operationId: listGames
+    summary: List public games
+    description: Return public games visible on the home page.
+    operationId: listPublicGames
     tags: [game]
-    security:
-      - bearerAuth: []
     responses:
       "200":
-        description: List of games
+        description: Public game list
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: ../openapi.yaml#/components/schemas/Game - GameData
+              $ref: ../openapi.yaml#/components/schemas/Game - GameListResponse
             examples:
-              three_games:
-                summary: Example list with 3 games
+              public_rooms:
+                summary: Home public rooms
                 value:
-                  - id: "b6f17d3a-79fb-4b1d-b137-0f4f2a6725a0"
-                    maxPlayers: 8
-                    players:
-                      - user:
-                          uid: "9112a6df-b622-4f8f-a0a5-c8c72f02dc58"
-                          username: "neo"
-                          image: "media/avatars/neo.png"
-                          badges: "dazed jellyfish"
-                          relation: "other"
-                        points: 120
-                      - user:
-                          uid: "e9f40b8c-4f78-4aac-b7ae-4f49d5b6a6aa"
-                          username: "trinity"
-                          image: "media/avatars/trinity.png"
-                          badges: "deaf octopus"
-                          relation: "self"
-                        points: 95
-                  - id: "2d31939e-9458-4575-ac53-836fef8f6241"
-                    maxPlayers: 12
-                    players:
-                      - user:
-                          uid: "b90fa34e-4264-4f8d-9033-c319e654f2c7"
-                          username: "jules"
-                          image: "media/avatars/jules.jpg"
-                          badges: "distracted pigeon"
-                          relation: "other"
-                        points: 210
-                  - id: "df4c19f3-d53f-4f1f-8f97-a2d80d5ef620"
-                    maxPlayers: 6
-                    players:
-                      - user:
-                          uid: "4f5706ba-2ec8-4431-b8a5-d467f7ddb9f4"
-                          username: "mila"
-                          image: null
-                          badges: "deaf octopus"
-                          relation: "other"
-                        points: 44
-                      - user:
-                          uid: "5f23b276-c3c2-4a5b-b240-e2aa5cf5ba91"
-                          username: "omar"
-                          image: "media/avatars/omar.webp"
-                          badges: "deaf octopus"
-                          relation: "other"
-                        points: 77
-              home_popular:
-                summary: Home — popular games
-                value:
-                  - id: "7d09557c-7a26-4670-9ca5-81daef6dbf6f"
-                    maxPlayers: 16
-                    players:
-                      - user:
-                          uid: "37ebcb39-0f1d-4d0f-b3af-4f16c1f9aa34"
-                          username: "zara"
-                          image: "media/avatars/zara.png"
-                          badges: "distracted pigeon"
-                          relation: "self"
-                        points: 305
-                      - user:
-                          uid: "3af0ec7f-f93a-4733-b08e-f6b3321579dc"
-                          username: "kai"
-                          image: null
-                          badges: "distracted pigeon"
-                          relation: "other"
-                        points: 287
-                  - id: "62a44e17-a1f6-4fb0-86e0-160cf6220174"
-                    maxPlayers: 16
-                    players: []
-                  - id: "ddd6965a-0f6d-4494-ab14-f7543b2dc8fa"
-                    maxPlayers: 16
-                    players:
-                      - user:
-                          uid: "c8ee465e-b521-4851-af49-0ccdbf78cba4"
-                          username: "nina"
-                          image: "media/avatars/nina.jpg"
-                          badges: "dazed jellyfish"
-                          relation: "other"
-                        points: 199
-              home_recent:
-                summary: Home — recently created games
-                value:
-                  - id: "f860530f-0211-4548-8e98-31fea4f5f8cb"
-                    maxPlayers: 4
-                    players:
-                      - user:
-                          uid: "07d6b714-66c4-4d51-8720-30c46f73ca6c"
-                          username: "luna"
-                          image: "media/avatars/luna.webp"
-                          badges: "deaf octopus"
-                          relation: "other"
-                        points: 15
-                  - id: "457b479b-f4f3-44ce-aa00-dc5f36dd5518"
-                    maxPlayers: 4
-                    players:
-                      - user:
-                          uid: "c45ae07d-3a47-4caa-95d0-13127dce1234"
-                          username: "sami"
-                          image: "media/avatars/sami.png"
-                          badges: "deaf octopus"
-                          relation: "other"
-                        points: 8
-                  - id: "87de2119-1226-479c-9261-c3c4f4b04b31"
-                    maxPlayers: 4
-                    players: []
+                  rooms:
+                    - uid: "7d09557c-7a26-4670-9ca5-81daef6dbf6f"
+                      name: "Today challenge"
+                      genres: ["TAG_POP", "TAG_ROCK"]
+                      playerCount: 12
+                      playerMax: 16
+                    - uid: "62a44e17-a1f6-4fb0-86e0-160cf6220174"
+                      name: "80's room"
+                      genres: []
+                      playerCount: 0
+                      playerMax: 16
 
   post:
     summary: Create a new game
-    description: Create a new game (with only name and privacy required) with specified settings, genres, and tracks
+    description: Create a new game with the given name and visibility
     operationId: createGame
     tags: [game]
-    security:
-      - bearerAuth: []
     requestBody:
       required: true
       content:
@@ -239,26 +42,13 @@ game:
             basic:
               summary: Basic game creation
               value:
-                game_name: "My Game"
-                public_level: "public"
-            with_genres:
-              summary: Game creation with genres
+                name: "My Game"
+                visibility: "public"
+            private:
+              summary: Private game creation
               value:
-                game_name: "Music Quiz"
-                public_level: "private"
-                genres: ["pop", "rock"]
-            ranked_night:
-              summary: Competitive setup
-              value:
-                game_name: "Ranked Night"
-                public_level: "friends"
-                genres: ["rock", "electro", "rap"]
-                game_mode: "speed"
-                trackCount: 25
-                breakDuration: 10
-                playbackDuration: 10
-                fuzzy: false
-                reveal: true
+                name: "Music Quiz"
+                visibility: "private"
     responses:
       "201":
         description: Game created successfully
@@ -269,16 +59,13 @@ game:
             examples:
               ok_42:
                 value:
-                  success: true
-                  game_id: 42
+                  uid: "87de2119-1226-479c-9261-c3c4f4b04b31"
               ok_58:
                 value:
-                  success: true
-                  game_id: 58
+                  uid: "62a44e17-a1f6-4fb0-86e0-160cf6220174"
               ok_109:
                 value:
-                  success: true
-                  game_id: 109
+                  uid: "f860530f-0211-4548-8e98-31fea4f5f8cb"
       "400":
         description: Validation error or invalid game parameters
         content:
@@ -298,23 +85,61 @@ game:
               missing_name:
                 value:
                   error:
-                    game_name: "REQUIRED_GAME_NAME"
-              invalid_privacy:
+                    name: "REQUIRED_GAME_NAME"
+              invalid_visibility:
                 value:
                   error:
-                    public_level: "INVALID_CHOICE_PUBLIC_LEVEL"
-              invalid_duration:
+                    visibility: "INVALID_VISIBILITY"
+      "409":
+        description: The user is already in another active game.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: object
+                  properties:
+                    game:
+                      type: string
+            examples:
+              already_in_game:
                 value:
                   error:
-                    playbackDuration: "MAX_VALUE_PLAYBACKDURATION"
+                    game: "ALREADY_IN_GAME"
+
+game-friends-list:
+  get:
+    summary: List friends games
+    description: Return friend games visible on the home page.
+    operationId: listFriendsGames
+    tags: [game]
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: Friends game list
+        content:
+          application/json:
+            schema:
+              $ref: ../openapi.yaml#/components/schemas/Game - GameListResponse
+            examples:
+              friends_rooms:
+                summary: Home friends rooms
+                value:
+                  rooms:
+                    - uid: "f860530f-0211-4548-8e98-31fea4f5f8cb"
+                      name: "Sarah's room"
+                      genres: ["TAG_ROCK"]
+                      playerCount: 3
+                      playerMax: 4
+                    - uid: "87de2119-1226-479c-9261-c3c4f4b04b31"
+                      name: "John's room"
+                      genres: ["TAG_RAP", "TAG_RNB"]
+                      playerCount: 1
+                      playerMax: 4
 
 game-common:
-  parameters:
-    - name: ROOMID
-      in: path
-      required: true
-      schema:
-        type: string
   get:
     summary: All info about current game
     description: Return all data about the current status of the game
@@ -333,159 +158,63 @@ game-common:
                 game:
                   $ref: ../openapi.yaml#/components/schemas/Game - GameData
             examples:
-              in_progress:
+              ok:
                 value:
                   game:
+                    id: "123456"
+                    uid: "d76c7859-14ec-474d-814d-4b9ee5fdd2dd"
+                    name: "Sarah's game room"
                     players:
-                      - user: 
+                      - user:
                           uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                          username: "alice"
+                          username: "sarah"
                           image: "path/to/image"
-                          badges: "dazed jellyfish"
+                          badges: "deaf octopus"
                           relation: "incoming"
                         points: 150
-                      - user: 
+                        host: true
+                        colorid: 5
+                      - user:
                           uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
                           username: "john"
                           image: "path/to/image"
                           badges: "deaf octopus"
                           relation: "self"
                         points: 50
+                        host: false
+                        colorid: 8
                     maxPlayers: 100
-                    id: "123456"
-              waiting_room:
-                value:
-                  game:
-                    id: "ef0f72b1-c6f5-4d7e-b684-154ab23f70ee"
-                    maxPlayers: 8
-                    players:
-                      - user:
-                          uid: "e5f4f8d6-fcf6-4464-a754-4fd9473e7db4"
-                          username: "arthur"
-                          image: null
-                          badges: "deaf octopus"
-                          relation: "self"
-                        points: 0
-              end_game:
-                value:
-                  game:
-                    id: "0ecf00d0-c05c-4d7a-a670-b6de54d4b916"
-                    maxPlayers: 12
-                    players:
-                      - user:
-                          uid: "7b048afb-3ff9-4925-b8ff-3c1d3eef54fa"
-                          username: "claire"
-                          image: "media/avatars/claire.png"
-                          badges: "distracted pigeon"
-                          relation: "other"
-                        points: 420
-                      - user:
-                          uid: "4909c4ce-99c8-46f8-8e9e-01f8818af7c9"
-                          username: "leo"
-                          image: "media/avatars/leo.png"
-                          badges: "distracted pigeon"
-                          relation: "self"
-                        points: 399
-  patch:
-    summary: Partially update a game
-    description: Update mutable fields of a game
-    operationId: patchGame
-    tags: [game]
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              game_name:
-                type: string
-                description: Game name (read-only in backend, included for clarity)
-                readOnly: true
-              genres:
-                type: array
-                items:
-                  type: string
-                description: Genre list to use for rounds
-              game_mode:
-                type: string
-                enum: [normal, speed, armageddon]
-                description: Gameplay mode
-              public_level:
-                type: string
-                enum: [public, friends, private]
-                description: New privacy level (public/friends/private)
-              trackCount:
-                type: integer
-                minimum: 1
-                maximum: 100
-                description: Number of tracks in the game
-              breakDuration:
-                type: integer
-                minimum: 1
-                description: Break duration between rounds (seconds)
-              playbackDuration:
-                type: integer
-                minimum: 5
-                maximum: 30
-                description: Track preview duration (seconds)
-              fuzzy:
-                type: boolean
-                description: Enable fuzzy answer matching
-              reveal:
-                type: boolean
-                description: Whether answers are visible to all players
-          examples:
-            privacy_only:
-              summary: Update only privacy
-              value:
-                public_level: "private"
-            speed_competitive:
-              summary: Competitive speed setup
-              value:
-                genres: ["rock", "electro", "rap"]
-                game_mode: "speed"
-                public_level: "friends"
-                trackCount: 20
-                breakDuration: 8
-                playbackDuration: 12
-                fuzzy: false
-                reveal: true
-            chill_long_session:
-              summary: Relaxed long session
-              value:
-                genres: ["pop", "r&b/soul", "French Variety"]
-                game_mode: "normal"
-                public_level: "public"
-                trackCount: 30
-                breakDuration: 20
-                playbackDuration: 25
-                fuzzy: true
-                reveal: false
-    responses:
-      "200":
-        description: Game updated
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/GameCreationResponse
-            examples:
-              updated_42:
-                value:
-                  success: true
-                  game_id: 42
-              updated_87:
-                value:
-                  success: true
-                  game_id: 87
-              updated_133:
-                value:
-                  success: true
-                  game_id: 133
-      "400":
-        description: Validation error
+                    isHost: false
+                    chat:
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "message"
+                        message: "Hello everyone"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "joined"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "leaved"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "guessed"
+                        message: "Never fade away Samurai"
+                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+                        username: "john"
+                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
+
+                        type: "found"
+      "409":
+        description: The user is already in another active game and cannot join this one.
         content:
           application/json:
             schema:
@@ -493,53 +222,11 @@ game-common:
               properties:
                 error:
                   type: object
-                  additionalProperties:
-                    oneOf:
-                      - type: string
-                      - type: array
-                        items:
-                          type: string
+                  properties:
+                    game:
+                      type: string
             examples:
-              invalid_playback:
+              already_in_game:
                 value:
                   error:
-                    playbackDuration: "MAX_VALUE_PLAYBACKDURATION"
-              invalid_genres:
-                value:
-                  error:
-                    genres: "INVALID_GENRES"
-              invalid_tracks:
-                value:
-                  error:
-                    trackCount: "MIN_VALUE_TRACKCOUNT"
-
-  delete:
-    summary: Delete a game
-    description: Remove a game resource
-    operationId: deleteGame
-    tags: [game]
-    security:
-      - bearerAuth: []
-    responses:
-      "204":
-        description: Game deleted
-      "404":
-        description: Game not found
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: string
-            examples:
-              not_found_uuid:
-                value:
-                  error: "GAME_NOT_FOUND"
-              already_deleted:
-                value:
-                  error: "GAME_ALREADY_DELETED"
-              room_mismatch:
-                value:
-                  error: "ROOMID_NOT_FOUND"
-
+                    game: "ALREADY_IN_GAME"
