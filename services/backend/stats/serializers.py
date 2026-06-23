@@ -125,4 +125,12 @@ class GameHistorySerializer(serializers.ModelSerializer):
     class Meta:
         """"Define the fields in the game history serializer."""
         model = UserRoundStats
-        fields = ['track', 'titleFound', 'artistFound', 'time', 'points', 'round']
+        fields = [
+            'track',
+            'titleFound',
+            'artistFound',
+            'time',
+            'ranking',
+            'points',
+            'round',
+        ]

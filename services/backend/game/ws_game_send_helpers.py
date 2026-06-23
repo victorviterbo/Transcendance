@@ -107,7 +107,5 @@ async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict) -> None
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_ended_event',
         'uid': game_ended['uid'],
-        'self': game_ended['self'],
         'leaderboard': game_ended['leaderboard'],
-        'history': game_ended['history']
     })

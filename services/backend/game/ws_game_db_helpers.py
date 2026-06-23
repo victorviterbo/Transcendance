@@ -211,8 +211,8 @@ def _init_round_stats(game: Game) -> None:
 @database_sync_to_async
 def _compute_round_stats(game: Game) -> None:
 	"""Collect and store game statistics after a round finishes."""
-	stats = list(UserRoundStats.objects.filter(round__round_number=game.current_round,
-										round__game=game).order_by('-xp_earned', 'time'))
+	stats = UserRoundStats.objects.filter(round__round_number=game.current_round,
+										round__game=game)
 	if game.mode == 'armageddon':
 		first_artist = stats.filter(artist_found=True).order_by('artist_found_at').first()
 		first_title = stats.filter(title_found=True).order_by('title_found_at').first()
@@ -251,8 +251,10 @@ def _compute_round_stats(game: Game) -> None:
 			stat.save(update_fields=['xp_earned'])
 	game.status = 'playing_break'
 	game.save(update_fields=['status'])
+	stats = list(stats.order_by('-xp_earned', 'time', 'player__username'))
 	for rank, stat in enumerate(stats, 1):
 		stat.ranking = rank
+	UserRoundStats.objects.bulk_update(stats, ['ranking'])
 	return LiveRoundSerializer(stats, many=True).data
 
 
@@ -387,6 +389,16 @@ def _get_game_info_data(consumer: 'GlobalConsumer') -> dict:
 def _get_game_ended_data(consumer: 'GlobalConsumer') -> dict:
     """Build the game_ended payload for all players."""
     return _build_base_game_payload(consumer)
+
+@database_sync_to_async
+def _get_game_history_data(game_uid: str, player: Profile) -> list[dict]:
+    """Build the per-player game history payload."""
+    round_rows = (
+        UserRoundStats.objects.filter(round__game__uid=game_uid, player=player)
+        .select_related('round__track')
+        .order_by('round__round_number')
+    )
+    return GameHistorySerializer(round_rows, many=True).data
 
 @database_sync_to_async
 def _check_game_membership(game: Game, player: Profile) -> bool:

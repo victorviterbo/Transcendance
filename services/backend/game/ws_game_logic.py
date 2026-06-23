@@ -241,31 +241,31 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
         title_newly_found,
     ) = await _validate_answer(consumer, content, track_data)
                         
-    if ((artist_correct or title_correct)
-        and consumer.current_game.mode == 'armageddon'):
-        await check_all_answers_received(consumer, consumer.current_game)
-    if consumer.current_game.reveal:
-        serialized_player = await _get_player_data(consumer)
-        if artist_newly_found and title_newly_found:
-            broadcast_kind = 'bothFound'
-        elif artist_newly_found:
-            broadcast_kind = 'artistFound'
-        elif title_newly_found:
-            broadcast_kind = 'titleFound'
-        else:
-            broadcast_kind = 'incorrect'
-        payload = {
-            'type': 'game_answer_broadcast',
-            'target': 'game',
-            'event': 'answer_broadcast',
-            'uid': str(consumer.current_game.uid),
-            'self': consumer.profile_data,
-            'player': serialized_player,
-            'kind': broadcast_kind,
-        }
-        if broadcast_kind == 'incorrect':
-            payload['answer'] = content.get('answer')
-        await consumer.group_send(consumer.game_group_name, payload)
+    # if ((artist_correct or title_correct)
+    #     and consumer.current_game.mode == 'armageddon'):
+    #     await check_all_answers_received(consumer, consumer.current_game)
+
+    serialized_player = await _get_player_data(consumer)
+    if artist_newly_found and title_newly_found:
+        broadcast_kind = 'bothFound'
+    elif artist_newly_found:
+        broadcast_kind = 'artistFound'
+    elif title_newly_found:
+        broadcast_kind = 'titleFound'
+    else:
+        broadcast_kind = 'incorrect'
+    payload = {
+        'type': 'game_answer_broadcast',
+        'target': 'game',
+        'event': 'answer_broadcast',
+        'uid': str(consumer.current_game.uid),
+        'self': consumer.profile_data,
+        'player': serialized_player,
+        'kind': broadcast_kind,
+    }
+    if broadcast_kind == 'incorrect' and consumer.current_game.reveal:
+        payload['answer'] = content.get('answer')
+    await consumer.group_send(consumer.game_group_name, payload)
     serialized_game = await _get_game_data(consumer)
 
     await consumer.channel_layer.send(consumer.channel_name, {

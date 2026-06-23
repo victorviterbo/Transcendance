@@ -17,6 +17,7 @@ from chat.ws_direct_message import (
     update_online_status,
 )
 from game.models import Game
+from game.ws_game_db_helpers import _get_game_history_data
 from game.ws_game_logic import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
@@ -328,13 +329,14 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     async def game_ended_event(self, event: dict) -> None:
         """Broadcast game end with final leaderboard and history."""
+        history = await _get_game_history_data(event.get('uid'), self.profile)
         await self.send_json({
             'target': 'game',
             'event': 'game_ended',
             'uid': event.get('uid'),
             'self': self.profile_data,
             'leaderboard': event.get('leaderboard'),
-            'history': event.get('history'),
+            'history': history,
         })
     
     def _sender_name(self) -> str:

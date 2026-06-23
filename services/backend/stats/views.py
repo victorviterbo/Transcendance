@@ -194,18 +194,13 @@ class HistoryView(APIView):
             )
             for urs in user_rounds:
                 track = urs.round.track if urs.round else None
-                round_rank = (
-                    UserRoundStats.objects.filter(
-                        round=urs.round, time__lt=urs.time
-                    ).count() + 1
-                )
                 rounds_data.append({
                     'trackName': track.title if track else '',
                     'trackArtist': track.artist if track else '',
                     'titleFound': urs.title_found,
                     'artistFound': urs.artist_found,
                     'time': round(urs.time, 2),
-                    'ranking': round_rank,
+                    'ranking': urs.ranking,
                     'previewUrl': track.preview_url if track else None,
                     'artworkUrl': track.artwork_url if track else None,
                     'roundNumber': urs.round.round_number if urs.round else 0,
