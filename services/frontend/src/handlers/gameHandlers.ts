@@ -257,8 +257,13 @@ export class GameInstance {
 		if (data.track) this.getRound().track = data.track;
 
 		this.getRound().points = 0;
-		if (data.titleFound) this.getRound().points += 5;
-		if (data.artistFound) this.getRound().points += 5;
+		if (this.settings && this.settings.mode == "normal") {
+			if (data.titleFound && data.artistFound) this.getRound().points = 10;
+			else if (data.titleFound || data.artistFound) this.getRound().points = 4;
+		} else if (this.settings && this.settings.mode == "speed") {
+			if (data.titleFound) this.getRound().points += 1;
+			if (data.artistFound) this.getRound().points += 1;
+		}
 
 		this.updateRounds();
 	}
@@ -270,19 +275,14 @@ export class GameInstance {
 			(fPlayer: IGamePlayer) => fPlayer.user.uid == data.player.uid,
 		);
 		const res: IGamePlayerResult = this.getResult(data.player);
-		let changed: boolean = false;
 
 		res.points = 0;
 		if (data.kind == "artistFound" || data.kind == "bothFound") {
-			if (!res.artistFound) changed = true;
 			res.artistFound = true;
 		}
 		if (data.kind == "titleFound" || data.kind == "bothFound") {
-			if (!res.titleFound) changed = true;
 			res.titleFound = true;
-		}
-		if (player && data.kind != "incorrect" && changed) this.addMessage(player, "found");
-		else if (player && (data.kind == "incorrect" || !changed))
+		} else if (player && data.kind == "incorrect" && data.answer)
 			this.addMessage(player, "guessed", data.answer);
 
 		this.updateResults();
@@ -308,6 +308,7 @@ export class GameInstance {
 				selfRes.points -
 				(this.getRound().artistFound ? 5 : 0) -
 				(this.getRound().titleFound ? 5 : 0);
+			this.getRound().ranking = selfRes.ranking;
 		}
 
 		//RESULT

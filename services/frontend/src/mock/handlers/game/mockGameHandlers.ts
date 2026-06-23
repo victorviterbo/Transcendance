@@ -265,7 +265,7 @@ export class MockGame {
 	}
 	sendEvent(data: IWSGameSendEvent) {
 		if (!mockGameDB.client) return;
-		//console.log(data);
+		console.log(data);
 		mockGameDB.client.send(JSON.stringify(data));
 	}
 	getBaseData(event: IWSGameEventSndList): IWSGameSendEvent {
@@ -352,6 +352,13 @@ export class MockGame {
 			event: "message_broadcast",
 			message: nMessage,
 		} as IWSGameSendEventMessage);
+	}
+	getRoundCount(target: "titleFound" | "artistFound"): number {
+		let count: number = 0;
+		this.roundResult.forEach((round: IGamePlayerResult) => {
+			if (round[target]) count++;
+		});
+		return count;
 	}
 
 	changeSettings() {
@@ -477,7 +484,6 @@ export class MockGame {
 
 		this.roundResult.forEach((res: IGamePlayerResult, index: number) => {
 			res.ranking = index + 1;
-			if (res.artistFound && res.titleFound) res.points += 10 - index <= 0 ? 1 : 10 - index;
 			const player: IGamePlayer | undefined = this.players.find(
 				(targetPlayer: IGamePlayer) => targetPlayer.user.uid == res.user.uid,
 			);
@@ -493,6 +499,19 @@ export class MockGame {
 			leaderboard: this.players,
 			results: this.roundResult,
 		} as IWSGameSendEventRoundEnd);
+
+		const userResult: IGamePlayerResult | undefined = this.roundResult.find(
+			(res: IGamePlayerResult) => {
+				return res.user.uid == mockDefaultUserUID;
+			},
+		);
+		if (userResult) {
+			this.rounds[this.status.round].artistFound = userResult.artistFound;
+			this.rounds[this.status.round].titleFound = userResult.titleFound;
+			this.rounds[this.status.round].points = userResult.points;
+			this.rounds[this.status.round].ranking = userResult.ranking;
+			this.rounds[this.status.round].time = userResult.time;
+		}
 
 		if (this.status.round >= this.settings.trackCount - 1) {
 			setTimeout(() => {
@@ -540,16 +559,22 @@ export class MockGame {
 			track.artist &&
 			sim.try.toLowerCase().includes(track.artist.toLowerCase())
 		) {
+			const currentCount = this.getRoundCount("artistFound");
 			res.artistFound = true;
-			res.points += 5;
+			if (this.settings.mode == "speed")
+				res.points += currentCount >= 5 ? 1 : 5 - currentCount;
+			else res.points += res.titleFound ? 6 : 4;
 			res.time = res.time < sim.at ? sim.at : res.time;
 		} else if (
 			!res.titleFound &&
 			track.title &&
 			sim.try.toLowerCase().includes(track.title.toLowerCase())
 		) {
+			const currentCount = this.getRoundCount("titleFound");
 			res.titleFound = true;
-			res.points += 5;
+			if (this.settings.mode == "speed")
+				res.points += currentCount >= 5 ? 1 : 5 - currentCount;
+			else res.points += res.artistFound ? 6 : 4;
 			res.time = res.time < sim.at ? sim.at : res.time;
 		}
 
@@ -565,7 +590,8 @@ export class MockGame {
 						: res.titleFound
 							? "titleFound"
 							: "incorrect",
-			answer: !res.artistFound && !res.titleFound ? sim.try : undefined,
+			answer:
+				!res.artistFound && !res.titleFound && this.settings.reveal ? sim.try : undefined,
 		} as IWSGameSendEventRoundAnswerBroadcast);
 	}
 	simulateMessages() {
@@ -971,9 +997,9 @@ export class MockGameJoiningSpeed extends MockGame {
 		setTimeout(() => {
 			this.settings.genres.splice(1, 1);
 			this.settings.genres.push("TAG_RNB");
-			this.settings.mode = "speed";
-			this.settings.trackCount = 10;
-			this.settings.playbackDuration = 5;
+			this.settings.mode = "normal";
+			this.settings.trackCount = 5;
+			this.settings.playbackDuration = 20;
 			this.settings.breakDuration = 5;
 			this.settings.reveal = true;
 			this.settings.fuzzy = true;

@@ -29,7 +29,7 @@ export const PGameRoundStyle = (): IGameRoundStyle => {
 		pointBox: {
 			mt: { xs: "0px", md: "15px" },
 			mr: "5px",
-			flex: 0.25,
+			flex: { xs: 0.25, md: 0 },
 			minWidth: "155px",
 			background: colorGetBackground(
 				[appColors.primary[1], appColors.tertiary[1]],
@@ -47,11 +47,13 @@ export const PGameRoundStyle = (): IGameRoundStyle => {
 
 			borderTopLeftRadius: appSharedStyle.gameRadius,
 			borderBottomLeftRadius: appSharedStyle.gameRadius,
+			justifyContent: "space-around",
 		},
 		pointBoxPointList: {
 			flex: 1,
 			backgroundColor: appColors.greys[6],
-			pl: "5px",
+			justifyContent: "space-around",
+			pl: "7px",
 			pr: "auto",
 			py: "7px",
 		},

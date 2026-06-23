@@ -4,7 +4,7 @@ import CTextField from "../../../components/inputs/textFields/CTextField";
 import SendIcon from "@mui/icons-material/Send";
 import CIconButton from "../../../components/inputs/buttons/CIconButton";
 import { appColors, appTexts } from "../../../styles/theme";
-import { ttrfn } from "../../../localization/localization";
+import { ttrf, ttrfn } from "../../../localization/localization";
 import type { GPageProps } from "../../common/GPageBases";
 import type {
 	IGamePlayer,
@@ -79,36 +79,65 @@ function PGameRound({
 
 	//====================== COMPOENTS ======================
 	const pointBox = useMemo(() => {
+		const titleFound: boolean = rounds[status.round].titleFound;
+		const titleFoundAt: number | undefined = rounds[status.round].titleFoundAt;
+		const artistFound: boolean = rounds[status.round].artistFound;
+		const artistFoundAt: number | undefined = rounds[status.round].artistFoundAt;
+
 		return (
 			<Stack direction={"row"} sx={style.pointBox}>
 				<Stack direction={"column"} sx={style.pointBoxTextList}>
 					<CText>GAME_ROUND_ARTIST</CText>
 					<CText>GAME_ROUND_TITLE</CText>
-					<CText>GAME_ROUND_SPEED</CText>
+					<CText>GAME_ROUND_RANKING</CText>
 				</Stack>
 				<Stack direction={"column"} sx={style.pointBoxPointList}>
 					<CText
+						size={"sm"}
 						sx={{
-							color: rounds[status.round].artistFound
+							color: artistFound
 								? appColors.primary[0]
-								: appColors.cancel[0],
+								: status.phase == "playing_round"
+									? appColors.secondary[0]
+									: appColors.cancel[0],
 						}}
 					>
-						{rounds[status.round].artistFound ? 5 : 0}
+						{artistFound && artistFoundAt != undefined
+							? ttrf("SECONDS", { COUNT: Math.round(artistFoundAt * 100) / 100 + "" })
+							: status.phase == "playing_round"
+								? "--"
+								: "0"}
 					</CText>
 					<CText
+						size={"sm"}
 						sx={{
-							color: rounds[status.round].titleFound
+							color: titleFound
 								? appColors.primary[0]
-								: appColors.cancel[0],
+								: status.phase == "playing_round"
+									? appColors.secondary[0]
+									: appColors.cancel[0],
 						}}
 					>
-						{rounds[status.round].titleFound ? 5 : 0}
+						{titleFound && titleFoundAt != undefined
+							? ttrf("SECONDS", { COUNT: Math.round(titleFoundAt * 100) / 100 + "" })
+							: status.phase == "playing_round"
+								? "--"
+								: "0"}
 					</CText>
-					<CText sx={{ color: appColors.secondary[0] }}>
-						{rounds[status.round].bonusPoints == undefined
-							? "-"
-							: rounds[status.round].bonusPoints?.toString()}
+					<CText
+						size={"sm"}
+						sx={{
+							color:
+								rounds[status.round].ranking == 0
+									? appColors.greys[4]
+									: rounds[status.round].ranking <= 3
+										? appColors.secondary[0]
+										: appColors.primary[0],
+						}}
+					>
+						{rounds[status.round].ranking == 0
+							? "--"
+							: rounds[status.round].ranking.toString()}
 					</CText>
 				</Stack>
 				<Stack direction={"column"} sx={style.pointBoxPointSumup}>

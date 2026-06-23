@@ -294,7 +294,7 @@ GAME_PLAYING_ENDED,Game ended,,,Title of the view when the game has ended
 GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
 GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
 GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
-GAME_ROUND_SPEED,Speed:,,,Label for the number of point for speeding
+GAME_ROUND_RANKING,Ranking:,,,Label for the round ranking
 GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
 SECONDS,{COUNT}s,,,Seconds suffix (If applicable)
 GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Code associated with a game room
@@ -322,3 +322,4 @@ GAME_WAITING_WAITING_NEXT,You've rejoined during a round please wait this round 
 GAME_LEAVE_INTERACT_TITLE,Interaction required,,,Title of the popup use to request a user interaction to ba abale to play the songs
 GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio please click bellow to interact with the page,,,Content of the popup use to request a user interaction to ba abale to play the songs
 GAME_LEAVE_INTERACT_BUTTON,Go,,,Button of the popup use to request a user interaction to ba abale to play the songs
+GAME_ANSWER_NOT_FOUND,Not found,,,Simple messages  showed instead of the answer time when user didn't found the music
