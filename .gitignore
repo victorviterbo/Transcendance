@@ -26,8 +26,6 @@ ENV/
 *.py[cod]
 **/.pytest_cache/
 *.sqlite3
-**/migrations/*
-!**/migrations/__init__.py
 services/backend/DB/media/*
 services/backend/DB/static/*
 !services/backend/DB/static/default_avatars/
