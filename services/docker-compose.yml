@@ -2,7 +2,9 @@ services:
   backend:
     container_name: backend
     image: transcendence-backend
-    build: ./backend/build/
+    build:
+      context: ./backend
+      dockerfile: build/Dockerfile
     volumes:
       - ./backend/:/backend/
     ports:
