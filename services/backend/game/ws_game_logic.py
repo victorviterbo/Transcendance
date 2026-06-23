@@ -37,6 +37,8 @@ from .ws_game_db_helpers import (
     _validate_answer,
 )
 from .ws_game_send_helpers import (
+    _send_existing_player_game_info,
+    _send_game_error,
     _send_game_ended,
     _send_game_info,
     _send_game_stats,
@@ -140,13 +142,13 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
 
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
-    if getattr(consumer, 'current_game', None):
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'Already in a game',
-                                })
-        return
     game_uid = content.get('uid')
+    if getattr(consumer, 'current_game', None):
+        if game_uid and str(consumer.current_game.uid) == str(game_uid):
+            await _send_existing_player_game_info(consumer)
+        else:
+            await _send_game_error(consumer, 'ALREADY_IN_GAME')
+        return
     if game_uid is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
@@ -159,19 +161,14 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'event': 'error',
                                 'message': 'Game not found'})
         return
-    num_current_players = await _get_num_curr_players(consumer.current_game)
-    if num_current_players >= max_players:
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'Game already full'})
-        return
     is_already_in_game = await _check_game_membership(consumer.current_game,
                                                     consumer.profile)
     if is_already_in_game:
-        await consumer.send_json({'target': 'game',
-                                'event': 'player_joined',
-                                'currentGameUid': str(consumer.current_game.uid),
-                                'message': 'Already in game.'})
+        await _send_existing_player_game_info(consumer)
+        return
+    num_current_players = await _get_num_curr_players(consumer.current_game)
+    if num_current_players >= max_players:
+        await _send_game_error(consumer, 'GAME_FULL')
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
