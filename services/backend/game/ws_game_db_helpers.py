@@ -129,7 +129,7 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 		return None, None
 
 @database_sync_to_async
-def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, bool]:
+def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, bool, bool, bool]:
 	"""Validate answer against current track and return correctness.
 	
 	Args:
@@ -138,25 +138,29 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		track: The current track instance
 	
 	Returns:
-		bool: Whether the artist is correct
-		bool: Whether the title is correct
+		bool: Whether the artist is found after this answer
+		bool: Whether the title is found after this answer
+		bool: Whether this answer newly found the artist
+		bool: Whether this answer newly found the title
 	"""
 	try:
 		time = content.get('time')
 		player_answer = content.get('answer').lower().strip()
 		if track is None or time is None or player_answer is None:
-			return False, False
+			return False, False, False, False
 		if (consumer.profile is None or
 				consumer.profile not in consumer.current_game.players.all()):
-			return False, False
+			return False, False, False, False
 		player_stats = UserRoundStats.objects.filter(round__game=consumer.current_game,
 													round__round_number=consumer.current_game.current_round,
 													player=consumer.profile
 													).first()
 		if not player_stats:
-			return False, False
+			return False, False, False, False
 		artist_correct = player_stats.artist_found
 		title_correct = player_stats.title_found
+		artist_newly_found = False
+		title_newly_found = False
 		update_fields = []
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
@@ -166,6 +170,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				player_stats.artist_found = True
 				player_stats.artist_found_at = time
 				artist_correct = True
+				artist_newly_found = True
 				update_fields.extend(['artist_found', 'artist_found_at'])
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
@@ -175,12 +180,13 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				player_stats.title_found = True
 				player_stats.title_found_at = time
 				title_correct = True
+				title_newly_found = True
 				update_fields.extend(['title_found', 'title_found_at'])
 		if update_fields:
 			player_stats.save()
-		return artist_correct, title_correct
+		return artist_correct, title_correct, artist_newly_found, title_newly_found
 	except Game.DoesNotExist:
-		return False, False
+		return False, False, False, False
 
 
 @database_sync_to_async

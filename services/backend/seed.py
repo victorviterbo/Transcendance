@@ -88,23 +88,24 @@ for _ in range(30): # Create 30 random friend connections
         )
 
 
-for t_idx in range(1, 16):
-    track, created = Track.objects.get_or_create(
-        itunes_id=t_idx,
-        defaults={
-            'title': f"Track {t_idx}",
-            'artist': f"Artist {t_idx}",
-            'preview_url': f"https://example.com/preview{t_idx}.mp3",
-            'artwork_url': f"https://example.com/artwork{t_idx}.jpg",
-            'genre': random.choice(genres)
-        }
-    )
-    tracks.append(track)
+# for t_idx in range(1, 16):
+#     track, created = Track.objects.get_or_create(
+#         itunes_id=t_idx,
+#         defaults={
+#             'title': f"Track {t_idx}",
+#             'artist': f"Artist {t_idx}",
+#             'preview_url': f"https://example.com/preview{t_idx}.mp3",
+#             'artwork_url': f"https://example.com/artwork{t_idx}.jpg",
+#             'genre': random.choice(genres)
+#         }
+#     )
+#     tracks.append(track)
+tracks = list(Track.objects.all())
 # ---------------------------------------------------------
 # 4. GAMES & STATS
 # ---------------------------------------------------------
 # Simulate 10 different games
-for g_idx in range(1, 11):
+for g_idx in range(1, 11) if tracks else []:
     # Pick a random room and random 4 players for the game
     #game_room = random.choice(rooms)
     game_players = random.sample(profiles, 4)
