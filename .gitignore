@@ -51,6 +51,12 @@ services/backend/DB/static/*
 *.sw?
 
 # =========================
+# Nginx certificates
+# =========================
+services/nginx/certs/*
+!services/nginx/certs/.gitkeep
+
+# =========================
 # Docker
 # =========================
 *.pid

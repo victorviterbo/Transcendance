@@ -22,7 +22,9 @@ services:
       dockerfile: nginx/Dockerfile
     ports:
       - "80:80"
+      - "443:443"
     volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro
       - ./backend/DB/media:/backend-media
       - ./backend/DB/static:/backend-static
     depends_on:
