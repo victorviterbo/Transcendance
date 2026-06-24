@@ -36,8 +36,9 @@ export const API_GAME = "/api/game/{ROOMID}/";
 export const PAGE_GAME = "/game/{UID}";
 
 // WS
-export const WS_ADRESS_WMS = "ws://localhost:5173/";
-export const WS_ADRESS = "ws://localhost:8000/ws/global/";
+export const WS_ADDRESS_WMS = "ws://localhost:5173/";
+const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+export const WS_ADDRESS = `${wsProtocol}//${window.location.host}/ws/global/`;
 
 // GAME-SPECIFIC
 export const MUSIC_TAGS = [

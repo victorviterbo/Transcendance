@@ -1,5 +1,5 @@
 import { ws } from "msw";
-import { WS_ADRESS_WMS } from "../../../constants";
+import { WS_ADDRESS_WMS } from "../../../constants";
 import type { IWSGameRCVEvent, TWSRcv, TWSSend } from "../../../types/websocket";
 import { mockMessagesFriend1Update, onMessageSent, onMessageStatus } from "../social/socialChat";
 import { mockAcceptingRequests, mockNewIncomingRequests } from "../social/social";
@@ -8,7 +8,7 @@ import { mockHandleGameMessages } from "../game/mockGameHandlers";
 //--------------------------------------------------
 //                                    NAME
 //--------------------------------------------------
-const socket = ws.link(WS_ADRESS_WMS);
+const socket = ws.link(WS_ADDRESS_WMS);
 
 export let mockNoRequests: boolean = false;
 export const mockSetNoRequests = (value: boolean) => {
