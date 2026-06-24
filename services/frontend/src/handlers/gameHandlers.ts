@@ -167,8 +167,8 @@ export class GameInstance {
 		if (!this.players.find((player: IGamePlayer) => player.player.uid == data.player.uid)) {
 			this.players.push({
 				player: data.player,
-				points: 0
-		});
+				points: 0,
+			});
 			this.updatePlayers();
 			this.addMessage(this.players[this.players.length - 1], "joined");
 		}
@@ -419,7 +419,7 @@ export class GameInstance {
 			...this.getSendBaseData("settings_update"),
 			settings: {
 				...nSettings,
-				tags: undefined
+				tags: undefined,
 			},
 		} as IWSGameRCVEventSettings);
 	}

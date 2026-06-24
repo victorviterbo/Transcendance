@@ -74,7 +74,8 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 			lead:
 				!game.current || !game.current.self
 					? 0
-					: players.findIndex((player) => player.user.uid == game.current?.self?.uid) + 1,
+					: players.findIndex((player) => player.player.uid == game.current?.self?.uid) +
+						1,
 		};
 	}, [rounds, players, game]);
 

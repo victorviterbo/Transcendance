@@ -198,12 +198,12 @@ function PGameRound({
 			if (!result.artistFound && !result.titleFound) return;
 			if (isMedium) {
 				return (
-					<Grid size={6} key={result.user.uid}>
+					<Grid size={6} key={result.player.uid}>
 						<PGameRoundAnswer
 							variant="time"
 							answer={{
 								validated: true,
-								message: result.user.username,
+								message: result.player.username,
 								time: result.time,
 								titleFound: result.titleFound,
 								artistFound: result.artistFound,

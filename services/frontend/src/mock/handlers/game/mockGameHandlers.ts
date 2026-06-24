@@ -316,7 +316,7 @@ export class MockGame {
 		const event: IWSGameSendEventPlayerManage = {
 			...this.getBaseData("player_left"),
 			event: "player_left",
-			player: player.player
+			player: player.player,
 		};
 		this.sendEvent(event as IWSGameSendEvent);
 	}
@@ -502,7 +502,7 @@ export class MockGame {
 
 		const userResult: IGamePlayerResult | undefined = this.roundResult.find(
 			(res: IGamePlayerResult) => {
-				return res.user.uid == mockDefaultUserUID;
+				return res.player.uid == mockDefaultUserUID;
 			},
 		);
 		if (userResult) {
@@ -664,13 +664,13 @@ export class MockGamePlaying extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 6; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: this.currentTarget * 5,
 			});
 		}
 
 		this.players.push({
-			user: {
+			player: {
 				username: mockDefaultUsername,
 				uid: mockDefaultUserUID,
 				avatar: mockDefaultPP,
@@ -1136,7 +1136,7 @@ export class MockGameJoiningError extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 4; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: this.currentTarget * 5,
 			});
 		}
@@ -1185,7 +1185,7 @@ export class MockGameJoiningFull extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 20; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: this.currentTarget * 5,
 			});
 		}
@@ -1217,7 +1217,7 @@ export class MockGameJoiningInGame extends MockGame {
 		super.buildPlayers();
 		for (; this.currentTarget < 4; this.currentTarget++) {
 			this.players.push({
-				user: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
 				points: this.currentTarget * 5,
 			});
 		}
