@@ -53,7 +53,6 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 						{ttrfn("NOTIF_FRIEND_REQ", {
 							USERNAME: (
 								<CUserProfileLink
-									key="username"
 									sx={{ display: "inline" }}
 									username={notif.from.username}
 								>
@@ -73,7 +72,6 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 						{ttrfn("NOTIF_FRIEND_ACCEPTED", {
 							USERNAME: (
 								<CUserProfileLink
-									key="username"
 									sx={{ display: "inline" }}
 									username={notif.from.username}
 								>
