@@ -1,7 +1,7 @@
 import { Box, Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import type { IExtUserInfo } from "../../types/user";
-import { useId, useState, type ReactNode } from "react";
+import { useCallback, useId, useRef, useState, type ReactNode } from "react";
 import CText from "../../components/text/CText";
 import PFriendNode from "./PFriendNode";
 import { getErrorNode } from "../../utils/error";
@@ -11,9 +11,11 @@ function PFriendAdd() {
 	const [users, setUsers] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [search, setSearch] = useState<string>("");
-	let lastTO: ReturnType<typeof setTimeout> | null = null;
+	const lastTO:  React.RefObject<number> =  useRef<number>(-1);
 	const localId = useId();
 
+	
+	//====================== EVENTS ======================
 	const onSearch = async (value: string) => {
 		if (value.length == 0) {
 			setError(undefined);
@@ -49,18 +51,20 @@ function PFriendAdd() {
 		});
 	}
 
+	const onFieldChanged = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+		if (lastTO.current >= 0) {
+			clearTimeout(lastTO.current);
+			lastTO.current = -1;
+		}
+		lastTO.current = setTimeout(() => {
+			onSearch(event.target.value);
+		}, 300);
+	}, [lastTO])
+
 	return (
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendAdd">
 			<CTextField
-				onChange={(e) => {
-					if (lastTO) {
-						clearTimeout(lastTO);
-						lastTO = null;
-					}
-					lastTO = setTimeout(() => {
-						onSearch(e.target.value);
-					}, 300);
-				}}
+				onChange={onFieldChanged}
 				data-testid="PSocialASearchAdd"
 			></CTextField>
 			<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
