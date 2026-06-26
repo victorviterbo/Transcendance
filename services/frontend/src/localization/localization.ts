@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { cloneElement, type ReactElement, type ReactNode } from "react";
 import type { ILangContent, ILangData, ILocalizationData } from "../types/localizationTypes";
 
 export const langData: ILocalizationData = {
@@ -209,7 +209,7 @@ export function ttrf(id: string, params: Record<string, string>): string {
 	return text;
 }
 
-export function ttrfn(id: string, params: Record<string, ReactNode>): ReactNode[] {
+export function ttrfn(id: string, params: Record<string, ReactElement>): ReactNode[] {
 	const text: string = ttr(id);
 	const reg: RegExp = new RegExp(/([^{}]*)\{(.+?)\}([^{}]*)/gm);
 	const out: ReactNode[] = [];
@@ -218,7 +218,9 @@ export function ttrfn(id: string, params: Record<string, ReactNode>): ReactNode[
 	while ((array = reg.exec(text)) !== null) {
 		if (array.length != 4) continue;
 		out.push(array[1]);
-		out.push(params[array[2]]);
+		out.push(cloneElement(params[array[2]], {
+			key: array[2],
+		}));
 		out.push(array[3]);
 	}
 	return out;
