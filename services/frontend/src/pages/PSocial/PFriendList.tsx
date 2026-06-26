@@ -1,7 +1,7 @@
 import { Box, Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import PFriendNode from "./PFriendNode";
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { IFriendInfo, TFriendStatus } from "../../types/socials";
 import CText from "../../components/text/CText";
 import { getErrorNode } from "../../utils/error";
@@ -17,7 +17,6 @@ function PFriendList({ open, onMessaging }: PFriendListProps) {
 	const [friends, setFriends] = useState<IFriendInfo[]>([]);
 	const [friendsFilter, setFriendsFilter] = useState<string>("");
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
-	const localId = useId();
 
 	useEffect(() => {
 		if (!open) return;
@@ -56,19 +55,19 @@ function PFriendList({ open, onMessaging }: PFriendListProps) {
 		getFriends();
 	}, [setFriends, setError, open]);
 
-	function getFriendsList(): ReactNode | ReactNode[] {
+	const friendsList: ReactNode | ReactNode[] = useMemo(() => {
 		if (error) return error;
 
 		if (friends.length == 0) return <CText align="center">FRIEND_EMPTY</CText>;
-		return friends.map((value: IFriendInfo, index: number) => {
+		return friends.map((user: IFriendInfo) => {
 			return (
 				<PFriendNode
-					user={value}
-					key={localId + index}
+					user={user}
+					key={user.uid}
 					type="friend"
 					hidden={
 						friendsFilter != "" &&
-						!value.username
+						!user.username
 							.toLocaleLowerCase()
 							.includes(friendsFilter.toLocaleLowerCase())
 					}
@@ -76,7 +75,7 @@ function PFriendList({ open, onMessaging }: PFriendListProps) {
 				></PFriendNode>
 			);
 		});
-	}
+	}, [error, friends, onMessaging, friendsFilter]);
 
 	return (
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendList">
@@ -87,7 +86,7 @@ function PFriendList({ open, onMessaging }: PFriendListProps) {
 				data-testid="PSocialSearchList"
 			></CTextField>
 			<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
-				<Stack sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>{getFriendsList()}</Stack>
+				<Stack sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>{friendsList}</Stack>
 			</Box>
 		</Stack>
 	);
