@@ -32,6 +32,6 @@ export function PNotifNodeStyle({ notif }: PNotifNodeProps): INotifNodeStyle {
 		button: {
 			ml: "auto",
 			my: "auto",
-		}
+		},
 	};
 }

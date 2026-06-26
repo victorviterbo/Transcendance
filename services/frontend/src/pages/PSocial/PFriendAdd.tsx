@@ -11,10 +11,9 @@ function PFriendAdd() {
 	const [users, setUsers] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [search, setSearch] = useState<string>("");
-	const lastTO:  React.RefObject<number> =  useRef<number>(-1);
+	const lastTO: React.RefObject<number> = useRef<number>(-1);
 	const localId = useId();
 
-	
 	//====================== EVENTS ======================
 	const onSearch = async (value: string) => {
 		if (value.length == 0) {
@@ -51,22 +50,22 @@ function PFriendAdd() {
 		});
 	}
 
-	const onFieldChanged = useCallback((event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		if (lastTO.current >= 0) {
-			clearTimeout(lastTO.current);
-			lastTO.current = -1;
-		}
-		lastTO.current = setTimeout(() => {
-			onSearch(event.target.value);
-		}, 300);
-	}, [lastTO])
+	const onFieldChanged = useCallback(
+		(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+			if (lastTO.current >= 0) {
+				clearTimeout(lastTO.current);
+				lastTO.current = -1;
+			}
+			lastTO.current = setTimeout(() => {
+				onSearch(event.target.value);
+			}, 300);
+		},
+		[lastTO],
+	);
 
 	return (
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendAdd">
-			<CTextField
-				onChange={onFieldChanged}
-				data-testid="PSocialASearchAdd"
-			></CTextField>
+			<CTextField onChange={onFieldChanged} data-testid="PSocialASearchAdd"></CTextField>
 			<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
 				<Stack
 					sx={{ mt: "20px", flex: 1, overflowY: "auto" }}

@@ -10,15 +10,18 @@ import { fetchFriends } from "../../api/social";
 
 interface PFriendListProps extends GPageProps {
 	onMessaging: (Friend: IFriendInfo) => void;
+	open: boolean;
 }
 
-function PFriendList({ onMessaging }: PFriendListProps) {
+function PFriendList({ open, onMessaging }: PFriendListProps) {
 	const [friends, setFriends] = useState<IFriendInfo[]>([]);
 	const [friendsFilter, setFriendsFilter] = useState<string>("");
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const localId = useId();
 
 	useEffect(() => {
+		if (!open) return;
+
 		async function getFriends(): Promise<void> {
 			try {
 				const res = await fetchFriends();
@@ -51,7 +54,7 @@ function PFriendList({ onMessaging }: PFriendListProps) {
 			}
 		}
 		getFriends();
-	}, [setFriends, setError]);
+	}, [setFriends, setError, open]);
 
 	function getFriendsList(): ReactNode | ReactNode[] {
 		if (error) return error;

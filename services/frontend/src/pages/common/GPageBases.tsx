@@ -17,11 +17,17 @@ export interface GPageProps extends GProps {
 	inGame?: boolean;
 }
 
+const EScoialView: Record<string, number> = {
+	LIST: 0,
+	ADD: 1,
+	REQUESTS: 2,
+};
+
 function GPageBase({ inGame, children }: GPageProps) {
 	const { user, status } = useAuth();
 	const [friendOpen, setFriendOpen] = useState<boolean>(false);
 	// 0: friendList, 1: addFriends, 2: friendRequests
-	const [friendTab, setFriendTab] = useState<number>(0);
+	const [friendTab, setFriendTab] = useState<number>(EScoialView.LIST);
 	const [notifOpen, setNotifOpen] = useState<boolean>(false);
 	const [notifCount, setNotifCount] = useState<number>(0);
 
@@ -41,16 +47,14 @@ function GPageBase({ inGame, children }: GPageProps) {
 	const handleOpenFriendRequests = () => {
 		setFriendOpen(true);
 		setNotifOpen(false);
-		setFriendTab(2);
+		setFriendTab(EScoialView.REQUESTS);
 	};
 
 	const handleOpenFriendList = () => {
-		setFriendTab(1);
+		setFriendTab(EScoialView.ADD);
 		setFriendOpen(true);
 		setNotifOpen(false);
-		setTimeout(() => {
-			setFriendTab(0);
-		}, 150);
+		setFriendTab(EScoialView.LIST);
 	};
 
 	function getBody() {
@@ -123,7 +127,7 @@ function GPageBase({ inGame, children }: GPageProps) {
 								onTabChanged={(value: number) => {
 									setFriendTab(value);
 								}}
-								closed={!friendOpen}
+								open={friendOpen}
 							></PSocial>
 						</CDrawer>
 					)}
