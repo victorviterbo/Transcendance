@@ -5,7 +5,7 @@ import type { GPageProps } from "../common/GPageBases";
 import { appTexts } from "../../styles/theme";
 import { PNotifNodeStyle, type INotifNodeStyle } from "../../styles/pages/social/PNotifNodeStyle";
 import { ttrf, ttrfn } from "../../localization/localization";
-import { useCallback, useMemo, type ReactNode } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import LaunchIcon from "@mui/icons-material/Launch";
@@ -45,7 +45,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 		return "NOTIF_AGO_LESS";
 	}, [notif]);
 
-	const getMessage = useCallback((): ReactNode => {
+	const messageNode: ReactNode = useMemo(() => {
 		if (notif.kind == "friend-request")
 			return (
 				<>
@@ -53,6 +53,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 						{ttrfn("NOTIF_FRIEND_REQ", {
 							USERNAME: (
 								<CUserProfileLink
+									key="username"
 									sx={{ display: "inline" }}
 									username={notif.from.username}
 								>
@@ -72,6 +73,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 						{ttrfn("NOTIF_FRIEND_ACCEPTED", {
 							USERNAME: (
 								<CUserProfileLink
+									key="username"
 									sx={{ display: "inline" }}
 									username={notif.from.username}
 								>
@@ -91,7 +93,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 		<Box sx={style.main} data-testid="PNotifNode">
 			<Stack direction={"row"}>
 				<Stack direction={"column"}>
-					<Stack direction={"row"}>{getMessage()}</Stack>
+					<Stack direction={"row"}>{messageNode}</Stack>
 					<CText family={appTexts.text.secondaryFamily} size="xs" fontWeight={400}>
 						{getAgo()}
 					</CText>
@@ -104,4 +106,4 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 	);
 }
 
-export default PNotifNode;
+export default memo(PNotifNode);

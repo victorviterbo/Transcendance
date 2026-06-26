@@ -3,7 +3,7 @@ import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
 import CText from "../../components/text/CText";
 import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
 import { type TNotif } from "../../types/socials";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import PNotifNode from "./PNotifNode";
 import type { GPageProps } from "../common/GPageBases";
@@ -22,12 +22,11 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 	const [notifs, setNotifs] = useState<TNotif[]>([]);
 	const [unread, setUnread] = useState<number>(0);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
-	const localId = useId();
 	const wsContext: IWSContextModule = useWS("notif");
 	const readTimeout: React.RefObject<number> = useRef(-1);
 
 	//====================== GETTERS ======================
-	function getTitle() {
+	const title: ReactNode = useMemo(() => {
 		return (
 			<Box
 				sx={[
@@ -55,23 +54,23 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 				</Stack>
 			</Box>
 		);
-	}
+	}, []);
 
-	function getFriendsList(): ReactNode | ReactNode[] {
+	const friendsList: ReactNode | ReactNode[] = useMemo(() => {
 		if (error) return error;
 
 		if (notifs.length == 0) return <CText align="center">NOTIF_EMPTY</CText>;
-		return notifs.map((value: TNotif, index: number) => {
+		return notifs.map((notif: TNotif) => {
 			return (
 				<PNotifNode
-					notif={value}
-					key={localId + index}
+					notif={notif}
+					key={notif.uid}
 					onSeeFriendsReq={onSeeFriendsReq}
 					onSeeFriends={onSeeFriends}
 				></PNotifNode>
 			);
 		});
-	}
+	}, [error, notifs, onSeeFriendsReq, onSeeFriends])
 
 	//====================== EVENT / UPDATES ======================
 	useEffect(() => {
@@ -137,8 +136,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 			}, 2000);
 		};
 		if (isOpen && unread > 0) sendRead();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isOpen, unread]);
+	}, [isOpen, unread, notifs]);
 
 	return (
 		<CTitleBasePaper
@@ -154,7 +152,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 				minHeight: 0,
 				overflow: "hidden",
 			}}
-			titleNode={getTitle()}
+			titleNode={title}
 			data-testid="PNotif"
 		>
 			<Box
@@ -168,7 +166,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 					overflow: "hidden",
 				}}
 			>
-				<Stack sx={{ overflowY: "auto" }}>{getFriendsList()}</Stack>
+				<Stack sx={{ overflowY: "auto" }}>{friendsList}</Stack>
 			</Box>
 		</CTitleBasePaper>
 	);
