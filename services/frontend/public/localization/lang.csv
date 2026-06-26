@@ -236,13 +236,13 @@ BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定�
 NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
 NOTIF_TITLE,Notifications,Notifications,通知,Notifications drawer title
 NOTIF_EMPTY,You do not have any notifications.,Vous n'avez aucune notification.,通知はありません。,Displayed when no notifications are found
-NOTIF_FRIEND_REQ,Friend request from:,Demande d'ami de:,さんからフレンド申請が届きました,Displayed after the highlighted username when a user receives a new friend request notification
+NOTIF_FRIEND_REQ,{USERNAME} sent you a friend request,,,Displayed  username when a user receives a new friend request notification
 NOTIF_AGO_DAYS,{COUNT} day(s) ago,Il y a {COUNT} jour(s),{COUNT}日前,Displays how many days ago a notification was triggered
 NOTIF_AGO_HOURS,{COUNT} hour(s) ago,Il y a {COUNT} heure(s),{COUNT}時間前,Displays how many hours ago a notification was triggered
 NOTIF_AGO_MINUTES,{COUNT} minute(s) ago,Il y a {COUNT} minute(s),{COUNT}分前,Displays how many minutes ago a notification was triggered
 NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Displayed when the notification is less than a minute old
 NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Displayed when loading notifications fails
-NOTIF_FRIEND_ACCEPTED,Friend request accepted:,Demande d'ami acceptée:,さんがあなたのフレンド申請を承認しました,Displayed after the highlighted username when someone accepts your friend request
+NOTIF_FRIEND_ACCEPTED,{USERNAME} has accepted you friend requests,,,Displayed after the highlighted username when someone accepts your friend request
 NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallback notification message
 GAME_LEADER_BOARD,Leaderboard,Classement,リーダーボード,In game leaderboard title
 GAME_LOBBY_TITLE,Lobby,Salon,ロビー,Lobby category in the game infrastructure

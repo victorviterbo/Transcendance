@@ -4,12 +4,11 @@ import type { TNotif } from "../../types/socials";
 import type { GPageProps } from "../common/GPageBases";
 import { appTexts } from "../../styles/theme";
 import {
-	PNotifNodeImpText,
-	PNotifNodeSeeButton,
 	PNotifNodeStyle,
+	type INotifNodeStyle,
 } from "../../styles/pages/social/PNotifNodeStyle";
-import { ttrf } from "../../localization/localization";
-import { useCallback, type ReactNode } from "react";
+import { ttrf, ttrfn } from "../../localization/localization";
+import { useCallback, useMemo, type ReactNode } from "react";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import LaunchIcon from "@mui/icons-material/Launch";
@@ -22,6 +21,11 @@ export interface PNotifNodeProps extends GPageProps {
 }
 
 function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
+
+	const style: INotifNodeStyle  = useMemo(() => {
+		return  PNotifNodeStyle({notif});
+	}, [notif])
+
 	const handleSee = useCallback(() => {
 		if (notif.kind == "friend-request" && onSeeFriendsReq) onSeeFriendsReq();
 		if (notif.kind == "friend-accepted" && onSeeFriends) onSeeFriends();
@@ -49,30 +53,32 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 		if (notif.kind == "friend-request")
 			return (
 				<>
-					<CText>NOTIF_FRIEND_REQ</CText>
-					<CUserProfileLink username={notif.from.username}>
-						<CText noTr={true} sx={PNotifNodeImpText}>
-							{notif.from.username}
-						</CText>
-					</CUserProfileLink>
+					<CText size="sm">{ttrfn("NOTIF_FRIEND_REQ", {
+						USERNAME: <CUserProfileLink sx={{display: "inline"}} username={notif.from.username}>
+							<CText noTr={true} sx={style.impText}>
+								{notif.from.username}
+							</CText>
+						</CUserProfileLink>
+					})}</CText>
 				</>
 			);
 		else if (notif.kind == "friend-accepted")
 			return (
 				<>
-					<CText>NOTIF_FRIEND_ACCEPTED</CText>
-					<CUserProfileLink username={notif.from.username}>
-						<CText noTr={true} sx={PNotifNodeImpText}>
-							{notif.from.username}
-						</CText>
-					</CUserProfileLink>
+					<CText size="sm">{ttrfn("NOTIF_FRIEND_ACCEPTED", {
+							USERNAME: <CUserProfileLink sx={{display: "inline"}} username={notif.from.username}>
+							<CText noTr={true} sx={style.impText}>
+								{notif.from.username}
+							</CText>
+						</CUserProfileLink>
+					})}</CText>
 				</>
 			);
 		return <CText>NOTIF_UNKNOWN</CText>;
-	}, [notif]);
+	}, [notif, style]);
 
 	return (
-		<Box sx={(theme) => PNotifNodeStyle(theme, { notif })} data-testid="PNotifNode">
+		<Box sx={style.main} data-testid="PNotifNode">
 			<Stack direction={"row"}>
 				<Stack direction={"column"}>
 					<Stack direction={"row"}>{getMessage()}</Stack>
@@ -82,7 +88,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 				</Stack>
 				<CIconButton
 					onClick={handleSee}
-					sx={PNotifNodeSeeButton}
+					sx={style.button}
 					data-testid="PNotifNodeSee"
 				>
 					<LaunchIcon fontSize="small" />

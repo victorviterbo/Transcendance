@@ -168,7 +168,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 					overflow: "hidden",
 				}}
 			>
-				<Stack>{getFriendsList()}</Stack>
+				<Stack sx={{overflowY: "auto"}}>{getFriendsList()}</Stack>
 			</Box>
 		</CTitleBasePaper>
 	);
