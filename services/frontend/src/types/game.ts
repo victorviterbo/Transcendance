@@ -1,6 +1,5 @@
 import type { MUSIC_TAGS } from "../constants";
 import type { IErrorStruct } from "./error";
-import type { IExtUserInfo } from "./user";
 
 //====================== LIST ======================
 export type TGameGenre = (typeof MUSIC_TAGS)[number];
@@ -29,16 +28,22 @@ export interface IGameCreationResponse {
 	uid: string;
 }
 
+//====================== USER ======================
+export interface IGameUser {
+	username: string;
+	avatar: string;
+	guest: boolean;
+	uid: string;
+}
+
 //====================== CHAT ======================
 export type TGameChatType = "message" | "joined" | "leaved" | "guessed" | "found";
-
 export interface IGameChatMsg {
-	useruid: string;
-	username: string;
-	messageuid: string;
-
-	type: TGameChatType;
-	message?: string;
+	uid: string;
+	sender: IGameUser;
+	type?: TGameChatType;
+	body?: string;
+	colorID?: number;
 }
 
 //====================== PLAYER ======================
@@ -48,60 +53,81 @@ export interface IGamePlayerRoundStatus {
 	titleFound: boolean;
 }
 
-export interface IGamePlayer {
-	user: IExtUserInfo;
+export interface IGamePlayerResult {
+	player: IGameUser;
+	titleFound: boolean;
+	artistFound: boolean;
+	time: number;
+	ranking: number;
 	points: number;
-	host: boolean;
-	colorid: number;
-	current: IGamePlayerRoundStatus;
+}
+
+export interface IGamePlayer {
+	player: IGameUser;
+	points: number;
+	host?: boolean;
+	self?: boolean;
+	colorid?: number;
 }
 
 //====================== SETTINGS ======================
-export type TScoreOption = "speed" | "normal" | "arma";
-export type TGameScope = "public" | "private";
+export type TScoreOption = "speed" | "normal" | "armageddon";
 
 export interface IGameSettings {
-	tags: Record<string, boolean>;
-	nbMusic: number;
-	timer: number;
-	breakTimer: number;
-	seeOthers: boolean;
+	tags?: Record<string, boolean>;
+	genres: string[];
+	mode: TScoreOption;
+	trackCount: number;
+	playbackDuration: number;
+	breakDuration: number;
+	reveal: boolean;
 	fuzzy: boolean;
-	scoreOption: TScoreOption;
-	scope: TGameScope;
-	code: string;
 }
 
 //====================== STATUS ======================
-export type TGamePhase = "waiting" | "playing_round" | "playing_break" | "finish";
+export type TGameSessionState = "loading" | "joined" | "ended";
+
+export type TGamePhase =
+	| "waiting"
+	| "recover"
+	| "started"
+	| "count"
+	| "playing_round"
+	| "playing_break"
+	| "finish";
 export interface IGameStatus {
 	phase: TGamePhase;
 	round: number;
 	keyTime: number;
 }
 
+export interface IGameTrack {
+	title?: string;
+	artist?: string;
+	preview?: string;
+	artwork?: string;
+}
+
 export interface IGamePlayerAnswer {
+	validated: boolean;
 	message: string;
 	time: number;
 	titleFound: boolean;
 	artistFound: boolean;
 }
 
-export interface IGameTitle {
-	title?: string;
-	artist?: string;
-	preview: string;
-	artwork?: string;
-}
-
-export type TRoundPhase = "not-done" | "playing" | "break" | "done";
+export type TRoundPhase = "not-done" | "playing" | "done";
 export interface IGameRound {
-	title: IGameTitle;
-	titleFound: number;
-	artistFound: number;
-	points: number;
-	time: number;
+	track: IGameTrack;
 	phase: TRoundPhase;
+	titleFound: boolean;
+	artistFound: boolean;
+	titleFoundAt?: number;
+	artistFoundAt?: number;
+	points: number;
+	bonusPoints?: number;
+	time: number;
+	ranking: number;
 	answers: IGamePlayerAnswer[];
 }
 

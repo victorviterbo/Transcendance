@@ -203,7 +203,7 @@ PROFILE_STATS_LOAD_FAILED,Statistics loading failed,Le chargement des statistiqu
 TAG_POP,Pop,Pop,ポップ,Music tag associated to songs
 TAG_RAP,Rap,Rap,ラップ,Music tag associated to songs
 TAG_ROCK,Rock,Rock,ロック,Music tag associated to songs
-TAG_ELECRO,Electro,Electro,エレクトロ,Music tag associated to songs
+TAG_ELECTRO,Electro,Electro,エレクトロ,Music tag associated to songs
 TAG_FRENCH_VARIETY,French,Variété,フレンチ,Music tag associated to songs
 TAG_RNB,RNB,RNB,R&B,Music tag associated to songs
 STATS_GAMES_PLAYED,Games played,Parties jouées,プレイしたゲーム,Shown in the stats panel
@@ -255,7 +255,16 @@ GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Title of the loading messa
 GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Content of the loading message paper
 GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
 GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
+GAME_LEAVE_CONFIRM_TITLE,Leave game?,Quitter la partie ?,ゲームを退出しますか？,Title for confirmation dialog shown before leaving a joined game
+GAME_LEAVE_CONFIRM_MESSAGE,You are currently in a game. Are you sure you want to leave?,Vous êtes actuellement dans une partie. Voulez-vous vraiment quitter ?,現在ゲームに参加しています。本当に退出しますか？,Confirmation message shown before leaving a joined game
+GAME_LEAVE_STAY,Stay,Rester,残る,Button to stay in the current game
+GAME_LEAVE_CONFIRM,Leave,Quitter,退出する,Button to confirm leaving the current game
+GAME_ALREADY_IN_GAME_TITLE,Already in a game,Déjà dans une partie,すでにゲームに参加しています,Title for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_MESSAGE,You are already in a game. Leave it to join this one?,Vous êtes déjà dans une partie. Voulez-vous la quitter pour rejoindre celle-ci ?,すでにゲームに参加しています。このゲームに参加するために退出しますか？,Message for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_RETURN,Return to current game,Retourner à la partie en cours,現在のゲームに戻る,Button to go back to the current game
+GAME_ALREADY_IN_GAME_JOIN,Leave and join,Quitter et rejoindre,退出して参加する,Button to leave the current game and join a new one
 GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
+GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorect guess,,,Chat message when a player made a guess (but no guess body given)
 GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
 GAME_WAITING_START,Waiting {USER} to start the game,,,Displayed message in the game lobby
 GAME_WAITING_START_NO_HOST,Waiting to start the game,,,Displayed message in the game lobby (With no host rooms)
@@ -268,11 +277,12 @@ GAME_SETTINGS_MUSIC_TIMER,Music timer: {COUNT}s,,,INformations about the time al
 GAME_SETTINGS_BREAK_TIMER,Break timer: {COUNT}s,,,INformations about the time btw Rounds (in seconds)
 GAME_SETTINGS_SEE_OTHERS,See others answer: ,,,Setting to display other people answers in the chat
 GAME_SETTINGS_FUZZY,Fuzzy match: ,,,Allow fuzzy match for answer
+GAME_SETTINGS_NOTAG,No tag,,,Used when no tag has been set
 GAME_SETTINGS_SCORE_OPTION,Score options: ,,,Scoring system option title
 GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,,,Scoring system option (Speed: option)
 GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,,,Scoring system option (Speed: Normal)
-GAME_SETTINGS_SCORE_OPTION_ARMA,Armagedon,,,Scoring system option (Speed: Armagedon)
-GAME_SETTINGS_CODE,Code: ,,,Title placed before the code
+GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armagedon,,,Scoring system option (Speed: Armagedon)
+GAME_SETTINGS_CODE,Room: ,,,Title placed before the code
 GAME_SETTINGS_CB,Copy to clipboard,,,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,,,Button to copy to the clipboard (when pressed)
 GAME_SETTINGS_GAME,Game settings,,,Title for game settings
@@ -280,10 +290,11 @@ GAME_SETTINGS_VISIBILITY,Game visibility,,,Title for game visibility
 GAME_SETTINGS_BACK,Return to lobby,,,Button to return into the lobby
 GAME_NO_GENRE,No genre selected,,,Shown when no genre has been selected
 GAME_PLAYING_TITLE,Playing,,,Title of the view when the music is playing
+GAME_PLAYING_ENDED,Game ended,,,Title of the view when the game has ended
 GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
 GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
 GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
-GAME_ROUND_SPEED,Speed:,,,Label for the number of point for speeding
+GAME_ROUND_RANKING,Ranking:,,,Label for the round ranking
 GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
 SECONDS,{COUNT}s,,,Seconds suffix (If applicable)
 GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Code associated with a game room
@@ -297,3 +308,18 @@ ROOMS_LOADING,Loading rooms...,Chargement des salles...,ルームを読み込み
 ROOMS_LOADING_FAILED,Rooms loading failed,Échec du chargement des salles,ルームの読み込みに失敗しました,Shown when home room lists fail to load
 ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルームがありません,Shown when a home room list is empty
 REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button
+GAME_STARTING,Game is starting...,,,Message shown when host is pressing starting button.
+GAME_STARTING_IN,Game starting in,,,Count before game is starting
+GAME_ENDED_AVR,Average,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BEST,Best,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_TOTAL,Total,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_LEAD,Global,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_WORST,Worst,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BACK,Back to home,,,Button to go back to the home page
+GAME_ENDED_AGAIN,Play again,,,Button to start a new game
+ERROR_FULL,Game is already full,,,Error triggered when game is full
+GAME_WAITING_WAITING_NEXT,You've rejoined during a round please wait this round to end....,,,Display a player already in  game joined after lost connections
+GAME_LEAVE_INTERACT_TITLE,Interaction required,,,Title of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio please click bellow to interact with the page,,,Content of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_BUTTON,Go,,,Button of the popup use to request a user interaction to ba abale to play the songs
+GAME_ANSWER_NOT_FOUND,Not found,,,Simple messages  showed instead of the answer time when user didn't found the music

@@ -6,7 +6,7 @@ import PFriendNode from "./PFriendNode";
 import CText from "../../components/text/CText";
 import CAccordionSimple from "../../components/feedback/accordion/CAccordionSimple";
 import { useWS } from "../../components/websocket/CWebsocket";
-import type { IWSContextModule, TWSRcv } from "../../types/websocket";
+import type { IWSContextModule, IWSGameSendEvent, TWSRcv } from "../../types/websocket";
 import { fetchFriendRequests } from "../../api/social";
 
 function PFriendReq() {
@@ -78,7 +78,7 @@ function PFriendReq() {
 	useEffect(() => {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
-				const last: TWSRcv | undefined = wsContext.getLast();
+				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
 				if (last?.target == "friend-request") {
 					if (last.event == "new-incoming") {
 						incoming.splice(0, 0, last.user);

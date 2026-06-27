@@ -64,7 +64,7 @@ const createStats = (overrides: Partial<IGlobalStatsResponse> = {}): IGlobalStat
 		TAG_POP: 12.5,
 		TAG_ROCK: 65.3,
 		TAG_RAP: 22.1,
-		TAG_ELECRO: 54.4,
+		TAG_ELECTRO: 54.4,
 		TAG_FRENCH_VARIETY: 11.2,
 		TAG_RNB: 8.4,
 	},
@@ -75,7 +75,7 @@ const musicTagLabels: Record<(typeof MUSIC_TAGS)[number], string> = {
 	TAG_POP: "Pop",
 	TAG_RAP: "Rap",
 	TAG_ROCK: "Rock",
-	TAG_ELECRO: "Elecro",
+	TAG_ELECTRO: "Elecro",
 	TAG_FRENCH_VARIETY: "French Variety",
 	TAG_RNB: "RNB",
 };

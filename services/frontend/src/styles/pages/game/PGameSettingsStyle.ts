@@ -31,8 +31,9 @@ export const PGameSettingsSplitter: SxProps<Theme> = (_) => ({
 });
 
 export const PGameSettingsCodeBlockStyle: SxProps<Theme> = (_) => ({
-	ml: "30px",
+	ml: "0px",
 
+	alignItems: "flex-start",
 	px: "10px",
 	pt: "10px",
 	pb: "15px",

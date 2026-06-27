@@ -70,7 +70,7 @@ export const appPositions: IThemePosition = {
 			nav: "35px",
 		},
 
-		friends: "25%",
+		friends: { xs: "90%", sm: "75%", md: "50%", lg: "35%", xl: "25%" },
 
 		header: 68,
 		footer: 50,
@@ -114,6 +114,7 @@ export const appSharedStyle: IThemeShared = {
 export const appTexts: IThemeTexts = {
 	text: {
 		sizes: {
+			"3xs": 8,
 			"2xs": 10,
 			xs: 12,
 			sm: 14,
@@ -129,6 +130,7 @@ export const appTexts: IThemeTexts = {
 
 	title: {
 		sizes: {
+			"3xs": 14,
 			"2xs": 16,
 			xs: 20,
 			sm: 24,

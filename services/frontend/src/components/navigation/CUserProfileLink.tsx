@@ -14,7 +14,7 @@ function CUserProfileLink({ username, children, sx, ...other }: CUserProfileLink
 		<ButtonBase
 			onClick={() => navigate(`/users/${encodeURIComponent(username)}`)}
 			sx={[
-				{ justifyContent: "flex-start", textAlign: "left" },
+				{ display: "block", justifyContent: "flex-start", textAlign: "left" },
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
 			]}
 			{...other}

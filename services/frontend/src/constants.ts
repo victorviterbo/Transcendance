@@ -33,6 +33,7 @@ export const API_CREATE_GAME = "/api/game/";
 export const API_GAME_FRIENDS = "/api/game/friends/";
 export const API_GAME_PUBLIC = "/api/game/";
 export const API_GAME = "/api/game/{ROOMID}";
+export const PAGE_GAME = "/game/{UID}";
 
 // WS
 export const WS_ADRESS_WMS = "ws://localhost:5173/";
@@ -42,7 +43,7 @@ export const MUSIC_TAGS = [
 	"TAG_POP",
 	"TAG_RAP",
 	"TAG_ROCK",
-	"TAG_ELECRO",
+	"TAG_ELECTRO",
 	"TAG_FRENCH_VARIETY",
 	"TAG_RNB",
 ] as const;
@@ -51,6 +52,14 @@ export const MUSIC_TAGS = [
 export const DAY_MS = 1000 * 60 * 60 * 24;
 export const HOUR_MS = 1000 * 60 * 60;
 export const MINUTE_MS = 1000 * 60;
+
+// GAME
+export const GAME_COUNTDOWNM_TIME_MS = 3000;
+export const GAME_MAX_ROUND_DISPLAYED = 11;
+export const GAME_ROUND_PASSED_DISPLAYED = 8;
+export const GAME_MAX_ROUND_DISPLAYED_SMALL = 5;
+export const GAME_ROUND_PASSED_DISPLAYED_SMALL = 3;
+export const GAME_ENDED_MAX = 9999;
 
 // SETTINGS
 export const SETTINGS_NGSONGS_MIN = 5;

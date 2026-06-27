@@ -1,9 +1,9 @@
 import { ws } from "msw";
 import { WS_ADRESS_WMS } from "../../../constants";
-import type { TWSRcv, TWSSend } from "../../../types/websocket";
+import type { IWSGameRCVEvent, TWSRcv, TWSSend } from "../../../types/websocket";
 import { mockMessagesFriend1Update, onMessageSent, onMessageStatus } from "../social/socialChat";
 import { mockAcceptingRequests, mockNewIncomingRequests } from "../social/social";
-import { mockHandleGameMessages } from "../game/game";
+import { mockHandleGameMessages } from "../game/mockGameHandlers";
 
 //--------------------------------------------------
 //                                    NAME
@@ -23,7 +23,7 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 	console.log("[MOCK] Client connected: " + client.id);
 
 	client.addEventListener("message", (event) => {
-		const dataRcv: TWSSend =
+		const dataRcv: TWSSend | IWSGameRCVEvent =
 			typeof event.data == "string" ? JSON.parse(event.data) : event.data;
 		if (dataRcv.target == "test_counter_event") {
 			counter++;
@@ -37,7 +37,7 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 			else if (dataRcv.event == "open") onMessageStatus(dataRcv);
 			else if (dataRcv.event == "close") onMessageStatus(dataRcv);
 		} else if (dataRcv.target == "game") {
-			mockHandleGameMessages(dataRcv, client);
+			mockHandleGameMessages(dataRcv as IWSGameRCVEvent, client);
 		}
 	});
 

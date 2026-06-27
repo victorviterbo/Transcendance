@@ -2,7 +2,7 @@ import { LinearProgress, type LinearProgressProps } from "@mui/material";
 import type { GCompProps } from "../../common/GProps";
 import { useMemo } from "react";
 
-interface CLinearProgressProps extends GCompProps, Omit<LinearProgressProps, "variant"> {
+export interface CLinearProgressProps extends GCompProps, Omit<LinearProgressProps, "variant"> {
 	min: number;
 	max: number;
 }

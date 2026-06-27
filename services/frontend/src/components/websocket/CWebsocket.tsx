@@ -1,7 +1,13 @@
 import { useContext, useEffect, type ReactNode, createContext, type Context, useRef } from "react";
 import useWebSocket, { ReadyState, type SendMessage } from "react-use-websocket";
 import { WS_ADRESS, WS_ADRESS_WMS } from "../../constants";
-import type { IWSContext, IWSContextModule, TWSModuleName, TWSRcv } from "../../types/websocket";
+import type {
+	IWSContext,
+	IWSContextModule,
+	IWSGameSendEvent,
+	TWSModuleName,
+	TWSRcv,
+} from "../../types/websocket";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -40,7 +46,7 @@ function wsGetModule(
 			count: 0,
 			getLast() {
 				if (this.messages.length == 0) return undefined;
-				const retValue: TWSRcv = this.messages.splice(0, 1)[0];
+				const retValue: TWSRcv | IWSGameSendEvent = this.messages.splice(0, 1)[0];
 				this.count = this.messages.length;
 				return retValue;
 			},
@@ -118,7 +124,7 @@ function CWebsocket({ children }: AppWebsocketProps) {
 
 	return (
 		<wsContext.Provider value={{ modules: modules, sendMessage }}>
-			{children}
+			{readyState == ReadyState.OPEN && children}
 		</wsContext.Provider>
 	);
 }

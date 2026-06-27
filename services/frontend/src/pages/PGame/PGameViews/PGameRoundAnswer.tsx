@@ -1,10 +1,10 @@
 import { Box, Stack } from "@mui/material";
 import type { GPageProps } from "../../common/GPageBases";
-import type { IGamePlayerAnswer } from "../../../types/game";
+import type { IGamePlayerAnswer, IGameSettings } from "../../../types/game";
 import CText from "../../../components/text/CText";
 import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import {
 	PGameRoundAnswerStyle,
 	type IGameRoundAnswerStyle,
@@ -14,9 +14,10 @@ import { ttrf } from "../../../localization/localization";
 interface PGameRoundAnswerProps extends GPageProps {
 	answer: IGamePlayerAnswer;
 	variant: "answer" | "time";
+	settings?: IGameSettings;
 }
 
-function PGameRoundAnswer({ answer, variant }: PGameRoundAnswerProps) {
+function PGameRoundAnswer({ answer, settings, variant }: PGameRoundAnswerProps) {
 	const style: IGameRoundAnswerStyle = useMemo(() => {
 		return PGameRoundAnswerStyle(answer, variant);
 	}, [answer, variant]);
@@ -28,7 +29,9 @@ function PGameRoundAnswer({ answer, variant }: PGameRoundAnswerProps) {
 				{answer.message}
 			</CText>
 			<CText size="2xs" sx={style.time}>
-				{ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" })}
+				{answer.time < 0 || (settings && answer.time >= settings.playbackDuration)
+					? "--"
+					: ttrf("SECONDS", { COUNT: Math.round(answer.time * 100) / 100 + "" })}
 			</CText>
 			<MicExternalOnIcon sx={style.artist} />
 			<AudiotrackIcon sx={style.title} />
@@ -36,4 +39,4 @@ function PGameRoundAnswer({ answer, variant }: PGameRoundAnswerProps) {
 	);
 }
 
-export default PGameRoundAnswer;
+export default memo(PGameRoundAnswer);

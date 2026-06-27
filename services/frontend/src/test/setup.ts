@@ -37,7 +37,7 @@ vi.mock("../localization/localization", () => {
 		TAG_POP: "Pop",
 		TAG_RAP: "Rap",
 		TAG_ROCK: "Rock",
-		TAG_ELECRO: "Elecro",
+		TAG_ELECTRO: "Elecro",
 		TAG_FRENCH_VARIETY: "French Variety",
 		TAG_RNB: "RNB",
 		NOTIF_AGO_DAYS: "NOTIF_AGO_DAYS COUNT: {COUNT}",

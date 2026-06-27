@@ -1,5 +1,8 @@
 //--------------------------------------------------
 //                    CSS
+
+import type { Breakpoint } from "@mui/material";
+
 //--------------------------------------------------
 export type TDropShadow = {
 	offsetX: number | string;
@@ -39,6 +42,11 @@ export type TColor = {
 	saturation: number;
 	brightness: number;
 };
+export type TColorSimple = {
+	r: number;
+	g: number;
+	b: number;
+};
 export type TColorAlteration = "shift-saturation" | "shift-brightness" | "shift-hue";
 
 //--------------------------------------------------
@@ -74,6 +82,7 @@ export interface IThemeTextSize {
 	sm: number;
 	xs: number;
 	"2xs": number;
+	"3xs": number;
 }
 
 export interface IThemeText {
@@ -95,7 +104,7 @@ export interface IThemeSize {
 		nav: number | string;
 	};
 
-	friends: number | string;
+	friends: number | string | Partial<Record<Breakpoint, string>>;
 
 	header: number | number;
 	footer: number | string;

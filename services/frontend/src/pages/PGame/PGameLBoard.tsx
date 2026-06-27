@@ -5,10 +5,10 @@ import PGameLBoardNode from "./PGameLBoardNode";
 import { Stack } from "@mui/material";
 
 interface PGameLBoardProps extends GPageProps {
-	users: IGamePlayer[];
+	players: IGamePlayer[];
 }
 
-function PGameLBoard({ users }: PGameLBoardProps) {
+function PGameLBoard({ players }: PGameLBoardProps) {
 	return (
 		<CGamePaper
 			title={"GAME_LEADER_BOARD"}
@@ -30,12 +30,12 @@ function PGameLBoard({ users }: PGameLBoardProps) {
 					overflow: "auto",
 				}}
 			>
-				{users.map((user: IGamePlayer, index: number) => {
+				{players.map((player: IGamePlayer, index: number) => {
 					return (
 						<PGameLBoardNode
 							position={index}
-							user={user}
-							key={user.user.uid}
+							player={player}
+							key={player.player.uid}
 						></PGameLBoardNode>
 					);
 				})}

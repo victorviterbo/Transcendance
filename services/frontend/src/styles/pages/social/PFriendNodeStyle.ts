@@ -21,7 +21,7 @@ export function PFriendNodeStyle(theme: Theme, props: PFriendNodeProps) {
 
 	return {
 		background: colorGetBackground([bgColors[0], bgColors[1]], undefined, "linear", 160),
-		p: "15px",
+		p: "10px",
 		mb: "10px",
 
 		opacity: props.hidden ? 0 : 1,
@@ -34,24 +34,30 @@ export function PFriendNodeStyle(theme: Theme, props: PFriendNodeProps) {
 }
 
 export const PFriendNodeAvatarStyle: SxProps<Theme> = (_) => ({
-	width: "3vw",
-	height: "3vw",
+	width: "50px",
+	height: "50px",
 });
 
 export const PFriendNodeTextsStyle: SxProps<Theme> = (_) => ({
 	flex: 1,
 	mx: "15px",
 	justifyContent: "center",
+	alignItems: "stretch",
+	overflow: "hidden",
 });
 
 export const PFriendNodeNameStyle: SxProps<Theme> = (_) => ({
 	m: 0,
 	whiteSpace: "nowrap",
+	textOverflow: "ellipsis",
+	overflow: "hidden",
 });
 
 export const PFriendNodeBadgeStyle: SxProps<Theme> = (_) => ({
 	m: 0,
 	whiteSpace: "nowrap",
+	textOverflow: "ellipsis",
+	overflow: "hidden",
 });
 
 export const PFriendNodeMessageStyle: SxProps<Theme> = (_) => ({
