@@ -218,9 +218,11 @@ export function ttrfn(id: string, params: Record<string, ReactElement>): ReactNo
 	while ((array = reg.exec(text)) !== null) {
 		if (array.length != 4) continue;
 		out.push(array[1]);
-		out.push(cloneElement(params[array[2]], {
-			key: array[2],
-		}));
+		out.push(
+			cloneElement(params[array[2]], {
+				key: array[2],
+			}),
+		);
 		out.push(array[3]);
 	}
 	return out;
