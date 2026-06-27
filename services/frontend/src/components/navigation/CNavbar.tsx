@@ -1,4 +1,4 @@
-import { AppBar, Box, IconButton, Stack, Toolbar } from "@mui/material";
+import { AppBar, Box, IconButton, Stack, Toolbar, useMediaQuery } from "@mui/material";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -39,6 +39,7 @@ function CNavbar({
 	const navigate = useNavigate();
 	const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
 	const isProfileMenuOpen = Boolean(profileAnchor);
+	const hidePlay = useMediaQuery("(max-width:465px)");
 
 	const handleProfileOpen = (event?: React.MouseEvent<HTMLElement>) => {
 		if (!event) return;
@@ -65,7 +66,7 @@ function CNavbar({
 	];
 
 	const authedItems: TNavItem[] = [
-		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
+		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon />, hide: hidePlay },
 		{ kind: "link", label: "LEADERBOARD", to: "/leaderboard", icon: <LeaderboardIcon /> },
 		{
 			kind: "toggle",
@@ -143,6 +144,7 @@ function CNavbar({
 					<CDialogLanguage open={false} />
 					{items.map((item, idx) => {
 						if (item.kind === "link") {
+							if (item.hide) return undefined;
 							const isActive =
 								item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
 							return (

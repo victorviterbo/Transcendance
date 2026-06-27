@@ -25,6 +25,8 @@ export const CTitlePaperTitleBoxStyle = ({
 });
 
 export const CTitlePaperTitleStyle: SxProps<Theme> = (_theme) => ({
+	flex: 1,
+	ml: "20px",
 	color: appColors.text.dark,
 });
 

@@ -9,6 +9,17 @@ import type {
 	IThemeTexts,
 } from "../types/styles";
 
+declare module "@mui/material/styles" {
+	interface BreakpointOverrides {
+		xs: true;
+		tn: true;
+		sm: true;
+		md: true;
+		lg: true;
+		xl: true;
+	}
+}
+
 //--------------------------------------------------
 //                                    NAME
 //--------------------------------------------------
@@ -263,6 +274,17 @@ const appThemeBase: ThemeOptions = {
 
 	shape: {
 		borderRadius: appSharedStyle.radius,
+	},
+
+	breakpoints: {
+		values: {
+			xs: 0,
+			tn: 450,
+			sm: 600,
+			md: 900,
+			lg: 1200,
+			xl: 1536,
+		},
 	},
 
 	components: {

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { MouseEvent } from "react";
 
 export type TNavItem =
-	| { kind: "link"; label: string; to: string; icon?: ReactNode }
+	| { kind: "link"; label: string; to: string; icon?: ReactNode; hide?: boolean }
 	| {
 			kind: "action";
 			icon: ReactNode;

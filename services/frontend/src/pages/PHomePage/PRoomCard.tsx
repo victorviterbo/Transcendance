@@ -38,7 +38,7 @@ function PRoomCard({ infos, ...other }: PRoomCardProps) {
 		>
 			<Stack sx={PRoomCardContentStyle} spacing={1}>
 				<Stack
-					direction="row"
+					direction={{ xs: "column", tn: "row" }}
 					spacing={1}
 					alignItems="flex-start"
 					sx={PRoomCardHeaderStyle}

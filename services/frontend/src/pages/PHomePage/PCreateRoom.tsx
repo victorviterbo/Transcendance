@@ -60,7 +60,12 @@ function PCreateRoom() {
 				</Box>
 				<Stack
 					direction={"row"}
-					sx={{ justifyContent: "space-between", alignItems: "center", gap: 2 }}
+					sx={{
+						justifyContent: "space-between",
+						alignItems: "center",
+						flexWrap: "wrap",
+						gap: 2,
+					}}
 				>
 					<CToggle
 						fontSize="sm"
