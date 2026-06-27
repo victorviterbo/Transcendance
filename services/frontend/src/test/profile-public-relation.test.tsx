@@ -56,9 +56,15 @@ const createUser = (
 const renderRelation = (
 	users: IExtUserInfo[] = [],
 	profileOverride: Partial<IProfileData> = {},
+	onProfileMissing?: () => void,
 ) => {
 	mocks.searchFriends.mockResolvedValueOnce({ users });
-	return render(<PProfilePublicRelation profile={{ ...profile, ...profileOverride }} />);
+	return render(
+		<PProfilePublicRelation
+			profile={{ ...profile, ...profileOverride }}
+			onProfileMissing={onProfileMissing}
+		/>,
+	);
 };
 
 const expectNoSocialError = () => {
@@ -84,6 +90,16 @@ const friendshipNotFoundStringError = {
 		data: {
 			error: {
 				friendship: "FRIENDSHIP_NOT_FOUND",
+			},
+		},
+	},
+};
+
+const userNotFoundError = {
+	response: {
+		data: {
+			error: {
+				"target-uid": "USER_NOT_FOUND",
 			},
 		},
 	},
@@ -321,6 +337,19 @@ describe("PProfilePublicRelation", () => {
 
 			await waitFor(() => expect(mocks.removeFriend).toHaveBeenCalledTimes(1));
 			expect(await screen.findByTestId("PProfilePublic_AddFriend")).toBeInTheDocument();
+			expectNoSocialError();
+		});
+
+		it("notifies the parent when an action finds the profile user missing", async () => {
+			const onProfileMissing = vi.fn();
+			renderRelation([createUser("friends")], {}, onProfileMissing);
+			mocks.removeFriend.mockRejectedValueOnce(userNotFoundError);
+
+			await userEvent.click(await screen.findByTestId("PProfilePublic_RemoveFriend"));
+			await clickConfirmDialogButton("PROFILE_SOCIAL_REMOVE_FRIEND");
+
+			await waitFor(() => expect(mocks.removeFriend).toHaveBeenCalledTimes(1));
+			expect(onProfileMissing).toHaveBeenCalledTimes(1);
 			expectNoSocialError();
 		});
 

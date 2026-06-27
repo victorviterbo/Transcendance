@@ -18,9 +18,11 @@ import type {
 	TConfirmableRelationAction,
 	TRelationAction,
 } from "../../types/socials";
+import { ttr } from "../../localization/localization";
 
 interface PProfilePublicRelationProps {
 	profile: IProfileData;
+	onProfileMissing?: () => void;
 }
 
 const getTargetUser = (profile: IProfileData): IExtUserInfo => ({
@@ -37,7 +39,7 @@ const findExactRelation = (users: IExtUserInfo[], profile: IProfileData) => {
 	});
 };
 
-function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
+function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRelationProps) {
 	const { status: authStatus } = useAuth();
 	const [relationState, setRelationState] = useState<IRelationState>({
 		status: "idle",
@@ -121,6 +123,10 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 				}
 				return;
 			}
+			if (hasSocialErrorCode(actionError, "USER_NOT_FOUND")) {
+				onProfileMissing?.();
+				return;
+			}
 			if (action !== "send" && hasSocialErrorCode(actionError, "FRIENDSHIP_NOT_FOUND")) {
 				setRelationState({
 					status: "ready",
@@ -160,7 +166,7 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 			/>
 			{relationState.error && (
 				<Alert severity="error" data-testid="PProfilePublic_SocialError">
-					{relationState.error}
+					{ttr(relationState.error)}
 				</Alert>
 			)}
 			<PProfilePublicRelationConfirmDialog
