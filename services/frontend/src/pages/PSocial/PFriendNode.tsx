@@ -19,7 +19,7 @@ import type { IExtUserInfo } from "../../types/user";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CValidButton from "../../components/inputs/buttons/CValidButton";
 import CCancelButton from "../../components/inputs/buttons/CCancelButton";
-import { useState, type ReactNode } from "react";
+import { memo, useCallback, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import { respondFriendRequest, sendFriendRequest } from "../../api/social";
 
@@ -38,28 +38,31 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 		type == "friend" ? "friends" : (user as IExtUserInfo).relation,
 	);
 
-	async function handleOnAdd() {
+	const handleOnAdd = useCallback(async () => {
 		try {
 			if (type != "user") throw {};
 
 			await sendFriendRequest(user);
 			setRelation("outgoing");
-		} catch (error) {
-			setError(getErrorNode(error, "SOCIAL_ADD_FRIEND_FAILED", { size: "sm" }));
+		} catch (errorIn) {
+			setError(getErrorNode(errorIn, "SOCIAL_ADD_FRIEND_FAILED", { size: "sm" }));
 		}
-	}
+	}, [setError, setRelation, type, user]);
 
-	async function handleOnAction(Action: "accept" | "refuse") {
-		try {
-			if (type != "user") throw {};
+	const handleOnAction = useCallback(
+		async (Action: "accept" | "refuse") => {
+			try {
+				if (type != "user") throw {};
 
-			await respondFriendRequest(user, Action);
-			if (onStateChanged) onStateChanged();
-			setError(undefined);
-		} catch (error) {
-			setError(getErrorNode(error, "SOCIAL_RESPOND_FRIEND_FAILED", { size: "sm" }));
-		}
-	}
+				await respondFriendRequest(user, Action);
+				if (onStateChanged) onStateChanged();
+				setError(undefined);
+			} catch (errorIn) {
+				setError(getErrorNode(errorIn, "SOCIAL_RESPOND_FRIEND_FAILED", { size: "sm" }));
+			}
+		},
+		[setError, onStateChanged, user, type],
+	);
 
 	return (
 		<Collapse in={!hidden} data-testid="PFriendNode">
@@ -149,4 +152,4 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 	);
 }
 
-export default PFriendNode;
+export default memo(PFriendNode);

@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import type { IFriendFeed, IFriendInfo, IFriendMessage } from "../../types/socials";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
 import CText from "../../components/text/CText";
@@ -99,7 +99,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	}, [targetFriend, wsContext]);
 
 	//====================== OUTGOING ======================
-	function handleSendMessage() {
+	const handleSendMessage = useCallback(() => {
 		if (!messageField || messageField.length == 0) return;
 		if (!targetFriend) return;
 
@@ -122,10 +122,10 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		);
 
 		setMessageField("");
-	}
+	}, [wsContext, setMessageField, messageField, targetFriend]);
 
 	//====================== FUNCTIONS ======================
-	const getList = useCallback((): ReactNode | ReactNode[] => {
+	const messageList: ReactNode | ReactNode[] = useMemo(() => {
 		if (error) return error;
 		if (!feed || feed.feed.length == 0 || !targetFriend)
 			return <CText align="center">SOCIAL_NO_MESSAGE</CText>;
@@ -143,7 +143,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	return (
 		<Stack sx={{ flex: 1, overflow: "hidden" }} direction="column">
 			<Stack sx={{ flex: 1, overflow: "auto" }} direction="column-reverse">
-				{getList()}
+				{messageList}
 			</Stack>
 			<Stack direction="row">
 				<CTextField

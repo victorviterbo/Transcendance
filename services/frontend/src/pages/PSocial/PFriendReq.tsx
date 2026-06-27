@@ -1,5 +1,5 @@
 import { Stack } from "@mui/material";
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { IExtUserInfo } from "../../types/user";
 import { getErrorNode } from "../../utils/error";
 import PFriendNode from "./PFriendNode";
@@ -8,8 +8,13 @@ import CAccordionSimple from "../../components/feedback/accordion/CAccordionSimp
 import { useWS } from "../../components/websocket/CWebsocket";
 import type { IWSContextModule, IWSGameSendEvent, TWSRcv } from "../../types/websocket";
 import { fetchFriendRequests } from "../../api/social";
+import type { GPageProps } from "../common/GPageBases";
 
-function PFriendReq() {
+interface PFriendReqProps extends GPageProps {
+	open: boolean;
+}
+
+function PFriendReq({ open }: PFriendReqProps) {
 	const [incoming, setIncoming] = useState<IExtUserInfo[]>([]);
 	const [outgoing, setOutgoing] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
@@ -17,7 +22,7 @@ function PFriendReq() {
 	const localId = useId();
 
 	//====================== GETTERS ======================
-	async function getUsers(): Promise<void> {
+	const getUsers = useCallback(async () => {
 		try {
 			const res = await fetchFriendRequests();
 			if (typeof res != "object" || !res.incoming || !res.outgoing) throw {};
@@ -39,14 +44,14 @@ function PFriendReq() {
 			setIncoming(res.incoming);
 			setOutgoing(res.outgoing);
 			setError(undefined);
-		} catch (error) {
-			setError(getErrorNode(error, "SOCIAL_REQUESTS_ERROR"));
+		} catch (errorIn) {
+			setError(getErrorNode(errorIn, "SOCIAL_REQUESTS_ERROR"));
 			setIncoming([]);
 			setOutgoing([]);
 		}
-	}
+	}, [setIncoming, setOutgoing, setError]);
 
-	function getIncoming(): ReactNode | ReactNode[] {
+	const incomingNodes: ReactNode | ReactNode[] = useMemo(() => {
 		if (error) return error;
 
 		if (incoming.length == 0) return <CText align="center">SOCIAL_NO_INCOMING</CText>;
@@ -62,16 +67,16 @@ function PFriendReq() {
 				></PFriendNode>
 			);
 		});
-	}
+	}, [incoming, error, getUsers, localId]);
 
-	function getOutgoing(): ReactNode | ReactNode[] {
+	const outgoingNodes: ReactNode | ReactNode[] = useMemo(() => {
 		if (error) return error;
 
 		if (outgoing.length == 0) return <CText align="center">SOCIAL_NO_OUTGOING</CText>;
 		return outgoing.map((value: IExtUserInfo, index: number) => {
 			return <PFriendNode type="user" user={value} key={localId + index}></PFriendNode>;
 		});
-	}
+	}, [outgoing, error, localId]);
 
 	//====================== EVENTS / UPDATES ======================
 
@@ -90,8 +95,9 @@ function PFriendReq() {
 	}, [wsContext, incoming, setIncoming]);
 
 	useEffect(() => {
+		if (!open) return;
 		getUsers();
-	}, []);
+	}, [getUsers, open]);
 
 	return (
 		<Stack sx={{ overflowY: "auto", flex: 1 }} data-testid="PFriendReq">
@@ -101,10 +107,10 @@ function PFriendReq() {
 				sx={{ mb: "10px" }}
 				defaultExpanded={true}
 			>
-				<Stack data-testid="PFriendReq_incoming">{getIncoming()}</Stack>
+				<Stack data-testid="PFriendReq_incoming">{incomingNodes}</Stack>
 			</CAccordionSimple>
 			<CAccordionSimple title="SOCIAL_OUTGOING_REQUESTS" fontSize="sm" defaultExpanded={true}>
-				<Stack data-testid="PFriendReq_outgoing">{getOutgoing()}</Stack>
+				<Stack data-testid="PFriendReq_outgoing">{outgoingNodes}</Stack>
 			</CAccordionSimple>
 		</Stack>
 	);
