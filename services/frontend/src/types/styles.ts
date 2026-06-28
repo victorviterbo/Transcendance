@@ -101,6 +101,7 @@ export interface IThemeSize {
 }
 export interface IThemePosition {
 	mainSpacing: number;
+	smallSpacing: number;
 	gameSpacing: number;
 
 	socialMargin: TMargin;
