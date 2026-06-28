@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
 import CText from "../../components/text/CText";
 import { CTitlePaperTitleStyle } from "../../styles/components/surfaces/CTitlePaper";
@@ -24,6 +24,10 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const wsContext: IWSContextModule = useWS("notif");
 	const readTimeout: React.RefObject<number> = useRef(-1);
+
+	const theme = useTheme();
+	const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
 
 	//====================== GETTERS ======================
 	const title: ReactNode = useMemo(() => {
@@ -154,6 +158,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 			}}
 			titleNode={title}
 			data-testid="PNotif"
+			contentPadding={isTiny ? 1 : isSmall ? 2 : undefined}
 		>
 			<Box
 				sx={{

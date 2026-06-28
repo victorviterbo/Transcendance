@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { IExtUserInfo } from "../../types/user";
 import { getErrorNode } from "../../utils/error";
@@ -20,6 +20,9 @@ function PFriendReq({ open }: PFriendReqProps) {
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const wsContext: IWSContextModule = useWS("friend_request");
 	const localId = useId();
+
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
 
 	//====================== GETTERS ======================
 	const getUsers = useCallback(async () => {
@@ -106,10 +109,16 @@ function PFriendReq({ open }: PFriendReqProps) {
 				fontSize="sm"
 				sx={{ mb: "10px" }}
 				defaultExpanded={true}
+				detailsSX={isTiny ? { p: 0, mt: "10px" } : undefined}
 			>
 				<Stack data-testid="PFriendReq_incoming">{incomingNodes}</Stack>
 			</CAccordionSimple>
-			<CAccordionSimple title="SOCIAL_OUTGOING_REQUESTS" fontSize="sm" defaultExpanded={true}>
+			<CAccordionSimple
+				title="SOCIAL_OUTGOING_REQUESTS"
+				fontSize="sm"
+				detailsSX={isTiny ? { p: 0, mt: "10px" } : undefined}
+				defaultExpanded={true}
+			>
 				<Stack data-testid="PFriendReq_outgoing">{outgoingNodes}</Stack>
 			</CAccordionSimple>
 		</Stack>

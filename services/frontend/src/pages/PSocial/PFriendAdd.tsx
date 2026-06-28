@@ -67,8 +67,15 @@ function PFriendAdd() {
 
 	return (
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendAdd">
-			<CTextField onChange={onFieldChanged} data-testid="PSocialASearchAdd"></CTextField>
-			<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
+			<CTextField
+				onChange={onFieldChanged}
+				data-testid="PSocialASearchAdd"
+				verticalPadding={"8px"}
+				fontSize={14}
+				borderWidth={"2px"}
+				sx={{ mt: "5px" }}
+			></CTextField>
+			<Box sx={{ mt: "5px", flex: 1, overflowY: "auto" }}>
 				<Stack
 					sx={{ mt: "20px", flex: 1, overflowY: "auto" }}
 					data-testid="PFriendAdd_Stack"

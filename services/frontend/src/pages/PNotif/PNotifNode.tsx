@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import CText from "../../components/text/CText";
 import type { TNotif } from "../../types/socials";
 import type { GPageProps } from "../common/GPageBases";
@@ -45,18 +45,25 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 		return "NOTIF_AGO_LESS";
 	}, [notif]);
 
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
+
 	const messageNode: ReactNode = useMemo(() => {
 		if (notif.kind == "friend_request")
 			return (
 				<>
-					<CText size="sm">
+					<CText size={isTiny ? "xs" : "sm"}>
 						{ttrfn("NOTIF_FRIEND_REQ", {
 							USERNAME: (
 								<CUserProfileLink
 									sx={{ display: "inline" }}
 									username={notif.from.username}
 								>
-									<CText noTr={true} sx={style.impText}>
+									<CText
+										noTr={true}
+										sx={style.impText}
+										size={isTiny ? "xs" : "sm"}
+									>
 										{notif.from.username}
 									</CText>
 								</CUserProfileLink>
@@ -68,14 +75,18 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 		else if (notif.kind == "friend_accepted")
 			return (
 				<>
-					<CText size="sm">
+					<CText size={isTiny ? "xs" : "sm"}>
 						{ttrfn("NOTIF_FRIEND_ACCEPTED", {
 							USERNAME: (
 								<CUserProfileLink
 									sx={{ display: "inline" }}
 									username={notif.from.username}
 								>
-									<CText noTr={true} sx={style.impText}>
+									<CText
+										noTr={true}
+										sx={style.impText}
+										size={isTiny ? "xs" : "sm"}
+									>
 										{notif.from.username}
 									</CText>
 								</CUserProfileLink>
@@ -85,11 +96,11 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 				</>
 			);
 		return <CText>NOTIF_UNKNOWN</CText>;
-	}, [notif, style]);
+	}, [notif, style, isTiny]);
 
 	return (
 		<Box sx={style.main} data-testid="PNotifNode">
-			<Stack direction={"row"}>
+			<Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
 				<Stack direction={"column"}>
 					<Stack direction={"row"}>{messageNode}</Stack>
 					<CText family={appTexts.text.secondaryFamily} size="xs" fontWeight={400}>

@@ -6,7 +6,7 @@ import { CTabStyle, type ITabStyle } from "../../styles/components/navigation/CT
 import type { TSize } from "../../types/string.ts";
 
 export interface CTabsProps extends GCompProps, TabsProps {
-	tabs: string[];
+	tabs: string[] | ReactNode[];
 	defaultTab?: number;
 	children: ReactNode;
 
@@ -24,6 +24,17 @@ function CTabs({ tabs, defaultTab, testid, size = "sm", children, sx, ...others 
 		return CTabStyle(size);
 	}, [size]);
 
+	const tabsNode: ReactNode[] = useMemo(() => {
+		return tabs.map((item, index) => (
+			<Tab
+				sx={style.main}
+				key={index}
+				label={typeof item == "string" ? ttr(item) : item}
+				data-testid={testid ? testid + index : null}
+			/>
+		));
+	}, [tabs, testid, style]);
+
 	//====================== DOM ======================
 	return (
 		<>
@@ -35,14 +46,7 @@ function CTabs({ tabs, defaultTab, testid, size = "sm", children, sx, ...others 
 				data-testid={testid ? testid : null}
 				{...others}
 			>
-				{tabs.map((item, index) => (
-					<Tab
-						sx={style.main}
-						key={index}
-						label={ttr(item)}
-						data-testid={testid ? testid + index : null}
-					/>
-				))}
+				{tabsNode}
 			</Tabs>
 			{childList[tab]}
 		</>

@@ -80,13 +80,17 @@ function PFriendList({ open, onMessaging }: PFriendListProps) {
 	return (
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendList">
 			<CTextField
+				verticalPadding={"8px"}
+				fontSize={14}
+				borderWidth={"2px"}
 				onChange={(e) => {
 					setFriendsFilter(e.target.value);
 				}}
 				data-testid="PSocialSearchList"
+				sx={{ mt: "5px" }}
 			></CTextField>
-			<Box sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>
-				<Stack sx={{ mt: "20px", flex: 1, overflowY: "auto" }}>{friendsList}</Stack>
+			<Box sx={{ mt: "5px", flex: 1, overflowY: "auto" }}>
+				<Stack sx={{ mb: "20px", flex: 1, overflowY: "auto" }}>{friendsList}</Stack>
 			</Box>
 		</Stack>
 	);

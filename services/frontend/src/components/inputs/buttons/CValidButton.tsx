@@ -3,9 +3,11 @@ import type { CIconButtonProps } from "./CIconButton";
 import CIconButton from "./CIconButton";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-interface CValidButtonProps extends CIconButtonProps {}
+interface CValidButtonProps extends CIconButtonProps {
+	fontSize?: "large" | "medium" | "small";
+}
 
-function CValidButton({ sx, ...other }: CValidButtonProps) {
+function CValidButton({ sx, fontSize, ...other }: CValidButtonProps) {
 	return (
 		<CIconButton
 			sx={[
@@ -14,7 +16,7 @@ function CValidButton({ sx, ...other }: CValidButtonProps) {
 			]}
 			{...other}
 		>
-			<CheckCircleIcon />
+			<CheckCircleIcon fontSize={fontSize} />
 		</CIconButton>
 	);
 }

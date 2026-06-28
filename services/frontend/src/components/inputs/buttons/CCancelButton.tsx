@@ -3,15 +3,17 @@ import type { CIconButtonProps } from "./CIconButton";
 import CIconButton from "./CIconButton";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-interface CCancelButtonProps extends CIconButtonProps {}
+interface CCancelButtonProps extends CIconButtonProps {
+	fontSize?: "large" | "medium" | "small";
+}
 
-function CCancelButton({ sx, ...other }: CCancelButtonProps) {
+function CCancelButton({ sx, fontSize, ...other }: CCancelButtonProps) {
 	return (
 		<CIconButton
 			sx={[{ background: appColors.cancel[0] }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 			{...other}
 		>
-			<CancelIcon />
+			<CancelIcon fontSize={fontSize} />
 		</CIconButton>
 	);
 }
