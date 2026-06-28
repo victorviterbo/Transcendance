@@ -2,6 +2,7 @@
 //                    CSS
 
 import type { Breakpoint } from "@mui/material";
+import type { TSize } from "./string";
 
 //--------------------------------------------------
 export type TDropShadow = {
@@ -74,19 +75,8 @@ export interface IThemeTextColor {
 }
 
 //====================== TEXT ======================
-export interface IThemeTextSize {
-	"2xl": number;
-	xl: number;
-	lg: number;
-	md: number;
-	sm: number;
-	xs: number;
-	"2xs": number;
-	"3xs": number;
-}
-
 export interface IThemeText {
-	sizes: IThemeTextSize;
+	sizes: Record<TSize, number>;
 
 	mainFamily: string;
 	secondaryFamily?: string;

@@ -1,4 +1,4 @@
-import { Avatar, Box, Container, Stack } from "@mui/material";
+import { Avatar, Box, Container, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTitle from "../../components/text/CTitle";
@@ -68,6 +68,9 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 			? profileState.status
 			: "loading";
 
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("sm"));
+
 	useEffect(() => {
 		if (!username) return;
 
@@ -134,51 +137,57 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
 				<Stack spacing={3} sx={{ mt: 3 }}>
 					<CBasePaper sx={{ p: 3 }}>
-						<Box
-							sx={{
-								display: "grid",
-								gridTemplateColumns: {
-									xs: "1fr",
-									md: "minmax(0, 1fr) minmax(260px, 400px) minmax(0, 1fr)",
-								},
-								gap: 3,
-								alignItems: "center",
-							}}
+						<Stack
+							direction={{ xs: "column", md: "row" }}
+							spacing={3}
+							alignItems={{ xs: "center", md: "normal" }}
+							justifyContent={{ xs: "normal", md: "space-between" }}
 						>
 							<Stack
 								direction="row"
 								spacing={2.5}
 								alignItems="center"
-								sx={{ minWidth: 0 }}
+								sx={{ minWidth: 0, maxWidth: "100%", overflow: "hidden" }}
 							>
 								<Avatar src={resolveProfileImage(profile.avatar)} sx={style.avatar}>
 									{displayUsername.charAt(0).toUpperCase()}
 								</Avatar>
 								<CTitle
 									noTr={true}
-									size="md"
-									sx={{ minWidth: 0, mb: 0, overflowWrap: "anywhere" }}
+									size={isTiny ? "sm" : "md"}
+									sx={{
+										minWidth: 0,
+										mb: 0,
+										overflow: "hidden",
+										whiteSpace: "nowrap",
+										textOverflow: "ellipsis",
+									}}
 								>
 									{displayUsername}
 								</CTitle>
 							</Stack>
-							<Box
-								sx={{
-									width: "100%",
-									maxWidth: 400,
-									justifySelf: { xs: "stretch", md: "center" },
-								}}
+							<Stack
+								direction={"column"}
+								alignItems={{ xs: "center", md: "normal" }}
+								sx={{ flex: 1, minWidth: "200px", maxWidth: "400px" }}
 							>
-								<CLevelProgress
-									level={levelProgress.level}
-									progressPercent={levelProgress.progressPercent}
-									title={displayBadge}
-								/>
-							</Box>
-							<Box sx={{ justifySelf: { xs: "stretch", md: "end" } }}>
-								<PProfilePublicRelation profile={profile} />
-							</Box>
-						</Box>
+								<Box
+									sx={{
+										width: "100%",
+										maxWidth: 400,
+									}}
+								>
+									<CLevelProgress
+										level={levelProgress.level}
+										progressPercent={levelProgress.progressPercent}
+										title={displayBadge}
+									/>
+								</Box>
+								<Box sx={{ mt: "15px" }}>
+									<PProfilePublicRelation profile={profile} />
+								</Box>
+							</Stack>
+						</Stack>
 					</CBasePaper>
 
 					<CBasePaper>

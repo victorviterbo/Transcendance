@@ -14,7 +14,13 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 	const displayTitle = title.trim();
 
 	return (
-		<Stack direction="row" spacing={1.25} alignItems="center" sx={{ width: "100%" }}>
+		<Stack
+			direction="row"
+			spacing={1.25}
+			alignItems="center"
+			justifyContent={{ xs: "center", md: "flex-end" }}
+			sx={{ width: "100%" }}
+		>
 			<Stack
 				alignItems="center"
 				justifyContent="center"

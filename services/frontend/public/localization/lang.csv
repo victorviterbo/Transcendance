@@ -1,6 +1,6 @@
 id,en,fr,ja,de,desc
 CHANGE,Change,Changer,変更,Ändern,Shown on a button to update information
-CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,E-Mail ändern,Shown on profile accordion heading
+CHANGE_EMAIL,Change Email,Modifier l'adresse email,メールアドレスを変更する,E-Mail ändern,Shown on profile accordion heading
 CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Passwort ändern,Shown on profile accordion heading
 CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を変更する,Benutzernamen ändern,Shown on profile accordion heading
 CHANGING,Changing...,Modification...,変更中...,Wird geändert...,Shown on a pressed button to update information

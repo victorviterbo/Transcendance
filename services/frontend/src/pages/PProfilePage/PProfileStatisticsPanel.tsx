@@ -179,7 +179,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 				<Stack spacing={3}>
 					<Grid container spacing={2}>
 						{statisticMetrics.map((metric) => (
-							<Grid size={{ xs: 12, sm: 4 }} key={metric.label}>
+							<Grid size={{ xs: 12, sm: 6, md: 4 }} key={metric.label}>
 								<PProfileStatisticsMetricCard
 									icon={metric.icon}
 									label={metric.label}

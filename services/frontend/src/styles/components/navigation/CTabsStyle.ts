@@ -1,6 +1,16 @@
 import type { SxProps, Theme } from "@mui/material";
-import { appColors } from "../../theme";
+import { appColors, appTexts } from "../../theme";
+import type { TSize } from "../../../types/string";
 
-export const CTabStyle: SxProps<Theme> = (_) => ({
-	color: appColors.text.light,
-});
+export interface ITabStyle {
+	main: SxProps<Theme>;
+}
+
+export const CTabStyle = (size: TSize): ITabStyle => {
+	return {
+		main: {
+			color: appColors.text.light,
+			fontSize: appTexts.text.sizes[size as TSize] + "px",
+		},
+	};
+};

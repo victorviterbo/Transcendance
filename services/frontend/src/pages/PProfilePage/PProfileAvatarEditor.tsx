@@ -122,7 +122,7 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 					if (!isUploading) resetDialog();
 				}}
 				fullWidth
-				maxWidth="xs"
+				maxWidth="sm"
 			>
 				<Stack spacing={2} alignItems="center" sx={{ pt: 1 }}>
 					<CDialogTitle>UPDATE_PROFILE_PICTURE</CDialogTitle>
@@ -145,7 +145,16 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 							{error}
 						</CText>
 					)}
-					<DialogActions sx={{ px: 0, pb: 0, pt: 1 }}>
+					<DialogActions
+						sx={{
+							px: 0,
+							pb: 0,
+							pt: 1,
+							flexDirection: { xs: "column", sm: "row" },
+							minHeight: { xs: "150px", sm: "0" },
+							justifyContent: "space-evenly",
+						}}
+					>
 						<CButtonText onClick={resetDialog} disabled={isUploading}>
 							CANCEL
 						</CButtonText>
