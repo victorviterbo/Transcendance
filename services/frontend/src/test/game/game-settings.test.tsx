@@ -193,9 +193,6 @@ describe("Tests for settings view", () => {
 
 		expect(within(options).getByText("GAME_SETTINGS_SCORE_OPTION_SPEED")).toBeInTheDocument();
 		expect(within(options).getByText("GAME_SETTINGS_SCORE_OPTION_NORMAL")).toBeInTheDocument();
-		expect(
-			within(options).getByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON"),
-		).toBeInTheDocument();
 
 		const buttonList = within(options).getAllByRole("button");
 		expect(buttonList.length).toEqual(3);
@@ -207,31 +204,17 @@ describe("Tests for settings view", () => {
 			return within(el).queryByText("GAME_SETTINGS_SCORE_OPTION_NORMAL") ? true : false;
 		});
 		expect(normalButton).toBeInTheDocument();
-		const armaButton: HTMLElement | undefined = buttonList.find((el: HTMLElement) => {
-			return within(el).queryByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON") ? true : false;
-		});
-		expect(armaButton).toBeInTheDocument();
 
-		if (!speedButton || !normalButton || !armaButton) return;
+		if (!speedButton || !normalButton) return;
 
 		expect(speedButton.getAttribute("aria-pressed")).toEqual("true");
 		expect(normalButton.getAttribute("aria-pressed")).toEqual("false");
-		expect(armaButton.getAttribute("aria-pressed")).toEqual("false");
 
 		await userEvent.click(normalButton);
 
 		await waitFor(() => {
 			expect(speedButton.getAttribute("aria-pressed")).toEqual("false");
 			expect(normalButton.getAttribute("aria-pressed")).toEqual("true");
-			expect(armaButton.getAttribute("aria-pressed")).toEqual("false");
-		});
-
-		await userEvent.click(armaButton);
-
-		await waitFor(() => {
-			expect(speedButton.getAttribute("aria-pressed")).toEqual("false");
-			expect(normalButton.getAttribute("aria-pressed")).toEqual("false");
-			expect(armaButton.getAttribute("aria-pressed")).toEqual("true");
 		});
 	});
 
@@ -374,12 +357,8 @@ describe("Tests for settings view", () => {
 			return within(el).queryByText("GAME_SETTINGS_SCORE_OPTION_NORMAL") ? true : false;
 		});
 		expect(normalButton).toBeInTheDocument();
-		const armaButton: HTMLElement | undefined = buttonList.find((el: HTMLElement) => {
-			return within(el).queryByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON") ? true : false;
-		});
-		expect(armaButton).toBeInTheDocument();
 
-		if (!speedButton || !normalButton || !armaButton) return;
+		if (!speedButton || !normalButton) return;
 
 		await userEvent.click(normalButton);
 

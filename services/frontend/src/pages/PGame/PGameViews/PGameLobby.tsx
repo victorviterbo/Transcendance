@@ -220,7 +220,11 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 					mb: "10px",
 				}}
 			>
-				<Stack direction={"column"} sx={{ mr: { xs: "0px", sm: "50px" } }}>
+				<Stack
+					direction={"column"}
+					sx={{ mr: { xs: "0px", sm: "50px" } }}
+					alignItems={{ xs: "center", sm: "normal" }}
+				>
 					<Stack
 						direction={"row"}
 						sx={{
@@ -252,7 +256,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 						{toggleSetting(settings.fuzzy, "GAME_SETTINGS_FUZZY")}
 					</Stack>
 				</Stack>
-				<Stack direction={"column"}>
+				<Stack direction={"column"} alignItems={{ xs: "center", sm: "normal" }}>
 					<Stack
 						direction={"row"}
 						sx={{

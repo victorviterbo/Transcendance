@@ -182,15 +182,42 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 	//====================== MEMOS ======================
 	const toggles = useMemo(() => {
 		return (
-			<Stack direction={"row"} sx={{ alignItems: "stretch", minHeight: "150px", mt: "30px" }}>
-				<Stack direction={"column"} sx={{ justifyContent: "space-between", mt: "4px" }}>
+			<Stack
+				direction={"column"}
+				spacing={2}
+				sx={{
+					alignItems: "stretch",
+					minHeight: "150px",
+					flexShrink: 0,
+					mt: "30px",
+					mr: "15px",
+				}}
+			>
+				<Stack
+					direction={"row"}
+					justifyContent={"space-between"}
+					alignItems={"center"}
+					sx={{ flexWrap: "wrap" }}
+				>
 					<CText>GAME_SETTINGS_SEE_OTHERS</CText>
-					<CText>GAME_SETTINGS_FUZZY</CText>
-					<CText>GAME_SETTINGS_SCORE_OPTION</CText>
-				</Stack>
-				<Stack direction={"column"} sx={{ justifyContent: "space-between", ml: "20px" }}>
 					{getToggle(seeOthers, "GAME_SETTINGS_SEE_OTHERS", setSeeOthers)}
+				</Stack>
+				<Stack
+					direction={"row"}
+					justifyContent={"space-between"}
+					alignItems={"center"}
+					sx={{ flexWrap: "wrap" }}
+				>
+					<CText>GAME_SETTINGS_FUZZY</CText>
 					{getToggle(fuzzy, "GAME_SETTINGS_FUZZY", setFuzzy)}
+				</Stack>
+				<Stack
+					direction={"row"}
+					justifyContent={"space-between"}
+					alignItems={"center"}
+					sx={{ flexWrap: "wrap" }}
+				>
+					<CText>GAME_SETTINGS_SCORE_OPTION</CText>
 					<CToggle
 						fontSize="xs"
 						padding="7px"
@@ -201,7 +228,6 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 						options={[
 							{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
 							{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
-							{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
 						]}
 						data-testid={"PGameSettings_ScoreOption"}
 					></CToggle>
@@ -228,7 +254,6 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 					options={[
 						{ value: "speed", label: "GAME_SETTINGS_SCORE_OPTION_SPEED" },
 						{ value: "normal", label: "GAME_SETTINGS_SCORE_OPTION_NORMAL" },
-						{ value: "arma", label: "GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON" },
 					]}
 					data-testid={"PGameSettings_ScoreOption"}
 				></CToggle>

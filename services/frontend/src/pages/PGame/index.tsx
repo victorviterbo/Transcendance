@@ -67,7 +67,7 @@ function PGame() {
 	const answerRef = createRef<HTMLDivElement | null>();
 
 	//MOBILE
-	const viewBreakPoints = useMediaQuery("(min-width:1200px)");
+	const viewBreakPoints = useMediaQuery("(min-width:1300px)");
 	const [currentView, setCurrentView] = useState<"chat" | "game" | "leaderboard">("game");
 
 	//====================== WS ======================

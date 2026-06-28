@@ -20,11 +20,6 @@ export const vitestCheckSettings = (settings: IGameSettings) => {
 		expect(screen.getByText("GAME_SETTINGS_SCORE_OPTION_NORMAL")).toBeInTheDocument();
 	else expect(screen.queryByText("GAME_SETTINGS_SCORE_OPTION_NORMAL")).not.toBeInTheDocument();
 
-	if (settings.scoreOption == "arma")
-		expect(screen.getByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON")).toBeInTheDocument();
-	else
-		expect(screen.queryByText("GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON")).not.toBeInTheDocument();
-
 	//TOOGLES
 	expect(screen.getByText("GAME_SETTINGS_SEE_OTHERS")).toBeInTheDocument();
 	const seeOtherToggle = screen.getByTestId("GAME_SETTINGS_SEE_OTHERS");
