@@ -202,11 +202,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'settings': event.get('settings', {}),
         })
 
-    async def game_answer_broadcast(self, event: dict) -> None:
+    async def game_answer_validation(self, event: dict) -> None:
         """Notify of an answer validation with title/artist found status."""
         payload = {
             'target': 'game',
-            'event': 'answer_broadcast',
+            'event': 'answer_validation',
             'uid': event.get('uid'),
             'self': self.profile_data,
             'titleFound': event.get('titleFound', False),
@@ -222,7 +222,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_broadcast',
+            'event': 'answer_validation',
             'uid': event.get('uid'),
             'senderPlayer': event.get('sender_player'),
             'self': self.profile_data,
@@ -237,7 +237,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_broadcast',
+            'event': 'answer_validation',
             'uid': event.get('uid'),
             'senderPlayer': event.get('senderPlayer'),
             'self': self.profile_data,

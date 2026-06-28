@@ -4,12 +4,6 @@ set -eu
 
 mkdir -p /backend/DB/website
 
-if [ "$APP_MODE" = "test" ]; then
-    echo "Running Tests..."
-    exec conda run --no-capture-output -n backend python /backend/manage.py test tests.test_lifecycle2.GameWebsocketFlowTests.test_multiplayer_full_game_lifecycle
-    exit 0
-fi
-
 rm -f /backend/DB/website/db.sqlite3
 find /backend -path "*/migrations/0*" -delete
 

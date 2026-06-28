@@ -261,7 +261,7 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
     serialized_game = await _get_game_data(consumer)
 
     await consumer.channel_layer.send(consumer.channel_name, {
-        'type': 'game_answer_broadcast',
+        'type': 'game_answer_validation',
         'uid': serialized_game.get('uid'),
         'titleFound': title_correct,
         'artistFound': artist_correct,
@@ -283,7 +283,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'event': 'error',
                             'message': 'Only owner can edit game'})
         return
-    settings_payload = content#.get('settings', {})
+    settings_payload = content.get('settings', {}) #TODO recheck
     print(f"Settings payload: {settings_payload}\n")
     try:
         updated_game = await _apply_game_settings(consumer.current_game,

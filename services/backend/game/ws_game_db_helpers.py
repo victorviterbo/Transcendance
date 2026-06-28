@@ -164,7 +164,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		update_fields = []
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
-			if ((fuzz.partial_ratio(player_answer, track_artist) >= 80
+			if ((fuzz.ratio(player_answer, track_artist) >= 80
 		and consumer.current_game.fuzzy)
 				or player_answer == track_artist):
 				player_stats.artist_found = True
@@ -174,7 +174,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				update_fields.extend(['artist_found', 'artist_found_at'])
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
-			if ((fuzz.partial_ratio(player_answer, track_title) >= 80
+			if ((fuzz.ratio(player_answer, track_title) >= 80
 		and consumer.current_game.fuzzy)
 				or player_answer == track_title):
 				player_stats.title_found = True
