@@ -2,10 +2,33 @@
 
 from typing import TYPE_CHECKING
 
+from chat.ws_game_chat import add_gameroom_participant, send_join_chatroom
 from project.defaults import countdown_time
+
+from .ws_game_db_helpers import _get_game_info_data
 
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
+
+async def _send_game_error(consumer: 'GlobalConsumer', message: str) -> None:
+    """Send a game error payload for the current game."""
+    await consumer.send_json({
+        'target': 'game',
+        'event': 'error',
+        'currentGameUid': str(consumer.current_game.uid),
+        'self': consumer.profile_data,
+        'message': message,
+    })
+
+async def _send_existing_player_game_info(consumer: 'GlobalConsumer') -> None:
+    """Reconnect an existing game member to the websocket game session."""
+    consumer.game_group_name = f'game_{consumer.current_game.uid}'
+    if consumer.game_group_name not in consumer.active_layers:
+        await consumer.add_to_layer(consumer.game_group_name)
+    await add_gameroom_participant(consumer.current_game, consumer.profile)
+    await send_join_chatroom(consumer)
+    serialized_game_info = await _get_game_info_data(consumer)
+    await _send_game_info(consumer, serialized_game_info)
 
 async def _send_track(consumer: 'GlobalConsumer',
                       serialized_game: dict,
@@ -109,7 +132,5 @@ async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict) -> None
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_ended_event',
         'uid': game_ended['uid'],
-        'self': game_ended['self'],
         'leaderboard': game_ended['leaderboard'],
-        'history': game_ended['history']
     })

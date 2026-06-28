@@ -42,6 +42,7 @@ class UserRoundStats(models.Model):
     artist_found_at = models.FloatField(default=-1)
     title_found_at = models.FloatField(default=-1)
     xp_earned = models.PositiveIntegerField(default=0)
+    ranking = models.PositiveIntegerField(default=1)
     played_at = models.DateTimeField(auto_now_add=True)
 
     @cached_property

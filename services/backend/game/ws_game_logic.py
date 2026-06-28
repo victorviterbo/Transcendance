@@ -33,6 +33,8 @@ from .ws_game_db_helpers import (
     _validate_answer,
 )
 from .ws_game_send_helpers import (
+    _send_existing_player_game_info,
+    _send_game_error,
     _send_game_ended,
     _send_game_info,
     _send_new_player,
@@ -135,13 +137,13 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
 
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
-    if getattr(consumer, 'current_game', None):
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'Already in a game',
-                                })
-        return
     game_uid = content.get('uid')
+    if getattr(consumer, 'current_game', None):
+        if game_uid and str(consumer.current_game.uid) == str(game_uid):
+            await _send_existing_player_game_info(consumer)
+        else:
+            await _send_game_error(consumer, 'ALREADY_IN_GAME')
+        return
     if game_uid is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
@@ -154,19 +156,14 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
                                 'event': 'error',
                                 'message': 'Game not found'})
         return
-    num_current_players = await _get_num_curr_players(consumer.current_game)
-    if num_current_players >= max_players:
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'Game already full'})
-        return
     is_already_in_game = await _check_game_membership(consumer.current_game,
                                                     consumer.profile)
     if is_already_in_game:
-        await consumer.send_json({'target': 'game',
-                                'event': 'player_joined',
-                                'currentGameUid': str(consumer.current_game.uid),
-                                'message': 'Already in game.'})
+        await _send_existing_player_game_info(consumer)
+        return
+    num_current_players = await _get_num_curr_players(consumer.current_game)
+    if num_current_players >= max_players:
+        await _send_game_error(consumer, 'GAME_FULL')
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
@@ -229,28 +226,38 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
 
     track_data, _ = await _get_track_reveal_data(consumer, content)
     assert track_data is not None
-    artist_correct, title_correct = await _validate_answer(consumer,
-                                                        content,
-                                                        track_data)
+    (
+        artist_correct,
+        title_correct,
+        artist_newly_found,
+        title_newly_found,
+    ) = await _validate_answer(consumer, content, track_data)
                         
-    if ((consumer.current_game.reveal and not (artist_correct or title_correct)) or
-        ((artist_correct or title_correct) and consumer.current_game.mode == 'armageddon')):
-        serialized_player = await _get_player_data(consumer)
-        payload = {
-            'type': 'game_answer_broadcast',
-            'target': 'game',
-            'event': 'answer_broadcast',
-            'uid': str(consumer.current_game.uid),
-            'self': consumer.profile_data,
-            'player': serialized_player,
-            'kind': 'correct' if (artist_correct or title_correct) else 'incorrect',
-        }
-        if not (artist_correct or title_correct):
-            payload['answer'] = content.get('answer')
-        await consumer.group_send(consumer.game_group_name, payload)
-    if ((artist_correct or title_correct)
-        and consumer.current_game.mode == 'armageddon'):
-        await check_all_answers_received(consumer, consumer.current_game)
+    # if ((artist_correct or title_correct)
+    #     and consumer.current_game.mode == 'armageddon'):
+    #     await check_all_answers_received(consumer, consumer.current_game)
+
+    serialized_player = await _get_player_data(consumer)
+    if artist_newly_found and title_newly_found:
+        broadcast_kind = 'bothFound'
+    elif artist_newly_found:
+        broadcast_kind = 'artistFound'
+    elif title_newly_found:
+        broadcast_kind = 'titleFound'
+    else:
+        broadcast_kind = 'incorrect'
+    payload = {
+        'type': 'game_answer_broadcast',
+        'target': 'game',
+        'event': 'answer_broadcast',
+        'uid': str(consumer.current_game.uid),
+        'self': consumer.profile_data,
+        'player': serialized_player,
+        'kind': broadcast_kind,
+    }
+    if broadcast_kind == 'incorrect' and consumer.current_game.reveal:
+        payload['answer'] = content.get('answer')
+    await consumer.group_send(consumer.game_group_name, payload)
     serialized_game = await _get_game_data(consumer)
 
     await consumer.channel_layer.send(consumer.channel_name, {
