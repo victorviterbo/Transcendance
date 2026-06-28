@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import PFriendAdd from "./PFriendAdd";
 import PFriendList from "./PFriendList";
 import PFriendReq from "./PFriendReq";
@@ -18,20 +18,20 @@ import CCtrlTabs from "../../components/navigation/CCtrlTabs";
 interface PSocialProps extends GPageProps {
 	activeTab: number;
 	onTabChanged: (Value: number) => void;
-	closed: boolean;
+	open: boolean;
 }
 
-function PSocial({ onTabChanged, activeTab, closed }: PSocialProps) {
+function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 	const [messaging, setMessaging] = useState<IFriendInfo | undefined>(undefined);
 
 	useEffect(() => {
 		async function checkClosed() {
-			if (closed) setMessaging(undefined);
+			if (!open) setMessaging(undefined);
 		}
 		checkClosed();
-	}, [closed, setMessaging]);
+	}, [open, setMessaging]);
 
-	function getTitle() {
+	const title: ReactNode | ReactNode[] = useMemo(() => {
 		if (messaging) {
 			return (
 				<Box
@@ -116,7 +116,7 @@ function PSocial({ onTabChanged, activeTab, closed }: PSocialProps) {
 				</Stack>
 			</Box>
 		);
-	}
+	}, [messaging]);
 
 	return (
 		<CTitleBasePaper
@@ -132,7 +132,7 @@ function PSocial({ onTabChanged, activeTab, closed }: PSocialProps) {
 				minHeight: 0,
 				overflow: "hidden",
 			}}
-			titleNode={getTitle()}
+			titleNode={title}
 			data-testid="PSocial"
 		>
 			<Slide direction="right" in={messaging ? false : true}>
@@ -157,9 +157,10 @@ function PSocial({ onTabChanged, activeTab, closed }: PSocialProps) {
 							onMessaging={(Friend: IFriendInfo) => {
 								setMessaging(Friend);
 							}}
+							open={open}
 						></PFriendList>
 						<PFriendAdd></PFriendAdd>
-						<PFriendReq></PFriendReq>
+						<PFriendReq open={open}></PFriendReq>
 					</CCtrlTabs>
 				</Box>
 			</Slide>

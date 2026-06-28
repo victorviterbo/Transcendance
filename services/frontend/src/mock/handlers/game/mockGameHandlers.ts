@@ -7,6 +7,7 @@ import type {
 	IGameStatus,
 	IGameTrack,
 	IGameUser,
+	TGamePhase,
 	TGameVisibility,
 } from "../../../types/game";
 import { convExtUserToGameUser, type IExtUserInfo } from "../../../types/user";
@@ -17,6 +18,7 @@ import type {
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
+	IWSGameSendEventError,
 	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
 	IWSGameSendEventMessage,
@@ -29,7 +31,7 @@ import type {
 	IWSGameSendEventSettings,
 	TWSRoundInfo,
 } from "../../../types/websocket";
-import { mockDefaultUserUID } from "../../db";
+import { mockDefaultPP, mockDefaultUsername, mockDefaultUserUID } from "../../db";
 
 import { mockSocialDB } from "../social/social_dbs";
 import { mockGameDB } from "./game_db";
@@ -116,11 +118,33 @@ export class MockGame {
 	gameStarted: boolean = false;
 	answerSimulation: mockPlayerAnswerSim[] = [];
 	messageSimulation: mockMsgSim[] = [];
+	alreadyIn: string | undefined = undefined;
 
 	//====================== EVENTS ======================
 	onJoin() {
-		this.log("User has join");
+		this.log("User has join (" + this.uid + ")");
 		this.log("Sending to new user all game info");
+
+		if (this.players.length >= 20) {
+			this.log("Room full");
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "ERROR_FULL",
+				critical: true,
+			} as IWSGameSendEventError);
+			return;
+		}
+		if (this.alreadyIn != undefined) {
+			this.log("Already in room");
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "ALREADY_IN_GAME",
+				currentGameUid: this.alreadyIn,
+				critical: true,
+			} as IWSGameSendEventError);
+			this.alreadyIn = undefined;
+			return;
+		}
 		const history: TWSRoundInfo[] = [];
 		for (let i = 0; i < this.status.round; i++) {
 			history.push({
@@ -241,7 +265,7 @@ export class MockGame {
 	}
 	sendEvent(data: IWSGameSendEvent) {
 		if (!mockGameDB.client) return;
-		//console.log(data);
+		console.log(data);
 		mockGameDB.client.send(JSON.stringify(data));
 	}
 	getBaseData(event: IWSGameEventSndList): IWSGameSendEvent {
@@ -292,7 +316,7 @@ export class MockGame {
 		const event: IWSGameSendEventPlayerManage = {
 			...this.getBaseData("player_left"),
 			event: "player_left",
-			player: player.player
+			player: player.player,
 		};
 		this.sendEvent(event as IWSGameSendEvent);
 	}
@@ -329,6 +353,13 @@ export class MockGame {
 			message: nMessage,
 		} as IWSGameSendEventMessage);
 	}
+	getRoundCount(target: "titleFound" | "artistFound"): number {
+		let count: number = 0;
+		this.roundResult.forEach((round: IGamePlayerResult) => {
+			if (round[target]) count++;
+		});
+		return count;
+	}
 
 	changeSettings() {
 		this.log("Settings updated by mock");
@@ -347,6 +378,11 @@ export class MockGame {
 	simulateGame(): void {
 		if (this.gameStarted) return;
 		this.gameStarted = true;
+
+		if (this.status.phase != "waiting") {
+			this.simulatePlaying();
+			return;
+		}
 
 		//Creating rounds
 		for (let i = 0; i < this.settings.trackCount; i++) {
@@ -373,6 +409,29 @@ export class MockGame {
 
 			this.simulateGameRound();
 		}, 1000);
+	}
+	simulatePlaying(): void {
+		//Creating rounds
+		for (let i = this.rounds.length; i < this.settings.trackCount; i++) {
+			this.rounds.push({
+				track: mockGameDB.getRoundTrack(i),
+				phase: "not-done",
+				titleFound: false,
+				artistFound: false,
+				points: 0,
+				time: -1,
+				answers: [],
+				ranking: 0,
+			});
+		}
+
+		if (this.status.phase == "playing_round") {
+			setTimeout(() => {
+				this.simulateRoundEnd();
+			}, this.settings.playbackDuration * 1000);
+		} else if (this.status.phase == "playing_break") {
+			this.simulateGameRound();
+		}
 	}
 	simulateGameRound() {
 		//Sending preview
@@ -425,7 +484,6 @@ export class MockGame {
 
 		this.roundResult.forEach((res: IGamePlayerResult, index: number) => {
 			res.ranking = index + 1;
-			if (res.artistFound && res.titleFound) res.points += 10 - index <= 0 ? 1 : 10 - index;
 			const player: IGamePlayer | undefined = this.players.find(
 				(targetPlayer: IGamePlayer) => targetPlayer.player.uid == res.player.uid,
 			);
@@ -441,6 +499,19 @@ export class MockGame {
 			leaderboard: this.players,
 			results: this.roundResult,
 		} as IWSGameSendEventRoundEnd);
+
+		const userResult: IGamePlayerResult | undefined = this.roundResult.find(
+			(res: IGamePlayerResult) => {
+				return res.player.uid == mockDefaultUserUID;
+			},
+		);
+		if (userResult) {
+			this.rounds[this.status.round].artistFound = userResult.artistFound;
+			this.rounds[this.status.round].titleFound = userResult.titleFound;
+			this.rounds[this.status.round].points = userResult.points;
+			this.rounds[this.status.round].ranking = userResult.ranking;
+			this.rounds[this.status.round].time = userResult.time;
+		}
 
 		if (this.status.round >= this.settings.trackCount - 1) {
 			setTimeout(() => {
@@ -488,16 +559,22 @@ export class MockGame {
 			track.artist &&
 			sim.try.toLowerCase().includes(track.artist.toLowerCase())
 		) {
+			const currentCount = this.getRoundCount("artistFound");
 			res.artistFound = true;
-			res.points += 5;
+			if (this.settings.mode == "speed")
+				res.points += currentCount >= 5 ? 1 : 5 - currentCount;
+			else res.points += res.titleFound ? 6 : 4;
 			res.time = res.time < sim.at ? sim.at : res.time;
 		} else if (
 			!res.titleFound &&
 			track.title &&
 			sim.try.toLowerCase().includes(track.title.toLowerCase())
 		) {
+			const currentCount = this.getRoundCount("titleFound");
 			res.titleFound = true;
-			res.points += 5;
+			if (this.settings.mode == "speed")
+				res.points += currentCount >= 5 ? 1 : 5 - currentCount;
+			else res.points += res.artistFound ? 6 : 4;
 			res.time = res.time < sim.at ? sim.at : res.time;
 		}
 
@@ -513,7 +590,8 @@ export class MockGame {
 						: res.titleFound
 							? "titleFound"
 							: "incorrect",
-			answer: !res.artistFound && !res.titleFound ? sim.try : undefined,
+			answer:
+				!res.artistFound && !res.titleFound && this.settings.reveal ? sim.try : undefined,
 		} as IWSGameSendEventRoundAnswerBroadcast);
 	}
 	simulateMessages() {
@@ -576,13 +654,87 @@ export class MockGame {
 //                     PLAYING
 //--------------------------------------------------
 export class MockGamePlaying extends MockGame {
-	//====================== CONSTRUCTOR ======================
+	//====================== NAME ======================
 	constructor(uid: string) {
-		super(uid);
-		this.name = "Active game room";
-		this.log("Game (Playing): '" + uid + "' created");
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's ended room";
+		this.log("Game (Ended): '" + uid + "' created");
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 6; this.currentTarget++) {
+			this.players.push({
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+
+		this.players.push({
+			player: {
+				username: mockDefaultUsername,
+				uid: mockDefaultUserUID,
+				avatar: mockDefaultPP,
+				guest: false,
+			},
+			points: 20,
+		});
 	}
 
+	buildGame(): void {
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+
+		this.status = {
+			phase: this.uid as TGamePhase,
+			round: this.status.phase == "playing_round" ? 2 : 3,
+			keyTime: 0,
+		};
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(0),
+			phase: "done",
+			titleFound: true,
+			artistFound: true,
+			points: 15,
+			time: 6.58,
+			ranking: 2,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(1),
+			phase: "done",
+			titleFound: false,
+			artistFound: true,
+			points: 5,
+			time: 15.25,
+			ranking: 4,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(2),
+			phase: this.status.phase == "playing_round" ? "playing" : "done",
+			titleFound: false,
+			artistFound: false,
+			points: 0,
+			time: 20,
+			ranking: 5,
+			answers: [],
+		});
+	}
+
+	simulate(): void {
+		if (this.simStarted) return;
+		super.simulate();
+		this.simulateGame();
+	}
 	//====================== DATA ======================
 }
 
@@ -845,10 +997,10 @@ export class MockGameJoiningSpeed extends MockGame {
 		setTimeout(() => {
 			this.settings.genres.splice(1, 1);
 			this.settings.genres.push("TAG_RNB");
-			this.settings.mode = "speed";
+			this.settings.mode = "normal";
 			this.settings.trackCount = 5;
 			this.settings.playbackDuration = 20;
-			this.settings.breakDuration = 15;
+			this.settings.breakDuration = 5;
 			this.settings.reveal = true;
 			this.settings.fuzzy = true;
 			this.changeSettings();
@@ -863,7 +1015,6 @@ export class MockGameJoiningSpeed extends MockGame {
 //--------------------------------------------------
 //                     Ended
 //--------------------------------------------------
-
 export class MockGameJoiningEnded extends MockGame {
 	//====================== CONSTRUCTOR ======================
 	constructor(uid: string) {
@@ -960,4 +1111,119 @@ export class MockGameJoiningEnded extends MockGame {
 			this.simulateGameEnd();
 		}, 1000);
 	}
+}
+
+//--------------------------------------------------
+//                     ERROR
+//--------------------------------------------------
+export class MockGameJoiningError extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's error room";
+		this.log("Game (Error): '" + uid + "' created");
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 4; this.currentTarget++) {
+			this.players.push({
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {
+		if (this.simStarted) return;
+		super.simulate();
+
+		setTimeout(() => {
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "Failed to load chat history",
+			} as IWSGameSendEventError);
+		}, 1000);
+
+		setTimeout(() => {
+			this.sendEvent({
+				...this.getBaseData("error"),
+				message: "Failed to load game",
+				critical: true,
+			} as IWSGameSendEventError);
+		}, 5000);
+	}
+}
+
+export class MockGameJoiningFull extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's full room";
+		this.log("Game (Error - full): '" + uid + "' created");
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 20; this.currentTarget++) {
+			this.players.push({
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {}
+}
+
+export class MockGameJoiningInGame extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockSocialDB.users[0]);
+		this.name = "Sarah's full room";
+		this.log("Game (Error - In Game): '" + uid + "' created");
+		this.alreadyIn = "join-speed";
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 4; this.currentTarget++) {
+			this.players.push({
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {}
 }

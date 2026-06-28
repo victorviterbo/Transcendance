@@ -5,6 +5,7 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import PeopleIcon from "@mui/icons-material/People";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LoginIcon from "@mui/icons-material/Login";
 import { useState } from "react";
 import { useAuth } from "../auth/CAuthProvider";
 import { type TNavItem } from "../../types/navbar";
@@ -60,7 +61,7 @@ function CNavbar({
 
 	const guestItems: TNavItem[] = [
 		{ kind: "link", label: "PLAY_GAME", to: "/", icon: <SportsEsportsIcon /> },
-		{ kind: "link", label: "LOGIN", to: "/auth" },
+		{ kind: "link", label: "LOGIN", to: "/auth", icon: <LoginIcon /> },
 	];
 
 	const authedItems: TNavItem[] = [
@@ -94,6 +95,7 @@ function CNavbar({
 		<AppBar position="static" sx={CNavbarStyle}>
 			<Toolbar>
 				<IconButton
+					className="CNavbarHomeButton"
 					size="medium"
 					color="inherit"
 					component={Link}
@@ -122,10 +124,22 @@ function CNavbar({
 						}}
 					/>
 				</IconButton>
-				<CTitle size="sm" sx={{ pl: 5, flexGrow: 1 }}>
+				<CTitle
+					size="sm"
+					sx={{
+						pl: 5,
+						flexGrow: 1,
+						display: { xs: "none", md: "block" },
+					}}
+				>
 					Guess Tunes
 				</CTitle>
-				<Stack direction="row" spacing={2} alignItems="center">
+				<Stack
+					direction="row"
+					spacing={{ xs: 1, sm: 1.5, md: 2 }}
+					alignItems="center"
+					sx={{ ml: "auto" }}
+				>
 					<CDialogLanguage open={false} />
 					{items.map((item, idx) => {
 						if (item.kind === "link") {

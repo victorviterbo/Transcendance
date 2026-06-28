@@ -1,5 +1,6 @@
 import type { SendMessage } from "react-use-websocket";
 import type {
+	TGameSessionState,
 	IGameChatMsg,
 	IGamePlayer,
 	IGamePlayerAnswer,
@@ -15,9 +16,11 @@ import type {
 	IWSGameEventRcvList,
 	IWSGameRCVEvent,
 	IWSGameRCVEventAnswer,
+	IWSGameRCVEventLeave,
 	IWSGameRCVEventMsg,
 	IWSGameRCVEventSettings,
 	IWSGameSendEvent,
+	IWSGameSendEventError,
 	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
 	IWSGameSendEventMessage,
@@ -30,12 +33,11 @@ import type {
 	IWSGameSendEventSettings,
 	TWSRoundInfo,
 } from "../types/websocket";
-import type { ReactNode } from "react";
 import { MUSIC_TAGS, PAGE_GAME } from "../constants";
+import type { IAppNotif } from "../types/events";
 
 export interface IGameInstanceCallbacks {
-	setReady: React.Dispatch<React.SetStateAction<boolean>>;
-	setError: React.Dispatch<React.SetStateAction<ReactNode>>;
+	setSessionState: React.Dispatch<React.SetStateAction<TGameSessionState>>;
 	setStatus: React.Dispatch<React.SetStateAction<IGameStatus | undefined>>;
 	setSettings: React.Dispatch<React.SetStateAction<IGameSettings | undefined>>;
 	setRounds: React.Dispatch<React.SetStateAction<IGameRound[]>>;
@@ -45,6 +47,10 @@ export interface IGameInstanceCallbacks {
 	setVolume: React.Dispatch<React.SetStateAction<number>>;
 	setMuted: React.Dispatch<React.SetStateAction<boolean>>;
 	sendMessage: SendMessage;
+	push: (notif: IAppNotif) => void;
+	setError: React.Dispatch<React.SetStateAction<string | undefined>>;
+	setInGame: React.Dispatch<React.SetStateAction<string | undefined>>;
+	setSongPlayable: React.Dispatch<React.SetStateAction<boolean>>;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -53,7 +59,7 @@ export class GameInstance {
 	constructor(uid: string, callbacks: IGameInstanceCallbacks) {
 		this.uid = uid;
 		this.callbacks = callbacks;
-		this.log("New game instance created");
+		this.log("New game instance created (" + uid + ")");
 		this.log("Loading....");
 
 		//Joining
@@ -73,9 +79,13 @@ export class GameInstance {
 		navigator.mediaSession.setActionHandler("previoustrack", function () {});
 		navigator.mediaSession.setActionHandler("nexttrack", function () {});
 		navigator.mediaSession.setActionHandler("stop", function () {});
+
+		this.pingAudio();
 	}
 	destroy() {
 		this.uid = "";
+		this.stopAll();
+		this.leave();
 		this.log("Destroying game instance");
 	}
 
@@ -114,8 +124,11 @@ export class GameInstance {
 	self?: IGameUser;
 	lastColorId: number = 0;
 	gameLink: string;
-	volume = 50;
-	muted = false;
+	volume: number = 50;
+	muted: boolean = false;
+	ready: boolean = false;
+	songPlayable: boolean = false;
+	songPlayed: number = -1;
 
 	//====================== EVENTS ======================
 	//Server events
@@ -129,7 +142,10 @@ export class GameInstance {
 		this.maxPlayers = data.game.maxPlayers;
 		this.visibility = data.game.visibility;
 		this.status = {
-			phase: data.game.status,
+			phase:
+				data.game.status == "waiting" || data.game.status == "finish"
+					? data.game.status
+					: "recover",
 			round: data.game.round - 1,
 			keyTime: 0,
 		};
@@ -138,11 +154,12 @@ export class GameInstance {
 
 		this.checkRounds();
 		data.history.forEach((round: TWSRoundInfo) => {
-			this.applyWSRound(round);
+			this.applyWSRound(round, true);
 		});
 
 		this.updateAll();
-		this.callbacks.setReady(true);
+		this.callbacks.setSessionState("joined");
+		this.ready = true;
 		this.log("Game ready");
 	}
 	onPlayerJoined(data: IWSGameSendEventPlayerManage) {
@@ -150,8 +167,8 @@ export class GameInstance {
 		if (!this.players.find((player: IGamePlayer) => player.player.uid == data.player.uid)) {
 			this.players.push({
 				player: data.player,
-				points: 0
-		});
+				points: 0,
+			});
 			this.updatePlayers();
 			this.addMessage(this.players[this.players.length - 1], "joined");
 		}
@@ -172,6 +189,7 @@ export class GameInstance {
 		this.updateSettings();
 	}
 	onGameStart(data: IWSGameSendEventSettings) {
+		if (!this.ready) return;
 		this.log("Game started");
 		this.settings = data.settings;
 		this.updateSettings();
@@ -180,12 +198,14 @@ export class GameInstance {
 		this.updateStatus();
 	}
 	onPreviewRecieve(data: IWSGameSendEventRoundStart) {
+		if (!this.ready) return;
 		this.logRound("Preview recieved");
 		this.checkRounds();
 		this.setRound(data.preview, data.round - 1);
 		this.updateRounds();
 	}
 	onRoundStart(data: IWSGameSendEventRoundStart) {
+		if (!this.ready) return;
 		this.status.round = data.round - 1;
 		this.logRound("Starting round");
 		this.status.keyTime = Date.now();
@@ -195,7 +215,14 @@ export class GameInstance {
 		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
 		if (song) {
 			song.volume = this.muted ? 0 : this.volume / 100;
-			song.play();
+			song.play()
+				.then(() => {
+					this.updatePlayable(true);
+				})
+				.catch((reason) => {
+					if (reason.name == "NotAllowedError") this.updatePlayable(false);
+				});
+			this.songPlayed = this.status.round;
 		}
 		this.roundResult = [];
 		this.updateRounds();
@@ -206,6 +233,7 @@ export class GameInstance {
 		}, 50);
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer) {
+		if (!this.ready) return;
 		this.logRound("Answer validation recieved for " + data.time.toString());
 		const answer: IGamePlayerAnswer | undefined = this.getRound().answers.find(
 			(answer: IGamePlayerAnswer) => {
@@ -231,36 +259,38 @@ export class GameInstance {
 		if (data.track) this.getRound().track = data.track;
 
 		this.getRound().points = 0;
-		if (data.titleFound) this.getRound().points += 5;
-		if (data.artistFound) this.getRound().points += 5;
+		if (this.settings && this.settings.mode == "normal") {
+			if (data.titleFound && data.artistFound) this.getRound().points = 10;
+			else if (data.titleFound || data.artistFound) this.getRound().points = 4;
+		} else if (this.settings && this.settings.mode == "speed") {
+			if (data.titleFound) this.getRound().points += 1;
+			if (data.artistFound) this.getRound().points += 1;
+		}
 
 		this.updateRounds();
 	}
 	onAnswerBroadcast(data: IWSGameSendEventRoundAnswerBroadcast) {
+		if (!this.ready) return;
 		this.logRound("Answer broadcast recieved for '" + data.player.username + "'");
 
 		const player: IGamePlayer | undefined = this.players.find(
 			(fPlayer: IGamePlayer) => fPlayer.player.uid == data.player.uid,
 		);
 		const res: IGamePlayerResult = this.getResult(data.player);
-		let changed: boolean = false;
 
 		res.points = 0;
 		if (data.kind == "artistFound" || data.kind == "bothFound") {
-			if (!res.artistFound) changed = true;
 			res.artistFound = true;
 		}
 		if (data.kind == "titleFound" || data.kind == "bothFound") {
-			if (!res.titleFound) changed = true;
 			res.titleFound = true;
-		}
-		if (player && data.kind != "incorrect" && changed) this.addMessage(player, "found");
-		else if (player && (data.kind == "incorrect" || !changed))
+		} else if (player && data.kind == "incorrect" && data.answer)
 			this.addMessage(player, "guessed", data.answer);
 
 		this.updateResults();
 	}
 	onRoundEnd(data: IWSGameSendEventRoundEnd) {
+		if (!this.ready) return;
 		this.logRound("Round ended");
 		this.logRound("Starting break");
 		this.getRound().track = data.track;
@@ -280,6 +310,7 @@ export class GameInstance {
 				selfRes.points -
 				(this.getRound().artistFound ? 5 : 0) -
 				(this.getRound().titleFound ? 5 : 0);
+			this.getRound().ranking = selfRes.ranking;
 		}
 
 		//RESULT
@@ -312,13 +343,33 @@ export class GameInstance {
 		this.updateAll();
 	}
 	onGameEnded(data: IWSGameSendEventGameEnd) {
+		if (!this.ready) return;
 		this.checkRounds();
 		data.history.forEach((round: TWSRoundInfo) => {
 			this.applyWSRound(round);
 		});
 		this.players = data.leaderboard;
+		this.callbacks.setSessionState("ended");
 		this.status.phase = "finish";
 		this.updateAll();
+	}
+	onError(data: IWSGameSendEventError) {
+		if (data.message == "ALREADY_IN_GAME") {
+			this.callbacks.setInGame(data.currentGameUid);
+			return;
+		}
+		this.callbacks.push({
+			severity: "error",
+			message: data.message,
+		});
+		if (data.critical) {
+			this.stopAll();
+			this.send({
+				...this.getSendBaseData("player_leave"),
+			} as IWSGameRCVEventLeave);
+			this.callbacks.setSessionState("ended");
+			this.callbacks.setError(data.message);
+		}
 	}
 
 	//Chat
@@ -368,7 +419,7 @@ export class GameInstance {
 			...this.getSendBaseData("settings_update"),
 			settings: {
 				...nSettings,
-				tags: undefined
+				tags: undefined,
 			},
 		} as IWSGameRCVEventSettings);
 	}
@@ -398,6 +449,10 @@ export class GameInstance {
 			answer: answer,
 			time,
 		} as IWSGameRCVEventAnswer);
+	}
+	leave() {
+		this.log("Leaving game");
+		this.send(this.getSendBaseData("player_leave") as IWSGameRCVEventLeave);
 	}
 
 	//====================== FUNCTIONS ======================
@@ -465,6 +520,15 @@ export class GameInstance {
 		this.callbacks.setVolume(this.volume);
 		this.callbacks.setMuted(this.muted);
 	}
+	updatePlayable(value: boolean) {
+		if (value && this.songPlayed >= 0 && this.songs[this.songPlayed]) {
+			this.songs[this.songPlayed]?.play().catch((reason) => {
+				this.warn("Failled to recover song: " + this.songPlayed + "(" + reason.name + ")");
+			});
+		}
+		this.songPlayable = value;
+		this.callbacks.setSongPlayable(value);
+	}
 
 	//--------------------- WS ---------------------
 	send(data: IWSGameRCVEvent) {
@@ -480,6 +544,8 @@ export class GameInstance {
 	}
 	rcv(event: IWSGameSendEvent) {
 		if (event.target != "game") return;
+		if (event.uid != this.uid) return;
+
 		switch (event.event) {
 			case "player_joined":
 				this.onPlayerJoined(event as IWSGameSendEventPlayerManage);
@@ -520,6 +586,9 @@ export class GameInstance {
 			case "game_ended":
 				this.onGameEnded(event as IWSGameSendEventGameEnd);
 				break;
+			case "error":
+				this.onError(event as IWSGameSendEventError);
+				break;
 		}
 	}
 
@@ -539,9 +608,10 @@ export class GameInstance {
 	getRound(index?: number) {
 		return this.rounds[index == undefined ? this.status.round : index];
 	}
-	applyWSRound(round: TWSRoundInfo) {
+	applyWSRound(round: TWSRoundInfo, done: boolean = false) {
 		const target: IGameRound | undefined = this.rounds[round.round - 1];
 		if (!target) return;
+		if (done) target.phase = "done";
 		target.track = round.track;
 		target.titleFound = round.titleFound;
 		target.artistFound = round.artistFound;
@@ -608,6 +678,7 @@ export class GameInstance {
 			if (!el) return;
 			el.pause();
 		});
+		this.songPlayed = -1;
 	}
 	focusInput() {
 		if (this.callbacks.answerRef.current) {
@@ -616,8 +687,24 @@ export class GameInstance {
 			if (el.length > 0) el[0].focus();
 		}
 	}
+	async pingAudio() {
+		const audioPing = new Audio();
+		const playPromise = audioPing.play();
+		const toPromise = new Promise((resolve) => {
+			setTimeout(resolve, 1000);
+		});
+		await Promise.race([playPromise, toPromise])
+			.then((_) => {
+				audioPing.src = "";
+				audioPing.load();
+				this.updatePlayable(true);
+			})
+			.catch((reason) => {
+				if (reason.name == "NotAllowedError") this.updatePlayable(false);
+			});
+	}
 
-	//--------------------- Messages ---------------------
+	//-------------------  Messages ---------------------
 	sendChatMessage(msg: string) {
 		this.log("Sending message: " + msg);
 		this.send({

@@ -13,7 +13,7 @@ import {
 	PFriendChatNodeStyle,
 } from "../../styles/pages/social/PFriendChatNodeStyle";
 import { appTexts } from "../../styles/theme";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 interface PFriendChatNodeProps extends GPageProps {
 	message: IFriendMessage;
@@ -23,12 +23,12 @@ interface PFriendChatNodeProps extends GPageProps {
 function PFriendChatNode({ message }: PFriendChatNodeProps) {
 	const isUser: boolean = message.direction == "outgoing";
 
-	function getDate(): string {
+	const currentDate: string = useMemo(() => {
 		if (isUser && message.status && message.status == "error") return "";
 		let currentDate: Date | string = message.date;
 		if (typeof currentDate == "string") currentDate = new Date(message.date.toString());
 		return currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-	}
+	}, [isUser, message]);
 
 	return (
 		<Box sx={(theme) => PFriendChatNodeStyle(theme, isUser)} data-testid="PFriendChatNode">
@@ -48,7 +48,7 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 						size="2xs"
 						fontWeight={400}
 					>
-						{getDate()}
+						{currentDate}
 					</CText>
 					{isUser && message.status && message.status == "error" && (
 						<CText

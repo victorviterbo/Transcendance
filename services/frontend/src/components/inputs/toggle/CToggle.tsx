@@ -12,12 +12,22 @@ interface CToggleProps extends GCompProps, ToggleButtonGroupProps {
 	onValueChanged?: (value: string) => void;
 	fontSize?: TSize;
 	padding?: string;
+	allowUnselect?: boolean;
 }
 
-function CToggle({ options, value, onValueChanged, fontSize, padding, ...other }: CToggleProps) {
+function CToggle({
+	options,
+	value,
+	onValueChanged,
+	fontSize,
+	padding,
+	allowUnselect = true,
+	...other
+}: CToggleProps) {
 	const localID: string = useId();
 
 	const handleChange = (_: React.MouseEvent<HTMLElement>, nValue: string) => {
+		if (!nValue && !allowUnselect) return;
 		if (onValueChanged) onValueChanged(nValue);
 	};
 

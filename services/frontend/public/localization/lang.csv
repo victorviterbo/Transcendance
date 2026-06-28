@@ -37,7 +37,7 @@ LEADERBOARD,Leaderboard,Classement,ランキング,Page showing global rankings
 LOGGING_IN,Logging in,Connexion en cours,ログイン中,Shows when a user presses Log in
 LOGIN,Log in,Se connecter,ログイン,To log in
 LOGOUT,Log out,Se déconnecter,ログアウト,To log out
-MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Shown in the user profile
+MATCH_HISTORY,Match History,Historique,対戦履歴,Shown in the user profile
 MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Shown when a required field is missing
 MY_PROFILE,My profile,Mon profil,マイプロフィール,Menu item to open profile page
 PASSWORD_LOWERCASE,Include at least 1 lowercase letter,Incluez au moins 1 lettre minuscule,小文字を1つ以上含めてください,Shown when password has no lowercase
@@ -236,13 +236,13 @@ BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定�
 NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
 NOTIF_TITLE,Notifications,Notifications,通知,Notifications drawer title
 NOTIF_EMPTY,You do not have any notifications.,Vous n'avez aucune notification.,通知はありません。,Displayed when no notifications are found
-NOTIF_FRIEND_REQ,Friend request from:,Demande d'ami de:,さんからフレンド申請が届きました,Displayed after the highlighted username when a user receives a new friend request notification
+NOTIF_FRIEND_REQ,{USERNAME} sent you a friend request,,,Displayed  username when a user receives a new friend request notification
 NOTIF_AGO_DAYS,{COUNT} day(s) ago,Il y a {COUNT} jour(s),{COUNT}日前,Displays how many days ago a notification was triggered
 NOTIF_AGO_HOURS,{COUNT} hour(s) ago,Il y a {COUNT} heure(s),{COUNT}時間前,Displays how many hours ago a notification was triggered
 NOTIF_AGO_MINUTES,{COUNT} minute(s) ago,Il y a {COUNT} minute(s),{COUNT}分前,Displays how many minutes ago a notification was triggered
 NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Displayed when the notification is less than a minute old
 NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Displayed when loading notifications fails
-NOTIF_FRIEND_ACCEPTED,Friend request accepted:,Demande d'ami acceptée:,さんがあなたのフレンド申請を承認しました,Displayed after the highlighted username when someone accepts your friend request
+NOTIF_FRIEND_ACCEPTED,{USERNAME} has accepted you friend requests,,,Displayed after the highlighted username when someone accepts your friend request
 NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallback notification message
 GAME_LEADER_BOARD,Leaderboard,Classement,リーダーボード,In game leaderboard title
 GAME_LOBBY_TITLE,Lobby,Salon,ロビー,Lobby category in the game infrastructure
@@ -255,6 +255,14 @@ GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Title of the loading messa
 GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Content of the loading message paper
 GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
 GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
+GAME_LEAVE_CONFIRM_TITLE,Leave game?,Quitter la partie ?,ゲームを退出しますか？,Title for confirmation dialog shown before leaving a joined game
+GAME_LEAVE_CONFIRM_MESSAGE,You are currently in a game. Are you sure you want to leave?,Vous êtes actuellement dans une partie. Voulez-vous vraiment quitter ?,現在ゲームに参加しています。本当に退出しますか？,Confirmation message shown before leaving a joined game
+GAME_LEAVE_STAY,Stay,Rester,残る,Button to stay in the current game
+GAME_LEAVE_CONFIRM,Leave,Quitter,退出する,Button to confirm leaving the current game
+GAME_ALREADY_IN_GAME_TITLE,Already in a game,Déjà dans une partie,すでにゲームに参加しています,Title for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_MESSAGE,You are already in a game. Leave it to join this one?,Vous êtes déjà dans une partie. Voulez-vous la quitter pour rejoindre celle-ci ?,すでにゲームに参加しています。このゲームに参加するために退出しますか？,Message for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_RETURN,Return to current game,Retourner à la partie en cours,現在のゲームに戻る,Button to go back to the current game
+GAME_ALREADY_IN_GAME_JOIN,Leave and join,Quitter et rejoindre,退出して参加する,Button to leave the current game and join a new one
 GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
 GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorect guess,,,Chat message when a player made a guess (but no guess body given)
 GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
@@ -286,7 +294,7 @@ GAME_PLAYING_ENDED,Game ended,,,Title of the view when the game has ended
 GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
 GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
 GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
-GAME_ROUND_SPEED,Speed:,,,Label for the number of point for speeding
+GAME_ROUND_RANKING,Ranking:,,,Label for the round ranking
 GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
 SECONDS,{COUNT}s,,,Seconds suffix (If applicable)
 GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Code associated with a game room
@@ -302,3 +310,16 @@ ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルーム�
 REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button
 GAME_STARTING,Game is starting...,,,Message shown when host is pressing starting button.
 GAME_STARTING_IN,Game starting in,,,Count before game is starting
+GAME_ENDED_AVR,Average,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BEST,Best,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_TOTAL,Total,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_LEAD,Global,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_WORST,Worst,,,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BACK,Back to home,,,Button to go back to the home page
+GAME_ENDED_AGAIN,Play again,,,Button to start a new game
+ERROR_FULL,Game is already full,,,Error triggered when game is full
+GAME_WAITING_WAITING_NEXT,You've rejoined during a round please wait this round to end....,,,Display a player already in  game joined after lost connections
+GAME_LEAVE_INTERACT_TITLE,Interaction required,,,Title of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio please click bellow to interact with the page,,,Content of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_BUTTON,Go,,,Button of the popup use to request a user interaction to ba abale to play the songs
+GAME_ANSWER_NOT_FOUND,Not found,,,Simple messages  showed instead of the answer time when user didn't found the music

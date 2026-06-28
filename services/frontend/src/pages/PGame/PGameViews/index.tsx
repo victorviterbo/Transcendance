@@ -95,6 +95,8 @@ function PGameViews({
 				height: "100%",
 				display: "flex",
 				overflow: "hidden",
+				minHeight:
+					currentView == ECurrentView.SETTINGS ? undefined : { xs: "700px", sm: "600px" },
 			}}
 			title={currentTitle}
 		>
@@ -132,7 +134,7 @@ function PGameViews({
 				/>
 			)}
 			{currentView == ECurrentView.ENDED && (
-				<PGameEnded rounds={rounds} settings={settings} />
+				<PGameEnded game={game} rounds={rounds} settings={settings} players={players} />
 			)}
 		</CGamePaper>
 	);

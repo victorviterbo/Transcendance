@@ -28,7 +28,7 @@ export interface IExtUserInfo {
 	relation: TFriendRelation;
 }
 
-//====================== CONVERTION ======================
+//====================== CONVERSION ======================
 export const convGameUserToExtUser = (user: IGameUser, self?: string): IExtUserInfo => {
 	return {
 		uid: user.uid,

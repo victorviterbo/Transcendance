@@ -96,16 +96,6 @@ export type TWSRcv =
 
 	//GAME
 	| {
-			target: Extract<TWSModuleName, "game">;
-			event: "player-join" | "player-leave";
-			player: IGamePlayer;
-	  }
-	| {
-			target: Extract<TWSModuleName, "game">;
-			event: "players-update";
-			players: IGamePlayer[];
-	  }
-	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
 	  };
@@ -138,11 +128,6 @@ export type TWSSend =
 	// 		gameuid: string;
 	// 		settings: IGameSettings;
 	//   }
-	| {
-			target: Extract<TWSModuleName, "game">;
-			event: "join";
-			gameid: string;
-	  }
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;
 	  };
@@ -177,7 +162,8 @@ export type IWSGameEventRcvList =
 	| "settings_update"
 	| "game_start"
 	| "answer_submit"
-	| "message_send";
+	| "message_send"
+	| "player_leave";
 
 export type IWSGameEventSndList =
 	| "player_joined"
@@ -192,7 +178,8 @@ export type IWSGameEventSndList =
 	| "round_ended"
 	| "message_history"
 	| "message_broadcast"
-	| "game_ended";
+	| "game_ended"
+	| "error";
 
 export interface IWSGameEvent {
 	target: Extract<TWSModuleName, "game">;
@@ -216,6 +203,9 @@ export interface IWSGameRCVEventAnswer extends IWSGameRCVEvent {
 export interface IWSGameRCVEventMsg extends IWSGameRCVEvent {
 	event: Extract<IWSGameEventRcvList, "message_send">;
 	message: string;
+}
+export interface IWSGameRCVEventLeave extends IWSGameRCVEvent {
+	event: Extract<IWSGameEventRcvList, "player_leave">;
 }
 
 //Send(Server to Client)
@@ -286,4 +276,11 @@ export interface IWSGameSendEventGameEnd extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "game_ended">;
 	leaderboard: IGamePlayer[];
 	history: TWSRoundInfo[];
+}
+
+export interface IWSGameSendEventError extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "error">;
+	message: string;
+	currentGameUid?: string;
+	critical?: boolean;
 }

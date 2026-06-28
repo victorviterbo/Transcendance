@@ -49,6 +49,78 @@ export const FetchPublicRoom = http.get(API_GAME_PUBLIC, async () => {
 export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 	const tempRooms: IGameListEntry[] = [];
 
+	tempRooms.push({
+		uid: "host",
+		name: "Hosted",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "join",
+		name: "Join",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "join-speed",
+		name: "Join Speed",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "playing_round",
+		name: "Playing Round",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "playing_break",
+		name: "Playing Break",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "ended",
+		name: "Ended room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "error",
+		name: "Error room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "full",
+		name: "Error full room",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
+	tempRooms.push({
+		uid: "in-game",
+		name: "Error In Game",
+		genres: [...MUSIC_TAGS],
+		playerCount: Math.floor(Math.random() * 100),
+		playerMax: 100,
+	});
+
 	for (let i = 0; i < 10; i++) {
 		tempRooms.push(GenerateRoom(i % 5 === 0 ? MUSIC_TAGS.length : undefined));
 	}

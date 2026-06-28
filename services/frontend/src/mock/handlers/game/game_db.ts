@@ -7,6 +7,9 @@ import {
 	MockGameHosting,
 	MockGameJoining,
 	MockGameJoiningEnded,
+	MockGameJoiningError,
+	MockGameJoiningFull,
+	MockGameJoiningInGame,
 	MockGameJoiningSpeed,
 	MockGamePlaying,
 } from "./mockGameHandlers";
@@ -78,11 +81,23 @@ export class MockGameDB {
 				case "join-speed":
 					game = new MockGameJoiningSpeed(uid);
 					break;
-				case "playing":
+				case "playing_round":
+					game = new MockGamePlaying(uid);
+					break;
+				case "playing_break":
 					game = new MockGamePlaying(uid);
 					break;
 				case "ended":
 					game = new MockGameJoiningEnded(uid);
+					break;
+				case "error":
+					game = new MockGameJoiningError(uid);
+					break;
+				case "full":
+					game = new MockGameJoiningFull(uid);
+					break;
+				case "in-game":
+					game = new MockGameJoiningInGame(uid);
 					break;
 				default:
 					game = new MockGame(uid);

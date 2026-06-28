@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Stack, type SxProps, type Theme } from "@mui/material";
 import type { GCompProps } from "../../common/GProps";
 import CSlider from "./CSlider";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
@@ -6,17 +6,22 @@ import VolumeDownAltIcon from "@mui/icons-material/VolumeDownAlt";
 import VolumeMuteIcon from "@mui/icons-material/VolumeMute";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import { appColors } from "../../../styles/theme";
+import { sxMerger } from "../../../utils/styles";
 
 interface CVolumeSilderProps extends GCompProps {
 	volume: number;
 	muted: boolean;
+	sx?: SxProps<Theme>;
 	onVolumeChanged: (volume: number) => void;
 	onVolumeMuted: (volume: boolean) => void;
 }
 
-function CVolumeSilder({ muted, volume, onVolumeChanged, onVolumeMuted }: CVolumeSilderProps) {
+function CVolumeSilder({ sx, muted, volume, onVolumeChanged, onVolumeMuted }: CVolumeSilderProps) {
 	return (
-		<Stack sx={{ minWidth: "150px", pl: "30px", alignItems: "center" }} direction={"row"}>
+		<Stack
+			sx={sxMerger(sx ? sx : {}, { minWidth: "150px", pl: "30px", alignItems: "center" })}
+			direction={"row"}
+		>
 			<CSlider
 				sx={{ mr: "10px" }}
 				min={0}

@@ -4,8 +4,8 @@ import type { IGameRound, IGameSettings } from "../../../types/game";
 import CText from "../../../components/text/CText";
 import { memo, useMemo } from "react";
 import {
-	PGameEndedRoundStyle,
-	type IGameEndedRoundStyle,
+	PGameRoundEndedNodeStyle,
+	type IGameRoundEndedNodeStyle,
 } from "../../../styles/pages/game/PGameRoundStyle";
 import CCover from "../../../components/images/CCover";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -14,6 +14,7 @@ import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import StarIcon from "@mui/icons-material/Star";
 import { ttrf } from "../../../localization/localization";
+import { appColors } from "../../../styles/theme";
 
 interface PGameEndedRoundProps extends GPageProps {
 	round: IGameRound;
@@ -21,20 +22,24 @@ interface PGameEndedRoundProps extends GPageProps {
 }
 
 function PGameEndedRound({ round, settings }: PGameEndedRoundProps) {
-	const style: IGameEndedRoundStyle = useMemo(() => {
-		return PGameEndedRoundStyle(round, settings);
+	const style: IGameRoundEndedNodeStyle = useMemo(() => {
+		return PGameRoundEndedNodeStyle(round, settings);
 	}, [round, settings]);
 
 	return (
-		<Stack sx={style.main} direction={"row"}>
-			<Stack direction={"row"} sx={{ my: "5px", flex: 1 }}>
+		<Stack sx={style.main} direction={{ xs: "column", sm: "row" }}>
+			<Stack direction={"row"} sx={{ pl: { xs: "10px", sm: "0px" }, my: "5px", flex: 1 }}>
 				<CCover
 					url={round.track.artwork}
 					alt={round.track.artist + " - " + round.track.title}
 				/>
-				<Stack direction={"column"}>
-					<CText>{round.track.title}</CText>
-					<CText>{round.track.artist}</CText>
+				<Stack sx={{ ml: "15px", justifyContent: "center" }} direction={"column"}>
+					<CText size="md" sx={{ m: 0 }}>
+						{round.track.title}
+					</CText>
+					<CText size="sm" sx={{ m: 0, color: appColors.greys[0] }}>
+						{round.track.artist}
+					</CText>
 				</Stack>
 			</Stack>
 			<Stack direction={"row"} sx={style.dataStack}>
