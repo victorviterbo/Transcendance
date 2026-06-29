@@ -1,4 +1,4 @@
-import { Alert, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import {
@@ -18,7 +18,7 @@ import type {
 	TConfirmableRelationAction,
 	TRelationAction,
 } from "../../types/socials";
-import { ttr } from "../../localization/localization";
+import { useNotif } from "../../components/contexts/CAppNotifContext";
 
 interface PProfilePublicRelationProps {
 	profile: IProfileData;
@@ -51,6 +51,8 @@ function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRel
 	const targetUser = useMemo(() => {
 		return getTargetUser(profile);
 	}, [profile]);
+	const pushNotif = useNotif().push;
+
 
 	useEffect(() => {
 		if (authStatus !== "authed") {
@@ -88,6 +90,20 @@ function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRel
 			ignore = true;
 		};
 	}, [authStatus, profile]);
+
+	useEffect(() => {
+		if(!relationState.error)
+			return;
+		pushNotif({
+			severity: "error",
+			message: relationState.error
+		})
+		const clear = async () => {
+			relationState.error = null;
+			setRelationState(structuredClone(relationState));
+		}
+		clear();
+	}, [relationState, setRelationState, pushNotif])
 
 	const handleSocialAction = async (action: TRelationAction) => {
 		setPendingAction(action);
@@ -164,11 +180,6 @@ function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRel
 				onAction={(action) => void handleSocialAction(action)}
 				onConfirmableAction={setConfirmAction}
 			/>
-			{relationState.error && (
-				<Alert severity="error" data-testid="PProfilePublic_SocialError">
-					{ttr(relationState.error)}
-				</Alert>
-			)}
 			<PProfilePublicRelationConfirmDialog
 				action={confirmAction}
 				pendingAction={pendingAction}
