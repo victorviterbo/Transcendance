@@ -70,6 +70,7 @@ SESSION_COOKIE_SECURE = not DEBUG
 # Definition of all installed modules
 INSTALLED_APPS = [
 	'daphne',
+	'project',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
