@@ -61,7 +61,8 @@ class FriendsGameView(APIView):
 			to_user=request.user, status='accepted'
 		).values_list('from_user_id', flat=True)
 		friends_games = (
-			Game.objects.filter(owned_by__user_id__in=from_ids.union(to_ids))
+			Game.objects.filter(owned_by__user_id__in=from_ids.union(to_ids),
+								status='waiting')
 			.exclude(visibility='private')
 		)
 		serialized_games = GameDetailSerializer(friends_games, many=True)

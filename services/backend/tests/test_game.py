@@ -85,7 +85,7 @@ class GameHTTPViewTests(TestBaseHelpers, APITestCase):
 
         response = self.client.get(urls['game'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        returned_uids = {entry['uid'] for entry in response.data}
+        returned_uids = {entry['uid'] for entry in response.data['rooms']}
         self.assertIn(str(public_game.uid), returned_uids)
         self.assertNotIn(str(private_game.uid), returned_uids)
 
@@ -101,6 +101,12 @@ class GameHTTPViewTests(TestBaseHelpers, APITestCase):
             visibility='friends',
             owned_by=self.friend.profile,
         )
+        finished_friend_game = Game.objects.create(
+            name='Finished Friend Match',
+            visibility='friends',
+            owned_by=self.friend.profile,
+            status='finished',
+        )
         stranger_game = Game.objects.create(
             name='Stranger Match',
             visibility='friends',
@@ -109,8 +115,9 @@ class GameHTTPViewTests(TestBaseHelpers, APITestCase):
 
         response = self.client.get(urls['friend_game'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        returned_uids = {entry['uid'] for entry in response.data}
+        returned_uids = {entry['uid'] for entry in response.data['rooms']}
         self.assertIn(str(friend_game.uid), returned_uids)
+        self.assertNotIn(str(finished_friend_game.uid), returned_uids)
         self.assertNotIn(str(stranger_game.uid), returned_uids)
 
     def test_single_game_get_returns_game_payload(self) -> None:
