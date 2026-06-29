@@ -477,7 +477,6 @@ index a34c922..0000000
 -                                player_answer: list,
 -                                owner: dict,
 -                                public: bool=False,
--                                armageddon: bool=False
 -								) -> dict:
 -                payloads = {'start': [],
 -                            'in_game': [],

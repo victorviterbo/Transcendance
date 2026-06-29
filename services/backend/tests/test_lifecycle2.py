@@ -48,7 +48,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                     'event': 'settings_update',
                     'uid': str(game.uid),
                     'genres': ['TAG_ROCK'],
-                    'mode': 'armageddon',
+                    'mode': 'speed',
                     'trackCount': 4,
                     'playbackDuration': '10',
                     'breakDuration': '5',

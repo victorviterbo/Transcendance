@@ -48,11 +48,6 @@ genres_to_label = {
 }
 
 default_pts = {
-    'armageddon': {
-        'both': 10,
-        'artist': 4,
-        'title': 4
-    },
     'speed': {
         'artist': 5,
         'title': 5

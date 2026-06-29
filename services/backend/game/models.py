@@ -70,7 +70,6 @@ class Game(models.Model):
                                 choices=[
                                     ('normal', 'GAME_MODE_NORMAL'),
                                     ('speed', 'GAME_MODE_SPEED'),
-                                    ('armageddon', 'GAME_MODE_ARMAGEDDON'),
                                     ],
                                 default='normal')
     

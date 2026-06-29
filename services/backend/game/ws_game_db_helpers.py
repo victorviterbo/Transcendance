@@ -213,20 +213,7 @@ def _compute_round_stats(game: Game) -> None:
 	"""Collect and store game statistics after a round finishes."""
 	stats = UserRoundStats.objects.filter(round__round_number=game.current_round,
 										round__game=game)
-	if game.mode == 'armageddon':
-		first_artist = stats.filter(artist_found=True).order_by('artist_found_at').first()
-		first_title = stats.filter(title_found=True).order_by('title_found_at').first()
-		if first_artist and first_title and first_artist.player == first_title.player:
-			first_artist.xp_earned += default_pts['armageddon']['both']
-			first_artist.save(update_fields=['xp_earned'])
-		else:
-			if first_artist:
-				first_artist.xp_earned += default_pts['armageddon']['artist']
-				first_artist.save(update_fields=['xp_earned'])
-			if first_title:
-				first_title.xp_earned += default_pts['armageddon']['title']
-				first_title.save(update_fields=['xp_earned'])
-	elif game.mode == 'speed':
+	if game.mode == 'speed':
 		xp_to_add = {}
 		artist_pts = default_pts['speed']['artist']
 		for stat in stats.filter(artist_found=True).order_by('artist_found_at'):
