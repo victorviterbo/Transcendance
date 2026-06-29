@@ -91,7 +91,7 @@ def validate_username(value: str, is_creation: bool = False) -> str:
 class ComplexPasswordValidator:
     """Define minimal password complexity rules."""
 
-    def validate(self, password: str, user=None) -> None:
+    def validate(self, password: str, user=None) -> None:  # noqa: ANN001
         """Define specific validation process for password validation."""
         if (len(password) < 8):
             raise ValidationError("PASSWORD_MIN")

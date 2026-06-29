@@ -64,15 +64,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         user = SiteUser.objects.create_user(**validated_data)
         guest_profile = getattr(request, 'profile', None)
-        if guest_profile and guest_profile.is_guest:
+        if guest_profile and guest_profile.guest:
             guest_profile.user = user
             guest_profile.username = profile_username
-            guest_profile.is_guest = False
+            guest_profile.guest = False
             guest_profile.save()
         else:
             Profile.objects.create(user=user,
                                    username=profile_username,
-                                   is_guest=False) #TODO remove: should not happen
+                                   guest=False) #TODO remove: should not happen
         return user
 
 class LoginSerializer(serializers.ModelSerializer):

@@ -1,6 +1,5 @@
 """Seed the database with initial data for testing purposes."""
 import random
-from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from friends.models import Friendship
@@ -12,9 +11,6 @@ from userauth.models import SiteUser
 from userprofile.models import Profile
 
 User = get_user_model()
-
-#@transaction.atomic
-#def run():
 
 print("Seeding database...")
 
@@ -44,12 +40,12 @@ profiles = []
 # Create 1 Admin
 admin_user, _ = SiteUser.objects.get_or_create(email='admin@example.com',
                                                defaults={'is_staff': True, 'is_superuser': True})
-admin_user.set_password('Password123!')
+admin_user.set_password('Password123+')
 admin_user.save()
 
 admin_profile, _ = Profile.objects.get_or_create(
     user=admin_user,
-    defaults={'username': 'admin_master', 'exp_points': 9999, 'is_guest': False}
+    defaults={'username': 'admin_master', 'exp_points': 9999, 'guest': False}
 )
 users.append(admin_user)
 profiles.append(admin_profile)
@@ -59,7 +55,7 @@ for i in range(1, 21):
     email = f"player{i}@mail.com"
     user, created = SiteUser.objects.get_or_create(email=email)
     if created:
-        user.set_password('Password123!')
+        user.set_password('Password123+')
         user.save()
     users.append(user)
     
@@ -68,7 +64,7 @@ for i in range(1, 21):
         defaults={
             'username': f"Player_{i}",
             'exp_points': random.randint(100, 5000),
-            'is_guest': False
+            'guest': False
         }
     )
     profiles.append(profile)
@@ -92,30 +88,32 @@ for _ in range(30): # Create 30 random friend connections
         )
 
 
-for t_idx in range(1, 16):
-    track, created = Track.objects.get_or_create(
-        itunes_id=t_idx,
-        title=f"Track {t_idx}",
-        artist=f"Artist {t_idx}",
-        preview_url=f"https://example.com/preview{t_idx}.mp3",
-        artwork_url=f"https://example.com/artwork{t_idx}.jpg",
-        genre=random.choice(genres)
-    )
-    tracks.append(track)
+# for t_idx in range(1, 16):
+#     track, created = Track.objects.get_or_create(
+#         itunes_id=t_idx,
+#         defaults={
+#             'title': f"Track {t_idx}",
+#             'artist': f"Artist {t_idx}",
+#             'preview_url': f"https://example.com/preview{t_idx}.mp3",
+#             'artwork_url': f"https://example.com/artwork{t_idx}.jpg",
+#             'genre': random.choice(genres)
+#         }
+#     )
+#     tracks.append(track)
+tracks = list(Track.objects.all())
 # ---------------------------------------------------------
 # 4. GAMES & STATS
 # ---------------------------------------------------------
 # Simulate 10 different games
-for g_idx in range(1, 11):
+for g_idx in range(1, 11) if tracks else []:
     # Pick a random room and random 4 players for the game
     #game_room = random.choice(rooms)
     game_players = random.sample(profiles, 4)
     
     game = Game.objects.create(
-        game_name=f"Blind Test Arena {g_idx}",
+        name=f"Blind Test Arena {g_idx}",
         status='finished',
-        is_public=random.choice([True, False]),
-        max_rounds=20
+        trackCount=20
     )
     
     # Pick an overall winner for the game
@@ -123,7 +121,7 @@ for g_idx in range(1, 11):
     
     # Create UserGameStats (Overall Game Results)
     for player in game_players:
-        UserGameStats.objects.create(
+        game_stats = UserGameStats.objects.create(
             game=game,
             player=player,
             is_won=(player == game_winner)
@@ -131,37 +129,32 @@ for g_idx in range(1, 11):
     # Simulate 5 rounds per game
     for round_num in range(1, 6):
         track = random.choice(tracks)
-        round_winner = random.choice(game_players)
 
         game_round = GameRoundStats.objects.create(
             round_number=round_num,
             game=game,
-            winner=round_winner,
             track=track
         )
         # Create UserRoundStats (Individual performance in that round)
         for player in game_players:
             # Add some randomness to how they performed
-            found_artist = random.choice([True, False]) if player != round_winner else True
-            found_song = random.choice([True, False]) if player != round_winner else True
+            found_artist = random.choice([True, False])
+            found_title = random.choice([True, False])
             
             # Base XP logic
             xp = 0
             if found_artist:
                 xp += 10
-            if found_song:
+            if found_title:
                 xp += 10
-            if player == round_winner:
-                xp += 30
             UserRoundStats.objects.create(
-                #game=game,
                 player=player,
                 round=game_round,
-                #track=track,
-                is_won=(player == round_winner),
+                game_stats=game_stats,
                 artist_found=found_artist,
-                song_found=found_song,
-                time=timedelta(seconds=random.randint(5, 30)),
+                title_found=found_title,
+                artist_found_at=random.randint(5, 30),
+                title_found_at=random.randint(5, 30),
                 xp_earned=xp
             )
         

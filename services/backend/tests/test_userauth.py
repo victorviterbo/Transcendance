@@ -2,12 +2,13 @@
 
 from rest_framework import status
 from rest_framework.test import APITestCase
+from userauth.models import SiteUser
+from userauth.serializers import RegisterSerializer
 
-from .models import SiteUser
-from .serializers import RegisterSerializer
+from tests.test_helpers import TestBaseHelpers, urls
 
 
-class UserAccountTests(APITestCase):
+class UserAccountTests(TestBaseHelpers, APITestCase):
     """Test suit for the user module."""
 
     def setUp(self) -> None:
@@ -22,10 +23,9 @@ class UserAccountTests(APITestCase):
 
     def test_login_user(self) -> None:
         """Test success and failure of login."""
-        url = '/api/auth/login/'
         for email in ['test@mail.com', '', 'test']:
             for password in ['Password123+', '', 'wrongpassword']:
-                response = self.client.post(url, {'email': email, 'password': password})
+                response = self.client.post(urls['login'], {'email': email, 'password': password})
                 if email == 'test@mail.com' and password == 'Password123+':
                     self.assertEqual(response.status_code, status.HTTP_200_OK)
                     self.assertNotIn('error', response.data)
@@ -40,21 +40,19 @@ class UserAccountTests(APITestCase):
 
     def test_login_rejects_sql_injection_payloads(self) -> None:
         """Injection-shaped credentials must not bypass authentication."""
-        url = '/api/auth/login/'
         payloads = [
             {'email': "test@mail.com' OR '1'='1", 'password': 'anything'},
             {'email': 'test@mail.com', 'password': "' OR '1'='1"},
             {'email': "' OR 1=1 --", 'password': "' OR 1=1 --"},
         ]
         for payload in payloads:
-            response = self.client.post(url, payload, format='json')
+            response = self.client.post(urls['login'], payload, format='json')
             self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
             self.assertEqual(response.data['error']['auth'], 'INVALID_CREDENTIALS')
         self.assertTrue(SiteUser.objects.filter(email='test@mail.com').exists())
 
     def test_register_user(self) -> None:
         """Test success and failure of user creation."""
-        url = '/api/auth/register/'
         for email in ['test@mail.com', '', 'test', 'newuser@mail.com']:
             for username in ['testuser', '', 'newuser']:
                 for password in ['AnewPassword1+', '', 'shortpw', 'anewpassword1+',
@@ -62,7 +60,7 @@ class UserAccountTests(APITestCase):
                     data = {'email': email,
                             'username': username,
                             'password': password}
-                    response = self.client.post(url, data, format='json')
+                    response = self.client.post(urls['register'], data, format='json')
                     if (email == 'newuser@mail.com' and username == 'newuser' and
                             password == 'AnewPassword1+'):
                         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -91,7 +89,6 @@ class UserAccountTests(APITestCase):
 
     def test_register_rejects_sql_injection_payloads(self) -> None:
         """Injection-shaped registration fields must fail validation."""
-        url = '/api/auth/register/'
         payloads = [
             {
                 'email': "new@mail.com' OR '1'='1",
@@ -105,7 +102,7 @@ class UserAccountTests(APITestCase):
             },
         ]
         for payload in payloads:
-            response = self.client.post(url, payload, format='json')
+            response = self.client.post(urls['register'], payload, format='json')
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertIn('error', response.data)
         self.assertTrue(SiteUser.objects.filter(email='test@mail.com').exists())
@@ -113,7 +110,7 @@ class UserAccountTests(APITestCase):
 
     def test_register_ignores_privilege_escalation_fields(self) -> None:
         """Public registration must never allow staff/superuser creation."""
-        response = self.client.post('/api/auth/register/', {
+        response = self.client.post(urls['register'], {
             'email': 'privilege@mail.com',
             'username': 'regular_user',
             'password': 'AnewPassword1+',
@@ -128,7 +125,7 @@ class UserAccountTests(APITestCase):
 
     def test_register_missing_username_returns_validation_error(self) -> None:
         """Malformed registration payloads should not raise server errors."""
-        response = self.client.post('/api/auth/register/', {
+        response = self.client.post(urls['register'], {
             'email': 'missing-username@mail.com',
             'password': 'AnewPassword1+',
         }, format='json')
@@ -138,44 +135,35 @@ class UserAccountTests(APITestCase):
 
     def test_logout(self) -> None:
         """Test success and failure of logout operation."""
-        logout_url = '/api/auth/logout/'
-        profile_url = '/api/profile/'
-
-        response = self.client.post(profile_url, data={'username': 'should_fail'})
+        response = self.client.post(urls['profile'], data={'username': 'should_fail'})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        login_res = self.client.post('/api/auth/login/', data={'email': 'test@mail.com',
-                                                          'password': 'Password123+'},
-                                                          format='json')
-        access_token = login_res.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        self.authenticate('test@mail.com')
 
         refresh_token_copy = self.client.cookies.get('refresh-token').value
 
-        response = self.client.post(profile_url, data={'username': 'whatever'})
+        response = self.client.post(urls['profile'], data={'username': 'whatever'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response = self.client.post(logout_url)
+        response = self.client.post(urls['logout'])
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.cookies.get('refresh-token').value, "")
         self.client.credentials()
-        response = self.client.post(profile_url, data={'username': 'should_fail'})
+        response = self.client.post(urls['profile'], data={'username': 'should_fail'})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.cookies['refresh-token'] = refresh_token_copy
-        refresh_response = self.client.post('/api/auth/refresh/')
+        refresh_response = self.client.post(urls['refresh'])
         self.assertEqual(refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data['detail'],
                          'Authentication credentials were not provided.')
     
     def test_refresh(self) -> None:
         """Test success and failure of access token regeneration operation."""
-        login_url = '/api/auth/login/'
-        refresh_url = '/api/auth/refresh/'
-        response = self.client.post(refresh_url)
+        response = self.client.post(urls['refresh'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertNotIn('access', response.data)
         
-        login_res = self.client.post(login_url, {
+        login_res = self.client.post(urls['login'], {
             'email': "test@mail.com",
             'password': 'Password123+'
         })
@@ -183,14 +171,14 @@ class UserAccountTests(APITestCase):
         self.assertNotIn('refresh-token', login_res.data)
         orig_cookie = login_res.cookies.get('refresh-token').value
 
-        response = self.client.post(refresh_url)
+        response = self.client.post(urls['refresh'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('username', response.data)
         self.assertEqual('testuser', response.data['username'])
         #test blacklisting
         self.client.cookies['refresh-token'] = orig_cookie
-        response = self.client.post(refresh_url)
+        response = self.client.post(urls['refresh'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn('error', response.data)
         self.assertNotIn('access', response.data)
@@ -198,7 +186,7 @@ class UserAccountTests(APITestCase):
         self.assertEqual('TOKEN_NOT_VALID', response.data['error']['cookie'])
         
         self.client.cookies.clear()
-        response = self.client.post(refresh_url)
+        response = self.client.post(urls['refresh'])
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn('error', response.data)
         self.assertNotIn('access', response.data)
@@ -207,21 +195,18 @@ class UserAccountTests(APITestCase):
 
     def test_update_password(self) -> None:
         """Test success and failure of access token regeneration operation."""
-        login_url = '/api/auth/login/'
-        update_password_url = '/api/auth/password/'
-        
-        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'test@mail.com',
                                                       'password': 'Password123+'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
         access_token = login_res.data.get('access')
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
-        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+        response = self.client.post(urls['pw_change'], data={'currentPassword': 'Password123+',
                                                     'newPassword': 'should_fail'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+        response = self.client.post(urls['pw_change'], data={'currentPassword': 'Password123+',
                                                     'newPassword': 'AnotherBadPassword111'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        response = self.client.post(update_password_url, data={'currentPassword': 'Password123+',
+        response = self.client.post(urls['pw_change'], data={'currentPassword': 'Password123+',
                                                     'newPassword': 'FinallyAGood1+'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['description'], 'PASSWORD_UPDATED')
@@ -230,12 +215,12 @@ class UserAccountTests(APITestCase):
         self.assertEqual(response.data['username'], 'testuser')
         self.assertIn('refresh-token', response.cookies)
         self.client.credentials(HTTP_AUTHORIZATION="Bearer " + response.data['access'])
-        profile_response = self.client.post('/api/profile/', data={'username': 'still_authed'})
+        profile_response = self.client.post(urls['profile'], data={'username': 'still_authed'})
         self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
-        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'test@mail.com',
                                                       'password': 'Password123+'})
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
-        login_res = self.client.post(login_url, data={'email': 'test@mail.com',
+        login_res = self.client.post(urls['login'], data={'email': 'test@mail.com',
                                                       'password': 'FinallyAGood1+'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
 

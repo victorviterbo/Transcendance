@@ -1,113 +1,81 @@
 """HTTP views for game management and testing."""
 
 import uuid
-from rest_framework import status
-from rest_framework.permissions import AllowAny
+
+from chat.ws_game_chat import create_gamechat_room
+from django.shortcuts import get_object_or_404
+from friends.models import Friendship
+from rest_framework import serializers, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chat.models import Room
 from game.models import Game
-from music.models import Playlist, Track
-from music.serializers import BlindSerializer
+
+from .serializers import (
+	GameCreationSerializer,
+	GameDetailSerializer,
+)
+from .services import format_validation_errors
 
 
-class GameView(APIView):
-	"""Create a game with tracks from selected genres."""
+class GeneralGameView(APIView):
+	"""Define Creation and listing of games."""
 	permission_classes = [AllowAny]
 
+	def get(self, request: Request) -> Response:
+		"""Handles the listing of all games."""
+		all_public_games = Game.objects.filter(visibility='public', status='waiting')
+		serialized_games = GameDetailSerializer(all_public_games, many=True)
+		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)
+	
 	def post(self, request: Request) -> Response:
-		"""Create a game with tracks from specified genres.
-		
-		Request body:
-		{
-			"genres": ["rock", "pop"],
-			"num_tracks": 10
-		}
-		
-		Returns:
-			- game_uid: UUID of the created game
-			- playlist: Playlist name with genres
-			- current_track: Current track preview URL
-			- num_tracks: Total tracks selected
-		"""
-		genres = request.data.get('genres', [])
-		num_tracks = request.data.get('num_tracks')
-		
-		# Validate input
-		if not genres or not isinstance(genres, list):
-			return Response({
-				'error': 'Invalid genres',
-				'message': 'Genres must be a non-empty list'
-			}, status=status.HTTP_400_BAD_REQUEST)
-		
-		if not num_tracks or not isinstance(num_tracks, int) or num_tracks <= 0:
-			return Response({
-				'error': 'Invalid num_tracks',
-				'message': 'num_tracks must be a positive integer'
-			}, status=status.HTTP_400_BAD_REQUEST)
-		
-		# Calculate tracks per genre
-		tracks_per_genre = num_tracks // len(genres)
-		if tracks_per_genre == 0:
-			return Response({
-				'error': 'Not enough tracks',
-				'message': f'num_tracks ({num_tracks}) must be >= number of genres ({len(genres)})'
-			}, status=status.HTTP_400_BAD_REQUEST)
-		
-		# Fetch tracks for each genre
-		all_tracks = []
-		for genre in genres:
-			genre_tracks = Track.objects.filter(genre=genre).order_by('?')[:tracks_per_genre]
-			
-			if len(genre_tracks) < tracks_per_genre:
-				return Response({
-					'error': f'Not enough tracks for genre: {genre}',
-					'message': f'Found {len(genre_tracks)} tracks, but need {tracks_per_genre}'
-				}, status=status.HTTP_400_BAD_REQUEST)
-			
-			all_tracks.extend(genre_tracks)
-		
-		if not all_tracks:
-			return Response({
-				'error': 'No tracks found',
-				'message': 'No tracks available for the selected genres'
-			}, status=status.HTTP_400_BAD_REQUEST)
-		
-		# Create a dynamic playlist for this game
-		playlist_name = f"Game Playlist - {', '.join(genres)} ({uuid.uuid4()})"
-		playlist = Playlist.objects.create(name=playlist_name)
-		playlist.tracks.set(all_tracks)
-		
-		# Create a room for this game
-		room_name = f"Game Room - {', '.join(genres)} ({uuid.uuid4()})"
-		room = Room.objects.create(
-			name=room_name,
-			is_direct=False
+		"""Handle the creation of a new game."""
+		if not getattr(request, 'profile', None):
+			return Response({'error': {'profile': 'PROFILE_NOT_FOUND'}},
+							status=status.HTTP_400_BAD_REQUEST)
+		try:
+			new_game_serializer = GameCreationSerializer(data=request.data)
+			new_game_serializer.is_valid(raise_exception=True)
+			new_game = new_game_serializer.save(owned_by=request.profile)
+			# create the chat room after the game exists
+			room = create_gamechat_room(new_game)
+			new_game.room = room
+			new_game.save(update_fields=['room'])
+			serialized_game = GameDetailSerializer(new_game)
+			return Response(serialized_game.data, status=status.HTTP_201_CREATED)
+		except serializers.ValidationError as e:
+			return Response(format_validation_errors(e),
+							status=status.HTTP_400_BAD_REQUEST)
+class FriendsGameView(APIView):
+	"""Handle the listing of game."""
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request: Request) -> Response:
+		"""Handles the listing of games owned by friends."""
+		from_ids = Friendship.objects.filter(
+			from_user=request.user, status='accepted'
+		).values_list('to_user_id', flat=True)
+		to_ids = Friendship.objects.filter(
+			to_user=request.user, status='accepted'
+		).values_list('from_user_id', flat=True)
+		friends_games = (
+			Game.objects.filter(owned_by__user_id__in=from_ids.union(to_ids))
+			.exclude(visibility='private')
 		)
-		
-		# Get first track as current
-		current_track = all_tracks[0]
-		
-		# Create the game
-		game = Game.objects.create(
-			room=room,
-			game_name=playlist_name,
-			playlist=playlist,
-			status='waiting',
-			current_round=1,
-			current_track=current_track,
-			max_rounds=num_tracks,
-		)
-		
-		return Response({
-			'game_uid': str(game.uid),
-			'playlist': {
-				'name': playlist.name,
-				'id': playlist.id,
-			},
-			'current_track': BlindSerializer(current_track).data,
-			'num_tracks': num_tracks,
-			'message': 'Game created successfully. Use game_uid to join via WebSocket.'
-		}, status=status.HTTP_201_CREATED)
+		serialized_games = GameDetailSerializer(friends_games, many=True)
+		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)
+
+
+class SingleGameView(APIView):
+	"""Handle the interactions with a specific game."""
+	permission_classes = [AllowAny]
+
+	def get(self, request: Request, uid: uuid.UUID) -> Response:
+		"""Get information on one specific game."""
+		queried_game = get_object_or_404(Game, uid=uid)
+		serialized_queried_game = GameDetailSerializer(queried_game)
+		return Response(serialized_queried_game.data,
+						status=status.HTTP_200_OK)
+	

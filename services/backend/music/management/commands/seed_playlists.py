@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 
 from music.models import Playlist
 
-
 PLAYLISTS = [
     {"name": "Top 100 Global US", "rss_url": "https://itunes.apple.com/us/rss/topsongs/limit=100/json"},
     {"name": "Top 100 Rap US", "rss_url": "https://itunes.apple.com/us/rss/topsongs/limit=100/genre=18/json"},

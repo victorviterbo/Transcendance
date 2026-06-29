@@ -1,4 +1,4 @@
-"""WebSocket consumer logic for public rooms and private direct messages."""
+"""WebSocket consumer logic for public rooms, private direct messages and game ."""
 
 import logging
 import uuid
@@ -8,25 +8,27 @@ from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
     AsyncWebsocketConsumer,
 )
-from django.core.cache import cache
+from chat.chat_utils import accepted_friendship, create_direct_room
 from chat.models import Message, Room
+from chat.ws_game_chat import handle_game_chat_payload
+from chat.ws_direct_message import (
+    handle_friend_chat_payload,
+    set_chat_open,
+    update_online_status,
+)
 from game.models import Game
-from game.ws_handlers import handle_game_action
+from game.ws_game_db_helpers import _get_game_history_data
+from game.ws_game_logic import handle_game_action
 from userauth.models import SiteUser
 from userprofile.models import Profile
-
-from chat.chat_utils import (
-    accepted_friendship_exists,
-    get_or_create_direct_room,
-    serialize_friend_chat_message,
-)
+from userprofile.serializers import LightProfileSerializer
 
 logger = logging.getLogger(__name__)
 
 class GlobalConsumer(AsyncJsonWebsocketConsumer):
     """Handle chat WebSocket connections, message broadcasts, and status updates."""
 
-    create_profile_if_missing = True
+    create_missing_profile = True
     
     def __init__(self, *args: tuple, **kwargs: dict) -> None:
         """Define initialisation of consumer class."""
@@ -34,11 +36,13 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         
         self.room = None
         self.profile = None
+        self.profile_data = None
         self.active_layers = set()
-        self.room_name = "default_room"
         self.group_name = None
-        self.chat_group_name = f"chat_{self.room_name}"
-        self.open_direct_chat_profile_ids = set() #tracker when frontend send open/ close so can mark seen
+        self.game = None
+        self.current_game = None
+        self.game_group_name = None
+        self.open_chat_recipient = set() # tracker when frontend sends open/close so can mark as seen
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
@@ -51,23 +55,23 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         logger.debug('ws.connect.attempt user=%s scope_keys=%s', 
                      type(getattr(self, 'user', None)).__name__,
                      list(self.scope.keys()))
-        self.profile = await self._get_profile_from_scope()
+        self.profile, self.profile_data = await self._get_profile_from_scope()
         if not self.profile:
-            logger.warning('ws.connect.rejected unauthenticated')
+            logger.warning('ws.connect.rejected could not retrieve profile')
             await self.close(code=4401)
             return
-        self.group_name = f"user_{self.profile.id}"
+        self.group_name = f"user_{self.profile.uid}"
         await self.add_to_layer(self.group_name)
-        await self._update_online_status(is_online=True)
+        await update_online_status(self, self.profile.id, is_online=True)
         logger.info('ws.presence.online profile_id=%s username=%s group=%s',
                     self.profile.id,
                     self.profile.username,
                     self.group_name)
         await self.accept()
-        logger.info('ws.connect.accepted profile_id=%s username=%s is_guest=%s user_id=%s group=%s',
+        logger.info('ws.connect.accepted profile_id=%s username=%s guest=%s user_id=%s group=%s',
                     self.profile.id,
                     self.profile.username,
-                    self.profile.is_guest,
+                    self.profile.guest,
                     self.profile.user_id,
                     self.group_name)
         return
@@ -80,10 +84,11 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                     len(getattr(self, 'active_layers', set())))
         for layer in getattr(self, "active_layers", set()):
             await self.channel_layer.group_discard(layer, self.channel_name)
-        for target_profile_id in list(getattr(self, 'open_direct_chat_profile_ids', set())):
-            await self._set_direct_chat_open(target_profile_id, is_open=False)
+        for recipient_profile_id in list(getattr(self, 'open_direct_chat_recipient_ids', set())):
+            if getattr(self, 'profile', None):
+                await set_chat_open(self.profile.id, recipient_profile_id, is_open=False)
         if getattr(self, "profile", None):
-            await self._update_online_status(False)
+            await update_online_status(self, self.profile.id, is_online=False)
             logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
                         self.profile.id,
                         self.profile.username,
@@ -92,52 +97,33 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
     
     async def receive_json(self, content: dict) -> None:
         """Receive websocket payloads and route them by target/event."""
-        logger.debug('ws.receive profile_id=%s keys=%s target=%s event=%s',
-                     getattr(getattr(self, 'profile', None), 'id', None),
-                     list(content.keys()),
-                     content.get('target'),
-                     content.get('event'))
-        if content.get('target') == 'friend-chat' and content.get('event') == 'send':
-            frontend_message = content.get('message')
-            if not isinstance(frontend_message, dict):
-                logger.warning('ws.receive.invalid_friend_chat_payload profile_id=%s',
-                               getattr(getattr(self, 'profile', None), 'id', None))
-                await self.send_json({'type': 'error',
-                                      'message': 'message is required'})
-                return
-            logger.info('ws.receive.friend_chat_translate profile_id=%s target_id=%s message_len=%s',
-                        getattr(getattr(self, 'profile', None), 'id', None),
-                        frontend_message.get('target-id'),
-                        len(str(frontend_message.get('message', ''))))
-            await self.chat_subroutine({
-                'event': 'direct-message',
-                'message': frontend_message.get('message'),
-                'user_uid': frontend_message.get('target-id'),
-                '_frontend_contract': True,
-            })
-            return
-
-        lifecycle_event = content.get('event')
-        if content.get('target') == 'friend-chat' and lifecycle_event in ('open', 'close'):
-            await self.chat_subroutine({
-                'event': lifecycle_event,
-                'target_uid': content.get('toUid'),
-                '_frontend_contract': True,
-            })
-            return
-
+        logger.debug(
+            'ws.receive profile_id=%s keys=%s target=%s event=%s',
+            getattr(getattr(self, 'profile', None), 'id', None),
+            list(content.keys()),
+            content.get('target'),
+            content.get('event'),
+        )
         target = content.get('target')
-        if target == 'chat':
-            await self.chat_subroutine(content)
-        elif target == 'game':
+        event = content.get('event')
+
+        if target == 'friend-chat':
+            await handle_friend_chat_payload(self, content, event)
+            return
+        if target == 'game':
+            if event == 'message_send':
+                await handle_game_chat_payload(self, content)
+                return
             await handle_game_action(self, content)
-        else:
-            logger.warning('ws.receive.unsupported_target profile_id=%s target=%s',
-                           getattr(getattr(self, 'profile', None), 'id', None),
-                           target)
-            await self.close(code=4405)
-        return
-    
+            return
+        logger.warning(
+            'ws.receive.unsupported_target profile_id=%s target=%s',
+            getattr(getattr(self, 'profile', None), 'id', None),
+            target,
+        )
+        await self.close(code=4405)
+
+
     async def add_to_layer(self, group_name: str) -> None:
         """Add layer to subscribed channels."""
         await self.channel_layer.group_add(group_name, self.channel_name)
@@ -152,203 +138,19 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         """Send a message to the specified channel."""
         await self.channel_layer.group_send(group_name, message)
     
-    async def chat_subroutine(self, content: dict, **kwargs: dict) -> None:
-        """Process incoming chat events from the client."""
-        event = content.get('event')
-        lifecycle_event = event
-
-        if event == 'chat-message':
-            body = str(content.get('message', '')).strip()
-            if not body:
-                await self.send_json({'type': 'error',
-                                      'message': 'message is required'})
-                return
-            success, message = await self._save_message(body, event, content)
-            if not success:
-                logger.warning('ws.chat_message.save_failed profile_id=%s error=%s',
-                               getattr(getattr(self, 'profile', None), 'id', None),
-                               message)
-                await self.send_json(message)
-                return
-
-            logger.info('ws.chat_message.saved profile_id=%s message_uid=%s room_uid=%s',
-                        getattr(getattr(self, 'profile', None), 'id', None),
-                        message.uid,
-                        message.room.uid)
-
-            await self.group_send(f'user_{self.profile.id}', {
-                'type': 'chat.message',
-                'message_uid': str(message.uid),
-                'message': message.body,
-                'sender': self._sender_name(),
-                'created': message.created.isoformat(),
-                'delivered': message.delivered,
-                'seen': message.seen,
-            })
-            return
-        elif event == 'direct-message':
-            body = str(content.get('message', '')).strip()
-            if not body:
-                await self.send_json({'type': 'error',
-                                      'message': 'message is required'})
-                return
-            success, message = await self._save_message(body, event, content)
-            if not success:
-                expected_validation_errors = {'Target is not a friend', 'User not found'}
-                message_text = message.get('message') if isinstance(message, dict) else None
-                log_fn = logger.info if message_text in expected_validation_errors else logger.warning
-                log_fn('ws.direct_message.save_failed profile_id=%s error=%s',
-                       getattr(getattr(self, 'profile', None), 'id', None),
-                       message)
-                await self.send_json(message)
-                return
-
-            recipient_profile = await self._get_direct_recipient_profile(message)
-            if recipient_profile is None:
-                logger.warning('ws.direct_message.no_recipient profile_id=%s message_uid=%s',
-                               getattr(getattr(self, 'profile', None), 'id', None),
-                               message.uid)
-                await self.send_json({'type': 'error',
-                                      'message': 'Target user not found'})
-                return
-
-            if recipient_profile.is_online:
-                recipient_chat_open = await self._is_direct_chat_open(recipient_profile.id, self.profile.id)
-                if recipient_chat_open:
-                    await self._mark_direct_message_seen(message.uid)
-                    message.delivered = True
-                    message.seen = True
-                elif not message.delivered:
-                    await self._mark_direct_message_delivered(message.uid)
-                    message.delivered = True
-
-            logger.info('ws.direct_message.sent sender_profile_id=%s recipient_profile_id=%s message_uid=%s',
-                        getattr(getattr(self, 'profile', None), 'id', None),
-                        recipient_profile.id,
-                        message.uid)
-
-            event_payload = {
-                'type': 'chat.message',
-                'message_uid': str(message.uid),
-                'message': message.body,
-                'sender': self._sender_name(),
-                'created': message.created.isoformat(),
-                'delivered': message.delivered,
-                'seen': message.seen,
-            }
-            await self.group_send(f'user_{recipient_profile.id}', event_payload)
-            await self.group_send(f'user_{self.profile.id}', event_payload)
-
-            sender_payload = {
-                'target': 'friend-chat',
-                'event': 'new',
-                'message': serialize_friend_chat_message(message, recipient_profile, 'outgoing'),
-            }
-            recipient_payload = {
-                'target': 'friend-chat',
-                'event': 'new',
-                'message': serialize_friend_chat_message(message, self.profile, 'incoming'),
-            }
-            await self.group_send(f'user_{self.profile.id}', {
-                'type': 'send.notification',
-                'payload': sender_payload,
-            })
-            if recipient_profile.is_online:
-                await self.group_send(f'user_{recipient_profile.id}', {
-                    'type': 'send.notification',
-                    'payload': recipient_payload,
-                })
-            return
-        elif lifecycle_event in ('open', 'close'):
-            target_uid = content.get('target_uid')
-            if not target_uid:
-                await self.send_json({'type': 'error', 'message': 'target_uid is required'})
-                return
-            target_profile = await self._get_profile_by_uid(target_uid)
-            if not target_profile:
-                await self.send_json({'type': 'error', 'message': 'target_not_found'})
-                return
-
-            is_open = lifecycle_event == 'open'
-            await self._set_direct_chat_open(target_profile.id, is_open=is_open)
-            if is_open:
-                self.open_direct_chat_profile_ids.add(target_profile.id)
-            else:
-                self.open_direct_chat_profile_ids.discard(target_profile.id)
-            return
-        await self.send_json({'type': 'error', 'message': 'unsupported_event'})
-
     @database_sync_to_async
-    def _update_online_status(self, is_online: bool) -> bool:
-        profile_id = getattr(self.profile, 'id', None)
-        if profile_id is None:
-            return False
-
-        updated_rows = Profile.objects.filter(id=profile_id).update(is_online=is_online)
-        if updated_rows == 0:
-            logger.info('ws.presence.skip_missing_profile profile_id=%s desired_online=%s',
-                        profile_id,
-                        is_online)
-            return False
-
-        self.profile.is_online = is_online
-        return True
-
-    @database_sync_to_async
-    def _mark_direct_message_delivered(self, message_uid) -> None:
-        message = Message.objects.filter(uid=message_uid).first()
-        if not message:
-            logger.warning('ws.direct_message._mark_delivered.not_found message_uid=%s', message_uid)
-            return
-        if not message.delivered:
-            message.delivered = True
-            message.save(update_fields=['delivered'])
-            return
-
-    @database_sync_to_async
-    def _mark_direct_message_seen(self, message_uid) -> None:
-        message = Message.objects.filter(uid=message_uid).first()
-        if not message:
-            return
-        update_fields = []
-        if not message.delivered:
-            message.delivered = True
-            update_fields.append('delivered')
-        if not message.seen:
-            message.seen = True
-            update_fields.append('seen')
-        if update_fields:
-            message.save(update_fields=update_fields)
-
-    @database_sync_to_async
-    def _is_direct_chat_open(self, viewer_profile_id: int, target_profile_id: int) -> bool:
-        return bool(cache.get(f'chat_open:{viewer_profile_id}:{target_profile_id}'))
-
-    @database_sync_to_async
-    def _set_direct_chat_open(self, target_profile_id: int, is_open: bool) -> None:
-        if self.profile is None:
-            return
-        key = f'chat_open:{self.profile.id}:{target_profile_id}'
-        if is_open:
-            cache.set(key, True, timeout=180)
-            return
-        cache.delete(key)
-
-    @database_sync_to_async
-    def _get_profile_by_uid(self, profile_uid: str) -> Profile | None:
+    def get_profile_by_uid(self, profile_uid: str) -> Profile | None:
         return Profile.objects.filter(uid=profile_uid).first()
 
-    async def chat_message(self, event: dict) -> None:
-        """Forward a chat message event to the connected client."""
+    async def game_chat_message(self, event: dict) -> None:
+        """Forward a chat message event to the connected client.
+        So its final output formattes for each connected socket"""
         await self.send_json({
-            'type': 'chat_message',
-            'group': self.group_name,
-            'sender': event['sender'],
-            'message': event['message'],
-            'message_id': event.get('message_id'),
-            'created': event.get('created'),
-            'delivered': event.get('delivered'),
-            'seen': event.get('seen'),
+            'target': 'game',
+            'event': 'message_broadcast',
+            'uid': event.get('uid'),
+            'self': LightProfileSerializer(self.profile).data,
+            'message': event.get('message'),
         })
 
     async def send_notification(self, event: dict) -> None:
@@ -369,42 +171,78 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         })
 
     # Game event handlers
+
+    async def global_error_mssg(self, event: dict) -> None:
+        """Notify all players of an error."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'player_joined',
+            'game': event.get('game'),
+            'self': self.profile_data,
+            'error_mssg': event.get('error_mssg')
+        })
+    
     async def game_player_joined(self, event: dict) -> None:
         """Notify of a player joining the game room."""
         await self.send_json({
             'target': 'game',
             'event': 'player_joined',
-            'player_name': event['player_name'],
-            'player_id': event['player_id'],
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'player': event.get('player')
         })
 
-    async def game_game_started(self, event: dict) -> None:
-        """Notify that the game has started."""
+    async def game_settings_updated(self, event: dict) -> None:
+        """Notify clients that game settings have changed."""
         await self.send_json({
             'target': 'game',
-            'event': 'game_started',
-            'started_by': event['started_by'],
-            'room_id': event.get('room_id'),
+            'event': 'settings_updated',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'settings': event.get('settings', {}),
         })
 
-    async def game_track_revealed(self, event: dict) -> None:
-        """Notify of a track being revealed."""
-        await self.send_json({
+    async def game_answer_validation(self, event: dict) -> None:
+        """Notify of an answer validation with title/artist found status."""
+        payload = {
             'target': 'game',
-            'event': 'track_revealed',
-            'track': event['track'],
-            'room_id': event.get('room_id'),
-        })
+            'event': 'answer_validation',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'titleFound': event.get('titleFound', False),
+            'artistFound': event.get('artistFound', False),
+            'time': event.get('time'),
+        }
+        if event.get('titleFound') and event.get('artistFound'):
+            payload['track'] = event.get('track', {})
+        await self.send_json(payload)
 
-    async def game_answer_submitted(self, event: dict) -> None:
+    #TODO: Legacy methods for answer validation, to be removed
+    async def game_answer_correct(self, event: dict) -> None:
         """Notify of an answer submission."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_submitted',
-            'player_name': event['player_name'],
-            'player_id': event['player_id'],
-            'answer': event['answer'],
-            'is_correct': event['is_correct'],
+            'event': 'answer_validation',
+            'uid': event.get('uid'),
+            'senderPlayer': event.get('sender_player'),
+            'self': self.profile_data,
+            'answer': event.get('answer'),
+            'trackArtist': event.get('trackArtist'),
+            'tracktitle': event.get('tracktitle'),
+            'correct': event.get('is_correct', False),
+            'time': event.get('time'),
+        })
+
+    async def game_answer_incorrect(self, event: dict) -> None:
+        """Notify of an answer submission."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'answer_validation',
+            'uid': event.get('uid'),
+            'senderPlayer': event.get('senderPlayer'),
+            'self': self.profile_data,
+            'answer': event.get('answer'),
+            'correct': event.get('is_correct', False),
         })
 
     async def game_player_left(self, event: dict) -> None:
@@ -412,19 +250,103 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'player_left',
-            'player_name': event['player_name'],
-            'player_id': event['player_id'],
-            'room_id': event.get('room_id'),
+            'game': event.get('game'),
+            'self': self.profile_data,
+            'player': event.get('player'),
         })
 
+    async def game_round_start(self, event: dict) -> None:
+        """Broadcast round start with blind track info to all players."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_started',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'preview': event.get('preview'),
+            'playbackDuration': event.get('playbackDuration'),
+            'round': event.get('round'),
+        })
+
+    async def game_round_preview(self, event: dict) -> None:
+        """Broadcast the preview track before the round starts."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_preview',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'preview': event.get('preview'),
+            'playbackDuration': event.get('playbackDuration'),
+            'round': event.get('round'),
+        })
+
+    async def game_round_end(self, event: dict) -> None:
+        """Send round results and next round timing."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'round_ended',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'track': event.get('track'),
+            'leaderboard': event.get('leaderboard', []),
+            'results': event.get('results', []),
+            'is_last_round': event.get('is_last_round', False),
+        })
+    
+    async def game_start_signal(self, event: dict) -> None:
+        """Broadcast final game results and leaderboard."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_started',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'settings': event.get('settings'),
+            'delay': event.get('delay'),
+        })
+
+    async def game_completed(self, event: dict) -> None:
+        """Broadcast final game results and leaderboard."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_completed',
+            'game': event.get('game'),
+            'self': self.profile_data,
+            'leaderboard': event.get('leaderboard'),
+        })
+
+    async def game_answer_broadcast(self, event: dict) -> None:
+        """Broadcast incorrect answer to all players."""
+        payload = {
+            'target': 'game',
+            'event': 'answer_broadcast',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'player': event.get('player'),
+            'kind': event.get('kind'),
+        }
+        if 'answer' in event:
+            payload['answer'] = event.get('answer')
+        await self.send_json(payload)
+
+    async def game_ended_event(self, event: dict) -> None:
+        """Broadcast game end with final leaderboard and history."""
+        history = await _get_game_history_data(event.get('uid'), self.profile)
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_ended',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'leaderboard': event.get('leaderboard'),
+            'history': history,
+        })
+    
     def _sender_name(self) -> str:
         """Return the authenticated sender username or an anonymous fallback."""
         if self.profile:
             return self.profile.username
         return 'anonymous'
-
+    
     @database_sync_to_async
-    def _get_profile_from_scope(self) -> Profile | None:
+    def _get_profile_from_scope(self) -> tuple[Profile, dict | None, None]:
         """Resolve profile from user, injected profile, or guest session."""
         self.user = self.scope.get("user")
         if self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated:
@@ -432,42 +354,41 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 profile = self.user.profile
                 logger.debug('ws.profile_resolve.from_authenticated_user user_id=%s profile_id=%s username=%s',
                              self.user.id, profile.id, profile.username)
-                return profile
+                return profile, LightProfileSerializer(profile).data
             except Profile.DoesNotExist:
                 logger.warning('ws.profile_resolve.authenticated_user_no_profile user_id=%s',
                                self.user.id)
-
+                return None, None
         profile = self.scope.get("profile")
         if isinstance(profile, Profile):
-            logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s is_guest=%s',
-                         profile.id, profile.is_guest)
-            return profile
+            logger.debug('ws.profile_resolve.from_scope_injection profile_id=%s guest=%s',
+                         profile.id, profile.guest)
+            return profile, LightProfileSerializer(profile).data
 
         session = self.scope.get("session", {})
         guest_uid = session.get("guest_profile_uid")
         if guest_uid:
             guest_profile = Profile.objects.filter(uid=guest_uid).first()
-            logger.debug('ws.profile_resolve.from_session_profile_uid profile_id=%s uid=%s is_guest=%s',
+            logger.debug('ws.profile_resolve.from_session_profile_uid profile_id=%s uid=%s guest=%s',
                          guest_profile.id if guest_profile else None,
                          guest_uid,
-                         guest_profile.is_guest if guest_profile else None)
-            if guest_profile and self.user and isinstance(self.user, SiteUser) and self.user.is_authenticated and guest_profile.user_id is None:
+                         guest_profile.guest if guest_profile else None)
+            if (guest_profile and self.user and isinstance(self.user, SiteUser)
+            and self.user.is_authenticated and guest_profile.user_id is None):
                 guest_profile.user = self.user
-                guest_profile.is_guest = False
-                guest_profile.save(update_fields=['user', 'is_guest'])
+                guest_profile.guest = False
+                guest_profile.save(update_fields=['user', 'guest'])
                 logger.info('ws.profile_resolve.session_profile_linked user_id=%s profile_id=%s',
                             self.user.id,
                             guest_profile.id)
-            return guest_profile
-
-        if self.create_profile_if_missing:
+            return guest_profile, LightProfileSerializer(guest_profile).data
+        if self.create_missing_profile:
             guest_username = f"Guest_{uuid.uuid4().hex[:6]}"
-            new_profile = Profile.objects.create(username=guest_username, is_guest=True)
+            new_profile = Profile.objects.create(username=guest_username, guest=True)
             logger.debug('ws.profile_resolve.created_new_guest profile_id=%s', new_profile.id)
-            return new_profile
-        
+            return new_profile, LightProfileSerializer(new_profile).data
         logger.warning('ws.profile_resolve.failed no_profile_found')
-        return None
+        return None, None
 
     @database_sync_to_async
     def _save_message(self, body: str,
@@ -477,50 +398,54 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         room = None
         if event == 'direct-message':
             sender_user = None
-            logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_is_guest=%s profile_user_id=%s',
+            logger.debug('ws.direct_message.auth_check profile_id=%s self.user=%s is_auth=%s profile_guest=%s profile_user_id=%s',
                          getattr(self.profile, 'id', None),
                          type(getattr(self, 'user', None)).__name__,
                          bool(self.user and self.user.is_authenticated) if self.user else False,
-                         getattr(self.profile, 'is_guest', None),
+                         getattr(self.profile, 'guest', None),
                          getattr(self.profile, 'user_id', None))
             if self.user and self.user.is_authenticated:
                 sender_user = self.user
                 logger.debug('ws.direct_message.sender_resolved_from_user profile_id=%s user_id=%s',
                              getattr(self.profile, 'id', None),
                              self.user.id)
-            elif self.profile and not self.profile.is_guest and self.profile.user_id:
+            elif self.profile and not self.profile.guest and self.profile.user_id:
                 sender_user = self.profile.user
                 logger.debug('ws.direct_message.sender_resolved_from_profile profile_id=%s user_id=%s',
                              getattr(self.profile, 'id', None),
                              self.profile.user_id)
 
             if sender_user is None:
-                logger.warning('ws.direct_message.auth_failed profile_id=%s is_guest=%s user_in_scope=%s profile_user_id=%s',
+                logger.warning('ws.direct_message.auth_failed profile_id=%s guest=%s user_in_scope=%s profile_user_id=%s',
                                getattr(self.profile, 'id', None),
-                               getattr(self.profile, 'is_guest', None),
+                               getattr(self.profile, 'guest', None),
                                bool(getattr(self, 'user', None) and self.user.is_authenticated),
                                getattr(self.profile, 'user_id', None))
                 return False, {'type': 'error',
                                'message': 'Authentication failed'}
-            target_uid = content.get('user_uid')
-            target_user = SiteUser.objects.filter(uid=target_uid).first()
-            if target_user is None and target_uid is not None:
-                target_profile = Profile.objects.filter(uid=target_uid).select_related('user').first()
-                if target_profile is not None:
-                    target_user = target_profile.user
-            if target_user is None:
+            recipient_uid = content.get('user_uid')
+            recipient_user = SiteUser.objects.filter(uid=recipient_uid).first()
+            if recipient_user is None and recipient_uid is not None:
+                recipient_profile = Profile.objects.filter(uid=recipient_uid).select_related('user').first()
+                if recipient_profile is not None:
+                    recipient_user = recipient_profile.user
+            if recipient_user is None:
                 return False, {'type': 'error',
                                'message': 'User not found'}
-            if not accepted_friendship_exists(self.profile, target_user.profile):
+            if not accepted_friendship(self.profile, recipient_user.profile):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
-            target_profile = target_user.profile
-            room, created = get_or_create_direct_room(self.profile, target_profile)
-            if created:
-                room.participants.add(self.profile)
-                room.participants.add(target_profile)
+            recipient_profile = recipient_user.profile
+            room = create_direct_room(self.profile, recipient_profile)
+            if room is None:
+                return False, {'type': 'error',
+                    'message': 'Chat room does not exist'}
+            
         elif event == 'chat-message':
-            if content.get('room_uid'):
+            if getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
+                room = self.current_game.room
+                self.room = room
+            elif content.get('room_uid'):
                 room = Room.objects.filter(uid=content['room_uid']).first()
                 self.room = room
             elif self.room:
@@ -536,19 +461,20 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             return False, {'type': 'error',
                            'message': 'An unexpected error occured'}
         if not room.participants.filter(uid=self.profile.uid).exists():
-            return False, {'type': 'error',
+            is_game_room = (
+                not room.is_direct
+                and getattr(self, 'current_game', None) is not None
+                and getattr(self.current_game, 'room_id', None) == room.id
+            )
+            if not is_game_room:
+                return False, {'type': 'error',
                            'message': 'Not a chat member'}
         message = Message.objects.create(
-            sender_profile=self.profile,
+            sender=self.profile,
             room=room,
             body=body,
         )
         return True, message
-
-    @database_sync_to_async
-    def _get_direct_recipient_profile(self, message: Message) -> Profile | None:
-        """Return the other participant profile for a direct-message room."""
-        return message.room.participants.exclude(id=message.sender_profile.id).first()
 
 class NotFoundConsumer(AsyncWebsocketConsumer):
     """Handle non-existant endpoint communication."""

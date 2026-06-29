@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from django.contrib.auth import authenticate, login, logout 
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as coreValidationError
 from rest_framework import serializers, status
@@ -123,7 +123,7 @@ class LoginView(APIView):
                 )
                 guest_id = request.session.get('guest_profile_id')
                 if guest_id:
-                    profile = Profile.objects.filter(id=guest_id, is_guest=True)
+                    profile = Profile.objects.filter(id=guest_id, guest=True)
                     if profile.exists():
                         profile.delete()
                         request.profile = user.profile

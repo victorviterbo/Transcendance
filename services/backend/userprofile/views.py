@@ -105,7 +105,7 @@ class GuestProfileCreateView(APIView):
         else:
             profile = Profile.objects.filter(
                 session_key=request.session.session_key, 
-                is_guest=True
+                guest=True
             ).first()
         
         if profile:
@@ -124,7 +124,7 @@ class GuestProfileCreateView(APIView):
         if serializer.is_valid():
             serializer.save(
                 session_key=request.session.session_key,
-                is_guest=True
+                guest=True
             )
             if profile:
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -134,13 +134,14 @@ class GuestProfileCreateView(APIView):
 
 class GuestCleanupView(APIView):
     """End point for guest cleanup."""
+    permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
         """Receive front beacon to activate guest leaving."""
         session_key = request.session.session_key
         if session_key:
             profile = Profile.objects.filter(session_key=session_key,
-                                             is_guest=True).first()
+                                             guest=True).first()
             if profile:
                 profile.delete() 
         return Response(status=status.HTTP_204_NO_CONTENT)

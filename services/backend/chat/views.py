@@ -1,6 +1,7 @@
 """HTTP views for chat room lookups, direct-message room creation, and fallback posting."""
 
 import uuid
+import logging
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -9,66 +10,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from userauth.models import SiteUser
-from userprofile.models import Profile
 
-from .chat_utils import (
-    accepted_friendship_exists,
-    get_or_create_direct_room,
-    serialize_friend_chat_message,
-)
+from .chat_utils import accepted_friendship, resolve_recipient_user, direct_key
 from .models import Message, Room
-from .serializers import MessageSerializer, RoomSerializer
+from .serializers import MessageSerializer, RoomSerializer, FriendChatMessageSerializer
 
-
-def _resolve_target_user(target_uid: str | None) -> SiteUser | None:
-    """Resolve a target user from either SiteUser.uid or Profile.uid."""
-
-    if target_uid is None:
-        return None
-
-    user = SiteUser.objects.filter(uid=target_uid).select_related('profile').first()
-    if user:
-        return user
-
-    profile = Profile.objects.filter(uid=target_uid).select_related('user').first()
-    if not profile:
-        return None
-    return profile.user
-
-class DirectMessageView(APIView):
-    """Create or join the new chatroom that comes with every new game."""
-    permission_classes=[IsAuthenticated]
-
-    def post(self, request: Request) -> Response:
-        """Create or fetch a direct-message room shared by the current user and target user."""
-        if request.profile.is_guest:
-            return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        if not request.data.get('user_uid'):
-            return Response({'error': {'user_uid': 'MISSING_FIELD'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        target_profile = Profile.objects.filter(user__uid=self.request.data['user_uid']).first()
-        if not target_profile:
-            return Response({'error': {'user_uid': 'USER_NOT_FOUND'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        if request.profile.uid == target_profile.uid:
-            return Response({'error': {'user_uid': 'CANNOT_SELF_DM'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        if not accepted_friendship_exists(request.profile, target_profile):
-            return Response({'error': {'user_uid': 'USER_NOT_FRIEND'}},
-                                status=status.HTTP_403_FORBIDDEN)
-
-        room, created = get_or_create_direct_room(request.profile, target_profile)
-        if created:
-            room.participants.add(request.profile, target_profile)
-        return Response({
-            'room_uid': room.uid,
-            'room_name': room.name,
-            'is_new': created,
-            'is_direct': True,
-        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
-
+logger = logging.getLogger(__name__)
 
 class RoomView(APIView):
     """HTTP view to see room status or create one."""
@@ -102,78 +49,96 @@ class RoomView(APIView):
             room.participants.add(request.profile)
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(sender_profile=request.profile, room=room)
+            serializer.save(sender=request.profile, room=room)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class DirectMessageView(APIView):
+    """Create a direct message view that friend to friend can private chat with each other."""
+    permission_classes=[IsAuthenticated]
 
-
+    def post(self, request: Request) -> Response:
+        """Create or fetch a direct-message room shared by the current user and target user."""
+        current_profile = request.profile
+        if current_profile.guest:
+            return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        if not request.data.get('user_uid'):
+            return Response({'error': {'user_uid': 'MISSING_FIELD'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+        recipient_user = resolve_recipient_user(request.data['user_uid'])
+        if recipient_user is None:
+            return Response({'error': {'user_uid': 'USER_NOT_FOUND'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+        recipient_profile = recipient_user.profile
+        if current_profile.uid == recipient_profile.uid:
+            return Response({'error': {'user_uid': 'CANNOT_SELF_DM'}},
+                                status=status.HTTP_400_BAD_REQUEST)
+        if not accepted_friendship(current_profile, recipient_profile):
+            return Response({'error': {'user_uid': 'USER_NOT_FRIEND'}},
+                                status=status.HTTP_403_FORBIDDEN)
+        
 class FriendMessageFeed(APIView):
     """Return direct-message history between the authenticated user and a friend."""
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
         """Fetch a friend chat feed in the frontend contract shape."""
-
-        target_uid = request.data.get('uid') or request.data.get('user_uid') or request.data.get('target-uid')
-        if target_uid is None:
+        current_profile = request.profile
+        recipient_uid = request.data.get('uid') or request.data.get('user_uid') or request.data.get('target-uid')
+        if recipient_uid is None:
             return Response(
-                {'error': {'uid': 'MISSING_FIELD', 'user_uid': 'MISSING_FIELD', 'target-uid': 'MISSING_FIELD'}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        target_user = _resolve_target_user(target_uid)
-        if target_user is None:
+                {'error': {'target-uid': 'MISSING_FIELD'}},
+                status=status.HTTP_400_BAD_REQUEST,)
+        recipient_user = resolve_recipient_user(recipient_uid)
+        if recipient_user is None:
             return Response(
-                {'error': {'uid': 'USER_NOT_FOUND', 'user_uid': 'USER_NOT_FOUND', 'target-uid': 'USER_NOT_FOUND'}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if target_user == request.user:
+                {'error': {'target-uid': 'USER_NOT_FOUND'}},
+                status=status.HTTP_400_BAD_REQUEST,)
+        if recipient_user == request.user:
             return Response({'error': {'uid': 'CANNOT_SELF_DM'}}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not accepted_friendship_exists(request.user.profile, target_user.profile):
+        if not accepted_friendship(current_profile, recipient_user.profile):
             return Response({'error': {'uid': 'USER_NOT_FRIEND'}}, status=status.HTTP_403_FORBIDDEN)
 
-        room, created = get_or_create_direct_room(request.user.profile, target_user.profile)
-        if created:
-            room.participants.add(request.user.profile, target_user.profile)
-
+        room = Room.objects.filter(
+            direct_key=direct_key(current_profile, recipient_user.profile)
+        ).first()
+        if room is None:
+            return Response({'feed': []}, status=status.HTTP_200_OK)
+        
         channel_layer = get_channel_layer()
-        feed: list[dict[str, object]] = []
-        messages = Message.objects.filter(room=room).select_related('sender_profile').order_by('created')
-        for message in messages:
-            is_outgoing = message.sender_profile_id == request.user.profile.id
-            if not is_outgoing and not message.seen:
-                update_fields: list[str] = []
-                if not message.delivered:
-                    message.delivered = True
+        feed = []
+        messages = Message.objects.filter(room=room).select_related('sender').order_by('created')
+        for m in messages:
+            is_outgoing = m.sender_id == current_profile.id
+            if not is_outgoing and not m.seen:
+                update_fields = []
+                if not m.delivered:
+                    m.delivered = True
                     update_fields.append('delivered')
-                message.seen = True
+                m.seen = True
                 update_fields.append('seen')
-                message.save(update_fields=update_fields)
-
+                m.save(update_fields=update_fields)
+                logger.info('feed.marked_seen message_uid=%s', m.uid)
                 if channel_layer:
-                    payload: dict[str, object] = {
-                        'target': 'friend-chat',
-                        'event': 'update_status',
-                        'message': serialize_friend_chat_message(message, request.user.profile, 'outgoing'),
-                    }
                     async_to_sync(channel_layer.group_send)(
-                        f'user_{message.sender_profile_id}',
+                        f'user_{m.sender.uid}',
                         {
                             'type': 'send.notification',
-                            'payload': payload,
-                        },
-                    )
-
-            payload: dict[str, object] = serialize_friend_chat_message(
-                message,
-                target_user.profile,
-                'outgoing' if is_outgoing else 'incoming',
-            )
-            feed.append(payload)
-
+                            'payload': {
+                                'target': 'friend-chat',
+                                'event': 'update_status',
+                                'message': FriendChatMessageSerializer(
+                                    m,
+                                    context={'recipient_profile': current_profile, 'direction': 'outgoing'},
+                                ).data,}
+                        },)
+                    logger.info('feed.notified_sender sender_uid=%s message_uid=%s', m.sender.uid, m.uid)
+            
+            feed.append (FriendChatMessageSerializer(
+                m,
+                context={'recipient_profile': recipient_user.profile, 'direction': 'outgoing' if is_outgoing else 'incoming'},
+            ).data)
         return Response({'feed': feed}, status=status.HTTP_200_OK)
         
