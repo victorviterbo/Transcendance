@@ -232,10 +232,6 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
         artist_newly_found,
         title_newly_found,
     ) = await _validate_answer(consumer, content, track_data)
-                        
-    # if ((artist_correct or title_correct)
-    #     and consumer.current_game.mode == 'armageddon'):
-    #     await check_all_answers_received(consumer, consumer.current_game)
 
     serialized_player = await _get_player_data(consumer)
     if artist_newly_found and title_newly_found:
@@ -329,11 +325,3 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     consumer.current_game = None
     consumer.game_group_name = None
     return
-
-
-async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> None:
-    """Unlocks the game loop if both artist and title has been found."""
-    found = await _get_round_stats_completeness(game)
-    game_over = found['titles'] > 0 and found['artists'] > 0
-    if game_over:
-        ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].set()

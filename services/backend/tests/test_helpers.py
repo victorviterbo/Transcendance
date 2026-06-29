@@ -177,7 +177,6 @@ class TestWebsocketHelpers(APITransactionTestCase):
                          player_answer: list,
                          owner: dict,
                          public: bool=False,
-                         armageddon: bool=False
                         ) -> dict:
         """Handle a game round."""
         payloads = {'preview': [],
@@ -192,7 +191,7 @@ class TestWebsocketHelpers(APITransactionTestCase):
             payloads['start'].append(payload)
         for answers in player_answer:
             await answers['socket'].send_json_to(answers['payload'])
-            if (answers['is_correct'] and armageddon) or (not answers['is_correct'] and public):
+            if (answers['is_correct']) or (not answers['is_correct'] and public):
                 for p in players:
                     print(p)
                     payload = await self.expect_event(p, answers['expected_response'])
