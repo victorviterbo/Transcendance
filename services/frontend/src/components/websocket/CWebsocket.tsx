@@ -81,14 +81,22 @@ export const useWS = (moduleTarget: TWSModuleName): IWSContextModule => {
 	return module;
 };
 
+export const useWSStatus = (): ReadyState => {
+	const context: IWSContext | null = useContext(wsContext);
+	if (!context) throw "WS: Ixvalid wsContext";
+	return context.state;
+};
+
 //--------------------------------------------------
 //                       NODE
 //--------------------------------------------------
 interface AppWebsocketProps {
 	children: ReactNode;
+	loading: ReactNode;
+	lost: ReactNode;
 }
 
-function CWebsocket({ children }: AppWebsocketProps) {
+function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	const { sendMessage, lastMessage, readyState } = useWebSocket(
 		import.meta.env.MODE !== "mock" && import.meta.env.MODE !== "test"
 			? WS_ADRESS
@@ -123,8 +131,11 @@ function CWebsocket({ children }: AppWebsocketProps) {
 	}, [lastMessage, modules]);
 
 	return (
-		<wsContext.Provider value={{ modules: modules, sendMessage }}>
+		<wsContext.Provider value={{ modules: modules, sendMessage, state: readyState }}>
+			{(readyState == ReadyState.CONNECTING || readyState == ReadyState.UNINSTANTIATED) &&
+				loading}
 			{readyState == ReadyState.OPEN && children}
+			{(readyState == ReadyState.CLOSING || readyState == ReadyState.CLOSED) && lost}
 		</wsContext.Provider>
 	);
 }

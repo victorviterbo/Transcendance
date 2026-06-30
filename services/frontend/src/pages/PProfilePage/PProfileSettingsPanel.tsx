@@ -218,8 +218,8 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 			setPendingDeletePassword(null);
 			pushNotif({
 				severity: "success",
-				message: "DELETE_ACCOUNT_SUCCESS"
-			})
+				message: "DELETE_ACCOUNT_SUCCESS",
+			});
 		} catch (error) {
 			setDeleteConfirmError(getErrorMessage(error, "DELETE_FAILED"));
 		} finally {

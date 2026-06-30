@@ -53,7 +53,6 @@ function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRel
 	}, [profile]);
 	const pushNotif = useNotif().push;
 
-
 	useEffect(() => {
 		if (authStatus !== "authed") {
 			setRelationState({
@@ -92,18 +91,17 @@ function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRel
 	}, [authStatus, profile]);
 
 	useEffect(() => {
-		if(!relationState.error)
-			return;
+		if (!relationState.error) return;
 		pushNotif({
 			severity: "error",
-			message: relationState.error
-		})
+			message: relationState.error,
+		});
 		const clear = async () => {
 			relationState.error = null;
 			setRelationState(structuredClone(relationState));
-		}
+		};
 		clear();
-	}, [relationState, setRelationState, pushNotif])
+	}, [relationState, setRelationState, pushNotif]);
 
 	const handleSocialAction = async (action: TRelationAction) => {
 		setPendingAction(action);

@@ -15,6 +15,9 @@ export const mockSetNoRequests = (value: boolean) => {
 	mockNoRequests = value;
 };
 
+const closeTest: boolean = false;
+let closeCount: number = 0;
+
 export const socketConnHandler = socket.addEventListener("connection", ({ client }) => {
 	//====================== DATA ======================
 	let counter = 0;
@@ -22,6 +25,10 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 	//====================== EXEC ======================
 	console.log("[MOCK] Client connected: " + client.id);
 
+	if (closeTest && closeCount < 3) {
+		client.close();
+		closeCount++;
+	}
 	client.addEventListener("message", (event) => {
 		const dataRcv: TWSSend | IWSGameRCVEvent =
 			typeof event.data == "string" ? JSON.parse(event.data) : event.data;
