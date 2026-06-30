@@ -18,7 +18,7 @@ function PGameChatNode({ message }: PGameChatNodeProps) {
 		return (
 			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-				sx={{wordBreak: "break-word"}}
+					sx={{ wordBreak: "break-word" }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
@@ -41,7 +41,7 @@ function PGameChatNode({ message }: PGameChatNodeProps) {
 		return (
 			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-					sx={{ color: appColors.greys[3], wordBreak: "break-word"}}
+					sx={{ color: appColors.greys[3], wordBreak: "break-word" }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
@@ -72,7 +72,7 @@ function PGameChatNode({ message }: PGameChatNodeProps) {
 		return (
 			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-					sx={{ color: appColors.greys[3], wordBreak: "break-word"}}
+					sx={{ color: appColors.greys[3], wordBreak: "break-word" }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
@@ -106,7 +106,7 @@ function PGameChatNode({ message }: PGameChatNodeProps) {
 		return (
 			<Box sx={PGameChatNodeStyle()} data-testid="PGameChatNode">
 				<CText
-					sx={{ color: appColors.validate[1], wordBreak: "break-word"}}
+					sx={{ color: appColors.validate[1], wordBreak: "break-word" }}
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}

@@ -7,10 +7,10 @@ import type { TSize } from "../../types/string";
 interface CFooterLinkProps {
 	to: string;
 	label: string;
-	size: TSize
+	size: TSize;
 }
 
-function CFooterLink({ to, label, size}: CFooterLinkProps) {
+function CFooterLink({ to, label, size }: CFooterLinkProps) {
 	return (
 		<Box
 			component={RouterLink}
@@ -38,11 +38,10 @@ interface CFooterProps {
 }
 
 function CFooter({ hide }: CFooterProps) {
-
 	const theme = useTheme();
-	const isTiny = useMediaQuery(theme.breakpoints.down("tn"))
-	const isSmall = useMediaQuery(theme.breakpoints.down("sm"))
-	
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
+	const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
 	return (
 		<Box
 			component="footer"
@@ -66,10 +65,26 @@ function CFooter({ hide }: CFooterProps) {
 				alignItems="center"
 				justifyContent="center"
 			>
-				<CFooterLink size={isTiny ? "xs" : (isSmall ? "sm" : "md")} to="/contact" label="CONTACT" />
-				<CFooterLink size={isTiny ? "xs" : (isSmall ? "sm" : "md")} to="/qa" label="Q_AND_A" />
-				<CFooterLink size={isTiny ? "xs" : (isSmall ? "sm" : "md")} to="/terms-of-service" label="TERMS_OF_SERVICE" />
-				<CFooterLink size={isTiny ? "xs" : (isSmall ? "sm" : "md")} to="/privacy-policy" label="PRIVACY_POLICY" />
+				<CFooterLink
+					size={isTiny ? "xs" : isSmall ? "sm" : "md"}
+					to="/contact"
+					label="CONTACT"
+				/>
+				<CFooterLink
+					size={isTiny ? "xs" : isSmall ? "sm" : "md"}
+					to="/qa"
+					label="Q_AND_A"
+				/>
+				<CFooterLink
+					size={isTiny ? "xs" : isSmall ? "sm" : "md"}
+					to="/terms-of-service"
+					label="TERMS_OF_SERVICE"
+				/>
+				<CFooterLink
+					size={isTiny ? "xs" : isSmall ? "sm" : "md"}
+					to="/privacy-policy"
+					label="PRIVACY_POLICY"
+				/>
 			</Stack>
 		</Box>
 	);
