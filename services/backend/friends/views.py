@@ -54,8 +54,8 @@ def friend_response(description: str, target_user: SiteUser, target_username: st
     """response for friend actions."""
     return {
         'description': description,
-        'target-uid': str(target_user.profile.uid),
-        'target-username': target_username or target_user.profile.username,
+        'targetUid': str(target_user.profile.uid),
+        'targetUsername': target_username or target_user.profile.username,
     }
 
 def serialize_profiles_list(profiles, request: Request, relation) -> list:
@@ -155,15 +155,15 @@ class FriendRequestsRespond(APIView):
     def post(self, request: Request) -> Response:
         """Accept or refuse a pending friend request."""
 
-        target_uid = get_request_value(request, 'target-uid')
-        target_username = get_request_value(request, 'target-username')
-        new_status = request.data.get('new-status')
+        target_uid = get_request_value(request, 'targetUid')
+        target_username = get_request_value(request, 'targetUsername')
+        new_status = request.data.get('newStatus')
 
         error_payload: dict[str, str] = {}
         if target_uid is None:
-            error_payload['target-uid'] = 'MISSING_FIELD'
+            error_payload['targetUid'] = 'MISSING_FIELD'
         if new_status is None:
-            error_payload['new-status'] = 'MISSING_FIELD'
+            error_payload['newStatus'] = 'MISSING_FIELD'
         if error_payload:
             return _error_response(error_payload)
 
@@ -172,7 +172,7 @@ class FriendRequestsRespond(APIView):
 
         target_user = resolve_target_user(target_uid)
         if target_user is None:
-            return _error_response({'target-uid': 'USER_NOT_FOUND'})
+            return _error_response({'targetUid': 'USER_NOT_FOUND'})
 
         sender = target_user
         user = request.user
@@ -185,8 +185,8 @@ class FriendRequestsRespond(APIView):
                 return Response(
                     {
                         'description': 'FRIENDSHIP_REQUEST_ACCEPTED',
-                        'target-uid': str(target_user.profile.uid),
-                        'target-username': target_username or target_user.profile.username,
+                        'targetUid': str(target_user.profile.uid),
+                        'targetUsername': target_username or target_user.profile.username,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -195,8 +195,8 @@ class FriendRequestsRespond(APIView):
                 return Response(
                     {
                         'description': 'FRIENDSHIP_REQUEST_REJECTED',
-                        'target-uid': str(target_user.profile.uid),
-                        'target-username': target_username or target_user.profile.username,
+                        'targetUid': str(target_user.profile.uid),
+                        'targetUsername': target_username or target_user.profile.username,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -209,14 +209,14 @@ class FriendRequestsSend(APIView):
 
     def post(self, request: Request) -> Response:
         """Send a new friend request."""
-        target_uid = get_request_value(request, 'target-uid')
-        target_username = get_request_value(request, 'target-username')
+        target_uid = get_request_value(request, 'targetUid')
+        target_username = get_request_value(request, 'targetUsername')
         if target_uid is None:
-            return _error_response({'target-uid': 'MISSING_FIELD'})
+            return _error_response({'targetUid': 'MISSING_FIELD'})
 
         recipient = resolve_target_user(target_uid)
         if recipient is None:
-            return _error_response({'target-uid': 'USER_NOT_FOUND'})
+            return _error_response({'targetUid': 'USER_NOT_FOUND'})
 
         user = request.user
         if recipient == user:
@@ -238,8 +238,8 @@ class FriendRequestsSend(APIView):
         return Response(
             {
                 'description': 'FRIENDSHIP_REQUEST_SENT',
-                'target-uid': str(recipient.profile.uid),
-                'target-username': target_username or recipient.profile.username,
+                'targetUid': str(recipient.profile.uid),
+                'targetUsername': target_username or recipient.profile.username,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -251,10 +251,10 @@ class FriendRemove(APIView):
 
     def post(self, request: Request) -> Response:
         """Remove an accepted friendship or cancel an outgoing pending request."""
-        target_uid = get_request_value(request, 'target-uid')
-        target_username = get_request_value(request, 'target-username')
+        target_uid = get_request_value(request, 'targetUid')
+        target_username = get_request_value(request, 'targetUsername')
         if target_uid is None:
-            return _error_response({'target-uid': 'MISSING_FIELD'})
+            return _error_response({'targetUid': 'MISSING_FIELD'})
 
         target_user = resolve_target_user(target_uid)
         if target_user is None:
@@ -284,7 +284,7 @@ class FriendRemove(APIView):
 
 
 class NotifSee(APIView):
-    """List pending friend-request notifications for the authenticated user."""
+    """List pending friend_request notifications for the authenticated user."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
@@ -302,7 +302,7 @@ class NotifSee(APIView):
         notifs = [
             notif_payload(
                 friendship=friendship,
-                kind='friend-request',
+                kind='friend_request',
                 profile=friendship.from_user.profile,
                 relation='incoming',
                 request=request,
@@ -312,7 +312,7 @@ class NotifSee(APIView):
         notifs.extend(
             notif_payload(
                 friendship=friendship,
-                kind='friend-accepted',
+                kind='friend_accepted',
                 profile=friendship.to_user.profile,
                 relation='friends',
                 request=request,
@@ -327,11 +327,11 @@ class NotifSee(APIView):
 
 
 class NotifRead(APIView):
-    """Mark pending friend-request notifications as read."""
+    """Mark pending friend_request notifications as read."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        """Mark all incoming friend-request notifications as read."""
+        """Mark all incoming friend_request notifications as read."""
         Friendship.objects.filter(to_user=request.user, status='pending', read=False).update(read=True)
         Friendship.objects.filter(from_user=request.user, status='accepted', read=False).update(read=True)
         return Response({}, status=status.HTTP_200_OK)
