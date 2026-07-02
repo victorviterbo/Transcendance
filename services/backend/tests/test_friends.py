@@ -59,9 +59,9 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
                     self.assertIn('friendship', response.data['error'])
                     self.assertEqual('REALLY_SAD', response.data['error']['friendship'])
                 else:
-                    self.assertIn('user_uid', response.data['error'])
+                    self.assertIn('target-uid', response.data['error'])
                     self.assertEqual('USER_NOT_FOUND',
-                                     response.data['error']['user_uid'])
+                                     response.data['error']['target-uid'])
             else:
                 self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.get(urls['friend_request'])
@@ -247,6 +247,70 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
                 status='pending',
             ).exists()
         )
+
+    def test_remove_deleted_target_returns_friendship_not_found(self) -> None:
+        """Removing a friend whose account was deleted is a stale friendship state."""
+
+        login_url = '/api/auth/login/'
+        send_url = '/api/social/friend-request/send'
+        respond_url = '/api/social/friend-request/respond'
+        remove_url = '/api/social/friend/remove'
+
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        target_uid = str(self.user2.profile.uid)
+        target_username = self.user2.profile.username
+        response = self.client.post(send_url, data={
+            'target-uid': target_uid,
+            'target-username': target_username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        login_res = self.client.post(login_url, data={'email': 'user2@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(respond_url, data={
+            'target-uid': str(self.user1.profile.uid),
+            'target-username': self.user1.profile.username,
+            'new-status': 'accept',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.user2.delete()
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(remove_url, data={
+            'target-uid': target_uid,
+            'target-username': target_username,
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual({'friendship': 'FRIENDSHIP_NOT_FOUND'}, response.data['error'])
+
+    def test_friend_mutation_errors_use_canonical_target_uid_only(self) -> None:
+        """Friend mutation errors should not include legacy uid aliases."""
+
+        login_url = '/api/auth/login/'
+        send_url = '/api/social/friend-request/send'
+
+        login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
+        self.assertEqual(login_res.status_code, status.HTTP_200_OK)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + login_res.data.get('access'))
+
+        response = self.client.post(send_url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual({'target-uid': 'MISSING_FIELD'}, response.data['error'])
+
+        response = self.client.post(send_url, data={
+            'target-uid': '00000000-0000-0000-0000-000000000000',
+            'target-username': 'deleted-user',
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual({'target-uid': 'USER_NOT_FOUND'}, response.data['error'])
 
     def test_notifications_list_and_mark_read(self) -> None:
         """Test the notification payload contract for friend requests and acceptances."""
