@@ -115,8 +115,8 @@ export const friendsRequestsSendHandler = http.post(
 		user.relation = "outgoing";
 		return HttpResponse.json(
 			{
-				"target-username": user.username,
-				"target-uid": user.uid,
+				targetUsername: user.username,
+				targetUid: user.uid,
 				description: "FRIENDSHIP_REQUEST_SENT",
 			},
 			{ status: 201 },
@@ -142,8 +142,8 @@ export const friendsRequestsResponseHandler = http.post(
 			const user: IFriendInfo = out as IFriendInfo;
 			return HttpResponse.json(
 				{
-					"target-username": user.username,
-					"target-uid": user.uid,
+					targetUsername: user.username,
+					targetUid: user.uid,
 					description: "FRIENDSHIP_REQUEST_ACCEPTED",
 				},
 				{ status: 201 },
@@ -152,8 +152,8 @@ export const friendsRequestsResponseHandler = http.post(
 		const user: IExtUserInfo = out as IExtUserInfo;
 		return HttpResponse.json(
 			{
-				"target-username": user.username,
-				"target-uid": user.uid,
+				targetUsername: user.username,
+				targetUid: user.uid,
 				description: "FRIENDSHIP_REQUEST_SENT",
 			},
 			{ status: 201 },
@@ -175,8 +175,8 @@ export const friendsRemoveHandler = http.post(API_SOCIAL_FRIEND_REMOVE, async ({
 
 	return HttpResponse.json(
 		{
-			"target-username": out.username,
-			"target-uid": out.uid,
+			targetUsername: out.username,
+			targetUid: out.uid,
 			description:
 				"relation" in out && out.relation === "not-friends"
 					? "FRIENDSHIP_REQUEST_CANCELLED"
@@ -205,7 +205,7 @@ export const notifRequestHandler = http.get(API_SOCIAL_NOTIFS, async () => {
 
 			res.notifs.push({
 				uid: crypto.randomUUID(),
-				kind: "friend-request",
+				kind: "friend_request",
 				from: value,
 				date: date,
 				read: count > 1,
@@ -245,7 +245,7 @@ export const mockNewIncomingRequests = (client: WebSocketClientConnectionProtoco
 		user.relation = "incoming";
 		const notif: TNotif = {
 			uid: crypto.randomUUID(),
-			kind: "friend-request",
+			kind: "friend_request",
 			from: user,
 			date: new Date(),
 			read: false,
@@ -261,8 +261,8 @@ export const mockNewIncomingRequests = (client: WebSocketClientConnectionProtoco
 
 		client.send(
 			JSON.stringify({
-				target: "friend-request",
-				event: "new-incoming",
+				target: "friend_request",
+				event: "new_incoming",
 				user: user,
 			} as TWSRcv),
 		);
@@ -287,7 +287,7 @@ export const mockAcceptingRequests = (client: WebSocketClientConnectionProtocol)
 		mockSocialDB.friends.push({
 			uid: mockSocialDB.users[userPos].uid,
 			username: mockSocialDB.users[userPos].username,
-			image: mockSocialDB.users[userPos].image,
+			avatar: mockSocialDB.users[userPos].avatar,
 
 			exp_points: Math.round(Math.random() * 1000),
 			badges: mockSocialDB.users[userPos].badges,
@@ -307,7 +307,7 @@ export const mockAcceptingRequests = (client: WebSocketClientConnectionProtocol)
 
 		const notif: TNotif = {
 			uid: crypto.randomUUID(),
-			kind: "friend-accepted",
+			kind: "friend_accepted",
 			from: currentFriend,
 			date: new Date(),
 			read: false,

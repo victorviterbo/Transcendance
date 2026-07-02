@@ -17,8 +17,8 @@ import type {
 export type TWSConnectionType = "CONNECTING" | "OPEN" | "CLOSED" | "ERROR";
 
 export type TWSModuleName =
-	| "friend-chat"
-	| "friend-request"
+	| "friend_chat"
+	| "friend_request"
 	| "notif"
 	| "game"
 	| "test_counter_event"
@@ -42,7 +42,7 @@ export interface IWSContextModule {
 //SHARED EVENT
 export type TWSRcv =
 	| {
-			target: Extract<TWSModuleName, "friend-chat">;
+			target: Extract<TWSModuleName, "friend_chat">;
 			event: "update_status" | "new";
 			message: IFriendMessage;
 	  }
@@ -52,8 +52,8 @@ export type TWSRcv =
 			notif: TNotif;
 	  }
 	| {
-			target: Extract<TWSModuleName, "friend-request">;
-			event: "new-incoming";
+			target: Extract<TWSModuleName, "friend_request">;
+			event: "new_incoming";
 			user: IExtUserInfo;
 	  }
 
@@ -102,7 +102,7 @@ export type TWSRcv =
 
 export type TWSSend =
 	| {
-			target: Extract<TWSModuleName, "friend-chat">;
+			target: Extract<TWSModuleName, "friend_chat">;
 			event: "send" | "open" | "close";
 			message?: IFriendMessage;
 			to?: string;

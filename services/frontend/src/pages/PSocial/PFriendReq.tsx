@@ -18,7 +18,7 @@ function PFriendReq({ open }: PFriendReqProps) {
 	const [incoming, setIncoming] = useState<IExtUserInfo[]>([]);
 	const [outgoing, setOutgoing] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
-	const wsContext: IWSContextModule = useWS("friend-request");
+	const wsContext: IWSContextModule = useWS("friend_request");
 	const localId = useId();
 
 	//====================== GETTERS ======================
@@ -84,8 +84,8 @@ function PFriendReq({ open }: PFriendReqProps) {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
-				if (last?.target == "friend-request") {
-					if (last.event == "new-incoming") {
+				if (last?.target == "friend_request") {
+					if (last.event == "new_incoming") {
 						incoming.splice(0, 0, last.user);
 						setIncoming(structuredClone(incoming));
 					}

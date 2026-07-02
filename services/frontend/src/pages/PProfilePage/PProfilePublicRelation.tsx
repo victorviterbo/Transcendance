@@ -26,7 +26,7 @@ interface PProfilePublicRelationProps {
 const getTargetUser = (profile: IProfileData): IExtUserInfo => ({
 	uid: profile.uid ?? "",
 	username: profile.username,
-	image: profile.avatar ?? "",
+	avatar: profile.avatar ?? "",
 	badges: profile.badges,
 	relation: "not-friends",
 });

@@ -92,7 +92,7 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 			if (message.direction == "outgoing" && message.status == "not-sent") {
 				message.status = "sent";
 				const sendbackList: TWSRcv = {
-					target: "friend-chat",
+					target: "friend_chat",
 					event: "update_status",
 					message: message,
 				};
@@ -105,7 +105,7 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 				if (message.direction == "outgoing" && message.status == "sent") {
 					message.status = "recieved";
 					const sendbackList: TWSRcv = {
-						target: "friend-chat",
+						target: "friend_chat",
 						event: "update_status",
 						message: message,
 					};
@@ -118,7 +118,7 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 					if (message.direction == "outgoing" && message.status == "recieved") {
 						message.status = "read";
 						const sendbackList: TWSRcv = {
-							target: "friend-chat",
+							target: "friend_chat",
 							event: "update_status",
 							message: message,
 						};
@@ -128,13 +128,13 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 
 				setTimeout(() => {
 					const sendbackList: TWSRcv = {
-						target: "friend-chat",
+						target: "friend_chat",
 						event: "new",
 						message: {
 							message: "Yeah that's damm big",
 							date: new Date(),
 							direction: "incoming",
-							"target-id": mockSocialDB.friends[1].uid,
+							targetUid: mockSocialDB.friends[1].uid,
 							target: mockSocialDB.friends[1].username,
 							uid: crypto.randomUUID(),
 						},
@@ -148,14 +148,14 @@ export function mockMessagesFriend1Update(client: WebSocketClientConnectionProto
 }
 
 export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionProtocol) {
-	if (data.target != "friend-chat") return;
+	if (data.target != "friend_chat") return;
 	if (data.event != "send") return;
 	if (!data.message) return;
 
 	const messageUser: IMockMessageDBUser | undefined = mockGetMessageDB().data.find(
 		(user: IMockMessageDBUser) => {
 			if (!data.message) return undefined;
-			return user.friend.uid == data.message["target-id"];
+			return user.friend.uid == data.message.targetUid;
 		},
 	);
 
@@ -170,7 +170,7 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 	if (messageUser.friend.username == "Hikari") {
 		data.message.status = "error";
 		const sendbackList: TWSRcv = {
-			target: "friend-chat",
+			target: "friend_chat",
 			event: "new",
 			message: data.message,
 		};
@@ -179,7 +179,7 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 	}
 
 	const sendbackList: TWSRcv = {
-		target: "friend-chat",
+		target: "friend_chat",
 		event: "new",
 		message: data.message,
 	};
@@ -193,7 +193,7 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 			) {
 				message.status = "recieved";
 				const sendbackList: TWSRcv = {
-					target: "friend-chat",
+					target: "friend_chat",
 					event: "update_status",
 					message: message,
 				};
@@ -206,7 +206,7 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 				if (message.direction == "outgoing" && message.status == "recieved") {
 					message.status = "read";
 					const sendbackList: TWSRcv = {
-						target: "friend-chat",
+						target: "friend_chat",
 						event: "update_status",
 						message: message,
 					};
@@ -216,13 +216,13 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 
 			setTimeout(() => {
 				const sendbackList: TWSRcv = {
-					target: "friend-chat",
+					target: "friend_chat",
 					event: "new",
 					message: {
 						message: "hey, how you doing ?",
 						date: new Date(),
 						direction: "incoming",
-						"target-id": messageUser.friend.uid,
+						targetUid: messageUser.friend.uid,
 						target: messageUser.friend.username,
 						uid: crypto.randomUUID(),
 					},
@@ -235,7 +235,7 @@ export function onMessageSent(data: TWSSend, client: WebSocketClientConnectionPr
 }
 
 export function onMessageStatus(data: TWSSend) {
-	if (data.target != "friend-chat") return;
+	if (data.target != "friend_chat") return;
 	if (data.event != "open" && data.event != "close") return;
 	if (!data.toUid) return;
 

@@ -123,7 +123,7 @@ export class MockGameDB {
 		return {
 			uid: mockDefaultUserUID,
 			username: mockDefaultUsername,
-			image: mockDefaultPP,
+			avatar: mockDefaultPP,
 
 			badges: "",
 			relation: "self",

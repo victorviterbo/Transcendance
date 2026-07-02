@@ -21,7 +21,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [feed, setFeed] = useState<IFriendFeed | undefined>(undefined);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [messageField, setMessageField] = useState<string>("");
-	const wsContext: IWSContextModule = useWS("friend-chat");
+	const wsContext: IWSContextModule = useWS("friend_chat");
 	const lastTarget = useRef<IFriendInfo | undefined>(undefined);
 
 	//====================== INCOMINGS ======================
@@ -29,7 +29,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 		wsContext.setOnUpdate(() => {
 			while (wsContext.count > 0) {
 				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
-				if (last?.target == "friend-chat") {
+				if (last?.target == "friend_chat") {
 					if (last.event == "update_status") {
 						if (!feed || !last.message) return;
 						const index = feed.feed.findIndex((message: IFriendMessage) => {
@@ -40,11 +40,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 						setFeed(structuredClone(feed));
 					}
 					if (last.event == "new") {
-						if (
-							!feed ||
-							!last.message ||
-							last.message["target-id"] != targetFriend?.uid
-						)
+						if (!feed || !last.message || last.message.targetUid != targetFriend?.uid)
 							return;
 						feed.feed.splice(0, 0, last.message);
 						setFeed(structuredClone(feed));
@@ -70,7 +66,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 
 				wsContext.sendMessage(
 					JSON.stringify({
-						target: "friend-chat",
+						target: "friend_chat",
 						event: "open",
 						to: targetFriend.username,
 						toUid: targetFriend.uid,
@@ -88,7 +84,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 			if (lastTarget.current) {
 				wsContext.sendMessage(
 					JSON.stringify({
-						target: "friend-chat",
+						target: "friend_chat",
 						event: "close",
 						to: lastTarget.current.username,
 						toUid: lastTarget.current.uid,
@@ -107,7 +103,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 			message: messageField,
 			date: new Date(),
 			status: "not-sent",
-			"target-id": targetFriend.uid,
+			targetUid: targetFriend.uid,
 			target: targetFriend.username,
 			direction: "outgoing",
 			uid: "TEMP_ID",
@@ -115,7 +111,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 
 		wsContext.sendMessage(
 			JSON.stringify({
-				target: "friend-chat",
+				target: "friend_chat",
 				event: "send",
 				message: nMessage,
 			} as TWSSend),

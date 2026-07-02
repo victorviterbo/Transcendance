@@ -57,7 +57,7 @@ function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 						<CAvatar
 							profileUsername={messaging.username}
 							sx={{ height: "35px", width: "35px", mr: "10px" }}
-							src={messaging.image}
+							src={messaging.avatar}
 							alt={messaging.username + "'s picture"}
 						></CAvatar>
 						<CUserProfileLink username={messaging.username}>

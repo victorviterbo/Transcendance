@@ -39,7 +39,7 @@ describe("Tests for chat view", () => {
 			points: 150,
 			user: {
 				...mockSocialDB.users[0],
-				image: "/DB/media/default_pp.jpg",
+				avatar: "/DB/media/default_pp.jpg",
 			},
 			host: false,
 			colorid: 5,
@@ -75,7 +75,7 @@ describe("Tests for chat view", () => {
 			points: 150,
 			user: {
 				...mockSocialDB.users[0],
-				image: "/DB/media/default_pp.jpg",
+				avatar: "/DB/media/default_pp.jpg",
 			},
 			host: false,
 			colorid: 5,
@@ -110,7 +110,7 @@ describe("Tests for chat view", () => {
 			points: 150,
 			user: {
 				...mockSocialDB.users[0],
-				image: "/DB/media/default_pp.jpg",
+				avatar: "/DB/media/default_pp.jpg",
 			},
 			host: false,
 			colorid: 5,
@@ -145,7 +145,7 @@ describe("Tests for chat view", () => {
 			points: 150,
 			user: {
 				...mockSocialDB.users[0],
-				image: "/DB/media/default_pp.jpg",
+				avatar: "/DB/media/default_pp.jpg",
 			},
 			host: false,
 			colorid: 5,
@@ -181,7 +181,7 @@ describe("Tests for chat view", () => {
 			points: 150,
 			user: {
 				...mockSocialDB.users[0],
-				image: "/DB/media/default_pp.jpg",
+				avatar: "/DB/media/default_pp.jpg",
 			},
 			host: false,
 			colorid: 5,

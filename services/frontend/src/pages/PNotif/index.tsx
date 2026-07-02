@@ -70,7 +70,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 				></PNotifNode>
 			);
 		});
-	}, [error, notifs, onSeeFriendsReq, onSeeFriends])
+	}, [error, notifs, onSeeFriendsReq, onSeeFriends]);
 
 	//====================== EVENT / UPDATES ======================
 	useEffect(() => {

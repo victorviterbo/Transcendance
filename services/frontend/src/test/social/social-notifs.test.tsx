@@ -288,24 +288,24 @@ describe("Socials - Interactions", () => {
 	});
 
 	it.each([
-		[new Date(Date.now()), "NOTIF_AGO_LESS", true, "friend-request"],
+		[new Date(Date.now()), "NOTIF_AGO_LESS", true, "friend_request"],
 		[
 			new Date(Date.now() - 1000 * 60 * 60 * 4),
 			"NOTIF_AGO_HOURS COUNT: 4",
 			true,
-			"friend-request",
+			"friend_request",
 		],
 		[
 			new Date(Date.now() - 1000 * 60 * 25),
 			"NOTIF_AGO_MINUTES COUNT: 25",
 			false,
-			"friend-accepted",
+			"friend_accepted",
 		],
 		[
 			new Date(Date.now() - 1000 * 60 * 60 * 24 * 123),
 			"NOTIF_AGO_DAYS COUNT: 123",
 			false,
-			"friend-accepted",
+			"friend_accepted",
 		],
 	])(
 		"NODE: Checking base infos (Date: %s, Expect: %s Read: %d, Kind: %s)",
@@ -313,18 +313,18 @@ describe("Socials - Interactions", () => {
 			const user: IExtUserInfo = mockSocialDB.users[0];
 			const friend: IFriendInfo = mockSocialDB.friends[0];
 			let notif: TNotif | undefined = undefined;
-			if (Kind == "friend-request") {
+			if (Kind == "friend_request") {
 				notif = {
 					uid: crypto.randomUUID(),
-					kind: "friend-request",
+					kind: "friend_request",
 					from: user,
 					date: DateIN,
 					read: ReadIn,
 				};
-			} else if (Kind == "friend-accepted") {
+			} else if (Kind == "friend_accepted") {
 				notif = {
 					uid: crypto.randomUUID(),
-					kind: "friend-accepted",
+					kind: "friend_accepted",
 					from: friend,
 					date: DateIN,
 					read: ReadIn,
@@ -339,11 +339,11 @@ describe("Socials - Interactions", () => {
 				</MemoryRouter>,
 			);
 
-			if (Kind == "friend-request") {
+			if (Kind == "friend_request") {
 				expect(screen.getByText("NOTIF_FRIEND_REQ")).toBeInTheDocument();
 				expect(screen.getByText(user.username)).toBeInTheDocument();
 			}
-			if (Kind == "friend-accepted") {
+			if (Kind == "friend_accepted") {
 				expect(screen.getByText("NOTIF_FRIEND_ACCEPTED")).toBeInTheDocument();
 				expect(screen.getByText(friend.username)).toBeInTheDocument();
 			}
