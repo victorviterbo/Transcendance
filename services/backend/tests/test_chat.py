@@ -261,7 +261,7 @@ class ChatWebsocketTests(TransactionTestCase):
 
 
 			await comm.send_json_to({
-				'target': '', 'event': 'send',
+				'target': 'friend_chat', 'event': 'send',
 				'message': {
 					'message': 'hello friend',
 					'targetUid': str(self.friend.uid),
@@ -270,7 +270,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			dm = None
 			for _ in range(3):
 				r = await comm.receive_json_from()
-				if r.get('target') == '' and r.get('event') == 'new':
+				if r.get('target') == 'friend_chat' and r.get('event') == 'new':
 					dm = r
 					break
 			self.assertIsNotNone(dm)
