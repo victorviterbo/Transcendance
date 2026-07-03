@@ -173,7 +173,7 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
         return
     num_current_players = await _get_num_curr_players(consumer.current_game)
     if num_current_players >= max_players:
-        await _send_game_error(consumer, 'GAME_FULL', critical=True)
+        await _send_game_error(consumer, game_uid, 'GAME_FULL', critical=True)
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
