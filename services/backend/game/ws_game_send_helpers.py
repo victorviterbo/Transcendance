@@ -10,11 +10,12 @@ from .ws_game_db_helpers import _get_game_info_data
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
 
-async def _send_game_error(consumer: 'GlobalConsumer', message: str, critical: bool = False) -> None:
+async def _send_game_error(consumer: 'GlobalConsumer', game_uid: str , message: str, critical: bool = False) -> None:
     """Send a game error payload for the current game."""
     await consumer.send_json({
         'target': 'game',
         'event': 'error',
+        'uid': game_uid,
         'currentGameUid': str(consumer.current_game.uid),
         'self': consumer.profile_data,
         'message': message,
