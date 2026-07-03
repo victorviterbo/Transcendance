@@ -324,5 +324,5 @@ GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio.
 GAME_LEAVE_INTERACT_BUTTON,Go,Continuer,進む,Los,Button of the popup use to request a user interaction to ba abale to play the songs
 GAME_ANSWER_NOT_FOUND,Not found,Introuvable,見つかりません,Nicht gefunden,Simple messages  showed instead of the answer time when user didn't found the music
 DELETE_ACCOUNT_SUCCESS,Account deleted successfully,Compte supprimé avec succès,アカウントを削除しました,Konto erfolgreich gelöscht,Message displayed when the account has been deleted
-CONN_LOST,Connection with server has been lost...,,,Message when the connection with websocket is lost
-LOADING,Loading ...,,,Loading wording
+CONN_LOST,Connection to the server has been lost...,La connexion au serveur a été perdue...,サーバーとの接続が切断されました...,Die Verbindung zum Server wurde unterbrochen...,Message when the connection with websocket is lost
+LOADING,Loading...,Chargement...,読み込み中...,Wird geladen...,Loading wording
