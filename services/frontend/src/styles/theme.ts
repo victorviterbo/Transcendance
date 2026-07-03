@@ -9,6 +9,17 @@ import type {
 	IThemeTexts,
 } from "../types/styles";
 
+declare module "@mui/material/styles" {
+	interface BreakpointOverrides {
+		xs: true;
+		tn: true;
+		sm: true;
+		md: true;
+		lg: true;
+		xl: true;
+	}
+}
+
 //--------------------------------------------------
 //                                    NAME
 //--------------------------------------------------
@@ -62,6 +73,7 @@ export const appColors: IThemeColor = {
 
 export const appPositions: IThemePosition = {
 	mainSpacing: 7,
+	smallSpacing: 3,
 	gameSpacing: 3,
 	socialMargin: { top: 15, right: 20, bottom: 50 },
 	sizes: {
@@ -263,6 +275,17 @@ const appThemeBase: ThemeOptions = {
 
 	shape: {
 		borderRadius: appSharedStyle.radius,
+	},
+
+	breakpoints: {
+		values: {
+			xs: 0,
+			tn: 450,
+			sm: 600,
+			md: 900,
+			lg: 1200,
+			xl: 1536,
+		},
 	},
 
 	components: {

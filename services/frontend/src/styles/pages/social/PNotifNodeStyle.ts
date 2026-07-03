@@ -18,20 +18,18 @@ export function PNotifNodeStyle({ notif }: PNotifNodeProps): INotifNodeStyle {
 	return {
 		main: {
 			background: colorGetBackground([bgColors[0], bgColors[1]], undefined, "linear", 160),
-			p: "15px",
+			p: { xs: "10px", sm: "15px" },
 			mb: "10px",
 
 			borderRadius: appSharedStyle.radius + "px",
 		},
 
 		impText: {
-			ml: "5px",
 			color: appColors.secondary[0],
 		},
 
 		button: {
-			ml: "auto",
-			my: "auto",
+			ml: "5px",
 		},
 	};
 }

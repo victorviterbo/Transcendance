@@ -1,325 +1,325 @@
-id,en,fr,ja,desc
-CHANGE,Change,Changer,変更,Shown on a button to update information
-CHANGE_EMAIL,Change Email,Modifier l'adresse email,Eメールアドレスを変更する,Shown on profile accordion heading
-CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Shown on profile accordion heading
-CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を変更する,Shown on profile accordion heading
-CHANGING,Changing...,Modification...,変更中...,Shown on a pressed button to update information
-LANG_SELECT,Language selection,Sélection de la langue,言語の選択,Language selection menu
-WELCOME,Welcome,Bienvenue,ようこそ,Generic welcome text
-WELCOME_BACK_USER,"Welcome back, {username}!","Content de te revoir, {username} !","おかえりなさい、{username} さん！",Shown after successful login
-WELCOME_ACCOUNT_READY_USER,"Welcome, {username}! Your account is ready.","Bienvenue, {username} ! Ton compte est prêt.","ようこそ、{username} さん！アカウントの準備ができました。",Shown after successful registration
-BACK_TO_HOME,Back to home,Retour à l'accueil,ホームに戻る,Button label to return to the home page
-USERNAME,Username,Nom d'utilisateur,ユーザー名,As it appears in form fields
-NEW_USERNAME,New Username,Nouveau nom d'utilisateur,新しいユーザー名,As it appears in form fields
-EMAIL,Email,Adresse e-mail,メールアドレス,As it appears in form fields
-NEW_EMAIL,New Email,Nouvelle adresse e-mail,新しいメールアドレス,As it appears in form fields
-PASSWORD,Password,Mot de passe,パスワード,As it appears in form fields
-NEW_PASSWORD,New Password,Nouveau mot de passe,新しいパスワード,As it appears in form fields
-CURRENT_PASSWORD,Current Password,Mot de passe actuel,現在のパスワード,As it appears in form fields
-CONFIRM_USERNAME,Confirm Username,Confirmez le nom d'utilisateur,ユーザー名の確認,As it appears in form fields
-CONFIRM_EMAIL,Confirm Email,Confirmez l'adresse e-mail,メールアドレスの確認,As it appears in form fields
-CONFIRM_NEW_PASSWORD,Confirm New Password,Confirmez le nouveau mot de passe,新しいパスワードを確認する,As it appears in form fields
-CONFIRM_PASSWORD,Confirm Password,Confirmez le mot de passe,パスワードの確認,As it appears in form fields
-CREATE_ROOM,Create room,Créer une salle,ルームを作成,The word room is for a virtual room
-DELETE,Delete,Supprimer,削除,Delete button text
-DELETE_ACCOUNT,Delete Account,Supprimer le compte,アカウントを削除する,Delete account action label
-DELETING,Deleting...,Suppression...,削除中...,Delete button in progress state
-EMAIL_TAKEN,Email already taken,Adresse e-mail déjà utilisée,メールアドレスは既に使用されています,Shown when email is already taken
-EMAIL_VALID,Enter a valid email address,Entrez une adresse e-mail valide,有効なメールアドレスを入力してください,Shown when email is invalid
-FRIEND_ROOM,Friends' rooms,Salles d'amis,フレンドのルーム,The word room is for a virtual room
-INVALID_CREDENTIALS,Wrong email or password,E-mail ou mot de passe incorrect,メールアドレスまたはパスワードが違います,Shown when login credentials are invalid
-INVALID_EMAIL,Invalid email,Adresse e-mail invalide,メールアドレスが無効です,Shown when email fails validation
-INVALID_PASSWORD,Invalid password,Mot de passe invalide,パスワードが無効です,Shown when password fails validation
-INVALID_USERNAME,Invalid username,Nom d'utilisateur invalide,ユーザー名が無効です,Shown when username fails validation
-JOIN,Join,Rejoindre,参加,Used to join a room
-JOIN_ROOM,Join room,Rejoindre une salle,ルームに参加,The word room is for a virtual room
-LEADERBOARD,Leaderboard,Classement,ランキング,Page showing global rankings
-LOGGING_IN,Logging in,Connexion en cours,ログイン中,Shows when a user presses Log in
-LOGIN,Log in,Se connecter,ログイン,To log in
-LOGOUT,Log out,Se déconnecter,ログアウト,To log out
-MATCH_HISTORY,Match History,Historique,対戦履歴,Shown in the user profile
-MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Shown when a required field is missing
-MY_PROFILE,My profile,Mon profil,マイプロフィール,Menu item to open profile page
-PASSWORD_LOWERCASE,Include at least 1 lowercase letter,Incluez au moins 1 lettre minuscule,小文字を1つ以上含めてください,Shown when password has no lowercase
-PASSWORD_MIN,Use at least 8 characters,Utilisez au moins 8 caractères,8文字以上にしてください,Shown when password is too short
-PASSWORD_MISMATCH,Passwords do not match,Les mots de passe ne correspondent pas,パスワードが一致しません,Shown when password confirmation does not match
-PASSWORD_NUMBER,Include at least 1 number,Incluez au moins 1 chiffre,数字を1つ以上含めてください,Shown when password has no number
-PASSWORD_SPECIAL,Include at least 1 special character,Incluez au moins 1 caractère spécial,特殊文字を1つ以上含めてください,Shown when password has no special character
-PASSWORD_UPPERCASE,Include at least 1 uppercase letter,Incluez au moins 1 lettre majuscule,大文字を1つ以上含めてください,Shown when password has no uppercase
-PLAY_GAME,Play,Jouer,プレイ,Primary action to start
-FRIENDS,Friends,Amis,フレンド,Just the word friends
-PRIVATE,Private,Privée,非公開,Refers to a private room
-PROFILE_SETTINGS,Settings,Paramètres,設定,Shown in the user profile
-PROFILE_LOADING,Loading profile...,Chargement du profil...,プロフィールを読み込み中...,Shown while a profile is loading
-PROFILE_LOAD_FAILED,Failed to load profile.,Échec du chargement du profil.,プロフィールの読み込みに失敗しました。,Shown when a profile cannot be loaded
-PUBLIC,Public,Publique,公開,Refers to a public room
-PUBLIC_ROOM,Public rooms,Salles publiques,公開ルーム,The word room is for a virtual room
-LOGIN_FAILED,Login failed,Connexion échouée,ログインに失敗しました,Shown when an unknown error occured while logging in
-REGISTRATION_FAILED,Registration failed,Inscription échouée,登録に失敗しました,Shown when an unknown error occured while registering
-PASSWORD_UNCHANGED,Choose a different password,Choisissez un mot de passe différent,別のパスワードを選択してください,Shown when the new password matches the current password
-REFRESH_TOKEN_EXPIRED,Refresh token expired,Le jeton de rafraîchissement a expiré,リフレッシュトークンの期限が切れています,Shown when refresh token is expired
-REFRESH_TOKEN_MISSING,Refresh token missing,Jeton de rafraîchissement manquant,リフレッシュトークンがありません,Shown when refresh token is missing
-REQUIRED_FIELD,Please fill this,Veuillez remplir ce champ,必須項目です,Shown when a required field is empty
-SIGNING_UP,Signing up,Création en cours,登録中,Shows when a user presses Sign up
-SIGNUP,Sign up,Créer un compte,アカウント作成,To create an account
-STATISTICS,Statistics,Statistiques,統計情報,Shown in the user profile
-USERNAME_ADMIN,Who do you think you are?,Pour qui tu te prends ?,あなたは誰だと思ってるの？,Shown when user tries to use forbidden reserved username
-USERNAME_FORBIDDEN,Username contains forbidden characters,Le nom d'utilisateur contient des caractères interdits,ユーザー名に使用できない文字が含まれています,Shown when username has forbidden characters
-USERNAME_MAX,Username at most 20 characters,Le nom d'utilisateur ne doit pas dépasser 20 caractères,ユーザー名は20文字以内,Shown when username exceeds max length
-USERNAME_MIN,Username at least 3 characters,Le nom d'utilisateur doit contenir au moins 3 caractères,ユーザー名は3文字以上で入力してください,Shown when username is too short
-FRIEND_TITLE,Friends,Amis,フレンド,Friends panel title
-FRIEND_LISTS,List,Liste,一覧,Friends list tab
-FRIEND_REQUESTS,Requests,Demandes,申請,Friend requests tab
-FRIEND_EMPTY,You do not have any friends yet.,Vous n'avez pas encore d'amis.,まだフレンドがいません。,Shown when the friends list is empty
-FRIEND_ERROR,Couldn't load your friends list.,Impossible de charger votre liste d'amis.,フレンド一覧を読み込めませんでした。,Shown when the friends list request fails
-FRIENDS_ADD,Add,Ajouter,追加,Tab to search and add friends
-USERS_NOTFOUND,No users found,Aucun utilisateur trouvé,ユーザーが見つかりません,Shown when the friend search returns no users
-USERS_ADD_ERROR,Couldn't load the user list.,Impossible de charger la liste des utilisateurs.,ユーザー一覧を読み込めませんでした。,Shown when the user search request fails
-SOCIAL_INCOMING_REQUESTS,Incoming requests,Demandes reçues,受信した申請,Incoming friend requests section
-SOCIAL_OUTGOING_REQUESTS,Outgoing requests,Demandes envoyées,送信した申請,Outgoing friend requests section
-SOCIAL_NO_OUTGOING,No outgoing requests,Aucune demande envoyée,送信した申請はありません,Displayed when there are no outgoing friend requests
-SOCIAL_NO_INCOMING,No incoming requests,Aucune demande reçue,受信した申請はありません,Displayed when there are no incoming friend requests
-SOCIAL_REQUESTS_ERROR,Couldn't load friend requests.,Impossible de charger les demandes d'amis.,フレンド申請を読み込めませんでした。,Displayed when the friend requests request fails
-SOCIAL_REQUESTS_OUTGOING,Sent,Envoyée,送信済み,Displayed when waiting for the other user to respond
-SOCIAL_ADD_FRIEND_FAILED,Failed to send friend request.,Échec de l'envoi de la demande d'ami.,フレンド申請の送信に失敗しました。,Error shown when sending a friend request fails
-SOCIAL_RESPOND_FRIEND_FAILED,Failed to respond to friend request.,Échec de la réponse à la demande d'ami.,フレンド申請への応答に失敗しました。,Error shown when responding to a friend request fails
-PROGRESS_BAR_LVL,LVL,NIV,LV,Shown below a player's level in its profile
-PROFILE_SOCIAL_LOADING,Loading...,Chargement...,関係を読み込み中,Shown while the public profile social relation is loading
-PROFILE_SOCIAL_ADD_FRIEND,Add friend,Ajouter ami,フレンド追加,Button to send a friend request from a public profile
-PROFILE_SOCIAL_FRIEND,Friend,Ami,フレンド,Status shown when the public profile user is already a friend
-PROFILE_SOCIAL_REMOVE_FRIEND,Remove,Retirer des ami,フレンド解除,Button to remove an existing friend from a public profile
-PROFILE_SOCIAL_CANCEL_REQUEST,Cancel,Annuler,申請をキャンセル,Button to cancel an outgoing friend request from a public profile
-PROFILE_SOCIAL_REQUEST_SENT,Request sent,Demande envoyée,申請送信済み,Status shown when a friend request is outgoing
-PROFILE_SOCIAL_REQUEST_RECEIVED,Request received,Demande reçue,申請受信済み,Status shown when a friend request is incoming
-PROFILE_SOCIAL_ACCEPT,Accept,Accepter,承認,Button to accept an incoming friend request
-PROFILE_SOCIAL_REFUSE,Refuse,Refuser,拒否,Button to refuse an incoming friend request
-PROFILE_SOCIAL_CANCEL_REQUEST_TITLE,Cancel friend request,Annuler la demande d’ami,フレンド申請をキャンセル,Title of the confirmation dialog to cancel an outgoing friend request
-PROFILE_SOCIAL_REMOVE_FRIEND_CONFIRMATION,This will remove this user from your friends. Continue ?,Cela retirera cet utilisateur de vos amis. Continuer ?,このユーザーをフレンドから解除します。続行しますか？,Confirmation text before removing a friend from a public profile
-PROFILE_SOCIAL_REMOVE_FRIEND_CANCEL,Keep friend,Garder l’ami,フレンドのままにする,Shown to cancel the friend removal in the dialog
-PROFILE_SOCIAL_REMOVE_FRIEND_TITLE,Remove friend,Retirer l’ami,フレンド解除,Title of the confirmation dialog to remove a friend
-PROFILE_SOCIAL_CANCEL_REQUEST_CONFIRMATION,This will cancel your pending friend request. Continue ?,Cela annulera votre demande d'ami en attente. Continuer ?,保留中のフレンド申請をキャンセルします。続行しますか？,Confirmation text before canceling an outgoing friend request from a public profile
-PROFILE_SOCIAL_CANCEL_REQUEST_CANCEL,Keep request,Garder la demande,申請を維持する,Shown to cancel the request cancel in the dialog
-PROFILE_SOCIAL_RELATION_FAILED,Couldn't load social relation.,Impossible de charger la relation sociale.,ソーシャル関係を読み込めませんでした。,Error shown when loading the public profile relation fails
-PROFILE_SOCIAL_ACTION_FAILED,Friend action failed,L'action ami a échoué,フレンド操作に失敗しました。,Error shown when a public profile friend action fails
-PROFILE_SOCIAL_REQUEST_EXPIRED,Friend request expired,Demande d'ami expirée,申請期限切れ,Shown when an incoming friend request disappeared before the user could accept or refuse it
-SOCIAL_NO_MESSAGE,You do not have any messages with this user yet.,Vous n'avez pas encore de messages avec cet utilisateur.,このユーザーとのメッセージはまだありません。,Displayed when there is no conversation with the selected user
-SOCIAL_MESSAGE_ERROR,Couldn't load messages.,Impossible de charger les messages.,メッセージを読み込めませんでした。,Displayed when the message feed request fails
-CHANGE_FAILED,Change failed,La modification a échoué,変更に失敗しました,Shows when an unknown error occurred while changing a profile field
-CHANGE_SUCCESS,Change saved,Modification enregistrée,変更を保存しました,Shown when a profile change succeeds
-DELETE_ACCOUNT_CONFIRMATION,This will permanently delete your profile. Are you sure you want to continue?,Cela supprimera définitivement votre profil. Voulez-vous vraiment continuer ?,プロフィールが完全に削除されます。本当に続行しますか？,Shown in the delete profile confirmation dialog
-DELETE_FAILED,Delete failed,La suppression a échoué,削除に失敗しました,Shows when an unknown error occurred while deleting a profile
-UPDATE_PROFILE_PICTURE,Update Profile Picture,Mettre à jour la photo de profil,プロフィール画像を更新する,Dialog title for profile picture upload
-CHOOSE_PICTURE_PREVIEW,Choose an image to preview before uploading,Choisissez une image à prévisualiser avant le téléversement,アップロード前にプレビューする画像を選択してください,Helper text for profile picture preview before upload
-CANCEL,Cancel,Annuler,キャンセル,To cancel an action
-CHOOSE_IMAGE,Choose Image,Choisir une image,画像を選択する,Button label to select an image file
-SAVE,Save,Sauvegarder,保存,Confirm button text
-PROFILE_IMAGE_REQUIREMENTS,Use a PNG JPG WEBP GIF or BMP image up to 5 MB,Utilisez une image PNG JPG WEBP GIF ou BMP de 5 Mo maximum,PNG JPG WEBP GIF または BMP を 5 MB 以内で使用してください,Helper text for accepted avatar image formats and size
-PROFILE_IMAGE_INVALID_TYPE,Unsupported image format,Format d'image non pris en charge,サポートされていない画像形式です,Shown when the selected avatar file format is not supported
-PROFILE_IMAGE_TOO_LARGE,Image is too large,L'image est trop volumineuse,画像サイズが大きすぎます,Shown when the selected avatar image exceeds the size limit
-PROFILE_IMAGE_INVALID_FILE,Invalid image file,Fichier image invalide,無効な画像ファイルです,Shown when the selected avatar file cannot be decoded as a valid image
-UPLOAD_FAILED,Upload failed,L'envoi a échoué,アップロードに失敗しました,Shown when an image upload fails for an unknown reason
-MESSAGE_SENT_FAILED,Failed to send message,Impossible d'envoyer le message,メッセージの送信に失敗しました,Shown when a chat message cannot be sent
-PASSWORD_UPDATED,Password updated,Mot de passe mis à jour,パスワードが更新されました,Shown when the password update succeeds
-PROFILE_STATISTICS,Profile Statistics,Statistiques du profil,プロフィール統計,Optional title for the profile statistics panel
-PROFILE_MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Optional title for the profile match history panel
-NO_RESPONSE,No response from the server,Aucune réponse du serveur,サーバーから応答がありません,Shown when a request returns no response
-INVALID,Invalid data,Données invalides,無効なデータです,Shown when a response payload is invalid
-UNAUTHORIZED,Unauthorized,Non autorisé,認証が必要です,Shown when authentication is required
-FRIENDSHIP_REQUEST_SENT,Friend request sent,Demande d'ami envoyée,フレンド申請を送信しました,Shown when a friend request is sent successfully
-FRIENDSHIP_REQUEST_ACCEPTED,Friend request accepted,Demande d'ami acceptée,フレンド申請が承認されました,Shown when a friend request is accepted
-MISSING_FRIEND,Friend not found,Ami introuvable,フレンドが見つかりません,Shown when a target friend cannot be found
-CONTACT,Contact,Contact,お問い合わせ,Footer link for contact page
-CONTACT_INTRO,The people behind Guess Tunes,Les personnes derrière Guess Tunes,Guess Tunes を支えるメンバー,Intro text shown on the contact page
-Q_AND_A,Q&A,FAQ,よくある質問,Footer link for Q and A page
-QA_INTRO,Here are the current answers to the most common questions about accounts profiles and project rules in progress,Voici les réponses actuelles aux questions les plus fréquentes sur les comptes les profils et les règles du projet encore en cours,アカウントやプロフィール そして調整中のプロジェクトルールについて 現時点で最もよくある質問への回答をまとめています,Q and A page intro text
-QA_PROFILE_PICTURE_QUESTION,How do I change my profile picture?,Comment changer ma photo de profil ?,プロフィール画像はどうやって変更しますか？,Q and A profile picture question
-QA_PROFILE_PICTURE_ANSWER,Open your profile page click the camera icon on your avatar choose an image preview it and save your changes.,Ouvrez votre page de profil cliquez sur l'icône appareil photo sur votre avatar choisissez une image prévisualisez la puis enregistrez vos modifications.,自分のプロフィールページを開き アバター上のカメラアイコンを押して 画像を選び プレビューしてから保存してください。,Q and A profile picture answer
-QA_ACCOUNT_INFO_QUESTION,How do I change my username or email address?,Comment changer mon nom d'utilisateur ou mon adresse email ?,ユーザー名やメールアドレスはどうやって変更しますか？,Q and A username and email question
-QA_ACCOUNT_INFO_ANSWER,Open your profile settings and use the Change Username or Change Email section. The update is applied as soon as the form succeeds.,Ouvrez les paramètres du profil et utilisez la section Modifier le nom d'utilisateur ou Modifier l'adresse email. La mise à jour est appliquée dès que le formulaire réussit.,プロフィール設定を開き 「ユーザー名を変更する」または「Eメールアドレスを変更する」を使ってください。フォームが成功するとすぐに更新されます。,Q and A username and email answer
-QA_PASSWORD_QUESTION,How do I change my password?,Comment changer mon mot de passe ?,パスワードはどうやって変更しますか？,Q and A password question
-QA_PASSWORD_ANSWER,Open the profile settings page and use the Change Password section with your current password and your new password.,Ouvrez la page des paramètres du profil et utilisez la section Modifier le mot de passe avec votre mot de passe actuel et votre nouveau mot de passe.,プロフィール設定ページを開き 現在のパスワードと新しいパスワードを入力して「パスワードを変更する」を使ってください。,Q and A password answer
-QA_DELETE_ACCOUNT_QUESTION,How do I delete my account?,Comment supprimer mon compte ?,アカウントはどうやって削除しますか？,Q and A delete account question
-QA_DELETE_ACCOUNT_ANSWER,Open profile settings use the Delete Account section enter your password and confirm the deletion in the dialog. This action permanently removes your profile.,Ouvrez les paramètres du profil utilisez la section Supprimer le compte saisissez votre mot de passe puis confirmez la suppression dans la fenêtre. Cette action supprime définitivement votre profil.,プロフィール設定を開き 「アカウントを削除する」からパスワードを入力し ダイアログで削除を確定してください。この操作はプロフィールを完全に削除します。,Q and A delete account answer
-QA_LEVELS_QUESTION,How are levels and titles calculated?,Comment les niveaux et les titres sont ils calculés ?,レベルや称号はどのように計算されますか？,Q and A levels question
-QA_LEVELS_ANSWER,Your level increases every 100 XP and the progress bar shows how close you are to the next level. Your displayed title changes automatically based on your total XP.,Votre niveau augmente tous les 100 XP et la barre de progression montre à quel point vous êtes proche du niveau suivant. Le titre affiché change automatiquement selon votre total d'XP.,レベルは 100 XP ごとに上がり プログレスバーには次のレベルまでどれくらい近いかが表示されます。表示される称号は合計 XP に応じて自動で変わります。,Q and A levels answer
-QA_CONTACT_QUESTION,How do I contact the team?,Comment contacter l'équipe ?,チームにはどうやって連絡できますか？,Q and A contact question
-QA_CONTACT_ANSWER,Use the Contact page from the footer to find the team members and reach them by email.,Utilisez la page Contact depuis le pied de page pour voir les membres de l'équipe et les joindre par email.,フッターの Contact ページからチームメンバーを確認し メールで連絡できます。,Q and A contact answer
-QA_MATCH_RULES_QUESTION,What are the official match rules?,Quelles sont les règles officielles des matchs ?,公式な対戦ルールは何ですか？,Q and A match rules question
-QA_MATCH_RULES_ANSWER,"A correct artist gives 1 point, a correct song gives 1 point, and getting both gives an extra bonus point. If the host enables it, fast answers can also award bonus points.","Un artiste correct donne 1 point, une chanson correcte donne 1 point, et obtenir les deux donne un point bonus supplémentaire. Si l'hôte l'active, les réponses rapides peuvent aussi rapporter des points bonus.","アーティストを正しく当てると 1 点、曲名を正しく当てると 1 点、両方正解すると追加で 1 点のボーナスが入ります。ホストが有効にしている場合は、早い回答にもボーナスポイントが入ります。",Q and A match rules answer
-QA_GAME_CONFIGURATION_QUESTION,What can a host configure before starting a game?,Que peut configurer un hôte avant de lancer une partie ?,ホストはゲーム開始前に何を設定できますか？,Q and A game configuration question
-QA_GAME_CONFIGURATION_ANSWER,"Hosts can combine multiple game flags at once. They can choose the number of musics, the music timer, the break timer, answer visibility, fuzzy or absolute matching, and whether fast answer bonuses are enabled.","Les hôtes peuvent combiner plusieurs options de partie en même temps. Ils peuvent choisir le nombre de musiques, le temps par musique, le temps de pause, la visibilité des réponses, le mode de correspondance floue ou stricte, et l'activation ou non du bonus pour les réponses rapides.","ホストは複数のゲーム設定を同時に組み合わせられます。曲数、曲ごとの制限時間、休憩時間、答えの表示方法、あいまい一致か完全一致か、そして早押しボーナスを有効にするかどうかを選べます。",Q and A game configuration answer
-QA_GAME_ACCESSIBILITY_QUESTION,Who can access a hosted game?,Qui peut accéder à une partie hébergée ?,作成されたゲームには誰が参加できますか？,Q and A game accessibility question
-QA_GAME_ACCESSIBILITY_ANSWER,"Hosts can choose between Public, Friends, and Private access. Public games are visible to everyone on the home page, even guests, Friends games are only for friends and appear in friends related sections, and Private games are only reachable by link or invitation.","Les hôtes peuvent choisir entre un accès Public, Amis et Privé. Les parties publiques sont visibles par tout le monde sur la page d'accueil, même pour les invités, les parties entre amis sont réservées aux amis et apparaissent dans les sections liées aux amis, et les parties privées ne sont accessibles que par lien ou invitation.","ホストは Public、Friends、Private の 3 つから公開範囲を選べます。Public のゲームはゲストを含む全員にホームページで表示され、Friends のゲームはフレンド限定でフレンド関連の欄に表示され、Private のゲームはリンクまたは招待でのみ参加できます。",Q and A game accessibility answer
-TERMS_OF_SERVICE,Terms of Service,Conditions d'utilisation,利用規約,Footer link for terms page
-PRIVACY_POLICY,Privacy Policy,Politique de confidentialité,プライバシーポリシー,Footer link for privacy page
-PRIVACY_INTRO,"This Privacy Policy explains how Guess Tunes handles the account, profile, and gameplay data needed to run the service.","Cette politique de confidentialité explique comment Guess Tunes traite les données de compte, de profil et de jeu nécessaires au fonctionnement du service.","このプライバシーポリシーでは、Guess Tunes がサービス運営に必要なアカウント情報、プロフィール情報、ゲーム情報をどのように扱うかを説明します。",Intro text shown on privacy policy page
-PRIVACY_DATA_TITLE,What We Collect,Ce que nous collectons,収集する情報,Privacy policy section title
-PRIVACY_DATA_BODY_1,"We store the information needed to create and secure your account, such as your username, email address, and authentication data.","Nous stockons les informations nécessaires pour créer et sécuriser votre compte, comme votre nom d'utilisateur, votre adresse e mail et vos données d'authentification.","アカウント作成と保護に必要なユーザー名、メールアドレス、認証情報などを保存します。",Privacy policy section content
-PRIVACY_DATA_BODY_2,"We also store profile details, such as your avatar, as well as gameplay information, such as statistics, match history, and leaderboard related data.","Nous stockons aussi des éléments de profil, comme votre avatar, ainsi que des informations de jeu, comme les statistiques, l'historique des matchs et les données liées au classement.","アバターなどのプロフィール情報に加えて、統計、対戦履歴、ランキング関連データなどのゲーム情報も保存します。",Privacy policy section content
-PRIVACY_USAGE_TITLE,How We Use It,Comment nous les utilisons,利用目的,Privacy policy section title
-PRIVACY_USAGE_BODY_1,"We use this data to authenticate users, run matches, display profiles and leaderboards, and provide the core features of Guess Tunes.","Nous utilisons ces données pour authentifier les utilisateurs, lancer les matchs, afficher les profils et les classements, et fournir les fonctionnalités principales de Guess Tunes.","これらのデータは、ユーザー認証、対戦の実行、プロフィール表示、ランキング表示、そして Guess Tunes の基本機能の提供に使用されます。",Privacy policy section content
-PRIVACY_USAGE_BODY_2,"We may also use technical logs to detect abuse, fix bugs, and keep the service stable during gameplay and account activity.","Nous pouvons aussi utiliser des journaux techniques pour détecter les abus, corriger les bugs et garder le service stable pendant le jeu et l'activité du compte.","技術ログは、不正利用の検出、バグ修正、アカウント利用時やゲームプレイ時の安定性維持にも使用されることがあります。",Privacy policy section content
-PRIVACY_SHARING_TITLE,Who Can Access It,Qui peut y accéder,アクセスできる人,Privacy policy section title
-PRIVACY_SHARING_BODY_1,"We do not sell your personal data, and we only share it when this is necessary to operate the project infrastructure.","Nous ne vendons pas vos données personnelles, et nous ne les partageons que lorsque cela est nécessaire au fonctionnement de l'infrastructure du projet.","個人データを販売することはなく、プロジェクト基盤の運用に必要な場合にのみ共有されます。",Privacy policy section content
-PRIVACY_SHARING_BODY_2,"Profile information that you choose to make public, such as usernames, avatars, and match results, may be visible to other players inside the application.","Les informations de profil que vous choisissez de rendre publiques, comme les noms d'utilisateur, les avatars et les résultats de match, peuvent être visibles par les autres joueurs dans l'application.","公開されるユーザー名、アバター、対戦結果などのプロフィール情報は、アプリ内で他のプレイヤーに表示される場合があります。",Privacy policy section content
-PRIVACY_RETENTION_TITLE,Retention and Deletion,Conservation et suppression,保存期間と削除,Privacy policy section title
-PRIVACY_RETENTION_BODY_1,"Account and gameplay data are kept while your account remains active, so the service can preserve your profile and progression.","Les données du compte et du jeu sont conservées tant que votre compte reste actif, afin que le service puisse préserver votre profil et votre progression.","アカウントとゲームのデータは、アカウントが有効である間、プロフィールや進行状況を維持するために保存されます。",Privacy policy section content
-PRIVACY_RETENTION_BODY_2,"If you delete your profile, we remove the related account data from the application, except for limited technical records that may remain for security or debugging.","Si vous supprimez votre profil, nous retirons les données du compte concerné de l'application, sauf pour des traces techniques limitées qui peuvent rester pour la sécurité ou le débogage.","プロフィールを削除した場合、関連するアカウントデータはアプリケーションから削除されますが、セキュリティやデバッグのための限定的な技術記録は残る場合があります。",Privacy policy section content
-PRIVACY_RIGHTS_TITLE,Your Controls,Vos contrôles,利用者ができること,Privacy policy section title
-PRIVACY_RIGHTS_BODY_1,"You can update your username, email address, password, and profile image from the profile settings page.","Vous pouvez mettre à jour votre nom d'utilisateur, votre adresse e mail, votre mot de passe et votre image de profil depuis la page des paramètres du profil.","プロフィール設定ページから、ユーザー名、メールアドレス、パスワード、プロフィール画像を更新できます。",Privacy policy section content
-PRIVACY_RIGHTS_BODY_2,"If you no longer want to use the service, you can delete your account and contact the project team for privacy related questions.","Si vous ne souhaitez plus utiliser le service, vous pouvez supprimer votre compte et contacter l'équipe du projet pour toute question relative à la vie privée.","サービスを利用しなくなった場合は、アカウントを削除でき、プライバシーに関する質問はプロジェクトチームへ連絡できます。",Privacy policy section content
-TERMS_INTRO,"These Terms of Service govern the use of Guess Tunes and its account, gameplay, profile, and ranking features.","Ces conditions d'utilisation encadrent l'usage de Guess Tunes et de ses fonctionnalités de compte, de jeu, de profil et de classement.","これらの利用規約は、Guess Tunes とそのアカウント、ゲーム、プロフィール、ランキング機能の利用に適用されます。",Intro text shown on terms of service page
-TERMS_ACCOUNTS_TITLE,Accounts and Security,Comptes et sécurité,アカウントとセキュリティ,Terms of service section title
-TERMS_ACCOUNTS_BODY_1,"You are responsible for the accuracy of the information used to create your account, and for keeping your credentials confidential.","Vous êtes responsable de l'exactitude des informations utilisées pour créer votre compte, et de la confidentialité de vos identifiants.","アカウント作成時に登録する情報の正確性と、認証情報の機密保持は利用者の責任です。",Terms of service section content
-TERMS_ACCOUNTS_BODY_2,"You are also responsible for activity performed through your account, unless you promptly report unauthorized access.","Vous êtes aussi responsable des activités réalisées via votre compte, sauf si vous signalez rapidement un accès non autorisé.","不正アクセスを速やかに報告した場合を除き、アカウントを通じて行われた行為についても責任を負います。",Terms of service section content
-TERMS_CONDUCT_TITLE,Acceptable Use,Utilisation autorisée,適切な利用,Terms of service section title
-TERMS_CONDUCT_BODY_1,"You must not use Guess Tunes to harass other users, cheat, abuse the ranking system, or interfere with the normal operation of matches.","Vous ne devez pas utiliser Guess Tunes pour harceler d'autres utilisateurs, tricher, détourner le système de classement ou perturber le fonctionnement normal des matchs.","Guess Tunes を他の利用者への嫌がらせ、不正行為、ランキング操作、対戦の正常な運営妨害に使ってはいけません。",Terms of service section content
-TERMS_CONDUCT_BODY_2,"You must not attempt to access data or features without authorization, or use the service for unlawful purposes.","Vous ne devez pas tenter d'accéder sans autorisation à des données ou à des fonctionnalités, ni utiliser le service à des fins illégales.","権限なくデータや機能へアクセスしようとしたり、違法な目的でサービスを利用したりしてはいけません。",Terms of service section content
-TERMS_SERVICE_TITLE,Service Availability,Disponibilité du service,サービスの提供,Terms of service section title
-TERMS_SERVICE_BODY_1,"Guess Tunes is a school project service, and features may change, be interrupted, or be removed without prior notice.","Guess Tunes est un service de projet scolaire, et ses fonctionnalités peuvent changer, être interrompues ou être retirées sans préavis.","Guess Tunes は学校プロジェクトのサービスであり、機能は予告なく変更、中断、削除される場合があります。",Terms of service section content
-TERMS_SERVICE_BODY_2,"We do not guarantee uninterrupted availability of matches, leaderboards, chat, or profile features at all times.","Nous ne garantissons pas une disponibilité continue des matchs, des classements, du chat ou des fonctionnalités de profil à tout moment.","対戦、ランキング、チャット、プロフィール機能が常に中断なく利用できることは保証しません。",Terms of service section content
-TERMS_CONTENT_TITLE,Profiles and Uploaded Content,Profils et contenus envoyés,プロフィールとアップロードされた内容,Terms of service section title
-TERMS_CONTENT_BODY_1,"You remain responsible for the usernames, images, and other content you submit through your account.","Vous restez responsable des noms d'utilisateur, des images et des autres contenus que vous soumettez via votre compte.","アカウントを通じて送信したユーザー名、画像、その他の内容については利用者が責任を負います。",Terms of service section content
-TERMS_CONTENT_BODY_2,"You must not upload unlawful, deceptive, or offensive content, and you allow the project to display your submitted content inside the application.","Vous ne devez pas téléverser de contenu illégal, trompeur ou offensant, et vous autorisez le projet à afficher ce contenu dans l'application.","違法、誤解を招く、侮辱的な内容をアップロードしてはいけません。また、提出した内容がアプリ内で表示されることに同意するものとします。",Terms of service section content
-TERMS_ENFORCEMENT_TITLE,Suspension and Deletion,Suspension et suppression,停止と削除,Terms of service section title
-TERMS_ENFORCEMENT_BODY_1,"We may suspend, restrict, or delete accounts that violate these rules or threaten the safety, stability, or fairness of the service.","Nous pouvons suspendre, restreindre ou supprimer les comptes qui enfreignent ces règles ou menacent la sécurité, la stabilité ou l'équité du service.","これらの規則に違反したり、サービスの安全性、安定性、公平性を脅かしたりするアカウントは停止、制限、削除される場合があります。",Terms of service section content
-TERMS_ENFORCEMENT_BODY_2,"We may also remove content or features when needed to investigate abuse, security issues, or technical problems.","Nous pouvons aussi retirer des contenus ou des fonctionnalités lorsque cela est nécessaire pour enquêter sur un abus, sur des problèmes de sécurité ou sur des problèmes techniques.","不正行為、セキュリティ問題、技術的問題の調査のために、内容や機能を削除する場合もあります。",Terms of service section content
-TERMS_CHANGES_TITLE,Changes to the Terms,Modifications des conditions,規約の変更,Terms of service section title
-TERMS_CHANGES_BODY_1,"These terms may be updated as the project evolves, and the latest version made available in the application applies to future use of the service.","Ces conditions peuvent être mises à jour à mesure que le projet évolue, et la dernière version disponible dans l'application s'applique à l'usage futur du service.","これらの規約はプロジェクトの進行にあわせて更新される場合があり、アプリ内で公開された最新版が今後の利用に適用されます。",Terms of service section content
-TERMS_CHANGES_BODY_2,"By continuing to use Guess Tunes after an update, you accept the revised terms.","En continuant à utiliser Guess Tunes après une mise à jour, vous acceptez les conditions révisées.","更新後も Guess Tunes を利用し続けることで、改訂後の規約に同意したものとみなされます。",Terms of service section content
-PROJECT_MANAGER,Project Manager,Chef de projet,プロジェクトマネージャー,Role label shown on the contact page
-PRODUCT_OWNER,Product Owner,Product Owner,プロダクトオーナー,Role label shown on the contact page
-TECH_LEAD,Tech Lead,Responsable technique,テックリード,Role label shown on the contact page
-DEVELOPER,Developer,Développeur,開発者,Role label shown on the contact page
-PAGE_NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
-USER_NOT_FOUND,Looks like this user does not exist,On dirait bien que cet utilisateur n'existe pas,このユーザーは存在しないようです,Shows on a missing user profile
-LEADERBOARD_LOADING,Leaderboard loading...,Chargement du classement...,ランキングを読み込み中...,Shown while the leaderboard request is loading
-LEADERBOARD_LOADING_FAILED,Leaderboard loading failed,Le chargement du classement a échoué,ランキングの読み込みに失敗しました,Shown when the leaderboard request fails
-LEADERBOARD_POINTS,Points,Points,ポイント,Leaderboard value label shown next to a player's score
-LEADERBOARD_TOTAL_PLAYERS,"Total players: {number}","Nombre total de joueurs : {number}","プレイヤー総数: {number}",Leaderboard footer showing the total number of ranked players
-LEADERBOARD_MESSAGE,Compete with others to climb the ladder!,Affrontez les autres pour grimper dans le classement !,他のプレイヤーと競い合ってランキングを駆け上がろう！,Short leaderboard intro message encouraging ranked competition
-PROFILE_STATS_LOADING,Loading statistics...,Chargement des statistiques...,統計を読み込み中...,Shown while the profile statistics request is loading
-PROFILE_STATS_LOAD_FAILED,Statistics loading failed,Le chargement des statistiques a échoué,統計の読み込みに失敗しました,Shown when the profile statistics request fails
-TAG_POP,Pop,Pop,ポップ,Music tag associated to songs
-TAG_RAP,Rap,Rap,ラップ,Music tag associated to songs
-TAG_ROCK,Rock,Rock,ロック,Music tag associated to songs
-TAG_ELECTRO,Electro,Electro,エレクトロ,Music tag associated to songs
-TAG_FRENCH_VARIETY,French,Variété,フレンチ,Music tag associated to songs
-TAG_RNB,RNB,RNB,R&B,Music tag associated to songs
-STATS_GAMES_PLAYED,Games played,Parties jouées,プレイしたゲーム,Shown in the stats panel
-STATS_SONGS_PLAYED,Tracks played,Musiques jouées,再生した曲,Shown in the stats panel
-STATS_GAMES_WON,Games won,Parties gagnées,勝利したゲーム,Shown in the stats panel
-STATS_AVERAGE_SCORE,Average score,Score moyen,平均スコア,Shown in the stats panel
-STATS_AVERAGE_TIME,Average time,Temps moyen,平均時間,Shown in the stats panel
-STATS_RANKING,Rank,Classement,順位,Shown in the stats panel
-STATS_ARTIST_RATE,Artists found,Artistes trouvés,アーティスト正答率,Shown in the stats panel
-STATS_SONG_RATE,Songs found,Titres trouvés,曲名正答率,Shown in the stats panel
-STATS_COMPLETE_RATE,Perfect answers,Réponses complètes,完全正答率,Shown in the stats panel
-STATS_COMPLETE_RATES_BY_TAG,Perfect answers by tag,Réponses complètes par style,タグごとの完全正答率,Shown in the stats panel
-HISTORY_LOADING,Loading match history...,Chargement de l'historique des matchs...,履歴を読み込み中...,Shown while the match history request is loading
-HISTORY_LOADING_FAILED,Match history loading failed,Le chargement de l'historique des matchs a échoué,履歴の読み込みに失敗しました,Shown when the match history request fails
-HISTORY_EMPTY,No matches to show yet.,Aucun match à afficher pour le moment.,まだ表示する対戦がありません。,Shown when the user has no match history yet
-HISTORY_SCORE,"Score: {score}","Score : {score}","スコア: {score}",Shown in the match history panel
-HISTORY_RANKING,"Rank: {rank} / {players}","Classement : {rank} / {players}","順位: {rank} / {players}",Shown in the match history panel
-HISTORY_PLAYER_RANKING,"Rank: {rank}","Classement : {rank}","順位: {rank}",Shown in the match history players tab
-HISTORY_OPEN_PROFILE,"Open profile {username}","Ouvrir le profil de {username}","{username} のプロフィールを開く",Accessible label for clicking a player avatar in match history
-HISTORY_ROUNDS,Rounds,Manches,ラウンド,Shown in the match history panel
-HISTORY_PLAYERS,Players,Joueurs,プレイヤー,Shown in the match history panel
-BADGE_DEAF_OCTOPUS,Deaf Octopus,Poulpe sourd,耳の遠いタコ,Badge for users with XP below 100
-BADGE_DAZED_JELLYFISH,Dazed Jellyfish,Méduse étourdie,ぼんやりクラゲ,Badge for users with XP from 100 to 199
-BADGE_DISTRACTED_PIGEON,Distracted Pigeon,Pigeon distrait,気まぐれなハト,Badge for users with XP from 200 to 499
-BADGE_CURIOUS_CAT,Curious Cat,Chat curieux,好奇心旺盛なネコ,Badge for users with XP from 500 to 999
-BADGE_ATTENTIVE_OWL,Attentive Owl,Chouette attentive,注意深いフクロウ,Badge for users with XP from 1000 to 1999
-BADGE_RHYTHMIC_RAPTOR,Rhythmic Raptor,Raptor rythmé,リズミカルなラプトル,Badge for users with XP from 2000 to 4999
-BADGE_SONIC_SHARK,Sonic Shark,Requin sonique,ソニックシャーク,Badge for users with XP from 5000 to 9999
-BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定位するコウモリ,Badge for users with XP of 10000 or more
-NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Shows on a wrong URL
-NOTIF_TITLE,Notifications,Notifications,通知,Notifications drawer title
-NOTIF_EMPTY,You do not have any notifications.,Vous n'avez aucune notification.,通知はありません。,Displayed when no notifications are found
-NOTIF_FRIEND_REQ,{USERNAME} sent you a friend request,,,Displayed  username when a user receives a new friend request notification
-NOTIF_AGO_DAYS,{COUNT} day(s) ago,Il y a {COUNT} jour(s),{COUNT}日前,Displays how many days ago a notification was triggered
-NOTIF_AGO_HOURS,{COUNT} hour(s) ago,Il y a {COUNT} heure(s),{COUNT}時間前,Displays how many hours ago a notification was triggered
-NOTIF_AGO_MINUTES,{COUNT} minute(s) ago,Il y a {COUNT} minute(s),{COUNT}分前,Displays how many minutes ago a notification was triggered
-NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Displayed when the notification is less than a minute old
-NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Displayed when loading notifications fails
-NOTIF_FRIEND_ACCEPTED,{USERNAME} has accepted you friend requests,,,Displayed after the highlighted username when someone accepts your friend request
-NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Fallback notification message
-GAME_LEADER_BOARD,Leaderboard,Classement,リーダーボード,In game leaderboard title
-GAME_LOBBY_TITLE,Lobby,Salon,ロビー,Lobby category in the game infrastructure
-GAME_SETTINGS_TITLE,Game settings,,,Settings view title
-GAME_CHAT_TITLE,Chat,Discussion,チャット,Chat title in the game infrastructure
-GAME_ERROR_GLOBAL,Failed to fetch game data,Impossible de récupérer les données du jeu,ゲームデータの取得に失敗しました,Error message whenever game couldn't be loaded.
-GAME_ERROR_TITLE,Error,Erreur,エラー,Title for error in game
-GAME_ERROR_INVALID_ROOM,Room is not valid,La salle n’est pas valide,ルームが無効です,Error when room number is not valid
-GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Title of the loading message paper
-GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Content of the loading message paper
-GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,Chat message when a player joined
-GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,Chat message when a player left
-GAME_LEAVE_CONFIRM_TITLE,Leave game?,Quitter la partie ?,ゲームを退出しますか？,Title for confirmation dialog shown before leaving a joined game
-GAME_LEAVE_CONFIRM_MESSAGE,You are currently in a game. Are you sure you want to leave?,Vous êtes actuellement dans une partie. Voulez-vous vraiment quitter ?,現在ゲームに参加しています。本当に退出しますか？,Confirmation message shown before leaving a joined game
-GAME_LEAVE_STAY,Stay,Rester,残る,Button to stay in the current game
-GAME_LEAVE_CONFIRM,Leave,Quitter,退出する,Button to confirm leaving the current game
-GAME_ALREADY_IN_GAME_TITLE,Already in a game,Déjà dans une partie,すでにゲームに参加しています,Title for dialog shown when joining a second game
-GAME_ALREADY_IN_GAME_MESSAGE,You are already in a game. Leave it to join this one?,Vous êtes déjà dans une partie. Voulez-vous la quitter pour rejoindre celle-ci ?,すでにゲームに参加しています。このゲームに参加するために退出しますか？,Message for dialog shown when joining a second game
-GAME_ALREADY_IN_GAME_RETURN,Return to current game,Retourner à la partie en cours,現在のゲームに戻る,Button to go back to the current game
-GAME_ALREADY_IN_GAME_JOIN,Leave and join,Quitter et rejoindre,退出して参加する,Button to leave the current game and join a new one
-GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,Chat message when a player made a guess
-GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorect guess,,,Chat message when a player made a guess (but no guess body given)
-GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,Chat message when a player made a correct guess
-GAME_WAITING_START,Waiting {USER} to start the game,,,Displayed message in the game lobby
-GAME_WAITING_START_NO_HOST,Waiting to start the game,,,Displayed message in the game lobby (With no host rooms)
-GAME_PLAYER_COUNT,Players: {COUNT} / {MAX},,,Display the current connected with its maximum
-GAME_START,Start game,,,Button to start the current game
-GAME_EDIT,Edit game,,,Button to edit the current game settings
-GAME_SETTINGS_PLAYLIST,Playlists,,,Information text about the fact bellow there is the sleection of plalist
-GAME_SETTINGS_NB_MUSIC,Number of musics: {COUNT},,,INformations about the number of musics
-GAME_SETTINGS_MUSIC_TIMER,Music timer: {COUNT}s,,,INformations about the time allowed for the music (in seconds)
-GAME_SETTINGS_BREAK_TIMER,Break timer: {COUNT}s,,,INformations about the time btw Rounds (in seconds)
-GAME_SETTINGS_SEE_OTHERS,See others answer: ,,,Setting to display other people answers in the chat
-GAME_SETTINGS_FUZZY,Fuzzy match: ,,,Allow fuzzy match for answer
-GAME_SETTINGS_NOTAG,No tag,,,Used when no tag has been set
-GAME_SETTINGS_SCORE_OPTION,Score options: ,,,Scoring system option title
-GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,,,Scoring system option (Speed: option)
-GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,,,Scoring system option (Speed: Normal)
-GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armagedon,,,Scoring system option (Speed: Armagedon)
-GAME_SETTINGS_CODE,Room: ,,,Title placed before the code
-GAME_SETTINGS_CB,Copy to clipboard,,,Button to copy to the clipboard
-GAME_SETTINGS_CB_COPIED,Copied...,,,Button to copy to the clipboard (when pressed)
-GAME_SETTINGS_GAME,Game settings,,,Title for game settings
-GAME_SETTINGS_VISIBILITY,Game visibility,,,Title for game visibility
-GAME_SETTINGS_BACK,Return to lobby,,,Button to return into the lobby
-GAME_NO_GENRE,No genre selected,,,Shown when no genre has been selected
-GAME_PLAYING_TITLE,Playing,,,Title of the view when the music is playing
-GAME_PLAYING_ENDED,Game ended,,,Title of the view when the game has ended
-GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},,,Indicate the current round
-GAME_ROUND_ARTIST,Artist:,,,Label for the number of point for finding the artist
-GAME_ROUND_TITLE,Title:,,,Label for the number of point for finding the title
-GAME_ROUND_RANKING,Ranking:,,,Label for the round ranking
-GAME_ROUND_POINTS,pts,,,Short for points (if applicable other= full word or kanji)
-SECONDS,{COUNT}s,,,Seconds suffix (If applicable)
-GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Code associated with a game room
-GAME_NAME,Room name,Nom de la salle,ルーム名,"Name of a game room, shown when creating one"
-CREATE_GAME,Create,Créer,ルームを作成,Shown on the button to create a game room
-CREATING_GAME,Creating...,Création...,ルームを作成中...,Shown on the button to create a game room when pressed
-GAME_CREATION_FAILED,Room creation failed,Échec de la création de la salle,ルームの作成に失敗しました,Shown when a game creation fails
-ALREADY_IN_GAME,You are already in a room!,Vous êtes déjà dans une salle !,すでにルームに参加しています,Shown when a user tries to join or create a game while already being in another one
-ROOM_GENRES_EMPTY,No genres,Aucun genre,ジャンルなし,Shown when a room has no selected genres yet
-ROOMS_LOADING,Loading rooms...,Chargement des salles...,ルームを読み込み中...,Shown while home room lists are loading
-ROOMS_LOADING_FAILED,Rooms loading failed,Échec du chargement des salles,ルームの読み込みに失敗しました,Shown when home room lists fail to load
-ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルームがありません,Shown when a home room list is empty
-REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Accessible label for the room list refresh button
-GAME_STARTING,Game is starting...,,,Message shown when host is pressing starting button.
-GAME_STARTING_IN,Game starting in,,,Count before game is starting
-GAME_ENDED_AVR,Average,,,Displayed bellow value icon to specify nature of the information
-GAME_ENDED_BEST,Best,,,Displayed bellow value icon to specify nature of the information
-GAME_ENDED_TOTAL,Total,,,Displayed bellow value icon to specify nature of the information
-GAME_ENDED_LEAD,Global,,,Displayed bellow value icon to specify nature of the information
-GAME_ENDED_WORST,Worst,,,Displayed bellow value icon to specify nature of the information
-GAME_ENDED_BACK,Back to home,,,Button to go back to the home page
-GAME_ENDED_AGAIN,Play again,,,Button to start a new game
-ERROR_FULL,Game is already full,,,Error triggered when game is full
-GAME_WAITING_WAITING_NEXT,You've rejoined during a round please wait this round to end....,,,Display a player already in  game joined after lost connections
-GAME_LEAVE_INTERACT_TITLE,Interaction required,,,Title of the popup use to request a user interaction to ba abale to play the songs
-GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio please click bellow to interact with the page,,,Content of the popup use to request a user interaction to ba abale to play the songs
-GAME_LEAVE_INTERACT_BUTTON,Go,,,Button of the popup use to request a user interaction to ba abale to play the songs
-GAME_ANSWER_NOT_FOUND,Not found,,,Simple messages  showed instead of the answer time when user didn't found the music
+id,en,fr,ja,de,desc
+CHANGE,Change,Changer,変更,Ändern,Shown on a button to update information
+CHANGE_EMAIL,Change Email,Modifier l'adresse email,メールアドレスを変更する,E-Mail ändern,Shown on profile accordion heading
+CHANGE_PASSWORD,Change Password,Modifier le mot de passe,パスワードを変更する,Passwort ändern,Shown on profile accordion heading
+CHANGE_USERNAME,Change Username,Modifier le nom d'utilisateur,ユーザー名を変更する,Benutzernamen ändern,Shown on profile accordion heading
+CHANGING,Changing...,Modification...,変更中...,Wird geändert...,Shown on a pressed button to update information
+LANG_SELECT,Language selection,Sélection de la langue,言語の選択,Sprachauswahl,Language selection menu
+WELCOME,Welcome,Bienvenue,ようこそ,Willkommen,Generic welcome text
+WELCOME_BACK_USER,"Welcome back, {username}!","Content de te revoir, {username} !",おかえりなさい、{username} さん！,"Willkommen zurück, {username}!",Shown after successful login
+WELCOME_ACCOUNT_READY_USER,"Welcome, {username}! Your account is ready.","Bienvenue, {username} ! Ton compte est prêt.",ようこそ、{username} さん！アカウントの準備ができました。,"Willkommen, {username}! Dein Konto ist bereit.",Shown after successful registration
+BACK_TO_HOME,Back to home,Retour à l'accueil,ホームに戻る,Zurück zur Startseite,Button label to return to the home page
+USERNAME,Username,Nom d'utilisateur,ユーザー名,Benutzername,As it appears in form fields
+NEW_USERNAME,New Username,Nouveau nom d'utilisateur,新しいユーザー名,Neuer Benutzername,As it appears in form fields
+EMAIL,Email,Adresse e-mail,メールアドレス,E-Mail,As it appears in form fields
+NEW_EMAIL,New Email,Nouvelle adresse e-mail,新しいメールアドレス,Neue E-Mail-Adresse,As it appears in form fields
+PASSWORD,Password,Mot de passe,パスワード,Passwort,As it appears in form fields
+NEW_PASSWORD,New Password,Nouveau mot de passe,新しいパスワード,Neues Passwort,As it appears in form fields
+CURRENT_PASSWORD,Current Password,Mot de passe actuel,現在のパスワード,Aktuelles Passwort,As it appears in form fields
+CONFIRM_USERNAME,Confirm Username,Confirmez le nom d'utilisateur,ユーザー名の確認,Benutzernamen bestätigen,As it appears in form fields
+CONFIRM_EMAIL,Confirm Email,Confirmez l'adresse e-mail,メールアドレスの確認,E-Mail bestätigen,As it appears in form fields
+CONFIRM_NEW_PASSWORD,Confirm New Password,Confirmez le nouveau mot de passe,新しいパスワードを確認する,Neues Passwort bestätigen,As it appears in form fields
+CONFIRM_PASSWORD,Confirm Password,Confirmez le mot de passe,パスワードの確認,Passwort bestätigen,As it appears in form fields
+CREATE_ROOM,Create room,Créer une salle,ルームを作成,Raum erstellen,The word room is for a virtual room
+DELETE,Delete,Supprimer,削除,Löschen,Delete button text
+DELETE_ACCOUNT,Delete Account,Supprimer le compte,アカウントを削除する,Konto löschen,Delete account action label
+DELETING,Deleting...,Suppression...,削除中...,Wird gelöscht...,Delete button in progress state
+EMAIL_TAKEN,Email already taken,Adresse e-mail déjà utilisée,メールアドレスは既に使用されています,E-Mail bereits vergeben,Shown when email is already taken
+EMAIL_VALID,Enter a valid email address,Entrez une adresse e-mail valide,有効なメールアドレスを入力してください,Gib eine gültige E-Mail-Adresse ein,Shown when email is invalid
+FRIEND_ROOM,Friends' rooms,Salles d'amis,フレンドのルーム,Räume von Freunden,The word room is for a virtual room
+INVALID_CREDENTIALS,Wrong email or password,E-mail ou mot de passe incorrect,メールアドレスまたはパスワードが違います,Falsche E-Mail-Adresse oder falsches Passwort,Shown when login credentials are invalid
+INVALID_EMAIL,Invalid email,Adresse e-mail invalide,メールアドレスが無効です,Ungültige E-Mail-Adresse,Shown when email fails validation
+INVALID_PASSWORD,Invalid password,Mot de passe invalide,パスワードが無効です,Ungültiges Passwort,Shown when password fails validation
+INVALID_USERNAME,Invalid username,Nom d'utilisateur invalide,ユーザー名が無効です,Ungültiger Benutzername,Shown when username fails validation
+JOIN,Join,Rejoindre,参加,Beitreten,Used to join a room
+JOIN_ROOM,Join room,Rejoindre une salle,ルームに参加,Raum beitreten,The word room is for a virtual room
+LEADERBOARD,Leaderboard,Classement,ランキング,Rangliste,Page showing global rankings
+LOGGING_IN,Logging in,Connexion en cours,ログイン中,Anmeldung läuft,Shows when a user presses Log in
+LOGIN,Log in,Se connecter,ログイン,Anmelden,To log in
+LOGOUT,Log out,Se déconnecter,ログアウト,Abmelden,To log out
+MATCH_HISTORY,Match History,Historique,対戦履歴,Spielverlauf,Shown in the user profile
+MISSING_FIELD,Missing field,Champ manquant,必須項目が不足しています,Feld fehlt,Shown when a required field is missing
+MY_PROFILE,My profile,Mon profil,マイプロフィール,Mein Profil,Menu item to open profile page
+PASSWORD_LOWERCASE,Include at least 1 lowercase letter,Incluez au moins 1 lettre minuscule,小文字を1つ以上含めてください,Mindestens 1 Kleinbuchstabe erforderlich,Shown when password has no lowercase
+PASSWORD_MIN,Use at least 8 characters,Utilisez au moins 8 caractères,8文字以上にしてください,Mindestens 8 Zeichen verwenden,Shown when password is too short
+PASSWORD_MISMATCH,Passwords do not match,Les mots de passe ne correspondent pas,パスワードが一致しません,Passwörter stimmen nicht überein,Shown when password confirmation does not match
+PASSWORD_NUMBER,Include at least 1 number,Incluez au moins 1 chiffre,数字を1つ以上含めてください,Mindestens 1 Zahl erforderlich,Shown when password has no number
+PASSWORD_SPECIAL,Include at least 1 special character,Incluez au moins 1 caractère spécial,特殊文字を1つ以上含めてください,Mindestens 1 Sonderzeichen erforderlich,Shown when password has no special character
+PASSWORD_UPPERCASE,Include at least 1 uppercase letter,Incluez au moins 1 lettre majuscule,大文字を1つ以上含めてください,Mindestens 1 Großbuchstabe erforderlich,Shown when password has no uppercase
+PLAY_GAME,Play,Jouer,プレイ,Spielen,Primary action to start
+FRIENDS,Friends,Amis,フレンド,Freunde,Just the word friends
+PRIVATE,Private,Privée,非公開,Privat,Refers to a private room
+PROFILE_SETTINGS,Settings,Paramètres,設定,Einstellungen,Shown in the user profile
+PROFILE_LOADING,Loading profile...,Chargement du profil...,プロフィールを読み込み中...,Profil wird geladen...,Shown while a profile is loading
+PROFILE_LOAD_FAILED,Failed to load profile.,Échec du chargement du profil.,プロフィールの読み込みに失敗しました。,Profil konnte nicht geladen werden.,Shown when a profile cannot be loaded
+PUBLIC,Public,Publique,公開,Öffentlich,Refers to a public room
+PUBLIC_ROOM,Public rooms,Salles publiques,公開ルーム,Öffentliche Räume,The word room is for a virtual room
+LOGIN_FAILED,Login failed,Connexion échouée,ログインに失敗しました,Anmeldung fehlgeschlagen,Shown when an unknown error occured while logging in
+REGISTRATION_FAILED,Registration failed,Inscription échouée,登録に失敗しました,Registrierung fehlgeschlagen,Shown when an unknown error occured while registering
+PASSWORD_UNCHANGED,Choose a different password,Choisissez un mot de passe différent,別のパスワードを選択してください,Wähle ein anderes Passwort,Shown when the new password matches the current password
+REFRESH_TOKEN_EXPIRED,Refresh token expired,Le jeton de rafraîchissement a expiré,リフレッシュトークンの期限が切れています,Refresh-Token abgelaufen,Shown when refresh token is expired
+REFRESH_TOKEN_MISSING,Refresh token missing,Jeton de rafraîchissement manquant,リフレッシュトークンがありません,Refresh-Token fehlt,Shown when refresh token is missing
+REQUIRED_FIELD,Please fill this,Veuillez remplir ce champ,必須項目です,Bitte fülle dieses Feld aus,Shown when a required field is empty
+SIGNING_UP,Signing up,Création en cours,登録中,Registrierung läuft,Shows when a user presses Sign up
+SIGNUP,Sign up,Créer un compte,アカウント作成,Registrieren,To create an account
+STATISTICS,Statistics,Statistiques,統計情報,Statistiken,Shown in the user profile
+USERNAME_ADMIN,Who do you think you are?,Pour qui tu te prends ?,あなたは誰だと思ってるの？,"Wer glaubst du, wer du bist?",Shown when user tries to use forbidden reserved username
+USERNAME_FORBIDDEN,Username contains forbidden characters,Le nom d'utilisateur contient des caractères interdits,ユーザー名に使用できない文字が含まれています,Benutzername enthält unzulässige Zeichen,Shown when username has forbidden characters
+USERNAME_MAX,Username at most 20 characters,Le nom d'utilisateur ne doit pas dépasser 20 caractères,ユーザー名は20文字以内,Benutzername darf höchstens 20 Zeichen lang sein,Shown when username exceeds max length
+USERNAME_MIN,Username at least 3 characters,Le nom d'utilisateur doit contenir au moins 3 caractères,ユーザー名は3文字以上で入力してください,Benutzername muss mindestens 3 Zeichen lang sein,Shown when username is too short
+FRIEND_TITLE,Friends,Amis,フレンド,Freunde,Friends panel title
+FRIEND_LISTS,List,Liste,一覧,Liste,Friends list tab
+FRIEND_REQUESTS,Requests,Demandes,申請,Anfragen,Friend requests tab
+FRIEND_EMPTY,You do not have any friends yet.,Vous n'avez pas encore d'amis.,まだフレンドがいません。,Du hast noch keine Freunde.,Shown when the friends list is empty
+FRIEND_ERROR,Couldn't load your friends list.,Impossible de charger votre liste d'amis.,フレンド一覧を読み込めませんでした。,Deine Freundesliste konnte nicht geladen werden.,Shown when the friends list request fails
+FRIENDS_ADD,Add,Ajouter,追加,Hinzufügen,Tab to search and add friends
+USERS_NOTFOUND,No users found,Aucun utilisateur trouvé,ユーザーが見つかりません,Keine Benutzer gefunden,Shown when the friend search returns no users
+USERS_ADD_ERROR,Couldn't load the user list.,Impossible de charger la liste des utilisateurs.,ユーザー一覧を読み込めませんでした。,Benutzerliste konnte nicht geladen werden.,Shown when the user search request fails
+SOCIAL_INCOMING_REQUESTS,Incoming requests,Demandes reçues,受信した申請,Eingehende Anfragen,Incoming friend requests section
+SOCIAL_OUTGOING_REQUESTS,Outgoing requests,Demandes envoyées,送信した申請,Ausgehende Anfragen,Outgoing friend requests section
+SOCIAL_NO_OUTGOING,No outgoing requests,Aucune demande envoyée,送信した申請はありません,Keine ausgehenden Anfragen,Displayed when there are no outgoing friend requests
+SOCIAL_NO_INCOMING,No incoming requests,Aucune demande reçue,受信した申請はありません,Keine eingehenden Anfragen,Displayed when there are no incoming friend requests
+SOCIAL_REQUESTS_ERROR,Couldn't load friend requests.,Impossible de charger les demandes d'amis.,フレンド申請を読み込めませんでした。,Freundschaftsanfragen konnten nicht geladen werden.,Displayed when the friend requests request fails
+SOCIAL_REQUESTS_OUTGOING,Sent,Envoyée,送信済み,Gesendet,Displayed when waiting for the other user to respond
+SOCIAL_ADD_FRIEND_FAILED,Failed to send friend request.,Échec de l'envoi de la demande d'ami.,フレンド申請の送信に失敗しました。,Freundschaftsanfrage konnte nicht gesendet werden.,Error shown when sending a friend request fails
+SOCIAL_RESPOND_FRIEND_FAILED,Failed to respond to friend request.,Échec de la réponse à la demande d'ami.,フレンド申請への応答に失敗しました。,Auf Freundschaftsanfrage konnte nicht geantwortet werden.,Error shown when responding to a friend request fails
+PROGRESS_BAR_LVL,LVL,NIV,LV,LVL,Shown below a player's level in its profile
+PROFILE_SOCIAL_LOADING,Loading...,Chargement...,関係を読み込み中,Wird geladen...,Shown while the public profile social relation is loading
+PROFILE_SOCIAL_ADD_FRIEND,Add friend,Ajouter ami,フレンド追加,Freund hinzufügen,Button to send a friend request from a public profile
+PROFILE_SOCIAL_FRIEND,Friend,Ami,フレンド,Freund,Status shown when the public profile user is already a friend
+PROFILE_SOCIAL_REMOVE_FRIEND,Remove,Retirer des amis,フレンド解除,Entfernen,Button to remove an existing friend from a public profile
+PROFILE_SOCIAL_CANCEL_REQUEST,Cancel,Annuler,申請をキャンセル,Abbrechen,Button to cancel an outgoing friend request from a public profile
+PROFILE_SOCIAL_REQUEST_SENT,Request sent,Demande envoyée,申請送信済み,Anfrage gesendet,Status shown when a friend request is outgoing
+PROFILE_SOCIAL_REQUEST_RECEIVED,Request received,Demande reçue,申請受信済み,Anfrage erhalten,Status shown when a friend request is incoming
+PROFILE_SOCIAL_ACCEPT,Accept,Accepter,承認,Annehmen,Button to accept an incoming friend request
+PROFILE_SOCIAL_REFUSE,Refuse,Refuser,拒否,Ablehnen,Button to refuse an incoming friend request
+PROFILE_SOCIAL_CANCEL_REQUEST_TITLE,Cancel friend request,Annuler la demande d’ami,フレンド申請をキャンセル,Freundschaftsanfrage abbrechen,Title of the confirmation dialog to cancel an outgoing friend request
+PROFILE_SOCIAL_REMOVE_FRIEND_CONFIRMATION,This will remove this user from your friends. Continue ?,Cela retirera cet utilisateur de vos amis. Continuer ?,このユーザーをフレンドから解除します。続行しますか？,Dieser Benutzer wird aus deinen Freunden entfernt. Fortfahren?,Confirmation text before removing a friend from a public profile
+PROFILE_SOCIAL_REMOVE_FRIEND_CANCEL,Keep friend,Garder l’ami,フレンドのままにする,Freund behalten,Shown to cancel the friend removal in the dialog
+PROFILE_SOCIAL_REMOVE_FRIEND_TITLE,Remove friend,Retirer l’ami,フレンド解除,Freund entfernen,Title of the confirmation dialog to remove a friend
+PROFILE_SOCIAL_CANCEL_REQUEST_CONFIRMATION,This will cancel your pending friend request. Continue ?,Cela annulera votre demande d'ami en attente. Continuer ?,保留中のフレンド申請をキャンセルします。続行しますか？,Deine ausstehende Freundschaftsanfrage wird abgebrochen. Fortfahren?,Confirmation text before canceling an outgoing friend request from a public profile
+PROFILE_SOCIAL_CANCEL_REQUEST_CANCEL,Keep request,Garder la demande,申請を維持する,Anfrage behalten,Shown to cancel the request cancel in the dialog
+PROFILE_SOCIAL_RELATION_FAILED,Couldn't load social relation.,Impossible de charger la relation sociale.,ソーシャル関係を読み込めませんでした。,Beziehungsstatus konnte nicht geladen werden.,Error shown when loading the public profile relation fails
+PROFILE_SOCIAL_ACTION_FAILED,Friend action failed,L'action ami a échoué,フレンド操作に失敗しました。,Freundesaktion fehlgeschlagen,Error shown when a public profile friend action fails
+PROFILE_SOCIAL_REQUEST_EXPIRED,Friend request expired,Demande d'ami expirée,申請期限切れ,Freundschaftsanfrage abgelaufen,Shown when an incoming friend request disappeared before the user could accept or refuse it
+SOCIAL_NO_MESSAGE,You do not have any messages with this user yet.,Vous n'avez pas encore de messages avec cet utilisateur.,このユーザーとのメッセージはまだありません。,Du hast noch keine Nachrichten mit diesem Benutzer.,Displayed when there is no conversation with the selected user
+SOCIAL_MESSAGE_ERROR,Couldn't load messages.,Impossible de charger les messages.,メッセージを読み込めませんでした。,Nachrichten konnten nicht geladen werden.,Displayed when the message feed request fails
+CHANGE_FAILED,Change failed,La modification a échoué,変更に失敗しました,Änderung fehlgeschlagen,Shows when an unknown error occurred while changing a profile field
+CHANGE_SUCCESS,Change saved,Modification enregistrée,変更を保存しました,Änderung gespeichert,Shown when a profile change succeeds
+DELETE_ACCOUNT_CONFIRMATION,This will permanently delete your profile. Are you sure you want to continue?,Cela supprimera définitivement votre profil. Voulez-vous vraiment continuer ?,プロフィールが完全に削除されます。本当に続行しますか？,Dein Profil wird dauerhaft gelöscht. Möchtest du wirklich fortfahren?,Shown in the delete profile confirmation dialog
+DELETE_FAILED,Delete failed,La suppression a échoué,削除に失敗しました,Löschen fehlgeschlagen,Shows when an unknown error occurred while deleting a profile
+UPDATE_PROFILE_PICTURE,Update Profile Picture,Mettre à jour la photo de profil,プロフィール画像を更新する,Profilbild aktualisieren,Dialog title for profile picture upload
+CHOOSE_PICTURE_PREVIEW,Choose an image to preview before uploading,Choisissez une image à prévisualiser avant le téléversement,アップロード前にプレビューする画像を選択してください,"Wähle ein Bild aus, um vor dem Hochladen eine Vorschau anzuzeigen",Helper text for profile picture preview before upload
+CANCEL,Cancel,Annuler,キャンセル,Abbrechen,To cancel an action
+CHOOSE_IMAGE,Choose Image,Choisir une image,画像を選択する,Bild auswählen,Button label to select an image file
+SAVE,Save,Sauvegarder,保存,Speichern,Confirm button text
+PROFILE_IMAGE_REQUIREMENTS,Use a PNG JPG WEBP GIF or BMP image up to 5 MB,Utilisez une image PNG JPG WEBP GIF ou BMP de 5 Mo maximum,PNG JPG WEBP GIF または BMP を 5 MB 以内で使用してください,"Verwende ein PNG-, JPG-, WEBP-, GIF- oder BMP-Bild mit bis zu 5 MB",Helper text for accepted avatar image formats and size
+PROFILE_IMAGE_INVALID_TYPE,Unsupported image format,Format d'image non pris en charge,サポートされていない画像形式です,Nicht unterstütztes Bildformat,Shown when the selected avatar file format is not supported
+PROFILE_IMAGE_TOO_LARGE,Image is too large,L'image est trop volumineuse,画像サイズが大きすぎます,Bild ist zu groß,Shown when the selected avatar image exceeds the size limit
+PROFILE_IMAGE_INVALID_FILE,Invalid image file,Fichier image invalide,無効な画像ファイルです,Ungültige Bilddatei,Shown when the selected avatar file cannot be decoded as a valid image
+UPLOAD_FAILED,Upload failed,L'envoi a échoué,アップロードに失敗しました,Upload fehlgeschlagen,Shown when an image upload fails for an unknown reason
+MESSAGE_SENT_FAILED,Failed to send message,Impossible d'envoyer le message,メッセージの送信に失敗しました,Nachricht konnte nicht gesendet werden,Shown when a chat message cannot be sent
+PASSWORD_UPDATED,Password updated,Mot de passe mis à jour,パスワードが更新されました,Passwort aktualisiert,Shown when the password update succeeds
+PROFILE_STATISTICS,Profile Statistics,Statistiques du profil,プロフィール統計,Profilstatistiken,Optional title for the profile statistics panel
+PROFILE_MATCH_HISTORY,Match History,Historique des matchs,対戦履歴,Spielverlauf,Optional title for the profile match history panel
+NO_RESPONSE,No response from the server,Aucune réponse du serveur,サーバーから応答がありません,Keine Antwort vom Server,Shown when a request returns no response
+INVALID,Invalid data,Données invalides,無効なデータです,Ungültige Daten,Shown when a response payload is invalid
+UNAUTHORIZED,Unauthorized,Non autorisé,認証が必要です,Nicht autorisiert,Shown when authentication is required
+FRIENDSHIP_REQUEST_SENT,Friend request sent,Demande d'ami envoyée,フレンド申請を送信しました,Freundschaftsanfrage gesendet,Shown when a friend request is sent successfully
+FRIENDSHIP_REQUEST_ACCEPTED,Friend request accepted,Demande d'ami acceptée,フレンド申請が承認されました,Freundschaftsanfrage angenommen,Shown when a friend request is accepted
+MISSING_FRIEND,Friend not found,Ami introuvable,フレンドが見つかりません,Freund nicht gefunden,Shown when a target friend cannot be found
+CONTACT,Contact,Contact,お問い合わせ,Kontakt,Footer link for contact page
+CONTACT_INTRO,The people behind Guess Tunes,Les personnes derrière Guess Tunes,Guess Tunes を支えるメンバー,Die Menschen hinter Guess Tunes,Intro text shown on the contact page
+Q_AND_A,Q&A,FAQ,よくある質問,FAQ,Footer link for Q and A page
+QA_INTRO,Here are the current answers to the most common questions about accounts profiles and project rules in progress,Voici les réponses actuelles aux questions les plus fréquentes sur les comptes les profils et les règles du projet encore en cours,アカウントやプロフィール そして調整中のプロジェクトルールについて 現時点で最もよくある質問への回答をまとめています,"Hier findest du die aktuellen Antworten auf die häufigsten Fragen zu Konten, Profilen und den laufenden Projektregeln",Q and A page intro text
+QA_PROFILE_PICTURE_QUESTION,How do I change my profile picture?,Comment changer ma photo de profil ?,プロフィール画像はどうやって変更しますか？,Wie ändere ich mein Profilbild?,Q and A profile picture question
+QA_PROFILE_PICTURE_ANSWER,Open your profile page click the camera icon on your avatar choose an image preview it and save your changes.,Ouvrez votre page de profil cliquez sur l'icône appareil photo sur votre avatar choisissez une image prévisualisez la puis enregistrez vos modifications.,自分のプロフィールページを開き アバター上のカメラアイコンを押して 画像を選び プレビューしてから保存してください。,"Öffne deine Profilseite, klicke auf das Kamerasymbol auf deinem Avatar, wähle ein Bild aus, prüfe die Vorschau und speichere deine Änderungen.",Q and A profile picture answer
+QA_ACCOUNT_INFO_QUESTION,How do I change my username or email address?,Comment changer mon nom d'utilisateur ou mon adresse email ?,ユーザー名やメールアドレスはどうやって変更しますか？,Wie ändere ich meinen Benutzernamen oder meine E-Mail-Adresse?,Q and A username and email question
+QA_ACCOUNT_INFO_ANSWER,Open your profile settings and use the Change Username or Change Email section. The update is applied as soon as the form succeeds.,Ouvrez les paramètres du profil et utilisez la section Modifier le nom d'utilisateur ou Modifier l'adresse email. La mise à jour est appliquée dès que le formulaire réussit.,プロフィール設定を開き 「ユーザー名を変更する」または「Eメールアドレスを変更する」を使ってください。フォームが成功するとすぐに更新されます。,"Öffne deine Profileinstellungen und verwende den Bereich Benutzername ändern oder E-Mail ändern. Die Aktualisierung wird übernommen, sobald das Formular erfolgreich gesendet wurde.",Q and A username and email answer
+QA_PASSWORD_QUESTION,How do I change my password?,Comment changer mon mot de passe ?,パスワードはどうやって変更しますか？,Wie ändere ich mein Passwort?,Q and A password question
+QA_PASSWORD_ANSWER,Open the profile settings page and use the Change Password section with your current password and your new password.,Ouvrez la page des paramètres du profil et utilisez la section Modifier le mot de passe avec votre mot de passe actuel et votre nouveau mot de passe.,プロフィール設定ページを開き 現在のパスワードと新しいパスワードを入力して「パスワードを変更する」を使ってください。,Öffne die Profileinstellungen und verwende den Bereich Passwort ändern mit deinem aktuellen Passwort und deinem neuen Passwort.,Q and A password answer
+QA_DELETE_ACCOUNT_QUESTION,How do I delete my account?,Comment supprimer mon compte ?,アカウントはどうやって削除しますか？,Wie lösche ich mein Konto?,Q and A delete account question
+QA_DELETE_ACCOUNT_ANSWER,Open profile settings use the Delete Account section enter your password and confirm the deletion in the dialog. This action permanently removes your profile.,Ouvrez les paramètres du profil utilisez la section Supprimer le compte saisissez votre mot de passe puis confirmez la suppression dans la fenêtre. Cette action supprime définitivement votre profil.,プロフィール設定を開き 「アカウントを削除する」からパスワードを入力し ダイアログで削除を確定してください。この操作はプロフィールを完全に削除します。,"Öffne die Profileinstellungen, verwende den Bereich Konto löschen, gib dein Passwort ein und bestätige die Löschung im Dialog. Diese Aktion entfernt dein Profil dauerhaft.",Q and A delete account answer
+QA_LEVELS_QUESTION,How are levels and titles calculated?,Comment les niveaux et les titres sont ils calculés ?,レベルや称号はどのように計算されますか？,Wie werden Level und Titel berechnet?,Q and A levels question
+QA_LEVELS_ANSWER,Your level increases every 100 XP and the progress bar shows how close you are to the next level. Your displayed title changes automatically based on your total XP.,Votre niveau augmente tous les 100 XP et la barre de progression montre à quel point vous êtes proche du niveau suivant. Le titre affiché change automatiquement selon votre total d'XP.,レベルは 100 XP ごとに上がり プログレスバーには次のレベルまでどれくらい近いかが表示されます。表示される称号は合計 XP に応じて自動で変わります。,"Dein Level steigt alle 100 XP, und die Fortschrittsleiste zeigt, wie nah du am nächsten Level bist. Dein angezeigter Titel ändert sich automatisch basierend auf deinen gesamten XP.",Q and A levels answer
+QA_CONTACT_QUESTION,How do I contact the team?,Comment contacter l'équipe ?,チームにはどうやって連絡できますか？,Wie kontaktiere ich das Team?,Q and A contact question
+QA_CONTACT_ANSWER,Use the Contact page from the footer to find the team members and reach them by email.,Utilisez la page Contact depuis le pied de page pour voir les membres de l'équipe et les joindre par email.,フッターの Contact ページからチームメンバーを確認し メールで連絡できます。,"Verwende die Kontaktseite in der Fußzeile, um die Teammitglieder zu finden und sie per E-Mail zu erreichen.",Q and A contact answer
+QA_MATCH_RULES_QUESTION,What are the official match rules?,Quelles sont les règles officielles des matchs ?,公式な対戦ルールは何ですか？,Was sind die offiziellen Spielregeln?,Q and A match rules question
+QA_MATCH_RULES_ANSWER,"A correct artist gives 1 point, a correct song gives 1 point, and getting both gives an extra bonus point. If the host enables it, fast answers can also award bonus points.","Un artiste correct donne 1 point, une chanson correcte donne 1 point, et obtenir les deux donne un point bonus supplémentaire. Si l'hôte l'active, les réponses rapides peuvent aussi rapporter des points bonus.",アーティストを正しく当てると 1 点、曲名を正しく当てると 1 点、両方正解すると追加で 1 点のボーナスが入ります。ホストが有効にしている場合は、早い回答にもボーナスポイントが入ります。,"Ein korrekter Künstler gibt 1 Punkt, ein korrekter Song gibt 1 Punkt, und beides zusammen gibt einen zusätzlichen Bonuspunkt. Wenn der Host es aktiviert, können schnelle Antworten ebenfalls Bonuspunkte geben.",Q and A match rules answer
+QA_GAME_CONFIGURATION_QUESTION,What can a host configure before starting a game?,Que peut configurer un hôte avant de lancer une partie ?,ホストはゲーム開始前に何を設定できますか？,Was kann ein Host vor dem Start eines Spiels konfigurieren?,Q and A game configuration question
+QA_GAME_CONFIGURATION_ANSWER,"Hosts can combine multiple game flags at once. They can choose the number of musics, the music timer, the break timer, answer visibility, fuzzy or absolute matching, and whether fast answer bonuses are enabled.","Les hôtes peuvent combiner plusieurs options de partie en même temps. Ils peuvent choisir le nombre de musiques, le temps par musique, le temps de pause, la visibilité des réponses, le mode de correspondance floue ou stricte, et l'activation ou non du bonus pour les réponses rapides.",ホストは複数のゲーム設定を同時に組み合わせられます。曲数、曲ごとの制限時間、休憩時間、答えの表示方法、あいまい一致か完全一致か、そして早押しボーナスを有効にするかどうかを選べます。,"Hosts können mehrere Spieloptionen gleichzeitig kombinieren. Sie können die Anzahl der Titel, den Musik-Timer, den Pausen-Timer, die Sichtbarkeit der Antworten, Fuzzy- oder exakte Übereinstimmung und schnelle Antwortboni festlegen.",Q and A game configuration answer
+QA_GAME_ACCESSIBILITY_QUESTION,Who can access a hosted game?,Qui peut accéder à une partie hébergée ?,作成されたゲームには誰が参加できますか？,Wer kann einem gehosteten Spiel beitreten?,Q and A game accessibility question
+QA_GAME_ACCESSIBILITY_ANSWER,"Hosts can choose between Public, Friends, and Private access. Public games are visible to everyone on the home page, even guests, Friends games are only for friends and appear in friends related sections, and Private games are only reachable by link or invitation.","Les hôtes peuvent choisir entre un accès Public, Amis et Privé. Les parties publiques sont visibles par tout le monde sur la page d'accueil, même pour les invités, les parties entre amis sont réservées aux amis et apparaissent dans les sections liées aux amis, et les parties privées ne sont accessibles que par lien ou invitation.",ホストは Public、Friends、Private の 3 つから公開範囲を選べます。Public のゲームはゲストを含む全員にホームページで表示され、Friends のゲームはフレンド限定でフレンド関連の欄に表示され、Private のゲームはリンクまたは招待でのみ参加できます。,"Hosts können zwischen öffentlichem, Freunde- und privatem Zugriff wählen. Öffentliche Spiele sind für alle auf der Startseite sichtbar, auch für Gäste. Spiele für Freunde sind nur für Freunde bestimmt und erscheinen in freundesbezogenen Bereichen. Private Spiele sind nur über Link oder Einladung erreichbar.",Q and A game accessibility answer
+TERMS_OF_SERVICE,Terms of Service,Conditions d'utilisation,利用規約,Nutzungsbedingungen,Footer link for terms page
+PRIVACY_POLICY,Privacy Policy,Politique de confidentialité,プライバシーポリシー,Datenschutzerklärung,Footer link for privacy page
+PRIVACY_INTRO,"This Privacy Policy explains how Guess Tunes handles the account, profile, and gameplay data needed to run the service.","Cette politique de confidentialité explique comment Guess Tunes traite les données de compte, de profil et de jeu nécessaires au fonctionnement du service.",このプライバシーポリシーでは、Guess Tunes がサービス運営に必要なアカウント情報、プロフィール情報、ゲーム情報をどのように扱うかを説明します。,"Diese Datenschutzerklärung erklärt, wie Guess Tunes die Konto-, Profil- und Spieldaten verarbeitet, die zum Betrieb des Dienstes benötigt werden.",Intro text shown on privacy policy page
+PRIVACY_DATA_TITLE,What We Collect,Ce que nous collectons,収集する情報,Was wir erfassen,Privacy policy section title
+PRIVACY_DATA_BODY_1,"We store the information needed to create and secure your account, such as your username, email address, and authentication data.","Nous stockons les informations nécessaires pour créer et sécuriser votre compte, comme votre nom d'utilisateur, votre adresse e mail et vos données d'authentification.",アカウント作成と保護に必要なユーザー名、メールアドレス、認証情報などを保存します。,"Wir speichern die Informationen, die zum Erstellen und Sichern deines Kontos benötigt werden, zum Beispiel deinen Benutzernamen, deine E-Mail-Adresse und Authentifizierungsdaten.",Privacy policy section content
+PRIVACY_DATA_BODY_2,"We also store profile details, such as your avatar, as well as gameplay information, such as statistics, match history, and leaderboard related data.","Nous stockons aussi des éléments de profil, comme votre avatar, ainsi que des informations de jeu, comme les statistiques, l'historique des matchs et les données liées au classement.",アバターなどのプロフィール情報に加えて、統計、対戦履歴、ランキング関連データなどのゲーム情報も保存します。,"Wir speichern außerdem Profildetails wie deinen Avatar sowie Spieldaten wie Statistiken, Spielverlauf und ranglistenbezogene Daten.",Privacy policy section content
+PRIVACY_USAGE_TITLE,How We Use It,Comment nous les utilisons,利用目的,Wie wir sie verwenden,Privacy policy section title
+PRIVACY_USAGE_BODY_1,"We use this data to authenticate users, run matches, display profiles and leaderboards, and provide the core features of Guess Tunes.","Nous utilisons ces données pour authentifier les utilisateurs, lancer les matchs, afficher les profils et les classements, et fournir les fonctionnalités principales de Guess Tunes.",これらのデータは、ユーザー認証、対戦の実行、プロフィール表示、ランキング表示、そして Guess Tunes の基本機能の提供に使用されます。,"Wir verwenden diese Daten, um Benutzer zu authentifizieren, Spiele auszuführen, Profile und Ranglisten anzuzeigen und die Kernfunktionen von Guess Tunes bereitzustellen.",Privacy policy section content
+PRIVACY_USAGE_BODY_2,"We may also use technical logs to detect abuse, fix bugs, and keep the service stable during gameplay and account activity.","Nous pouvons aussi utiliser des journaux techniques pour détecter les abus, corriger les bugs et garder le service stable pendant le jeu et l'activité du compte.",技術ログは、不正利用の検出、バグ修正、アカウント利用時やゲームプレイ時の安定性維持にも使用されることがあります。,"Wir können außerdem technische Protokolle verwenden, um Missbrauch zu erkennen, Fehler zu beheben und den Dienst während des Spielens und der Kontoaktivität stabil zu halten.",Privacy policy section content
+PRIVACY_SHARING_TITLE,Who Can Access It,Qui peut y accéder,アクセスできる人,Wer darauf zugreifen kann,Privacy policy section title
+PRIVACY_SHARING_BODY_1,"We do not sell your personal data, and we only share it when this is necessary to operate the project infrastructure.","Nous ne vendons pas vos données personnelles, et nous ne les partageons que lorsque cela est nécessaire au fonctionnement de l'infrastructure du projet.",個人データを販売することはなく、プロジェクト基盤の運用に必要な場合にのみ共有されます。,"Wir verkaufen deine personenbezogenen Daten nicht und teilen sie nur, wenn dies für den Betrieb der Projektinfrastruktur notwendig ist.",Privacy policy section content
+PRIVACY_SHARING_BODY_2,"Profile information that you choose to make public, such as usernames, avatars, and match results, may be visible to other players inside the application.","Les informations de profil que vous choisissez de rendre publiques, comme les noms d'utilisateur, les avatars et les résultats de match, peuvent être visibles par les autres joueurs dans l'application.",公開されるユーザー名、アバター、対戦結果などのプロフィール情報は、アプリ内で他のプレイヤーに表示される場合があります。,"Profilinformationen, die du öffentlich machst, wie Benutzernamen, Avatare und Spielergebnisse, können für andere Spieler innerhalb der Anwendung sichtbar sein.",Privacy policy section content
+PRIVACY_RETENTION_TITLE,Retention and Deletion,Conservation et suppression,保存期間と削除,Aufbewahrung und Löschung,Privacy policy section title
+PRIVACY_RETENTION_BODY_1,"Account and gameplay data are kept while your account remains active, so the service can preserve your profile and progression.","Les données du compte et du jeu sont conservées tant que votre compte reste actif, afin que le service puisse préserver votre profil et votre progression.",アカウントとゲームのデータは、アカウントが有効である間、プロフィールや進行状況を維持するために保存されます。,"Konto- und Spieldaten werden aufbewahrt, solange dein Konto aktiv bleibt, damit der Dienst dein Profil und deinen Fortschritt erhalten kann.",Privacy policy section content
+PRIVACY_RETENTION_BODY_2,"If you delete your profile, we remove the related account data from the application, except for limited technical records that may remain for security or debugging.","Si vous supprimez votre profil, nous retirons les données du compte concerné de l'application, sauf pour des traces techniques limitées qui peuvent rester pour la sécurité ou le débogage.",プロフィールを削除した場合、関連するアカウントデータはアプリケーションから削除されますが、セキュリティやデバッグのための限定的な技術記録は残る場合があります。,"Wenn du dein Profil löschst, entfernen wir die zugehörigen Kontodaten aus der Anwendung, mit Ausnahme begrenzter technischer Aufzeichnungen, die aus Sicherheits- oder Debugging-Gründen verbleiben können.",Privacy policy section content
+PRIVACY_RIGHTS_TITLE,Your Controls,Vos contrôles,利用者ができること,Deine Kontrollmöglichkeiten,Privacy policy section title
+PRIVACY_RIGHTS_BODY_1,"You can update your username, email address, password, and profile image from the profile settings page.","Vous pouvez mettre à jour votre nom d'utilisateur, votre adresse e mail, votre mot de passe et votre image de profil depuis la page des paramètres du profil.",プロフィール設定ページから、ユーザー名、メールアドレス、パスワード、プロフィール画像を更新できます。,"Du kannst deinen Benutzernamen, deine E-Mail-Adresse, dein Passwort und dein Profilbild auf der Profileinstellungsseite aktualisieren.",Privacy policy section content
+PRIVACY_RIGHTS_BODY_2,"If you no longer want to use the service, you can delete your account and contact the project team for privacy related questions.","Si vous ne souhaitez plus utiliser le service, vous pouvez supprimer votre compte et contacter l'équipe du projet pour toute question relative à la vie privée.",サービスを利用しなくなった場合は、アカウントを削除でき、プライバシーに関する質問はプロジェクトチームへ連絡できます。,"Wenn du den Dienst nicht mehr nutzen möchtest, kannst du dein Konto löschen und das Projektteam bei datenschutzbezogenen Fragen kontaktieren.",Privacy policy section content
+TERMS_INTRO,"These Terms of Service govern the use of Guess Tunes and its account, gameplay, profile, and ranking features.","Ces conditions d'utilisation encadrent l'usage de Guess Tunes et de ses fonctionnalités de compte, de jeu, de profil et de classement.",これらの利用規約は、Guess Tunes とそのアカウント、ゲーム、プロフィール、ランキング機能の利用に適用されます。,"Diese Nutzungsbedingungen regeln die Nutzung von Guess Tunes und seiner Konto-, Spiel-, Profil- und Ranglistenfunktionen.",Intro text shown on terms of service page
+TERMS_ACCOUNTS_TITLE,Accounts and Security,Comptes et sécurité,アカウントとセキュリティ,Konten und Sicherheit,Terms of service section title
+TERMS_ACCOUNTS_BODY_1,"You are responsible for the accuracy of the information used to create your account, and for keeping your credentials confidential.","Vous êtes responsable de l'exactitude des informations utilisées pour créer votre compte, et de la confidentialité de vos identifiants.",アカウント作成時に登録する情報の正確性と、認証情報の機密保持は利用者の責任です。,"Du bist für die Richtigkeit der Informationen verantwortlich, die zur Erstellung deines Kontos verwendet werden, sowie dafür, deine Zugangsdaten vertraulich zu behandeln.",Terms of service section content
+TERMS_ACCOUNTS_BODY_2,"You are also responsible for activity performed through your account, unless you promptly report unauthorized access.","Vous êtes aussi responsable des activités réalisées via votre compte, sauf si vous signalez rapidement un accès non autorisé.",不正アクセスを速やかに報告した場合を除き、アカウントを通じて行われた行為についても責任を負います。,"Du bist auch für Aktivitäten verantwortlich, die über dein Konto ausgeführt werden, außer du meldest unbefugten Zugriff unverzüglich.",Terms of service section content
+TERMS_CONDUCT_TITLE,Acceptable Use,Utilisation autorisée,適切な利用,Zulässige Nutzung,Terms of service section title
+TERMS_CONDUCT_BODY_1,"You must not use Guess Tunes to harass other users, cheat, abuse the ranking system, or interfere with the normal operation of matches.","Vous ne devez pas utiliser Guess Tunes pour harceler d'autres utilisateurs, tricher, détourner le système de classement ou perturber le fonctionnement normal des matchs.",Guess Tunes を他の利用者への嫌がらせ、不正行為、ランキング操作、対戦の正常な運営妨害に使ってはいけません。,"Du darfst Guess Tunes nicht verwenden, um andere Benutzer zu belästigen, zu betrügen, das Ranglistensystem zu missbrauchen oder den normalen Ablauf von Spielen zu stören.",Terms of service section content
+TERMS_CONDUCT_BODY_2,"You must not attempt to access data or features without authorization, or use the service for unlawful purposes.","Vous ne devez pas tenter d'accéder sans autorisation à des données ou à des fonctionnalités, ni utiliser le service à des fins illégales.",権限なくデータや機能へアクセスしようとしたり、違法な目的でサービスを利用したりしてはいけません。,"Du darfst nicht versuchen, ohne Autorisierung auf Daten oder Funktionen zuzugreifen oder den Dienst für rechtswidrige Zwecke zu nutzen.",Terms of service section content
+TERMS_SERVICE_TITLE,Service Availability,Disponibilité du service,サービスの提供,Verfügbarkeit des Dienstes,Terms of service section title
+TERMS_SERVICE_BODY_1,"Guess Tunes is a school project service, and features may change, be interrupted, or be removed without prior notice.","Guess Tunes est un service de projet scolaire, et ses fonctionnalités peuvent changer, être interrompues ou être retirées sans préavis.",Guess Tunes は学校プロジェクトのサービスであり、機能は予告なく変更、中断、削除される場合があります。,"Guess Tunes ist ein Schulprojekt-Dienst, und Funktionen können ohne vorherige Ankündigung geändert, unterbrochen oder entfernt werden.",Terms of service section content
+TERMS_SERVICE_BODY_2,"We do not guarantee uninterrupted availability of matches, leaderboards, chat, or profile features at all times.","Nous ne garantissons pas une disponibilité continue des matchs, des classements, du chat ou des fonctionnalités de profil à tout moment.",対戦、ランキング、チャット、プロフィール機能が常に中断なく利用できることは保証しません。,"Wir garantieren keine jederzeit unterbrechungsfreie Verfügbarkeit von Spielen, Ranglisten, Chat oder Profilfunktionen.",Terms of service section content
+TERMS_CONTENT_TITLE,Profiles and Uploaded Content,Profils et contenus envoyés,プロフィールとアップロードされた内容,Profile und hochgeladene Inhalte,Terms of service section title
+TERMS_CONTENT_BODY_1,"You remain responsible for the usernames, images, and other content you submit through your account.","Vous restez responsable des noms d'utilisateur, des images et des autres contenus que vous soumettez via votre compte.",アカウントを通じて送信したユーザー名、画像、その他の内容については利用者が責任を負います。,"Du bleibst verantwortlich für Benutzernamen, Bilder und andere Inhalte, die du über dein Konto einreichst.",Terms of service section content
+TERMS_CONTENT_BODY_2,"You must not upload unlawful, deceptive, or offensive content, and you allow the project to display your submitted content inside the application.","Vous ne devez pas téléverser de contenu illégal, trompeur ou offensant, et vous autorisez le projet à afficher ce contenu dans l'application.",違法、誤解を招く、侮辱的な内容をアップロードしてはいけません。また、提出した内容がアプリ内で表示されることに同意するものとします。,"Du darfst keine rechtswidrigen, irreführenden oder beleidigenden Inhalte hochladen und erlaubst dem Projekt, deine eingereichten Inhalte innerhalb der Anwendung anzuzeigen.",Terms of service section content
+TERMS_ENFORCEMENT_TITLE,Suspension and Deletion,Suspension et suppression,停止と削除,Sperrung und Löschung,Terms of service section title
+TERMS_ENFORCEMENT_BODY_1,"We may suspend, restrict, or delete accounts that violate these rules or threaten the safety, stability, or fairness of the service.","Nous pouvons suspendre, restreindre ou supprimer les comptes qui enfreignent ces règles ou menacent la sécurité, la stabilité ou l'équité du service.",これらの規則に違反したり、サービスの安全性、安定性、公平性を脅かしたりするアカウントは停止、制限、削除される場合があります。,"Wir können Konten sperren, einschränken oder löschen, die diese Regeln verletzen oder die Sicherheit, Stabilität oder Fairness des Dienstes gefährden.",Terms of service section content
+TERMS_ENFORCEMENT_BODY_2,"We may also remove content or features when needed to investigate abuse, security issues, or technical problems.","Nous pouvons aussi retirer des contenus ou des fonctionnalités lorsque cela est nécessaire pour enquêter sur un abus, sur des problèmes de sécurité ou sur des problèmes techniques.",不正行為、セキュリティ問題、技術的問題の調査のために、内容や機能を削除する場合もあります。,"Wir können außerdem Inhalte oder Funktionen entfernen, wenn dies zur Untersuchung von Missbrauch, Sicherheitsproblemen oder technischen Problemen notwendig ist.",Terms of service section content
+TERMS_CHANGES_TITLE,Changes to the Terms,Modifications des conditions,規約の変更,Änderungen der Bedingungen,Terms of service section title
+TERMS_CHANGES_BODY_1,"These terms may be updated as the project evolves, and the latest version made available in the application applies to future use of the service.","Ces conditions peuvent être mises à jour à mesure que le projet évolue, et la dernière version disponible dans l'application s'applique à l'usage futur du service.",これらの規約はプロジェクトの進行にあわせて更新される場合があり、アプリ内で公開された最新版が今後の利用に適用されます。,"Diese Bedingungen können aktualisiert werden, während sich das Projekt weiterentwickelt, und die neueste in der Anwendung verfügbare Version gilt für die zukünftige Nutzung des Dienstes.",Terms of service section content
+TERMS_CHANGES_BODY_2,"By continuing to use Guess Tunes after an update, you accept the revised terms.","En continuant à utiliser Guess Tunes après une mise à jour, vous acceptez les conditions révisées.",更新後も Guess Tunes を利用し続けることで、改訂後の規約に同意したものとみなされます。,"Wenn du Guess Tunes nach einer Aktualisierung weiter nutzt, akzeptierst du die überarbeiteten Bedingungen.",Terms of service section content
+PROJECT_MANAGER,Project Manager,Chef de projet,プロジェクトマネージャー,Projektmanager,Role label shown on the contact page
+PRODUCT_OWNER,Product Owner,Product Owner,プロダクトオーナー,Product Owner,Role label shown on the contact page
+TECH_LEAD,Tech Lead,Responsable technique,テックリード,Tech Lead,Role label shown on the contact page
+DEVELOPER,Developer,Développeur,開発者,Entwickler,Role label shown on the contact page
+PAGE_NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Diese Seite scheint nicht zu existieren,Shows on a wrong URL
+USER_NOT_FOUND,Looks like this user does not exist,On dirait bien que cet utilisateur n'existe pas,このユーザーは存在しないようです,Dieser Benutzer scheint nicht zu existieren,Shows on a missing user profile
+LEADERBOARD_LOADING,Leaderboard loading...,Chargement du classement...,ランキングを読み込み中...,Rangliste wird geladen...,Shown while the leaderboard request is loading
+LEADERBOARD_LOADING_FAILED,Leaderboard loading failed,Le chargement du classement a échoué,ランキングの読み込みに失敗しました,Rangliste konnte nicht geladen werden,Shown when the leaderboard request fails
+LEADERBOARD_POINTS,Points,Points,ポイント,Punkte,Leaderboard value label shown next to a player's score
+LEADERBOARD_TOTAL_PLAYERS,Total players: {number},Nombre total de joueurs : {number},プレイヤー総数: {number},Spieler insgesamt: {number},Leaderboard footer showing the total number of ranked players
+LEADERBOARD_MESSAGE,Compete with others to climb the ladder!,Affrontez les autres pour grimper dans le classement !,他のプレイヤーと競い合ってランキングを駆け上がろう！,"Miss dich mit anderen, um in der Rangliste aufzusteigen!",Short leaderboard intro message encouraging ranked competition
+PROFILE_STATS_LOADING,Loading statistics...,Chargement des statistiques...,統計を読み込み中...,Statistiken werden geladen...,Shown while the profile statistics request is loading
+PROFILE_STATS_LOAD_FAILED,Statistics loading failed,Le chargement des statistiques a échoué,統計の読み込みに失敗しました,Statistiken konnten nicht geladen werden,Shown when the profile statistics request fails
+TAG_POP,Pop,Pop,ポップ,Pop,Music tag associated to songs
+TAG_RAP,Rap,Rap,ラップ,Rap,Music tag associated to songs
+TAG_ROCK,Rock,Rock,ロック,Rock,Music tag associated to songs
+TAG_ELECTRO,Electro,Electro,エレクトロ,Electro,Music tag associated to songs
+TAG_FRENCH_VARIETY,French,Variété,フレンチ,Französisch,Music tag associated to songs
+TAG_RNB,RNB,RNB,R&B,R&B,Music tag associated to songs
+STATS_GAMES_PLAYED,Games played,Parties jouées,プレイしたゲーム,Gespielte Spiele,Shown in the stats panel
+STATS_SONGS_PLAYED,Tracks played,Musiques jouées,再生した曲,Gespielte Titel,Shown in the stats panel
+STATS_GAMES_WON,Games won,Parties gagnées,勝利したゲーム,Gewonnene Spiele,Shown in the stats panel
+STATS_AVERAGE_SCORE,Average score,Score moyen,平均スコア,Durchschnittspunktzahl,Shown in the stats panel
+STATS_AVERAGE_TIME,Average time,Temps moyen,平均時間,Durchschnittszeit,Shown in the stats panel
+STATS_RANKING,Rank,Classement,順位,Rang,Shown in the stats panel
+STATS_ARTIST_RATE,Artists found,Artistes trouvés,アーティスト正答率,Gefundene Künstler,Shown in the stats panel
+STATS_SONG_RATE,Songs found,Titres trouvés,曲名正答率,Gefundene Songs,Shown in the stats panel
+STATS_COMPLETE_RATE,Perfect answers,Réponses complètes,完全正答率,Perfekte Antworten,Shown in the stats panel
+STATS_COMPLETE_RATES_BY_TAG,Perfect answers by tag,Réponses complètes par style,タグごとの完全正答率,Perfekte Antworten nach Tag,Shown in the stats panel
+HISTORY_LOADING,Loading match history...,Chargement de l'historique des matchs...,履歴を読み込み中...,Spielverlauf wird geladen...,Shown while the match history request is loading
+HISTORY_LOADING_FAILED,Match history loading failed,Le chargement de l'historique des matchs a échoué,履歴の読み込みに失敗しました,Spielverlauf konnte nicht geladen werden,Shown when the match history request fails
+HISTORY_EMPTY,No matches to show yet.,Aucun match à afficher pour le moment.,まだ表示する対戦がありません。,Noch keine Spiele zum Anzeigen.,Shown when the user has no match history yet
+HISTORY_SCORE,Score: {score},Score : {score},スコア: {score},Punktzahl: {score},Shown in the match history panel
+HISTORY_RANKING,Rank: {rank} / {players},Classement : {rank} / {players},順位: {rank} / {players},Rang: {rank} / {players},Shown in the match history panel
+HISTORY_PLAYER_RANKING,Rank: {rank},Classement : {rank},順位: {rank},Rang: {rank},Shown in the match history players tab
+HISTORY_OPEN_PROFILE,Open profile {username},Ouvrir le profil de {username},{username} のプロフィールを開く,Profil von {username} öffnen,Accessible label for clicking a player avatar in match history
+HISTORY_ROUNDS,Rounds,Manches,ラウンド,Runden,Shown in the match history panel
+HISTORY_PLAYERS,Players,Joueurs,プレイヤー,Spieler,Shown in the match history panel
+BADGE_DEAF_OCTOPUS,Deaf Octopus,Poulpe sourd,耳の遠いタコ,Tauber Oktopus,Badge for users with XP below 100
+BADGE_DAZED_JELLYFISH,Dazed Jellyfish,Méduse étourdie,ぼんやりクラゲ,Benommene Qualle,Badge for users with XP from 100 to 199
+BADGE_DISTRACTED_PIGEON,Distracted Pigeon,Pigeon distrait,気まぐれなハト,Abgelenkte Taube,Badge for users with XP from 200 to 499
+BADGE_CURIOUS_CAT,Curious Cat,Chat curieux,好奇心旺盛なネコ,Neugierige Katze,Badge for users with XP from 500 to 999
+BADGE_ATTENTIVE_OWL,Attentive Owl,Chouette attentive,注意深いフクロウ,Aufmerksame Eule,Badge for users with XP from 1000 to 1999
+BADGE_RHYTHMIC_RAPTOR,Rhythmic Raptor,Raptor rythmé,リズミカルなラプトル,Rhythmischer Raptor,Badge for users with XP from 2000 to 4999
+BADGE_SONIC_SHARK,Sonic Shark,Requin sonique,ソニックシャーク,Sonischer Hai,Badge for users with XP from 5000 to 9999
+BADGE_ECHOLOCATING_BAT,Echolocating Bat,Chauve-souris écholocatrice,反響定位するコウモリ,Echoortende Fledermaus,Badge for users with XP of 10000 or more
+NOT_FOUND,Looks like this page does not exist,On dirait bien que cette page n'existe pas,このページは存在しないようです,Diese Seite scheint nicht zu existieren,Shows on a wrong URL
+NOTIF_TITLE,Notifications,Notifications,通知,Benachrichtigungen,Notifications drawer title
+NOTIF_EMPTY,You do not have any notifications.,Vous n'avez aucune notification.,通知はありません。,Du hast keine Benachrichtigungen.,Displayed when no notifications are found
+NOTIF_FRIEND_REQ,{USERNAME} sent you a friend request,{USERNAME} vous a envoyé une demande d'ami,{USERNAME} さんがフレンド申請を送信しました,{USERNAME} hat dir eine Freundschaftsanfrage gesendet,Displayed  username when a user receives a new friend request notification
+NOTIF_AGO_DAYS,{COUNT} day(s) ago,Il y a {COUNT} jour(s),{COUNT}日前,Vor {COUNT} Tag(en),Displays how many days ago a notification was triggered
+NOTIF_AGO_HOURS,{COUNT} hour(s) ago,Il y a {COUNT} heure(s),{COUNT}時間前,Vor {COUNT} Stunde(n),Displays how many hours ago a notification was triggered
+NOTIF_AGO_MINUTES,{COUNT} minute(s) ago,Il y a {COUNT} minute(s),{COUNT}分前,Vor {COUNT} Minute(n),Displays how many minutes ago a notification was triggered
+NOTIF_AGO_LESS,Less than a minute ago,Il y a moins d'une minute,1分未満前,Vor weniger als einer Minute,Displayed when the notification is less than a minute old
+NOTIF_FAILED,Couldn't load notifications.,Impossible de charger les notifications.,通知を読み込めませんでした。,Benachrichtigungen konnten nicht geladen werden.,Displayed when loading notifications fails
+NOTIF_FRIEND_ACCEPTED,{USERNAME} has accepted your friend request,{USERNAME} a accepté votre demande d'ami,{USERNAME} さんがフレンド申請を承認しました,{USERNAME} hat deine Freundschaftsanfrage angenommen,Displayed after the highlighted username when someone accepts your friend request
+NOTIF_UNKNOWN,Unknown notification,Notification inconnue,不明な通知,Unbekannte Benachrichtigung,Fallback notification message
+GAME_LEADER_BOARD,Leaderboard,Classement,リーダーボード,Rangliste,In game leaderboard title
+GAME_LOBBY_TITLE,Lobby,Salon,ロビー,Lobby,Lobby category in the game infrastructure
+GAME_SETTINGS_TITLE,Game settings,Paramètres de la partie,ゲーム設定,Spieleinstellungen,Settings view title
+GAME_CHAT_TITLE,Chat,Discussion,チャット,Chat,Chat title in the game infrastructure
+GAME_ERROR_GLOBAL,Failed to fetch game data,Impossible de récupérer les données du jeu,ゲームデータの取得に失敗しました,Spieldaten konnten nicht geladen werden,Error message whenever game couldn't be loaded.
+GAME_ERROR_TITLE,Error,Erreur,エラー,Fehler,Title for error in game
+GAME_ERROR_INVALID_ROOM,Room is not valid,La salle n’est pas valide,ルームが無効です,Raum ist ungültig,Error when room number is not valid
+GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Wird geladen,Title of the loading message paper
+GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Spiel wird geladen...,Content of the loading message paper
+GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,{PLAYER} ist dem Spiel beigetreten.,Chat message when a player joined
+GAME_LEAVED_MESSAGE,{PLAYER} has left the game.,{PLAYER} a quitté la partie.,{PLAYER} がゲームから退出しました。,{PLAYER} hat das Spiel verlassen.,Chat message when a player left
+GAME_LEAVE_CONFIRM_TITLE,Leave game?,Quitter la partie ?,ゲームを退出しますか？,Spiel verlassen?,Title for confirmation dialog shown before leaving a joined game
+GAME_LEAVE_CONFIRM_MESSAGE,You are currently in a game. Are you sure you want to leave?,Vous êtes actuellement dans une partie. Voulez-vous vraiment quitter ?,現在ゲームに参加しています。本当に退出しますか？,Du bist gerade in einem Spiel. Möchtest du es wirklich verlassen?,Confirmation message shown before leaving a joined game
+GAME_LEAVE_STAY,Stay,Rester,残る,Bleiben,Button to stay in the current game
+GAME_LEAVE_CONFIRM,Leave,Quitter,退出する,Verlassen,Button to confirm leaving the current game
+GAME_ALREADY_IN_GAME_TITLE,Already in a game,Déjà dans une partie,すでにゲームに参加しています,Bereits in einem Spiel,Title for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_MESSAGE,You are already in a game. Leave it to join this one?,Vous êtes déjà dans une partie. Voulez-vous la quitter pour rejoindre celle-ci ?,すでにゲームに参加しています。このゲームに参加するために退出しますか？,"Du bist bereits in einem Spiel. Möchtest du es verlassen, um diesem beizutreten?",Message for dialog shown when joining a second game
+GAME_ALREADY_IN_GAME_RETURN,Return to current game,Retourner à la partie en cours,現在のゲームに戻る,Zum aktuellen Spiel zurückkehren,Button to go back to the current game
+GAME_ALREADY_IN_GAME_JOIN,Leave and join,Quitter et rejoindre,退出して参加する,Verlassen und beitreten,Button to leave the current game and join a new one
+GAME_GUESSED_MESSAGE,{PLAYER} tried: {GUESS},{PLAYER} a essayé : {GUESS},{PLAYER} が「{GUESS}」と答えました。,{PLAYER} hat versucht: {GUESS},Chat message when a player made a guess
+GAME_GUESSED_MESSAGE_EMPTY,{PLAYER} had an incorrect guess,{PLAYER} a donné une mauvaise réponse,{PLAYER} が不正解でした,{PLAYER} hat falsch geraten,Chat message when a player made a guess (but no guess body given)
+GAME_FOUND_MESSAGE,{PLAYER} made a correct guess,{PLAYER} a trouvé la bonne réponse,{PLAYER} が正解しました,{PLAYER} hat richtig geraten,Chat message when a player made a correct guess
+GAME_WAITING_START,Waiting for {USER} to start the game,En attente que {USER} lance la partie,{USER} がゲームを開始するのを待っています,"Warte auf {USER}, um das Spiel zu starten",Displayed message in the game lobby
+GAME_WAITING_START_NO_HOST,Waiting to start the game,En attente du lancement de la partie,ゲーム開始を待っています,Warten auf Spielstart,Displayed message in the game lobby (With no host rooms)
+GAME_PLAYER_COUNT,Players: {COUNT} / {MAX},Joueurs : {COUNT} / {MAX},プレイヤー: {COUNT} / {MAX},Spieler: {COUNT} / {MAX},Display the current connected with its maximum
+GAME_START,Start game,Lancer la partie,ゲームを開始,Spiel starten,Button to start the current game
+GAME_EDIT,Edit game,Modifier la partie,ゲームを編集,Spiel bearbeiten,Button to edit the current game settings
+GAME_SETTINGS_PLAYLIST,Playlists,Playlists,プレイリスト,Wiedergabelisten,Information text about the fact bellow there is the sleection of plalist
+GAME_SETTINGS_NB_MUSIC,Number of tracks: {COUNT},Nombre de titres : {COUNT},曲数: {COUNT},Anzahl der Titel: {COUNT},INformations about the number of musics
+GAME_SETTINGS_MUSIC_TIMER,Music timer: {COUNT}s,Temps par musique : {COUNT}s,再生時間: {COUNT}秒,Musik-Timer: {COUNT}s,INformations about the time allowed for the music (in seconds)
+GAME_SETTINGS_BREAK_TIMER,Break timer: {COUNT}s,Temps de pause : {COUNT}s,休憩時間: {COUNT}秒,Pausen-Timer: {COUNT}s,INformations about the time btw Rounds (in seconds)
+GAME_SETTINGS_SEE_OTHERS,See others' answers: ,Voir les réponses des autres : ,他のプレイヤーの回答を見る: ,Antworten anderer sehen: ,Setting to display other people answers in the chat
+GAME_SETTINGS_FUZZY,Fuzzy match: ,Correspondance approximative : ,あいまい一致: ,Fuzzy-Übereinstimmung: ,Allow fuzzy match for answer
+GAME_SETTINGS_NOTAG,No tag,Aucun tag,タグなし,Kein Tag,Used when no tag has been set
+GAME_SETTINGS_SCORE_OPTION,Score options: ,Options de score : ,スコア設定: ,Punkteoptionen: ,Scoring system option title
+GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,Vitesse,速度,Geschwindigkeit,Scoring system option (Speed: option)
+GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,Normal,ノーマル,Normal,Scoring system option (Speed: Normal)
+GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armageddon,Armageddon,アルマゲドン,Armageddon,Scoring system option (Speed: Armagedon)
+GAME_SETTINGS_CODE,Room: ,Salle : ,ルーム: ,Raum: ,Title placed before the code
+GAME_SETTINGS_CB,Copy to clipboard,Copier dans le presse-papiers,クリップボードにコピー,In die Zwischenablage kopieren,Button to copy to the clipboard
+GAME_SETTINGS_CB_COPIED,Copied...,Copié...,コピーしました...,Kopiert...,Button to copy to the clipboard (when pressed)
+GAME_SETTINGS_GAME,Game settings,Paramètres de la partie,ゲーム設定,Spieleinstellungen,Title for game settings
+GAME_SETTINGS_VISIBILITY,Game visibility,Visibilité de la partie,ゲームの公開範囲,Sichtbarkeit des Spiels,Title for game visibility
+GAME_SETTINGS_BACK,Return to lobby,Retour au salon,ロビーに戻る,Zurück zur Lobby,Button to return into the lobby
+GAME_NO_GENRE,No genre selected,Aucun genre sélectionné,ジャンルが選択されていません,Kein Genre ausgewählt,Shown when no genre has been selected
+GAME_PLAYING_TITLE,Playing,En cours,再生中,Wiedergabe,Title of the view when the music is playing
+GAME_PLAYING_ENDED,Game ended,Partie terminée,ゲーム終了,Spiel beendet,Title of the view when the game has ended
+GAME_ROUND_INDICATOR,Round: {CURRENT}/{MAX},Manche : {CURRENT}/{MAX},ラウンド: {CURRENT}/{MAX},Runde: {CURRENT}/{MAX},Indicate the current round
+GAME_ROUND_ARTIST,Artist:,Artiste :,アーティスト:,Künstler:,Label for the number of point for finding the artist
+GAME_ROUND_TITLE,Title:,Titre :,曲名:,Titel:,Label for the number of point for finding the title
+GAME_ROUND_RANKING,Ranking:,Classement :,順位:,Rangliste:,Label for the round ranking
+GAME_ROUND_POINTS,pts,pts,点,Pkt.,Short for points (if applicable other= full word or kanji)
+SECONDS,{COUNT}s,{COUNT}s,{COUNT}秒,{COUNT}s,Seconds suffix (If applicable)
+GAME_ROOM_CODE,Room code,Code de la salle,ルームコード,Raumcode,Code associated with a game room
+GAME_NAME,Room name,Nom de la salle,ルーム名,Raumname,"Name of a game room, shown when creating one"
+CREATE_GAME,Create,Créer,ルームを作成,Erstellen,Shown on the button to create a game room
+CREATING_GAME,Creating...,Création...,ルームを作成中...,Wird erstellt...,Shown on the button to create a game room when pressed
+GAME_CREATION_FAILED,Room creation failed,Échec de la création de la salle,ルームの作成に失敗しました,Raumerstellung fehlgeschlagen,Shown when a game creation fails
+ALREADY_IN_GAME,You are already in a room!,Vous êtes déjà dans une salle !,すでにルームに参加しています,Du bist bereits in einem Raum!,Shown when a user tries to join or create a game while already being in another one
+ROOM_GENRES_EMPTY,No genres,Aucun genre,ジャンルなし,Keine Genres,Shown when a room has no selected genres yet
+ROOMS_LOADING,Loading rooms...,Chargement des salles...,ルームを読み込み中...,Räume werden geladen...,Shown while home room lists are loading
+ROOMS_LOADING_FAILED,Rooms loading failed,Échec du chargement des salles,ルームの読み込みに失敗しました,Räume konnten nicht geladen werden,Shown when home room lists fail to load
+ROOMS_EMPTY,No rooms available,Aucune salle disponible,利用できるルームがありません,Keine Räume verfügbar,Shown when a home room list is empty
+REFRESH_ROOMS,Refresh rooms,Actualiser les salles,ルームを更新,Räume aktualisieren,Accessible label for the room list refresh button
+GAME_STARTING,Game is starting...,La partie commence...,ゲームを開始しています...,Spiel startet...,Message shown when host is pressing starting button.
+GAME_STARTING_IN,Game starting in,La partie commence dans,ゲーム開始まで,Spiel startet in,Count before game is starting
+GAME_ENDED_AVR,Average,Moyenne,平均,Durchschnitt,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BEST,Best,Meilleur,最高,Bestes,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_TOTAL,Total,Total,合計,Gesamt,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_LEAD,Global,Global,全体,Global,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_WORST,Worst,Pire,最低,Schlechtestes,Displayed bellow value icon to specify nature of the information
+GAME_ENDED_BACK,Back to home,Retour à l'accueil,ホームに戻る,Zurück zur Startseite,Button to go back to the home page
+GAME_ENDED_AGAIN,Play again,Rejouer,もう一度プレイ,Nochmal spielen,Button to start a new game
+ERROR_FULL,Game is already full,La partie est déjà pleine,ゲームは満員です,Spiel ist bereits voll,Error triggered when game is full
+GAME_WAITING_WAITING_NEXT,You've rejoined during a round. Please wait for this round to end...,Vous avez rejoint pendant une manche. Veuillez attendre la fin de cette manche...,ラウンド中に再参加しました。このラウンドが終了するまでお待ちください...,"Du bist während einer Runde wieder beigetreten. Bitte warte, bis diese Runde endet...",Display a player already in  game joined after lost connections
+GAME_LEAVE_INTERACT_TITLE,Interaction required,Interaction requise,操作が必要です,Interaktion erforderlich,Title of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_MESSAGE,Interaction with the page is required to play audio. Please click below to interact with the page,Une interaction avec la page est requise pour lire l'audio. Veuillez cliquer ci-dessous pour interagir avec la page,音声を再生するにはページの操作が必要です。下のボタンをクリックしてページを操作してください,"Zum Abspielen von Audio ist eine Interaktion mit der Seite erforderlich. Bitte klicke unten, um mit der Seite zu interagieren",Content of the popup use to request a user interaction to ba abale to play the songs
+GAME_LEAVE_INTERACT_BUTTON,Go,Continuer,進む,Los,Button of the popup use to request a user interaction to ba abale to play the songs
+GAME_ANSWER_NOT_FOUND,Not found,Introuvable,見つかりません,Nicht gefunden,Simple messages  showed instead of the answer time when user didn't found the music

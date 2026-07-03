@@ -29,6 +29,9 @@ import {
 	GAME_ROUND_PASSED_DISPLAYED,
 	GAME_ROUND_PASSED_DISPLAYED_SMALL,
 } from "../../../constants";
+import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
+import AudiotrackIcon from "@mui/icons-material/Audiotrack";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
@@ -76,6 +79,7 @@ function PGameRound({
 	const theme = useTheme();
 	const isMedium = useMediaQuery(theme.breakpoints.down("md"));
 	const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+	const isLarge = useMediaQuery(theme.breakpoints.down("lg"));
 
 	//====================== COMPOENTS ======================
 	const pointBox = useMemo(() => {
@@ -87,13 +91,13 @@ function PGameRound({
 		return (
 			<Stack direction={"row"} sx={style.pointBox}>
 				<Stack direction={"column"} sx={style.pointBoxTextList}>
-					<CText>GAME_ROUND_ARTIST</CText>
-					<CText>GAME_ROUND_TITLE</CText>
-					<CText>GAME_ROUND_RANKING</CText>
+					<MicExternalOnIcon />
+					<AudiotrackIcon />
+					<LeaderboardIcon />
 				</Stack>
 				<Stack direction={"column"} sx={style.pointBoxPointList}>
 					<CText
-						size={"sm"}
+						size={isLarge ? "sm" : "md"}
 						sx={{
 							color: artistFound
 								? appColors.primary[0]
@@ -109,7 +113,7 @@ function PGameRound({
 								: "0"}
 					</CText>
 					<CText
-						size={"sm"}
+						size={isLarge ? "sm" : "md"}
 						sx={{
 							color: titleFound
 								? appColors.primary[0]
@@ -125,7 +129,7 @@ function PGameRound({
 								: "0"}
 					</CText>
 					<CText
-						size={"sm"}
+						size={isLarge ? "sm" : "md"}
 						sx={{
 							color:
 								rounds[status.round].ranking == 0
@@ -141,12 +145,12 @@ function PGameRound({
 					</CText>
 				</Stack>
 				<Stack direction={"column"} sx={style.pointBoxPointSumup}>
-					<CText size="lg">{rounds[status.round].points}</CText>
-					<CText size="xs">GAME_ROUND_POINTS</CText>
+					<CText size={isMedium ? "md" : "lg"}>{rounds[status.round].points}</CText>
+					<CText size={isMedium ? "2xs" : "xs"}>GAME_ROUND_POINTS</CText>
 				</Stack>
 			</Stack>
 		);
-	}, [rounds, status, style]);
+	}, [rounds, status, style, isLarge, isMedium]);
 
 	//====================== MAPS ======================
 	const roundHistory = useMemo((): ReactNode[] => {
@@ -324,7 +328,10 @@ function PGameRound({
 			<Box sx={style.progressBox}>
 				<Stack direction={"column"}>
 					<Stack direction={"row"} sx={{ alignItems: "center" }}>
-						<CText sx={{ m: 0, mr: "15px", textAlign: "center" }}>
+						<CText
+							size={isSmall ? "sm" : undefined}
+							sx={{ m: 0, mr: "15px", textAlign: "center" }}
+						>
 							{ttrfn("GAME_ROUND_INDICATOR", {
 								CURRENT: <span>{status.round + 1}</span>,
 								MAX: <span>{settings.trackCount}</span>,

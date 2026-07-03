@@ -1,4 +1,4 @@
-import { Box, Container, Stack } from "@mui/material";
+import { Container, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTitle from "../../components/text/CTitle";
@@ -35,20 +35,24 @@ const ProfileInfo = ({ profile, onAvatarUploaded }: ProfileInfoProps) => {
 	const badge = profile.badges;
 	const levelProgress = getProfileLevelProgress(xp);
 
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("sm"));
+
 	return (
 		<CBasePaper sx={{ p: 2 }}>
-			<Box
-				sx={{
-					display: "grid",
-					gridTemplateColumns: {
-						xs: "1fr",
-						sm: "minmax(0, 1fr) minmax(260px, 400px)",
-					},
-					gap: 3,
-					alignItems: "center",
-				}}
+			<Stack
+				direction={{ xs: "column", md: "row" }}
+				spacing={3}
+				alignItems={{ xs: "center", md: "normal" }}
+				justifyContent={{ xs: "normal", md: "space-between" }}
 			>
-				<Stack direction="row" spacing={2.5} alignItems="center" sx={{ minWidth: 0 }}>
+				<Stack
+					direction="row"
+					spacing={2.5}
+					justifyContent={{ xs: "center", md: "normal" }}
+					alignItems="center"
+					sx={{ minWidth: 0 }}
+				>
 					<PProfileAvatarEditor
 						username={displayUsername}
 						avatar={profile.avatar}
@@ -56,17 +60,17 @@ const ProfileInfo = ({ profile, onAvatarUploaded }: ProfileInfoProps) => {
 					/>
 					<CTitle
 						noTr={true}
-						size="md"
+						size={isTiny ? "sm" : "md"}
 						sx={{ minWidth: 0, mb: 0, overflowWrap: "anywhere" }}
 					>
 						{displayUsername}
 					</CTitle>
 				</Stack>
-				<Box
+				<Stack
+					justifyContent="center"
 					sx={{
 						width: "100%",
 						maxWidth: 400,
-						justifySelf: { xs: "stretch", sm: "end" },
 					}}
 				>
 					<CLevelProgress
@@ -74,8 +78,8 @@ const ProfileInfo = ({ profile, onAvatarUploaded }: ProfileInfoProps) => {
 						progressPercent={levelProgress.progressPercent}
 						title={badge}
 					/>
-				</Box>
-			</Box>
+				</Stack>
+			</Stack>
 		</CBasePaper>
 	);
 };
@@ -108,6 +112,9 @@ const PProfileMe = () => {
 			: isCurrentUsername
 				? profileState.status
 				: "loading";
+
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("sm"));
 
 	useEffect(() => {
 		if (!username) return;
@@ -156,7 +163,11 @@ const PProfileMe = () => {
 					<ProfileInfo profile={profile} onAvatarUploaded={setReadyProfile} />
 
 					<CBasePaper>
-						<CTabs tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}>
+						<CTabs
+							tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}
+							orientation={isTiny ? "vertical" : "horizontal"}
+							size={isTiny ? "xs" : "sm"}
+						>
 							<ProfileStatisticsPanel username={profile.username} />
 							<ProfileMatchHistoryPanel />
 							<ProfileModifyMePanel

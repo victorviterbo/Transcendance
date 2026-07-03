@@ -140,7 +140,11 @@ function IncomingFriendRequestActions({
 	style,
 }: ImmediateRelationActionButtonProps) {
 	return (
-		<Stack direction="row" spacing={1}>
+		<Stack
+			direction={{ xs: "column", sm: "row" }}
+			spacing={1}
+			alignItems={{ xs: "stretch", sm: "center" }}
+		>
 			<Button
 				{...style.successButton}
 				startIcon={

@@ -71,7 +71,7 @@ export interface IGamePlayer {
 }
 
 //====================== SETTINGS ======================
-export type TScoreOption = "speed" | "normal" | "armageddon";
+export type TScoreOption = "speed" | "normal";
 
 export interface IGameSettings {
 	tags?: Record<string, boolean>;

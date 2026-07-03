@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import type { GPageProps } from "../../common/GPageBases";
 import type { IGamePlayer, IGameRound, IGameSettings } from "../../../types/game";
 import { useMemo, type ReactNode } from "react";
@@ -15,6 +15,7 @@ import type { TDataInfo } from "./PGameEndedRecap";
 import PGameEndedRecap from "./PGameEndedRecap";
 import CButton from "../../../components/inputs/buttons/CButton";
 import { GAME_ENDED_MAX } from "../../../constants";
+import CText from "../../../components/text/CText";
 
 interface PGameEndedProps extends GPageProps {
 	game: React.RefObject<GameInstance | undefined>;
@@ -27,6 +28,9 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 	const style: IGameRoundEndedStyle = useMemo(() => {
 		return PGameRoundEndedStyle();
 	}, []);
+
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
 
 	const roundList = useMemo((): ReactNode => {
 		return rounds.map((round: IGameRound, index: number) => {
@@ -102,7 +106,7 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 		<Stack sx={{ flex: 1, position: "absolute", inset: "5px" }} direction={"column"}>
 			<Box sx={style.box}>
 				<Stack direction={"column"}>
-					<Stack direction={{ xs: "column", sm: "row" }}>
+					<Stack direction={{ xs: "column", sm: "row" }} sx={{ flexWrap: "wrap" }}>
 						<PGameEndedRecap node={<StarIcon />} info={ptsInfo} />
 						<PGameEndedRecap node={<LeaderboardIcon />} info={rankInfo} />
 						<PGameEndedRecap node={<AccessTimeIcon />} info={timeInfo} />
@@ -113,8 +117,12 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 				{roundList}
 			</Stack>
 			<Stack direction={"row"} sx={style.bottom}>
-				<CButton sx={{ mr: "10px" }}>GAME_ENDED_BACK</CButton>
-				<CButton sx={{ ml: "10px" }}>GAME_ENDED_AGAIN</CButton>
+				<CButton sx={{ mr: "10px" }}>
+					<CText size={isTiny ? "xs" : "sm"}>GAME_ENDED_BACK</CText>
+				</CButton>
+				<CButton sx={{ ml: "10px" }}>
+					<CText size={isTiny ? "xs" : "sm"}>GAME_ENDED_AGAIN</CText>
+				</CButton>
 			</Stack>
 		</Stack>
 	);

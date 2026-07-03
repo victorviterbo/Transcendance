@@ -25,6 +25,7 @@ export const PRoomCardContentStyle: SxProps<Theme> = {
 };
 
 export const PRoomCardHeaderStyle: SxProps<Theme> = {
+	alignItems: "center",
 	minWidth: 0,
 };
 
@@ -60,7 +61,11 @@ export const PRoomCardPlayerTextStyle: SxProps<Theme> = {
 
 export const PRoomCardGenresStyle: SxProps<Theme> = {
 	display: "grid",
-	gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+	gridTemplateColumns: {
+		xs: "repeat(1, minmax(0, 1fr))",
+		tn: "repeat(2, minmax(0, 1fr))",
+		md: "repeat(3, minmax(0, 1fr))",
+	},
 	columnGap: 0.75,
 	rowGap: 0.75,
 	width: "100%",

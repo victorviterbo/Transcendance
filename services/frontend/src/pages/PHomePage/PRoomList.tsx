@@ -1,7 +1,6 @@
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { Box, Grid, Stack } from "@mui/material";
 import { type IGameListEntry } from "../../types/game";
-import PRoomCard from "./PRoomCard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GPageProps } from "../common/GPageBases";
 import { fetchFriendsGames, fetchPublicGames } from "../../api/game";
@@ -14,6 +13,7 @@ import {
 	PRoomListRefreshButtonBoxStyle,
 	PRoomListTitleStyle,
 } from "../../styles/pages/home/PRoomListStyle";
+import PRoomCard from "./PRoomCard";
 
 type RoomListStatus = "loading" | "ready" | "error";
 
@@ -110,7 +110,7 @@ function PRoomList({ isPublic }: PRoomListProps) {
 	return (
 		<CTitleBasePaper
 			titleNode={
-				<Box sx={PRoomListTitleStyle}>
+				<Stack direction={"row"} sx={PRoomListTitleStyle}>
 					<CText sx={CTitlePaperTitleStyle} size="lg" textAlign="center">
 						{isPublic ? "PUBLIC_ROOM" : "FRIEND_ROOM"}
 					</CText>
@@ -128,7 +128,7 @@ function PRoomList({ isPublic }: PRoomListProps) {
 							<RefreshIcon fontSize="small" />
 						</CToolButton>
 					</Box>
-				</Box>
+				</Stack>
 			}
 			data-testid={isPublic ? "public_room_testid" : "private_room_testid"}
 		>

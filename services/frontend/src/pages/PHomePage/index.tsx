@@ -1,4 +1,4 @@
-import { Box, Container, Grid } from "@mui/material";
+import { Box, Container, Grid, useMediaQuery, useTheme } from "@mui/material";
 import GPageBase from "../common/GPageBases";
 import { appPositions } from "../../styles/theme";
 import PCreateRoom from "./PCreateRoom";
@@ -7,7 +7,10 @@ import PRoomList from "./PRoomList";
 import { useAuth } from "../../components/auth/CAuthProvider";
 
 const PHomePage = () => {
-	const spacing: number = appPositions.mainSpacing;
+	const theme = useTheme();
+	const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
+	const spacing: number = isSmall ? appPositions.smallSpacing : appPositions.mainSpacing;
 	const { status } = useAuth();
 
 	return (

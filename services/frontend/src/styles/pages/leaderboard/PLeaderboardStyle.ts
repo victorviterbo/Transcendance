@@ -64,8 +64,8 @@ export const PLeaderboardStyle = (): ILeaderboardStyle => ({
 		boxShadow: `0px 3px 0px 0px ${appColors.greys[9]}`,
 	}),
 	ranking: (isTopThree: boolean): SxProps<Theme> => ({
-		minWidth: { xs: 44, sm: 52 },
-		height: { xs: 44, sm: 52 },
+		minWidth: { xs: 38, tn: 44, sm: 52 },
+		height: { xs: 38, tn: 44, sm: 52 },
 		display: "flex",
 		alignItems: "center",
 		justifyContent: "center",
@@ -87,8 +87,8 @@ export const PLeaderboardStyle = (): ILeaderboardStyle => ({
 		fontVariantNumeric: "tabular-nums",
 	},
 	avatar: (isCurrentUser: boolean, isTopThree: boolean): SxProps<Theme> => ({
-		width: { xs: 48, sm: 56 },
-		height: { xs: 48, sm: 56 },
+		width: { xs: 38, tn: 48, sm: 56 },
+		height: { xs: 38, tn: 48, sm: 56 },
 		bgcolor: isCurrentUser
 			? appColors.quinary[0]
 			: isTopThree

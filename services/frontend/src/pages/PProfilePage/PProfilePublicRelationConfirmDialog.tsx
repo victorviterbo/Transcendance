@@ -39,13 +39,19 @@ function PProfilePublicRelationConfirmDialog({
 						? "PROFILE_SOCIAL_CANCEL_REQUEST_CONFIRMATION"
 						: "PROFILE_SOCIAL_REMOVE_FRIEND_CONFIRMATION"}
 				</CText>
-				<DialogActions sx={{ px: 0, pb: 0, pt: 1 }}>
+				<DialogActions
+					sx={{ px: 0, pb: 0, pt: 1, flexDirection: { xs: "column", sm: "row" } }}
+				>
 					<CButtonText onClick={onClose} disabled={isPending}>
 						{isCancelRequest
 							? "PROFILE_SOCIAL_CANCEL_REQUEST_CANCEL"
 							: "PROFILE_SOCIAL_REMOVE_FRIEND_CANCEL"}
 					</CButtonText>
-					<CButtonText onClick={onConfirm} disabled={isPending}>
+					<CButtonText
+						onClick={onConfirm}
+						disabled={isPending}
+						sx={{ mt: { xs: "10px", sm: "0" } }}
+					>
 						{isPending
 							? "PROFILE_SOCIAL_LOADING"
 							: isCancelRequest

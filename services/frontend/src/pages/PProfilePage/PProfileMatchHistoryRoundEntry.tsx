@@ -60,9 +60,14 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 	}, [round, style]);
 
 	return (
-		<Stack direction="row" spacing={1.5} alignItems="center" sx={style.roundEntry}>
+		<Stack
+			direction={{ xs: "column", sm: "row" }}
+			spacing={1.5}
+			alignItems="center"
+			sx={style.roundEntry}
+		>
 			<CCover url={round.artworkUrl} alt={roundInfos.coverAlt}></CCover>
-			<Stack sx={{ flex: 1, minWidth: 0 }}>
+			<Stack sx={{ flex: 1, minWidth: 0 }} alignItems={{ xs: "center", sm: "flex-start" }}>
 				<CTitle size="sm" sx={{ mb: 0 }}>
 					{round.trackArtist}
 				</CTitle>
@@ -78,7 +83,7 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 				useFlexGap
 				flexWrap="wrap"
 				justifyContent="flex-end"
-				sx={{ flexShrink: 0 }}
+				sx={{ mt: { xs: "15px", sm: "0" }, flexShrink: 0 }}
 			>
 				{roundInfos.isRoundFullyFound ? (
 					<RoundMetaItem

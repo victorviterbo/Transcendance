@@ -25,6 +25,7 @@ export const PGameSettingsSplitter: SxProps<Theme> = (_) => ({
 	ml: "0%",
 	mt: "5px",
 	mb: "20px",
+	flexShrink: 0,
 
 	backgroundColor: appColors.secondary[1],
 	borderRadius: appSharedStyle.gameRadius,

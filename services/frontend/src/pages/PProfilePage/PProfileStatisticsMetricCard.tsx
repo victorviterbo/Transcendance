@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useMemo, type ReactNode } from "react";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
@@ -30,6 +30,9 @@ function PProfileStatisticsMetricCard({
 		return PProfileStatisticsStyle();
 	}, []);
 
+	const theme = useTheme();
+	const isMedium = useMediaQuery(theme.breakpoints.down("md"));
+
 	return (
 		<Box sx={style.metricCard(isInline, tone)}>
 			<Stack
@@ -54,7 +57,7 @@ function PProfileStatisticsMetricCard({
 						<CTitle size="sm" sx={{ mb: 0 }}>
 							{value}
 						</CTitle>
-						<CText size="xs" align="center" sx={style.metricLabel}>
+						<CText size={isMedium ? "2xs" : "xs"} align="center" sx={style.metricLabel}>
 							{label}
 						</CText>
 					</>

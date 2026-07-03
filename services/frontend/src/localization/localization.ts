@@ -60,6 +60,7 @@ const NUMBER_FORMAT_LOCALES: Record<string, string> = {
 	en: "en-US",
 	fr: "fr-FR",
 	ja: "ja-JP",
+	de: "de-DE",
 };
 
 let onLangChangedBind: (() => void) | null = null;

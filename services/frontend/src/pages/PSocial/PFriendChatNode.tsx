@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import type { GPageProps } from "../common/GPageBases";
 import type { IFriendInfo, IFriendMessage } from "../../types/socials";
 import CText from "../../components/text/CText";
@@ -30,6 +30,9 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 		return currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
 	}, [isUser, message]);
 
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
+
 	return (
 		<Box sx={(theme) => PFriendChatNodeStyle(theme, isUser)} data-testid="PFriendChatNode">
 			<Stack direction={"column"}>
@@ -37,7 +40,8 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 					noTr={true}
 					family={appTexts.text.secondaryFamily}
 					fontWeight={600}
-					size="md"
+					size={isTiny ? "sm" : "md"}
+					sx={{ overflowWrap: "break-word" }}
 				>
 					{message.message}
 				</CText>

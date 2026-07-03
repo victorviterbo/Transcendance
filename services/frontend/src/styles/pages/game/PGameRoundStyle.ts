@@ -40,7 +40,7 @@ export const PGameRoundStyle = (): IGameRoundStyle => {
 			borderRadius: appSharedStyle.gameRadius,
 		},
 		pointBoxTextList: {
-			pl: "10px",
+			pl: "15px",
 			py: "7px",
 
 			backgroundColor: appColors.greys[6],
@@ -53,14 +53,14 @@ export const PGameRoundStyle = (): IGameRoundStyle => {
 			flex: 1,
 			backgroundColor: appColors.greys[6],
 			justifyContent: "space-around",
-			pl: "7px",
+			pl: "15px",
 			pr: "auto",
 			py: "7px",
 		},
 		pointBoxPointSumup: {
 			justifyContent: "center",
 			alignItems: "center",
-			px: "15px",
+			px: { xs: "10px", md: "15px" },
 		},
 	};
 };
@@ -263,8 +263,8 @@ export interface IGameRoundEndedStyle {
 export const PGameRoundEndedStyle = (): IGameRoundEndedStyle => {
 	return {
 		box: {
-			px: "15px",
-			py: "10px",
+			px: { xs: "5px", xl: "15px" },
+			pb: "10px",
 
 			mx: "5px",
 
@@ -299,7 +299,7 @@ export const PGameEndedRecapStyle = (): IGameEndedRecapStyle => {
 		card: {
 			flex: 1,
 			my: { xs: "5px", sm: "0px" },
-			mx: "10px",
+			mx: { xs: "5px", xl: "10px" },
 			px: "5px",
 			pt: { xs: "3px", sm: "0px" },
 			pb: { xs: "3px", sm: "10px" },
@@ -311,6 +311,8 @@ export const PGameEndedRecapStyle = (): IGameEndedRecapStyle => {
 				"linear",
 				15,
 			),
+			mt: "10px !important",
+			minWidth: "250px",
 		},
 		iconBox: {
 			my: "10px",

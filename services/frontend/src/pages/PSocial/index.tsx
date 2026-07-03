@@ -3,7 +3,7 @@ import PFriendAdd from "./PFriendAdd";
 import PFriendList from "./PFriendList";
 import PFriendReq from "./PFriendReq";
 import type { IFriendInfo } from "../../types/socials";
-import { Box, Slide, Stack } from "@mui/material";
+import { Box, Slide, Stack, useMediaQuery, useTheme } from "@mui/material";
 import PFriendChat from "./PFriendChat";
 import CTitleBasePaper from "../../components/surfaces/CTitleBasePaper";
 import CText from "../../components/text/CText";
@@ -14,6 +14,9 @@ import CIconButton from "../../components/inputs/buttons/CIconButton";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { GPageProps } from "../common/GPageBases";
 import CCtrlTabs from "../../components/navigation/CCtrlTabs";
+import PeopleIcon from "@mui/icons-material/People";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 
 interface PSocialProps extends GPageProps {
 	activeTab: number;
@@ -23,6 +26,10 @@ interface PSocialProps extends GPageProps {
 
 function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 	const [messaging, setMessaging] = useState<IFriendInfo | undefined>(undefined);
+
+	const theme = useTheme();
+	const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
 
 	useEffect(() => {
 		async function checkClosed() {
@@ -56,12 +63,21 @@ function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 					>
 						<CAvatar
 							profileUsername={messaging.username}
-							sx={{ height: "35px", width: "35px", mr: "10px" }}
+							sx={{
+								height: { xs: "25px", tn: "35px" },
+								width: { xs: "25px", tn: "35px" },
+								mr: { xs: "5px", tn: "10px" },
+							}}
 							src={messaging.avatar}
 							alt={messaging.username + "'s picture"}
 						></CAvatar>
 						<CUserProfileLink username={messaging.username}>
-							<CText noTr={true} size={"lg"} textAlign="center" sx={{ mb: 0 }}>
+							<CText
+								noTr={true}
+								size={isTiny ? "md" : "lg"}
+								textAlign="center"
+								sx={{ mb: 0 }}
+							>
 								{messaging.username}
 							</CText>
 						</CUserProfileLink>
@@ -116,7 +132,7 @@ function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 				</Stack>
 			</Box>
 		);
-	}, [messaging]);
+	}, [messaging, isTiny]);
 
 	return (
 		<CTitleBasePaper
@@ -132,6 +148,7 @@ function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 				minHeight: 0,
 				overflow: "hidden",
 			}}
+			contentPadding={isTiny ? 1 : isSmall ? 2 : undefined}
 			titleNode={title}
 			data-testid="PSocial"
 		>
@@ -144,14 +161,23 @@ function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 						display: "flex",
 						flexDirection: "column",
 						flex: 1,
-						overflow: "hidden",
+						overflow: { xs: "auto", tn: "hidden" },
 					}}
 				>
 					<CCtrlTabs
-						tabs={["FRIEND_LISTS", "FRIENDS_ADD", "FRIEND_REQUESTS"]}
+						tabs={
+							!isTiny
+								? ["FRIEND_LISTS", "FRIENDS_ADD", "FRIEND_REQUESTS"]
+								: [
+										<PeopleIcon key="people" />,
+										<PersonAddIcon key="add" />,
+										<AccessTimeFilledIcon key="requests" />,
+									]
+						}
 						testid="PSocialTab"
 						activeTab={activeTab}
 						onTabChanged={onTabChanged}
+						size={isSmall ? "xs" : "sm"}
 					>
 						<PFriendList
 							onMessaging={(Friend: IFriendInfo) => {

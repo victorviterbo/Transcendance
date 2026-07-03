@@ -25,6 +25,7 @@ import {
 	PProfileMatchHistoryStyle,
 	type IProfileMatchHistoryStyle,
 } from "../../styles/pages/profile/PProfileMatchHistoryStyle";
+import { appColors } from "../../styles/theme";
 
 interface PProfileMatchHistoryAccordionCardProps {
 	entry: IHistoryEntry;
@@ -89,14 +90,27 @@ function PProfileMatchHistoryAccordionCard({ entry }: PProfileMatchHistoryAccord
 						<ListItemText
 							primary={
 								<CUserProfileLink username={player.username}>
-									<CText size="sm" sx={{ mb: 0 }}>
+									<CText
+										size="sm"
+										sx={{ mb: 0 }}
+										noTr={true}
+										color={
+											player.ranking <= 3
+												? appColors.secondary[0]
+												: appColors.primary[0]
+										}
+									>
 										{player.username}
 									</CText>
 								</CUserProfileLink>
 							}
-							secondary={ttrf("HISTORY_PLAYER_RANKING", {
-								rank: ttrn(player.ranking),
-							})}
+							secondary={
+								<CText size="xs" color={appColors.greys[3]}>
+									{ttrf("HISTORY_PLAYER_RANKING", {
+										rank: ttrn(player.ranking),
+									})}
+								</CText>
+							}
 						/>
 					</Stack>
 				</ListItem>

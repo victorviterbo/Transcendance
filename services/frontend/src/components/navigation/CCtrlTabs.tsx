@@ -1,7 +1,7 @@
 import { Tabs, Tab } from "@mui/material";
-import { type SyntheticEvent, Children } from "react";
+import { type ReactNode, type SyntheticEvent, Children, useMemo } from "react";
 import { ttr } from "../../localization/localization.ts";
-import { CTabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
+import { CTabStyle, type ITabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 import type { CTabsProps } from "./CTabs.tsx";
 
 interface CCtrlTabsProps extends CTabsProps {
@@ -10,9 +10,32 @@ interface CCtrlTabsProps extends CTabsProps {
 }
 
 //TODO: Replace sx
-function CCtrlTabs({ tabs, activeTab, onTabChanged, testid, children }: CCtrlTabsProps) {
+function CCtrlTabs({
+	tabs,
+	activeTab,
+	onTabChanged,
+	testid,
+	sx,
+	size = "sm",
+	children,
+	orientation,
+}: CCtrlTabsProps) {
 	//====================== DATA ======================
 	const childList = Children.toArray(children);
+	const style: ITabStyle = useMemo(() => {
+		return CTabStyle(size);
+	}, [size]);
+
+	const tabsNode: ReactNode[] = useMemo(() => {
+		return tabs.map((item, index) => (
+			<Tab
+				sx={style.main}
+				key={index}
+				label={typeof item == "string" ? ttr(item) : item}
+				data-testid={testid ? testid + index : null}
+			/>
+		));
+	}, [tabs, testid, style]);
 
 	//====================== DOM ======================
 	return (
@@ -21,17 +44,11 @@ function CCtrlTabs({ tabs, activeTab, onTabChanged, testid, children }: CCtrlTab
 				value={activeTab}
 				onChange={(_: SyntheticEvent, newValue: number) => onTabChanged(newValue)}
 				centered
-				sx={{ mb: 3 }}
+				sx={[{ mb: 3 }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
 				data-testid={testid ? testid : null}
+				orientation={orientation}
 			>
-				{tabs.map((item, index) => (
-					<Tab
-						sx={CTabStyle}
-						key={index}
-						label={ttr(item)}
-						data-testid={testid ? testid + index : null}
-					/>
-				))}
+				{tabsNode}
 			</Tabs>
 			{childList[activeTab]}
 		</>

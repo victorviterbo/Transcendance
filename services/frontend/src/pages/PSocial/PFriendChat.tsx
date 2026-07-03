@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import CTextField from "../../components/inputs/textFields/CTextField";
 import type { IFriendFeed, IFriendInfo, IFriendMessage } from "../../types/socials";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -23,6 +23,9 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 	const [messageField, setMessageField] = useState<string>("");
 	const wsContext: IWSContextModule = useWS("friend_chat");
 	const lastTarget = useRef<IFriendInfo | undefined>(undefined);
+
+	const theme = useTheme();
+	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
 
 	//====================== INCOMINGS ======================
 	useEffect(() => {
@@ -144,6 +147,8 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 			<Stack direction="row">
 				<CTextField
 					sx={{ flex: 1 }}
+					verticalPadding={"8px"}
+					borderWidth={"2px"}
 					fontWeight={500}
 					fontFamily={appTexts.text.secondaryFamily}
 					fontSize={appTexts.text.sizes.sm}
@@ -161,7 +166,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 					sx={{ my: "auto", ml: "10px" }}
 					data-testid="PFriendChat_SendButton"
 				>
-					<SendIcon />
+					<SendIcon fontSize={isTiny ? "small" : "medium"} />
 				</CIconButton>
 			</Stack>
 		</Stack>
