@@ -6,7 +6,7 @@ from project import settings
 
 countdown_time = 3
 answer_buffer_time = 0.2
-max_players = 20
+max_players = 1
 
 badges_strings = ['BADGE_DEAF_OCTOPUS', # <100
                   'BADGE_DAZED_JELLYFISH', # < 200 
