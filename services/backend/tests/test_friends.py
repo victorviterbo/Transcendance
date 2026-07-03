@@ -128,7 +128,7 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
                              response.data['outgoing'][0]['username'])
             self.assertEqual('outgoing', response.data['outgoing'][0]['relation'])
             self.assertIn('default_avatars/default_avatar_',
-                          response.data['outgoing'][0]['image'])
+                          response.data['outgoing'][0]['avatar'])
             self.assertEqual(0, len(response.data['incoming']))
 
             self.authenticate('user2@mail.com', user2)
@@ -151,7 +151,7 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
                                  response.data['friends'][0]['uid'])
                 self.assertEqual('online', response.data['friends'][0]['status'])
                 self.assertIn('default_avatars/default_avatar_',
-                              response.data['friends'][0]['image'])
+                              response.data['friends'][0]['avatar'])
 
             elif res == 'refuse':
                 self.assertEqual('FRIENDSHIP_REQUEST_REJECTED',
@@ -173,7 +173,7 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
         self.assertGreaterEqual(len(response.data['users']), 1)
         self.assertIn('relation', response.data['users'][0])
         self.assertIn('default_avatars/default_avatar_',
-                      response.data['users'][0]['image'])
+                      response.data['users'][0]['avatar'])
 
     def test_remove_friend_and_cancel_outgoing_request(self) -> None:
         """Test removing accepted friends and canceling outgoing pending requests."""
@@ -251,10 +251,10 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
     def test_remove_deleted_target_returns_friendship_not_found(self) -> None:
         """Removing a friend whose account was deleted is a stale friendship state."""
 
-        login_url = '/api/auth/login/'
-        send_url = '/api/social/friend-request/send'
-        respond_url = '/api/social/friend-request/respond'
-        remove_url = '/api/social/friend/remove'
+        login_url = urls['login']
+        send_url = urls['friend_request_send']
+        respond_url = urls['friend_request_respond']
+        remove_url = urls['friend_remove']
 
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
@@ -295,7 +295,7 @@ class FriendRequestsTests(TestBaseHelpers, APITestCase):
         """Friend mutation errors should not include legacy uid aliases."""
 
         login_url = '/api/auth/login/'
-        send_url = '/api/social/friend-request/send'
+        send_url = urls['friend_request_send']
 
         login_res = self.client.post(login_url, data={'email': 'user1@mail.com', 'password': 'Password123+'})
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)

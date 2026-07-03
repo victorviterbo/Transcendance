@@ -58,15 +58,7 @@ def friend_response(description: str, target_user: SiteUser, target_username: st
         'targetUsername': target_username or target_user.profile.username,
     }
 
-def serialize_profiles_list(profiles, request: Request, relation) -> list:
-    """Serialize an iterable of Profile objects to FriendUserSerializer data."""
-    result = []
-    for profile in profiles:
-        rel = relation(profile) if callable(relation) else relation
-        result.append(
-            FriendUserSerializer(profile, context={'request': request, 'relation': rel}).data
-        )
-    return result
+
 
 class FriendRequestsSeePend(APIView):
     """Define the function to display friends and friend requests."""
@@ -90,8 +82,16 @@ class FriendRequestsSeePend(APIView):
 
         return Response(
             {
-                'incoming': serialize_profiles_list(incoming_profiles, request, 'incoming'),
-                'outgoing': serialize_profiles_list(outgoing_profiles, request, 'outgoing'),
+                'incoming': FriendUserSerializer(
+                    incoming_profiles, 
+                    many=True, 
+                    context={'request': request, 'relation': 'incoming'}
+                ).data,
+                'outgoing': FriendUserSerializer(
+                    outgoing_profiles, 
+                    many=True, 
+                    context={'request': request, 'relation': 'outgoing'}
+                ).data,
             },
             status=status.HTTP_200_OK,
         )

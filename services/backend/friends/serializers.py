@@ -4,9 +4,6 @@ from django.templatetags.static import static
 from rest_framework import serializers
 from rest_framework.request import Request
 from userprofile.models import Profile
-from userprofile.serializers import UsersSerializer
-
-from .models import Friendship
 
 
 def avatar_url(instance: Profile, request: Request | None = None) -> str:
@@ -18,16 +15,6 @@ def avatar_url(instance: Profile, request: Request | None = None) -> str:
     if request:
         return request.build_absolute_uri(avatar_url)
     return avatar_url
-
-
-class FriendshipSerializer(serializers.ModelSerializer):
-    """Serialize a friendship row for debugging and legacy responses."""
-    from_user = UsersSerializer(source='from_user.profile', read_only=True)
-    to_user = UsersSerializer(source='to_user.profile', read_only=True)
-    class Meta:
-        """Define the serialized friendship fields."""
-        model = Friendship
-        fields = ['from_user', 'to_user', 'status', 'created_at', 'uid']
 
 
 class FriendInfoSerializer(serializers.ModelSerializer):

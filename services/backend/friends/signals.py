@@ -66,7 +66,7 @@ def save_profile(sender: type[Friendship],
                  created: bool,
                  update_fields: set[str] | None = None,
                  **kwargs: Any) -> None:
-    """Trigger sending of notifications when friendship is saved."""
+    """Trigger sending of notifications when new friendship record is saved/created."""
     if created:
         sender = instance.from_user.profile
         recipient_group = profile_group_name(instance.to_user)
@@ -81,6 +81,7 @@ def save_profile(sender: type[Friendship],
                 },
             },
         )
+        """Uses notif_payload() to build a full notification object, adds to the recipient's notification list"""
         group_send_safe(
             recipient_group,
             {
