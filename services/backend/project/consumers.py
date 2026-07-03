@@ -107,7 +107,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         target = content.get('target')
         event = content.get('event')
 
-        if target == 'friend-chat':
+        if target == 'friend_chat':
             await handle_friend_chat_payload(self, content, event)
             return
         if target == 'game':

@@ -32,7 +32,7 @@ vi.mock("../api/social", async (importOriginal) => {
 });
 
 const profile: IProfileData = {
-	uid: "target-uid",
+	uid: targetUid,
 	username: "target",
 	avatar: null,
 	exp_points: 0,
@@ -45,7 +45,7 @@ const createUser = (
 	relation: TFriendRelation,
 	overrides: Partial<IExtUserInfo> = {},
 ): IExtUserInfo => ({
-	uid: "target-uid",
+	uid: targetUid,
 	username: "target",
 	image: "/avatar.png",
 	badges: "Badge",
@@ -209,7 +209,7 @@ describe("PProfilePublicRelation", () => {
 
 			await waitFor(() => expect(mocks.sendFriendRequest).toHaveBeenCalledTimes(1));
 			expect(mocks.sendFriendRequest).toHaveBeenCalledWith(
-				expect.objectContaining({ uid: "target-uid", username: "target" }),
+				expect.objectContaining({ uid: targetUid, username: "target" }),
 			);
 			expect(await screen.findByText("PROFILE_SOCIAL_REQUEST_SENT")).toBeInTheDocument();
 			expectNoSocialError();
@@ -223,7 +223,7 @@ describe("PProfilePublicRelation", () => {
 
 			await waitFor(() => expect(mocks.respondFriendRequest).toHaveBeenCalledTimes(1));
 			expect(mocks.respondFriendRequest).toHaveBeenCalledWith(
-				expect.objectContaining({ uid: "target-uid", username: "target" }),
+				expect.objectContaining({ uid: targetUid, username: "target" }),
 				"accept",
 			);
 			expect(await screen.findByText("PROFILE_SOCIAL_FRIEND")).toBeInTheDocument();
@@ -238,7 +238,7 @@ describe("PProfilePublicRelation", () => {
 
 			await waitFor(() => expect(mocks.respondFriendRequest).toHaveBeenCalledTimes(1));
 			expect(mocks.respondFriendRequest).toHaveBeenCalledWith(
-				expect.objectContaining({ uid: "target-uid", username: "target" }),
+				expect.objectContaining({ uid: targetUid, username: "target" }),
 				"refuse",
 			);
 			expect(await screen.findByTestId("PProfilePublic_AddFriend")).toBeInTheDocument();
@@ -292,7 +292,7 @@ describe("PProfilePublicRelation", () => {
 
 			await waitFor(() => expect(mocks.removeFriend).toHaveBeenCalledTimes(1));
 			expect(mocks.removeFriend).toHaveBeenCalledWith(
-				expect.objectContaining({ uid: "target-uid", username: "target" }),
+				expect.objectContaining({ uid: targetUid, username: "target" }),
 			);
 			expect(await screen.findByTestId("PProfilePublic_AddFriend")).toBeInTheDocument();
 			expectNoSocialError();
@@ -365,7 +365,7 @@ describe("PProfilePublicRelation", () => {
 
 			await waitFor(() => expect(mocks.sendFriendRequest).toHaveBeenCalledTimes(1));
 			expect(mocks.respondFriendRequest).toHaveBeenCalledWith(
-				expect.objectContaining({ uid: "target-uid", username: "target" }),
+				expect.objectContaining({ uid: targetUid, username: "target" }),
 				"accept",
 			);
 			expect(await screen.findByText("PROFILE_SOCIAL_FRIEND")).toBeInTheDocument();

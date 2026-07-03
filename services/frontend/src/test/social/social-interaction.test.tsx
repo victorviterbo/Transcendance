@@ -95,7 +95,7 @@ describe("Socials - Interactions", () => {
 	//ADD FRIENDS
 	it("Pressing add friend button", async () => {
 		const user: IExtUserInfo = mockGetExtUser(4);
-		user.image = "";
+		user.avatar = "";
 
 		postMock.mockImplementation((url: string, body) => {
 			if (url == API_SOCIAL_FRIENDS_REQUEST_SEND) {
@@ -106,8 +106,8 @@ describe("Socials - Interactions", () => {
 				user.relation = "outgoing";
 				return Promise.resolve({
 					data: {
-						"target-username": user.username,
-						"target-uid": user.uid,
+						targetUsername: user.username,
+						targetUid: user.uid,
 						description: "FRIENDSHIP_REQUEST_SENT",
 					},
 				});
@@ -126,7 +126,7 @@ describe("Socials - Interactions", () => {
 	});
 	it("Pressing add friend button (ERROR)", async () => {
 		const user: IExtUserInfo = mockGetExtUser(4);
-		user.image = "";
+		user.avatar = "";
 
 		postMock.mockImplementation((url: string, body) => {
 			if (url == API_SOCIAL_FRIENDS_REQUEST_SEND) {
@@ -154,7 +154,7 @@ describe("Socials - Interactions", () => {
 	//ACCEPT FRIENDS
 	it("Pressing accept requests button", async () => {
 		const user: IExtUserInfo = mockGetExtUser(4);
-		user.image = "";
+		user.avatar = "";
 		user.relation = "incoming";
 
 		let stateValid: boolean = false;
@@ -163,15 +163,15 @@ describe("Socials - Interactions", () => {
 		postMock.mockImplementation((url: string, body) => {
 			if (url == API_SOCIAL_FRIENDS_REQUEST_RESPOND) {
 				const data: IFriendReqRes = typeof body == "string" ? JSON.parse(body) : body;
-				if (data["new-status"] == "accept") gotAccepted = true;
+				if (data.newStatus == "accept") gotAccepted = true;
 				const out: IExtUserInfo | IFriendInfo | IErrorReturn = mockSocialOnResponse(data);
 				if ("error" in out) return Promise.reject(new Error(`unexpected call: ${url}`));
 				if ("created_at" in out) {
 					const user: IFriendInfo = out as IFriendInfo;
 					return Promise.resolve({
 						data: {
-							"target-username": user.username,
-							"target-uid": user.uid,
+							targetUsername: user.username,
+							targetUid: user.uid,
 							description: "FRIENDSHIP_REQUEST_SENT",
 						},
 					});
@@ -179,8 +179,8 @@ describe("Socials - Interactions", () => {
 				const user: IExtUserInfo = out as IExtUserInfo;
 				return Promise.resolve({
 					data: {
-						"target-username": user.username,
-						"target-uid": user.uid,
+						targetUsername: user.username,
+						targetUid: user.uid,
 						description: "FRIENDSHIP_REQUEST_SENT",
 					},
 				});
@@ -209,7 +209,7 @@ describe("Socials - Interactions", () => {
 	});
 	it("Pressing accept requests button (ERROR)", async () => {
 		const user: IExtUserInfo = mockGetExtUser(4);
-		user.image = "";
+		user.avatar = "";
 		user.relation = "incoming";
 
 		postMock.mockImplementation((url: string) => {
@@ -230,7 +230,7 @@ describe("Socials - Interactions", () => {
 	//REFUSE FRIENDS
 	it("Pressing refuse requests button", async () => {
 		const user: IExtUserInfo = mockGetExtUser(4);
-		user.image = "";
+		user.avatar = "";
 		user.relation = "incoming";
 
 		let stateValid: boolean = false;
@@ -239,15 +239,15 @@ describe("Socials - Interactions", () => {
 		postMock.mockImplementation((url: string, body) => {
 			if (url == API_SOCIAL_FRIENDS_REQUEST_RESPOND) {
 				const data: IFriendReqRes = typeof body == "string" ? JSON.parse(body) : body;
-				if (data["new-status"] == "refuse") gotRefused = true;
+				if (data.newStatus == "refuse") gotRefused = true;
 				const out: IExtUserInfo | IFriendInfo | IErrorReturn = mockSocialOnResponse(data);
 				if ("error" in out) return Promise.reject(new Error(`unexpected call: ${url}`));
 				if ("created_at" in out) {
 					const user: IFriendInfo = out as IFriendInfo;
 					return Promise.resolve({
 						data: {
-							"target-username": user.username,
-							"target-uid": user.uid,
+							targetUsername: user.username,
+							targetUid: user.uid,
 							description: "FRIENDSHIP_REQUEST_SENT",
 						},
 					});
@@ -255,8 +255,8 @@ describe("Socials - Interactions", () => {
 				const user: IExtUserInfo = out as IExtUserInfo;
 				return Promise.resolve({
 					data: {
-						"target-username": user.username,
-						"target-uid": user.uid,
+						targetUsername: user.username,
+						targetUid: user.uid,
 						description: "FRIENDSHIP_REQUEST_SENT",
 					},
 				});
@@ -285,7 +285,7 @@ describe("Socials - Interactions", () => {
 	});
 	it("Pressing refuse requests button (ERROR)", async () => {
 		const user: IExtUserInfo = mockGetExtUser(4);
-		user.image = "";
+		user.avatar = "";
 		user.relation = "incoming";
 
 		postMock.mockImplementation((url: string) => {
@@ -313,7 +313,7 @@ describe("Socials - Interactions", () => {
 		"Checking friends request (Searching: %s (%d), Traget: %s)",
 		async (search: string, expected: number, target: string) => {
 			const user: IExtUserInfo = mockGetExtUser(4);
-			user.image = "";
+			user.avatar = "";
 
 			postMock.mockImplementation((url: string, body) => {
 				if (url == API_SOCIAL_FRIENDS_REQUEST_SEND) {
@@ -324,8 +324,8 @@ describe("Socials - Interactions", () => {
 					user.relation = "outgoing";
 					return Promise.resolve({
 						data: {
-							"target-username": user.username,
-							"target-uid": user.uid,
+							targetUsername: user.username,
+							targetUid: user.uid,
 							description: "FRIENDSHIP_REQUEST_SENT",
 						},
 					});
@@ -437,7 +437,7 @@ describe("Socials - Interactions", () => {
 		"Checking Friends accept globally (Traget: %s)",
 		async (target: string) => {
 			const user: IExtUserInfo = mockGetExtUser(4);
-			user.image = "";
+			user.avatar = "";
 
 			postMock.mockImplementation((url: string, body) => {
 				if (url === API_SOCIAL_FRIENDS_SEARCH) {
@@ -455,8 +455,8 @@ describe("Socials - Interactions", () => {
 						const user: IFriendInfo = out as IFriendInfo;
 						return Promise.resolve({
 							data: {
-								"target-username": user.username,
-								"target-uid": user.uid,
+								targetUsername: user.username,
+								targetUid: user.uid,
 								description: "FRIENDSHIP_REQUEST_SENT",
 							},
 						});
@@ -464,8 +464,8 @@ describe("Socials - Interactions", () => {
 					const user: IExtUserInfo = out as IExtUserInfo;
 					return Promise.resolve({
 						data: {
-							"target-username": user.username,
-							"target-uid": user.uid,
+							targetUsername: user.username,
+							targetUid: user.uid,
 							description: "FRIENDSHIP_REQUEST_SENT",
 						},
 					});
@@ -569,7 +569,7 @@ describe("Socials - Interactions", () => {
 		"Checking Friends refuse globally (Traget: %s, Search: %s (%d))",
 		async (target: string, search: string, count: number) => {
 			const user: IExtUserInfo = mockGetExtUser(4);
-			user.image = "";
+			user.avatar = "";
 
 			postMock.mockImplementation((url: string, body) => {
 				if (url === API_SOCIAL_FRIENDS_SEARCH) {
@@ -587,8 +587,8 @@ describe("Socials - Interactions", () => {
 						const user: IFriendInfo = out as IFriendInfo;
 						return Promise.resolve({
 							data: {
-								"target-username": user.username,
-								"target-uid": user.uid,
+								targetUsername: user.username,
+								targetUid: user.uid,
 								description: "FRIENDSHIP_REQUEST_SENT",
 							},
 						});
@@ -596,8 +596,8 @@ describe("Socials - Interactions", () => {
 					const user: IExtUserInfo = out as IExtUserInfo;
 					return Promise.resolve({
 						data: {
-							"target-username": user.username,
-							"target-uid": user.uid,
+							targetUsername: user.username,
+							targetUid: user.uid,
 							description: "FRIENDSHIP_REQUEST_SENT",
 						},
 					});
@@ -715,7 +715,7 @@ describe("Socials - Interactions", () => {
 		{ timeout: 15000 },
 		async (target: string) => {
 			const user: IExtUserInfo = mockGetExtUser(4);
-			user.image = "";
+			user.avatar = "";
 
 			mockSetOpenedWith(undefined, undefined);
 			postMock.mockImplementation((url: string, body) => {
@@ -734,8 +734,8 @@ describe("Socials - Interactions", () => {
 						const user: IFriendInfo = out as IFriendInfo;
 						return Promise.resolve({
 							data: {
-								"target-username": user.username,
-								"target-uid": user.uid,
+								targetUsername: user.username,
+								targetUid: user.uid,
 								description: "FRIENDSHIP_REQUEST_SENT",
 							},
 						});
@@ -743,8 +743,8 @@ describe("Socials - Interactions", () => {
 					const user: IExtUserInfo = out as IExtUserInfo;
 					return Promise.resolve({
 						data: {
-							"target-username": user.username,
-							"target-uid": user.uid,
+							targetUsername: user.username,
+							targetUid: user.uid,
 							description: "FRIENDSHIP_REQUEST_SENT",
 						},
 					});

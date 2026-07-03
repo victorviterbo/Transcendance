@@ -86,15 +86,15 @@ class FriendMessageFeed(APIView):
     def post(self, request: Request) -> Response:
         """Fetch a friend chat feed in the frontend contract shape."""
         current_profile = request.profile
-        recipient_uid = request.data.get('uid') or request.data.get('user_uid') or request.data.get('target-uid')
+        recipient_uid = request.data.get('uid') or request.data.get('user_uid') or request.data.get('targetUid')
         if recipient_uid is None:
             return Response(
-                {'error': {'target-uid': 'MISSING_FIELD'}},
+                {'error': {'targetUid': 'MISSING_FIELD'}},
                 status=status.HTTP_400_BAD_REQUEST,)
         recipient_user = resolve_recipient_user(recipient_uid)
         if recipient_user is None:
             return Response(
-                {'error': {'target-uid': 'USER_NOT_FOUND'}},
+                {'error': {'targetUid': 'USER_NOT_FOUND'}},
                 status=status.HTTP_400_BAD_REQUEST,)
         if recipient_user == request.user:
             return Response({'error': {'uid': 'CANNOT_SELF_DM'}}, status=status.HTTP_400_BAD_REQUEST)
@@ -127,7 +127,7 @@ class FriendMessageFeed(APIView):
                         {
                             'type': 'send.notification',
                             'payload': {
-                                'target': 'friend-chat',
+                                'target': 'friend_chat',
                                 'event': 'update_status',
                                 'message': FriendChatMessageSerializer(
                                     m,

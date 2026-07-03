@@ -23,8 +23,8 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 	}, [notif]);
 
 	const handleSee = useCallback(() => {
-		if (notif.kind == "friend-request" && onSeeFriendsReq) onSeeFriendsReq();
-		if (notif.kind == "friend-accepted" && onSeeFriends) onSeeFriends();
+		if (notif.kind == "friend_request" && onSeeFriendsReq) onSeeFriendsReq();
+		if (notif.kind == "friend_accepted" && onSeeFriends) onSeeFriends();
 	}, [notif, onSeeFriendsReq, onSeeFriends]);
 
 	const getAgo = useCallback((): string => {
@@ -46,7 +46,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 	}, [notif]);
 
 	const messageNode: ReactNode = useMemo(() => {
-		if (notif.kind == "friend-request")
+		if (notif.kind == "friend_request")
 			return (
 				<>
 					<CText size="sm">
@@ -65,7 +65,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 					</CText>
 				</>
 			);
-		else if (notif.kind == "friend-accepted")
+		else if (notif.kind == "friend_accepted")
 			return (
 				<>
 					<CText size="sm">

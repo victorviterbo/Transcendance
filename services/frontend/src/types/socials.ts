@@ -17,7 +17,7 @@ export interface IFriendsList {
 export interface IFriendInfo {
 	uid: string;
 	username: string;
-	image: string;
+	avatar: string;
 
 	exp_points: number;
 	badges: string;
@@ -33,19 +33,18 @@ export interface IFriendRequests {
 }
 
 export interface IFriendReqSend {
-	"target-username": string;
-
-	"target-uid": string;
+	targetUsername: string;
+	targetUid: string;
 }
 export interface IFriendReqRes {
-	"target-username": string;
-	"target-uid": string;
-	"new-status": "accept" | "refuse";
+	targetUsername: string;
+	targetUid: string;
+	newStatus: "accept" | "refuse";
 }
 
 export interface IFriendRemoveReq {
-	"target-username": string;
-	"target-uid": string;
+	targetUsername: string;
+	targetUid: string;
 }
 
 export interface IFriendReqResponse {
@@ -69,7 +68,7 @@ export interface IFriendMessage {
 	date: Date | string;
 	direction: TMessageDirection;
 	status?: TMessageStatus;
-	"target-id": string;
+	targetUid: string;
 	target: string;
 	uid: string;
 }
@@ -88,14 +87,14 @@ export interface INotifList {
 export type TNotif =
 	| {
 			uid: string;
-			kind: "friend-request";
+			kind: "friend_request";
 			from: IExtUserInfo;
 			date: Date | string;
 			read: boolean;
 	  }
 	| {
 			uid: string;
-			kind: "friend-accepted";
+			kind: "friend_accepted";
 			from: IFriendInfo;
 			date: Date | string;
 			read: boolean;

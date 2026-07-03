@@ -56,7 +56,7 @@ class RoomHistorySerializer(serializers.ModelSerializer):
         ]
 
 class FriendChatMessageSerializer(serializers.Serializer):
-    """Serialize a direct-message `Message` into the frontend friend-chat contract.
+    """Serialize a direct-message `Message` into the frontend  contract.
 
     This serializer provide:
         - `recipient_profile`: the `Profile` that should appear as the chat partner in the
@@ -70,7 +70,7 @@ class FriendChatMessageSerializer(serializers.Serializer):
             'message': message.body,
             'date': message.created.isoformat(),
             'direction': direction,
-            'target-id': str(recipient_profile.uid) if recipient_profile else None,
+            'targetUid': str(recipient_profile.uid) if recipient_profile else None,
             'target': recipient_profile.username if recipient_profile else None,
             'uid': str(message.uid),
         }

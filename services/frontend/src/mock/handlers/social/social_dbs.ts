@@ -79,7 +79,7 @@ export function mockSocialSetDB() {
 		mockSocialDB.users.push({
 			uid: crypto.randomUUID(),
 			username: socialDBUsernames[i],
-			image: mockProfilesPics[i % mockProfilesPics.length],
+			avatar: mockProfilesPics[i % mockProfilesPics.length],
 			badges: badges[i % badges.length],
 			relation: "not-friends",
 		});
@@ -90,7 +90,7 @@ export function mockSocialSetDB() {
 		mockSocialDB.friends.push({
 			uid: mockSocialDB.users[i].uid,
 			username: mockSocialDB.users[i].username,
-			image: mockSocialDB.users[i].image,
+			avatar: mockSocialDB.users[i].avatar,
 
 			exp_points: Math.round(Math.random() * 1000),
 			badges: mockSocialDB.users[i].badges,
@@ -172,30 +172,30 @@ export function mockGetMaxUsers(): number {
 
 //====================== MANAGE ======================
 export function mockOnAddRequestSend(data: IFriendReqSend): IExtUserInfo | IErrorReturn {
-	if (!data["target-username"])
+	if (!data.targetUsername)
 		return {
 			error: {
-				"target-username": [
+				targetUsername: [
 					{ message: "'target-username' is missing", code: "MISSING_FIELD" },
 				],
 			},
 		};
 
-	if (!data["target-uid"])
+	if (!data.targetUid)
 		return {
 			error: {
-				"target-uid": [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
+				targetUid: [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
 			},
 		};
 
 	let user = mockSocialDB.users.find((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"] || user.username == data["target-username"];
+		return user.uid == data.targetUid || user.username == data.targetUsername;
 	});
 	if (!user) {
 		user = {
-			uid: data["target-uid"],
-			username: data["target-username"],
-			image: mockProfilesPics[0],
+			uid: data.targetUid,
+			username: data.targetUsername,
+			avatar: mockProfilesPics[0],
 			badges: badges[0],
 			relation: "not-friends",
 		};
@@ -208,27 +208,27 @@ export function mockOnAddRequestSend(data: IFriendReqSend): IExtUserInfo | IErro
 export function mockSocialOnResponse(
 	data: IFriendReqRes,
 ): IExtUserInfo | IFriendInfo | IErrorReturn {
-	if (!data["target-username"])
+	if (!data.targetUsername)
 		return {
 			error: {
-				"target-username": [
+				targetUsername: [
 					{ message: "'target-username' is missing", code: "MISSING_FIELD" },
 				],
 			},
 		};
 
-	if (!data["target-uid"])
+	if (!data.targetUid)
 		return {
 			error: {
-				"target-uid": [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
+				targetUid: [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
 			},
 		};
 
 	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"] || user.username == data["target-username"];
+		return user.uid == data.targetUid || user.username == data.targetUsername;
 	});
 	const userPos: number = mockSocialDB.users.findIndex((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"] || user.username == data["target-username"];
+		return user.uid == data.targetUid || user.username == data.targetUsername;
 	});
 	if (!user)
 		return {
@@ -236,14 +236,14 @@ export function mockSocialOnResponse(
 			status: 404,
 		};
 
-	if (data["new-status"] == "refuse") {
+	if (data.newStatus == "refuse") {
 		user.relation = "not-friends";
 		return user;
 	}
 	mockSocialDB.friends.push({
 		uid: mockSocialDB.users[userPos].uid,
 		username: mockSocialDB.users[userPos].username,
-		image: mockSocialDB.users[userPos].image,
+		avatar: mockSocialDB.users[userPos].avatar,
 
 		exp_points: Math.round(Math.random() * 1000),
 		badges: mockSocialDB.users[userPos].badges,
@@ -266,22 +266,22 @@ export function mockSocialOnResponse(
 export function mockOnFriendRemove(
 	data: IFriendRemoveReq,
 ): IFriendInfo | IExtUserInfo | IErrorReturn {
-	if (!data["target-uid"])
+	if (!data.targetUid)
 		return {
 			error: {
-				"target-uid": [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
+				targetUid: [{ message: "'target-uid' is missing", code: "MISSING_FIELD" }],
 			},
 		};
 
 	const friendPos = mockSocialDB.friends.findIndex((friend: IFriendInfo) => {
-		return friend.uid == data["target-uid"] || friend.username == data["target-username"];
+		return friend.uid == data.targetUid || friend.username == data.targetUsername;
 	});
 	if (friendPos >= 0) {
 		const [friend] = mockSocialDB.friends.splice(friendPos, 1);
 		mockSocialDB.users.push({
 			uid: friend.uid,
 			username: friend.username,
-			image: friend.image,
+			avatar: friend.avatar,
 			badges: friend.badges,
 			relation: "not-friends",
 		});
@@ -289,7 +289,7 @@ export function mockOnFriendRemove(
 	}
 
 	const user = mockSocialDB.users.find((user: IExtUserInfo) => {
-		return user.uid == data["target-uid"] || user.username == data["target-username"];
+		return user.uid == data.targetUid || user.username == data.targetUsername;
 	});
 	if (user?.relation == "outgoing") {
 		user.relation = "not-friends";

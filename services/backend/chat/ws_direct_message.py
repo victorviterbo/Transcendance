@@ -33,7 +33,7 @@ async def update_online_status(consumer, current_profile_id: int, is_online: boo
                 await consumer.group_send(f'user_{sender_uid}', {
                     'type': 'send.notification',
                     'payload': {
-                        'target': 'friend-chat',
+                        'target': '',
                         'event': 'update_status',
                         'message': {
                             'uid': str(ref.get('uid')),
@@ -72,7 +72,7 @@ def mark_pendmessage_delivered(recipient_profile_id: int) -> int:
 
 
 async def handle_friend_chat_payload(consumer, content: dict, event: str | None) -> None:
-    """Translate frontend friend-chat payloads into direct-message operations."""
+    """Translate frontend  payloads into direct-message operations."""
     if event == 'send':
         frontend_message = content.get('message')
         if not isinstance(frontend_message, dict):
@@ -85,12 +85,12 @@ async def handle_friend_chat_payload(consumer, content: dict, event: str | None)
         logger.info(
             'ws.receive.friend_chat_translate profile_id=%s target_id=%s message_len=%s',
             getattr(getattr(consumer, 'profile', None), 'id', None),
-            frontend_message.get('target-id'),
+            frontend_message.get('targetUid'),
             len(str(frontend_message.get('message', ''))),
         )
         await handle_direct_message(consumer, {
             'message': frontend_message.get('message'),
-            'user_uid': frontend_message.get('target-id'),
+            'user_uid': frontend_message.get('targetUid'),
             '_frontend_contract': True,
         })
         return
@@ -145,7 +145,7 @@ async def handle_direct_message(consumer, content: dict) -> None:
                 message.uid)
 
     sender_payload = {
-        'target': 'friend-chat',
+        'target': 'friend_chat',
         'event': 'new',
         'message': FriendChatMessageSerializer(
             message,
@@ -153,7 +153,7 @@ async def handle_direct_message(consumer, content: dict) -> None:
         ).data,
     }
     recipient_payload = {
-        'target': 'friend-chat',
+        'target': 'friend_chat',
         'event': 'new',
         'message': FriendChatMessageSerializer(
             message,

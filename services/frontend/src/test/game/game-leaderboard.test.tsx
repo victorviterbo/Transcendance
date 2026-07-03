@@ -32,7 +32,7 @@ describe("Tests for leaderboard view", () => {
 			points: 150,
 			user: {
 				...mockSocialDB.users[0],
-				image: "/DB/media/default_pp.jpg",
+				avatar: "/DB/media/default_pp.jpg",
 			},
 			host: false,
 			colorid: 0,
@@ -46,7 +46,7 @@ describe("Tests for leaderboard view", () => {
 			expect(screen.getByText(currentUser.user.username)).toBeInTheDocument();
 			const imageNode = screen.getByRole("img");
 			expect(imageNode).toBeInTheDocument();
-			expect(imageNode.getAttribute("src") == currentUser.user.image).toBeTruthy();
+			expect(imageNode.getAttribute("src") == currentUser.user.avatar).toBeTruthy();
 		});
 	});
 
@@ -57,7 +57,7 @@ describe("Tests for leaderboard view", () => {
 				points: 150,
 				user: {
 					...mockSocialDB.users[i],
-					image: "/DB/media/default_pp.jpg",
+					avatar: "/DB/media/default_pp.jpg",
 					relation: i == 3 ? "self" : "not-friends",
 				},
 				host: i == 0,

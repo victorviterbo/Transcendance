@@ -75,28 +75,28 @@ export const fetchFriendRequests = async (): Promise<IFriendRequests> => {
 
 export const sendFriendRequest = async (target: SocialTarget): Promise<IFriendReqResponse> => {
 	const response = await api.post<IFriendReqResponse>(API_SOCIAL_FRIENDS_REQUEST_SEND, {
-		"target-uid": target.uid,
-		"target-username": target.username,
+		targetUid: target.uid,
+		targetUsername: target.username,
 	} as IFriendReqSend);
 	return throwOnSocialError(response.data);
 };
 
 export const respondFriendRequest = async (
 	target: SocialTarget,
-	newStatus: IFriendReqRes["new-status"],
+	newStatus: IFriendReqRes["newStatus"],
 ): Promise<IFriendReqResponse> => {
 	const response = await api.post<IFriendReqResponse>(API_SOCIAL_FRIENDS_REQUEST_RESPOND, {
-		"target-uid": target.uid,
-		"target-username": target.username,
-		"new-status": newStatus,
+		targetUid: target.uid,
+		targetUsername: target.username,
+		newStatus: newStatus,
 	} as IFriendReqRes);
 	return throwOnSocialError(response.data);
 };
 
 export const removeFriend = async (target: SocialTarget): Promise<IFriendReqResponse> => {
 	const response = await api.post<IFriendReqResponse>(API_SOCIAL_FRIEND_REMOVE, {
-		"target-uid": target.uid,
-		"target-username": target.username,
+		targetUid: target.uid,
+		targetUsername: target.username,
 	} as IFriendRemoveReq);
 	return throwOnSocialError(response.data);
 };

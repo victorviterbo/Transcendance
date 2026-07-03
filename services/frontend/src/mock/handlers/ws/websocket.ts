@@ -32,7 +32,7 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 				count: counter,
 			};
 			client.send(JSON.stringify(sendbackList));
-		} else if (dataRcv.target == "friend-chat") {
+		} else if (dataRcv.target == "friend_chat") {
 			if (dataRcv.event == "send") onMessageSent(dataRcv, client);
 			else if (dataRcv.event == "open") onMessageStatus(dataRcv);
 			else if (dataRcv.event == "close") onMessageStatus(dataRcv);

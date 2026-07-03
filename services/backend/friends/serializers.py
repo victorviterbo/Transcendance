@@ -32,14 +32,14 @@ class FriendshipSerializer(serializers.ModelSerializer):
 
 class FriendInfoSerializer(serializers.ModelSerializer):
     """Serialize a profile as a frontend friend entry."""
-    image = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     class Meta:
         """Define the friend list payload."""
         model = Profile
-        fields = ['uid', 'username', 'image', 'exp_points', 'badges', 'created_at', 'status']
+        fields = ['uid', 'username', 'avatar', 'exp_points', 'badges', 'created_at', 'status']
 
-    def get_image(self, instance: Profile) -> str:
+    def get_avatar(self, instance: Profile) -> str:
         """Return an absolute avatar URL when possible."""
         request = self.context.get('request')
         return avatar_url(instance, request)
@@ -51,14 +51,14 @@ class FriendInfoSerializer(serializers.ModelSerializer):
 
 class FriendUserSerializer(serializers.ModelSerializer):
     """Serialize a profile for friend requests and search results."""
-    image = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
     relation = serializers.SerializerMethodField()
     class Meta:
         """Define the user list payload."""
         model = Profile
-        fields = ['uid', 'username', 'image', 'badges', 'relation']
+        fields = ['uid', 'username', 'avatar', 'badges', 'relation']
 
-    def get_image(self, instance: Profile) -> str:
+    def get_avatar(self, instance: Profile) -> str:
         """Return an absolute avatar URL when possible."""
         request = self.context.get('request')
         return avatar_url(instance, request)
