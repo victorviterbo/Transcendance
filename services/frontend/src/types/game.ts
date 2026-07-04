@@ -8,8 +8,7 @@ export interface IGameListEntry {
 	uid: string;
 	name: string;
 	genres: TGameGenre[];
-	playerCount: number;
-	playerMax: number;
+	players: IGameUser[];
 }
 
 export interface IGameListResponse {
