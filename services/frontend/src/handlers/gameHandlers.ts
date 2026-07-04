@@ -85,10 +85,10 @@ export class GameInstance {
 		this.pingAudio();
 	}
 	destroy() {
-		this.uid = "";
+		this.log("Destroying game instance: " + this.uid);
 		this.stopAll();
 		this.leave();
-		this.log("Destroying game instance");
+		this.uid = "";
 	}
 
 	//====================== DATA ======================
