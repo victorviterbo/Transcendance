@@ -4,7 +4,12 @@ import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
-from chat.ws_game_chat import add_gameroom_participant, send_join_chatroom
+from channels.db import database_sync_to_async
+from chat.ws_game_chat import (
+    add_gameroom_participant,
+    create_gamechat_room,
+    send_join_chatroom,
+)
 from project.defaults import answer_buffer_time, countdown_time, max_players
 from rest_framework import serializers
 
@@ -27,6 +32,7 @@ from .ws_game_db_helpers import (
     _get_round_stats_completeness,
     _get_track_reveal_data,
     _init_round_stats,
+    _compute_game_stats,
     _remove_player_from_game_stats,
     _set_current_round,
     _setup_game_assets,
@@ -38,6 +44,7 @@ from .ws_game_send_helpers import (
     _send_game_error,
     _send_game_ended,
     _send_game_info,
+    _send_game_restarted,
     _send_new_player,
     _send_round_preview,
     _send_round_stats,
@@ -60,6 +67,9 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     if game_event == 'player_join':
         await player_join(consumer, content)
         return
+    if game_event == 'player_leave' :
+        await _leave_game(consumer, content)
+        return
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
         await consumer.send_json({'target': 'game',
@@ -76,8 +86,8 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
             await _update_game_settings(consumer, content)
         case 'answer_submit':
             await _answer_submit(consumer, content)
-        case 'player_leave':
-            await _leave_game(consumer, content)
+        case 'game_restart':
+            await _game_restart(consumer, content)
         case _:
             await consumer.send_json({'target': 'game',
                             'event': 'error',
@@ -313,15 +323,69 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
                             'event': 'error',
                             'message': 'No game context'})
         return
-    
     await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
-    serialized_game = await _get_game_data(consumer)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',
-        'uid': serialized_game.get('uid'),
+        'uid': content.get('uid'),
         'player': consumer.profile_data,
     })
     await consumer.remove_from_layer(consumer.game_group_name)
     consumer.current_game = None
     consumer.game_group_name = None
     return
+
+
+async def _game_restart(consumer: 'GlobalConsumer', content: dict) -> None:
+    """Accept restart requests only once the game has finished."""
+    if not getattr(consumer, 'current_game', None):
+        await consumer.send_json({'target': 'game',
+                            'event': 'error',
+                            'message': 'No game context'})
+        return
+    if consumer.current_game.status != 'finished':
+        await consumer.send_json({'target': 'game',
+                            'event': 'error',
+                            'message': 'Game can only be restarted once finished'})
+        return
+
+    old_game_uid = str(consumer.current_game.uid)
+    old_game_group_name = consumer.game_group_name
+    new_game = await _clone_game_for_restart(consumer.current_game)
+    consumer.current_game = new_game
+    consumer.game_group_name = f'game_{new_game.uid}'
+    await consumer.add_to_layer(consumer.game_group_name)
+    await _send_game_restarted(
+        consumer,
+        old_game_group_name,
+        old_game_uid,
+        str(new_game.uid),
+    )
+
+
+async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> None:
+    """Unlocks the game loop if both artist and title has been found."""
+    found = await _get_round_stats_completeness(game)
+    game_over = found['titles'] > 0 and found['artists'] > 0
+    if game_over:
+        ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].set()
+
+
+@database_sync_to_async
+def _clone_game_for_restart(game: Game) -> Game:
+    """Create a new game row and chat room from an existing game."""
+    new_game = Game.objects.create(
+        name=game.name,
+        genres=game.genres,
+        playbackDuration=game.playbackDuration,
+        breakDuration=game.breakDuration,
+        mode=game.mode,
+        trackCount=game.trackCount,
+        visibility=game.visibility,
+        fuzzy=game.fuzzy,
+        reveal=game.reveal,
+        owned_by=game.owned_by,
+    )
+    room = create_gamechat_room(new_game)
+    new_game.room = room
+    new_game.save(update_fields=['room'])
+    return new_game

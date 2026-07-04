@@ -134,3 +134,17 @@ async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict) -> None
         'uid': game_ended['uid'],
         'leaderboard': game_ended['leaderboard'],
     })
+
+
+async def _send_game_restarted(
+    consumer: 'GlobalConsumer',
+    group_name: str,
+    old_game_uid: str,
+    new_game_uid: str,
+) -> None:
+    """Broadcast a restart event so clients can redirect to the fresh game."""
+    await consumer.group_send(group_name, {
+        'type': 'game_restarted_event',
+        'uid': old_game_uid,
+        'newGame': new_game_uid,
+    })
