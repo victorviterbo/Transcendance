@@ -250,7 +250,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json({
             'target': 'game',
             'event': 'player_left',
-            'game': event.get('game'),
+            'uid': event.get('uid'),
             'self': self.profile_data,
             'player': event.get('player'),
         })
@@ -337,6 +337,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': self.profile_data,
             'leaderboard': event.get('leaderboard'),
             'history': history,
+        })
+
+    async def game_restarted_event(self, event: dict) -> None:
+        """Broadcast a game restart and the UID of the new session."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_restarted',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'newGame': event.get('newGame'),
         })
     
     def _sender_name(self) -> str:
