@@ -7,6 +7,7 @@ import {
 	MockGameHosting,
 	MockGameJoining,
 	MockGameJoiningEnded,
+	MockGameJoiningEndedHost,
 	MockGameJoiningError,
 	MockGameJoiningFull,
 	MockGameJoiningInGame,
@@ -89,6 +90,9 @@ export class MockGameDB {
 					break;
 				case "ended":
 					game = new MockGameJoiningEnded(uid);
+					break;
+				case "ended-host":
+					game = new MockGameJoiningEndedHost(uid);
 					break;
 				case "error":
 					game = new MockGameJoiningError(uid);
