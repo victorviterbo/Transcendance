@@ -21,6 +21,7 @@ import type {
 	IWSGameSendEventError,
 	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
+	IWSGameSendEventGameRestart,
 	IWSGameSendEventMessage,
 	IWSGameSendEventMessageHistory,
 	IWSGameSendEventPlayerManage,
@@ -241,6 +242,13 @@ export class MockGame {
 		if (!currentUser) return;
 		this.newMSG(event.message, currentUser.player);
 	}
+	onGameRestart() {
+		this.log("Restarting game to join-speed");
+		this.sendEvent({
+			...this.getBaseData("game_restarted"),
+			newGame: "join-speed",
+		} as IWSGameSendEventGameRestart);
+	}
 
 	//====================== FUNCTIONS ======================
 	//--------------------- WS ---------------------
@@ -261,11 +269,14 @@ export class MockGame {
 			case "message_send":
 				this.onUserMessage(e as IWSGameRCVEventMsg);
 				break;
+			case "game_restart":
+				this.onGameRestart();
+				break;
 		}
 	}
 	sendEvent(data: IWSGameSendEvent) {
 		if (!mockGameDB.client) return;
-		console.log(data);
+		//console.log(data);
 		mockGameDB.client.send(JSON.stringify(data));
 	}
 	getBaseData(event: IWSGameEventSndList): IWSGameSendEvent {
@@ -620,6 +631,12 @@ export class MockGame {
 			history,
 			leaderboard: this.players,
 		} as IWSGameSendEventGameEnd);
+
+		setTimeout(() => {
+			this.sendEvent({
+				...this.getBaseData("game_closed"),
+			} as IWSGameSendEvent);
+		}, 5000);
 	}
 
 	//--------------------- LOGs ---------------------
@@ -1021,6 +1038,104 @@ export class MockGameJoiningEnded extends MockGame {
 		super(uid, mockSocialDB.users[0]);
 		this.name = "Sarah's ended room";
 		this.log("Game (Ended): '" + uid + "' created");
+
+		this.settings.genres.splice(1, 1);
+		this.settings.genres.push("TAG_RNB");
+		this.settings.mode = "speed";
+		this.settings.trackCount = 5;
+		this.settings.playbackDuration = 20;
+		this.settings.breakDuration = 15;
+		this.settings.reveal = true;
+		this.settings.fuzzy = true;
+	}
+	buildPlayers(): void {
+		super.buildPlayers();
+		for (; this.currentTarget < 4; this.currentTarget++) {
+			this.players.push({
+				player: convExtUserToGameUser(mockSocialDB.users[this.currentTarget], false),
+				points: this.currentTarget * 5,
+			});
+		}
+	}
+
+	buildChat() {}
+
+	buildGame(): void {
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(0),
+			phase: "done",
+			titleFound: true,
+			artistFound: true,
+			points: 15,
+			time: 6.58,
+			ranking: 2,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(1),
+			phase: "done",
+			titleFound: false,
+			artistFound: true,
+			points: 5,
+			time: 15.25,
+			ranking: 4,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(2),
+			phase: "done",
+			titleFound: false,
+			artistFound: false,
+			points: 0,
+			time: 20,
+			ranking: 5,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(3),
+			phase: "done",
+			titleFound: true,
+			artistFound: true,
+			points: 15,
+			time: 19.4,
+			ranking: 10,
+			answers: [],
+		});
+
+		this.rounds.push({
+			track: mockGameDB.getRoundTrack(4),
+			phase: "done",
+			titleFound: true,
+			artistFound: false,
+			points: 0,
+			time: 5.25,
+			ranking: 5,
+			answers: [],
+		});
+	}
+
+	//====================== FUNCTIONS ======================
+	//--------------------- Simulate ---------------------
+	simulate(): void {
+		if (this.simStarted) return;
+		super.simulate();
+
+		setTimeout(() => {
+			this.players[4].points = 50;
+			this.simulateGameEnd();
+		}, 1000);
+	}
+}
+
+export class MockGameJoiningEndedHost extends MockGame {
+	//====================== CONSTRUCTOR ======================
+	constructor(uid: string) {
+		super(uid, mockGameDB.getDefaultHost());
+		this.name = "john's ended host room";
+		this.log("Game (Ended host): '" + uid + "' created");
 
 		this.settings.genres.splice(1, 1);
 		this.settings.genres.push("TAG_RNB");

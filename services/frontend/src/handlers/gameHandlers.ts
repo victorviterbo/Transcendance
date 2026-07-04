@@ -23,6 +23,7 @@ import type {
 	IWSGameSendEventError,
 	IWSGameSendEventGameEnd,
 	IWSGameSendEventGameInfo,
+	IWSGameSendEventGameRestart,
 	IWSGameSendEventMessage,
 	IWSGameSendEventMessageHistory,
 	IWSGameSendEventPlayerManage,
@@ -51,6 +52,7 @@ export interface IGameInstanceCallbacks {
 	setError: React.Dispatch<React.SetStateAction<string | undefined>>;
 	setInGame: React.Dispatch<React.SetStateAction<string | undefined>>;
 	setSongPlayable: React.Dispatch<React.SetStateAction<boolean>>;
+	setRedirect: React.Dispatch<React.SetStateAction<undefined | string>>;
 	answerRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -353,6 +355,12 @@ export class GameInstance {
 		this.status.phase = "finish";
 		this.updateAll();
 	}
+	onGameRestarted(data: IWSGameSendEventGameRestart) {
+		this.callbacks.setRedirect("/game/" + data.newGame);
+	}
+	onGameClosed() {
+		this.callbacks.setRedirect("/");
+	}
 	onError(data: IWSGameSendEventError) {
 		if (data.message == "ALREADY_IN_GAME") {
 			this.callbacks.setInGame(data.currentGameUid);
@@ -453,6 +461,14 @@ export class GameInstance {
 	leave() {
 		this.log("Leaving game");
 		this.send(this.getSendBaseData("player_leave") as IWSGameRCVEventLeave);
+	}
+	restartGame() {
+		this.log("Restarting game");
+		if (this.isHost) {
+			this.send({
+				...this.getSendBaseData("game_restart"),
+			} as IWSGameRCVEvent);
+		}
 	}
 
 	//====================== FUNCTIONS ======================
@@ -585,6 +601,12 @@ export class GameInstance {
 				break;
 			case "game_ended":
 				this.onGameEnded(event as IWSGameSendEventGameEnd);
+				break;
+			case "game_restarted":
+				this.onGameRestarted(event as IWSGameSendEventGameRestart);
+				break;
+			case "game_closed":
+				this.onGameClosed();
 				break;
 			case "error":
 				this.onError(event as IWSGameSendEventError);

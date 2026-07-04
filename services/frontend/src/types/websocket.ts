@@ -110,7 +110,8 @@ export type IWSGameEventRcvList =
 	| "game_start"
 	| "answer_submit"
 	| "message_send"
-	| "player_leave";
+	| "player_leave"
+	| "game_restart";
 
 export type IWSGameEventSndList =
 	| "player_joined"
@@ -126,6 +127,8 @@ export type IWSGameEventSndList =
 	| "message_history"
 	| "message_broadcast"
 	| "game_ended"
+	| "game_restarted"
+	| "game_closed"
 	| "error";
 
 export interface IWSGameEvent {
@@ -223,6 +226,11 @@ export interface IWSGameSendEventGameEnd extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "game_ended">;
 	leaderboard: IGamePlayer[];
 	history: TWSRoundInfo[];
+}
+
+export interface IWSGameSendEventGameRestart extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "game_restarted">;
+	newGame: string;
 }
 
 export interface IWSGameSendEventError extends IWSGameSendEvent {
