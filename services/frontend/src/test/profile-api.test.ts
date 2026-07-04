@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { API_PROFILE } from "../constants";
-import { uploadProfileImage } from "../api/profile";
+import { resolveProfileImage, uploadProfileImage } from "../api/profile";
 
 const getMock = vi.fn();
 const postMock = vi.fn();
@@ -16,6 +16,7 @@ describe("profile api", () => {
 	beforeEach(() => {
 		getMock.mockReset();
 		postMock.mockReset();
+		vi.unstubAllEnvs();
 	});
 
 	it("uploads profile avatars using the avatar multipart field", async () => {
@@ -38,5 +39,32 @@ describe("profile api", () => {
 		expect(formData).toBeInstanceOf(FormData);
 		expect(formData.get("avatar")).toBe(file);
 		expect(formData.get("image")).toBeNull();
+	});
+
+	it("resolves relative profile images against the configured API origin", () => {
+		vi.stubEnv("VITE_API_URL", "https://api.example.test/api");
+
+		expect(resolveProfileImage("/DB/media/default_pp.jpg")).toBe(
+			"https://api.example.test/DB/media/default_pp.jpg",
+		);
+		expect(resolveProfileImage("DB/media/default_pp.jpg")).toBe(
+			"https://api.example.test/DB/media/default_pp.jpg",
+		);
+	});
+
+	it("falls back to the current origin when the API URL is not configured", () => {
+		vi.stubEnv("VITE_API_URL", "BACKEND_URL");
+
+		expect(resolveProfileImage("/DB/media/default_pp.jpg")).toBe(
+			new URL("/DB/media/default_pp.jpg", window.location.origin).toString(),
+		);
+	});
+
+	it("keeps absolute profile image URLs and ignores blank values", () => {
+		expect(resolveProfileImage(" https://example.test/avatar.png ")).toBe(
+			"https://example.test/avatar.png",
+		);
+		expect(resolveProfileImage("   ")).toBeUndefined();
+		expect(resolveProfileImage(null)).toBeUndefined();
 	});
 });

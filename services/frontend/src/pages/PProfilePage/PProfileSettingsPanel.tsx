@@ -25,6 +25,7 @@ import {
 	PProfileTextStyle,
 	type IProfileTextStyle,
 } from "../../styles/pages/profile/PProfileTextStyle";
+import { useNotif } from "../../components/contexts/CAppNotifContext.tsx";
 
 export interface ProfileSettingsPanelProps extends GPageProps {
 	username: string | undefined;
@@ -107,6 +108,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 		],
 		[],
 	);
+	const pushNotif = useNotif().push;
 
 	const getFieldErrors = (error: unknown): Record<string, string> | null => {
 		const maybe = error as {
@@ -214,6 +216,10 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 			await logout();
 			setDeleteConfirmOpen(false);
 			setPendingDeletePassword(null);
+			pushNotif({
+				severity: "success",
+				message: "DELETE_ACCOUNT_SUCCESS",
+			});
 		} catch (error) {
 			setDeleteConfirmError(getErrorMessage(error, "DELETE_FAILED"));
 		} finally {

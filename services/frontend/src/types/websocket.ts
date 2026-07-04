@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { SendMessage } from "react-use-websocket";
 import type { IFriendMessage, TNotif } from "./socials";
 import type { IExtUserInfo } from "./user";
+import { ReadyState } from "react-use-websocket";
 import type {
 	IGameChatMsg,
 	IGamePlayer,
@@ -27,6 +28,7 @@ export type TWSModuleName =
 export interface IWSContext {
 	modules: RefObject<IWSContextModule[]>;
 	sendMessage: SendMessage;
+	state: ReadyState;
 }
 
 export interface IWSContextModule {
@@ -57,44 +59,7 @@ export type TWSRcv =
 			user: IExtUserInfo;
 	  }
 
-	//OLD
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "player-join" | "player-leave";
-	// 		player: IGamePlayer;
-	// 		gameid: string;
-	// 		gameuid: string;
-	//   }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "players-update";
-	// 		players: IGamePlayer[];
-	// 		gameid: string;
-	// 		gameuid: string;
-	//   }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "message-new";
-	// 		message: IGameChatMsg;
-	// 		gameid: string;
-	// 		gameuid: string;
-	//   }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "message-update";
-	// 		messages: IGameChatMsg[];
-	// 		gameid: string;
-	// 		gameuid: string;
-	//   }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "settings-update";
-	// 		gameid: string;
-	// 		gameuid: string;
-	// 		settings: IGameSettings;
-	//   }
-
-	//GAME
+	//TESTER
 	| {
 			target: Extract<TWSModuleName, "test_counter">;
 			count: number;
@@ -108,26 +73,8 @@ export type TWSSend =
 			to?: string;
 			toUid?: string;
 	  }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "join";
-	// 		gameid: string;
-	// 		gameuid: string;
-	//   }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "message-send";
-	// 		gameid: string;
-	// 		gameuid: string;
-	// 		message: string;
-	//   }
-	// | {
-	// 		target: Extract<TWSModuleName, "game">;
-	// 		event: "settings-update";
-	// 		gameid: string;
-	// 		gameuid: string;
-	// 		settings: IGameSettings;
-	//   }
+
+	//TESTER
 	| {
 			target: Extract<TWSModuleName, "test_counter_event">;
 	  };

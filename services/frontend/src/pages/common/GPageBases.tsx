@@ -11,6 +11,8 @@ import { cssAddSizes, sizeMakeString } from "../../utils/styles";
 import PSocial from "../PSocial";
 import PNotif from "../PNotif";
 import CWebsocket from "../../components/websocket/CWebsocket";
+import GLoading from "./GLoading";
+import GLost from "./GLost";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
@@ -165,8 +167,12 @@ function GPageBase({ inGame, children }: GPageProps) {
 		);
 	}
 
-	if (status == "loading") return <></>;
+	if (status == "loading") return <GLoading />;
 
-	return <CWebsocket key={status}>{getBody()}</CWebsocket>;
+	return (
+		<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>
+			{getBody()}
+		</CWebsocket>
+	);
 }
 export default GPageBase;

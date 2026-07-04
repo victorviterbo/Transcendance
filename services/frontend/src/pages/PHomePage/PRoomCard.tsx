@@ -5,7 +5,7 @@ import type { CButtonProps } from "../../components/inputs/buttons/CButton";
 import CButton from "../../components/inputs/buttons/CButton";
 import CText from "../../components/text/CText";
 import { ttr } from "../../localization/localization";
-import { MUSIC_TAGS } from "../../constants";
+import { MAX_PLAYERS, MUSIC_TAGS } from "../../constants";
 import {
 	PRoomCardButtonStyle,
 	PRoomCardContentStyle,
@@ -26,7 +26,7 @@ interface PRoomCardProps extends CButtonProps {
 
 function PRoomCard({ infos, ...other }: PRoomCardProps) {
 	const selectedGenres = new Set(infos.genres);
-	const playerCount = `${infos.playerCount} / ${infos.playerMax}`;
+	const playerCount = `${infos.players.length} / ${MAX_PLAYERS}`;
 	const navigate = useNavigate();
 
 	return (

@@ -1,12 +1,22 @@
 import { http, HttpResponse } from "msw";
 import { API_GAME_FRIENDS, API_GAME_PUBLIC, MUSIC_TAGS } from "../../constants";
-import type { IGameListEntry, TGameGenre } from "../../types/game";
+import type { IGameListEntry, IGameUser, TGameGenre } from "../../types/game";
 
 let roomUidCounter = 0;
 
 function generateRoomUid(): string {
 	roomUidCounter += 1;
 	return `00000000-0000-4000-8000-${roomUidCounter.toString().padStart(12, "0")}`;
+}
+
+function generatePlayers(): IGameUser[] {
+	const playerCount = Math.floor(Math.random() * 20);
+	return Array.from({ length: playerCount }, (_, index) => ({
+		username: `player${index + 1}`,
+		avatar: "/DB/media/default_pp.jpg",
+		guest: false,
+		uid: `mock-player-${index + 1}`,
+	}));
 }
 
 function GenerateRoom(genreCount?: number): IGameListEntry {
@@ -30,8 +40,7 @@ function GenerateRoom(genreCount?: number): IGameListEntry {
 		uid: generateRoomUid(),
 		name: room,
 		genres,
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	};
 }
 
@@ -53,72 +62,63 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 		uid: "host",
 		name: "Hosted",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "join",
 		name: "Join",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "join-speed",
 		name: "Join Speed",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "playing_round",
 		name: "Playing Round",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "playing_break",
 		name: "Playing Break",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "ended",
 		name: "Ended room",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "error",
 		name: "Error room",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "full",
 		name: "Error full room",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
 		uid: "in-game",
 		name: "Error In Game",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	for (let i = 0; i < 10; i++) {

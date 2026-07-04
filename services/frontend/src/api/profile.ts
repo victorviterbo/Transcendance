@@ -21,9 +21,9 @@ export const getProfileLevelProgress = (
 };
 
 export const fetchProfile = async (username: string): Promise<IProfileData> => {
-	const response = await api.get<IProfileData>(
-		`${API_PROFILE}?q=${encodeURIComponent(username)}`,
-	);
+	const response = await api.get<IProfileData>(API_PROFILE, {
+		params: { q: username },
+	});
 	return response.data;
 };
 
@@ -52,11 +52,24 @@ export const deleteProfile = async (password: string): Promise<void> => {
 	await api.post<{ description: string }>(API_ACCOUNT_DELETE, { password });
 };
 
-export const resolveProfileImage = (avatar?: string | null): string | undefined => {
-	if (!avatar) return undefined;
-	if (avatar.startsWith("http://") || avatar.startsWith("https://")) return avatar;
-	if (avatar.startsWith("/")) {
-		return new URL(avatar, window.location.origin).toString();
+const getProfileImageBaseUrl = () => {
+	const apiUrl = import.meta.env.VITE_API_URL;
+	if (typeof apiUrl === "string" && apiUrl.trim().length > 0) {
+		try {
+			return new URL(apiUrl).origin;
+		} catch {
+			// Fall back when local env still contains the .env.example placeholder.
+		}
 	}
-	return new URL(`/${avatar}`, window.location.origin).toString();
+	return window.location.origin;
+};
+
+export const resolveProfileImage = (avatar?: string | null): string | undefined => {
+	const resolvedAvatar = avatar?.trim();
+	if (!resolvedAvatar) return undefined;
+	if (resolvedAvatar.startsWith("http://") || resolvedAvatar.startsWith("https://")) {
+		return resolvedAvatar;
+	}
+	const avatarPath = resolvedAvatar.startsWith("/") ? resolvedAvatar : `/${resolvedAvatar}`;
+	return new URL(avatarPath, getProfileImageBaseUrl()).toString();
 };

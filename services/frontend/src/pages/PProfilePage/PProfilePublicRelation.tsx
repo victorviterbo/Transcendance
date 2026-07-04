@@ -1,4 +1,4 @@
-import { Alert, Stack } from "@mui/material";
+import { Stack } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import {
@@ -18,9 +18,11 @@ import type {
 	TConfirmableRelationAction,
 	TRelationAction,
 } from "../../types/socials";
+import { useNotif } from "../../components/contexts/CAppNotifContext";
 
 interface PProfilePublicRelationProps {
 	profile: IProfileData;
+	onProfileMissing?: () => void;
 }
 
 const getTargetUser = (profile: IProfileData): IExtUserInfo => ({
@@ -37,7 +39,7 @@ const findExactRelation = (users: IExtUserInfo[], profile: IProfileData) => {
 	});
 };
 
-function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
+function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRelationProps) {
 	const { status: authStatus } = useAuth();
 	const [relationState, setRelationState] = useState<IRelationState>({
 		status: "idle",
@@ -49,6 +51,7 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 	const targetUser = useMemo(() => {
 		return getTargetUser(profile);
 	}, [profile]);
+	const pushNotif = useNotif().push;
 
 	useEffect(() => {
 		if (authStatus !== "authed") {
@@ -87,6 +90,19 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 		};
 	}, [authStatus, profile]);
 
+	useEffect(() => {
+		if (!relationState.error) return;
+		pushNotif({
+			severity: "error",
+			message: relationState.error,
+		});
+		const clear = async () => {
+			relationState.error = null;
+			setRelationState(structuredClone(relationState));
+		};
+		clear();
+	}, [relationState, setRelationState, pushNotif]);
+
 	const handleSocialAction = async (action: TRelationAction) => {
 		setPendingAction(action);
 		setRelationState((current) => ({ ...current, error: null }));
@@ -119,6 +135,10 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 						error: null,
 					});
 				}
+				return;
+			}
+			if (hasSocialErrorCode(actionError, "USER_NOT_FOUND")) {
+				onProfileMissing?.();
 				return;
 			}
 			if (action !== "send" && hasSocialErrorCode(actionError, "FRIENDSHIP_NOT_FOUND")) {
@@ -158,11 +178,6 @@ function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 				onAction={(action) => void handleSocialAction(action)}
 				onConfirmableAction={setConfirmAction}
 			/>
-			{relationState.error && (
-				<Alert severity="error" data-testid="PProfilePublic_SocialError">
-					{relationState.error}
-				</Alert>
-			)}
 			<PProfilePublicRelationConfirmDialog
 				action={confirmAction}
 				pendingAction={pendingAction}

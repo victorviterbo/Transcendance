@@ -39,6 +39,7 @@ export const PAGE_GAME = "/game/{UID}";
 export const WS_ADRESS_WMS = "ws://localhost:5173/";
 export const WS_ADRESS = "ws://localhost:8000/ws/global/";
 
+// GAME-SPECIFIC
 export const MUSIC_TAGS = [
 	"TAG_POP",
 	"TAG_RAP",
@@ -47,6 +48,7 @@ export const MUSIC_TAGS = [
 	"TAG_FRENCH_VARIETY",
 	"TAG_RNB",
 ] as const;
+export const MAX_PLAYERS = 20;
 
 // TIME CONVERSIONS
 export const DAY_MS = 1000 * 60 * 60 * 24;

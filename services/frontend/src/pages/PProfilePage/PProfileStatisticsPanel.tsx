@@ -72,7 +72,7 @@ const getStatisticMetrics = (stats: IGlobalStatsResponse): StatisticMetricDefini
 	{
 		icon: <TimerIcon fontSize="large" />,
 		label: "STATS_AVERAGE_TIME",
-		value: formatSeconds(stats.averageTime),
+		value: stats.averageTime >= 0 ? formatSeconds(stats.averageTime) : "N/A",
 	},
 	{
 		icon: <LeaderboardIcon fontSize="large" />,
