@@ -83,8 +83,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-    'drf_spectacular',
-
     'game.apps.GameConfig',
     'music.apps.MusicConfig',
     'userauth.apps.UsersauthConfig',
@@ -111,7 +109,6 @@ MIDDLEWARE = [
 # Definition of Django Rest Framework (drf) parameters, enable Django to communicate
 # more efficiently with the React Frontend
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'userauth.authentication.CookieJWTAuthentication',
     ),
