@@ -10,14 +10,9 @@ NAME			=	ft_transcendence
 ENV				=	COMPOSE_PROJECT_NAME=$(NAME)
 
 # Commands
-RM						=	rm -rf
 COMPOSE_COMMAND			=	docker compose -f
 COMPOSE_FILE			=	./services/docker-compose.yml
-CONDA_MANAGE_COMMAND	=	conda run --no-capture-output -n backend python /backend/manage.py
-DB_FILE					=	./services/backend/DB/website/db.sqlite3
-DB_DIR					=	./services/backend/DB/website
-MEDIA_DIR				=	./services/backend/DB/media
-STATIC_DIR				=	./services/backend/DB/static
+CONDA_MANAGE_COMMAND	=	conda run --no-capture-output -n backend python /app/manage.py
 CERTS_DIR				=	./services/nginx/certs
 TLS_CERT				=	$(CERTS_DIR)/localhost.crt
 TLS_KEY					=	$(CERTS_DIR)/localhost.key
@@ -38,7 +33,7 @@ fresh:	fclean dirs build certs prepare-db # Build and start app from a clean loc
 	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) up -d
 	echo "$(GREEN)✅ Containers are up!$(RESET)"
 
-run:	dirs certs build prepare-playlists # Build and start app without reset and demo DB seeding
+run:	dirs check-certs build prepare-playlists # Build and start app without reset, demo DB seeding, or certificate generation
 	echo "$(YELLOW)⬆️  Starting containers...$(RESET)"
 	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) up -d
 	echo "$(GREEN)✅ Containers are up!$(RESET)"
@@ -56,7 +51,7 @@ up:		# Build & start containers
 
 dirs:	# Create required local runtime directories
 	echo "$(YELLOW)📁 Creating runtime directories...$(RESET)"
-	mkdir -p $(DB_DIR) $(MEDIA_DIR) $(STATIC_DIR) $(CERTS_DIR)
+	mkdir -p $(CERTS_DIR)
 	echo "$(GREEN)✅ Runtime directories ready$(RESET)"
 
 build:	# Build Docker images
@@ -94,6 +89,8 @@ start:	# Start stopped containers
 	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) start
 	echo "$(GREEN)✅ Containers started$(RESET)"
 
+restart: stop start # Restart containers
+
 kill:	# Force kill containers
 	echo "$(RED)💀 Force-killing containers...$(RESET)"
 	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) kill
@@ -107,20 +104,20 @@ logs:	# Follow logs
 	echo "$(BLUE)📜 Showing logs... Press Ctrl-C to exit$(RESET)"
 	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) logs -f
 
-clean:	# Remove containers and volumes
-	echo "$(YELLOW)🧹 Cleaning containers & volumes...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -v -t 3
-	echo "$(GREEN)✨ Cleaned containers & volumes$(RESET)"
+clean:	# Remove containers and networks, preserving volumes, images and certs
+	echo "$(YELLOW)🧹 Cleaning containers...$(RESET)"
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -t 3
+	echo "$(GREEN)✨ Cleaned containers$(RESET)"
 
-fclean:	clean # Remove containers, volumes and database
-	echo "$(YELLOW)🧹 Removing local SQLite database...$(RESET)"
-	$(RM) $(DB_FILE)
-	echo "$(GREEN)✅ Database reset$(RESET)"
+fclean:	# Remove containers, volumes, built images and local certs
+	echo "$(RED)🧹 Fully cleaning containers, volumes, images and certs...$(RESET)"
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) down -v --rmi all -t 3
+	rm -f $(TLS_CERT) $(TLS_KEY)
 	echo "$(GREEN)✨ System fully cleaned$(RESET)"
 
-re:		clean up # Remove containers and volumes then build them again
+re:		clean run # Remove containers then rebuild and start, preserving volumes
 
-fre:	fclean up # Remove containers, volumes and database and build again
+fre:	fclean certs run # Fully clean, rebuild and start from a fresh local state
 
 # Django targets
 makemigrations:		# Generate migration files
@@ -145,17 +142,17 @@ migrate:			# Applies migrations
 
 prepare-db:			# Migrate and seed the database before starting the app
 	echo "$(YELLOW)🌱 Preparing fresh database...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint sh backend -c 'mkdir -p /backend/DB/website && $(CONDA_MANAGE_COMMAND) prepare_fresh_db'
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint sh backend -c 'mkdir -p /data/database /data/media && $(CONDA_MANAGE_COMMAND) prepare_fresh_db'
 	echo "$(GREEN)✅ Fresh database prepared$(RESET)"
 
 prepare-playlists:	# Migrate and sync playlist data without demo user/game seeding
 	echo "$(YELLOW)🎵 Preparing playlist data...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint sh backend -c 'mkdir -p /backend/DB/website && $(CONDA_MANAGE_COMMAND) migrate && $(CONDA_MANAGE_COMMAND) seed_playlists && $(CONDA_MANAGE_COMMAND) sync_playlists'
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint sh backend -c 'mkdir -p /data/database /data/media && $(CONDA_MANAGE_COMMAND) migrate && $(CONDA_MANAGE_COMMAND) seed_playlists && $(CONDA_MANAGE_COMMAND) sync_playlists'
 	echo "$(GREEN)✅ Playlist data prepared$(RESET)"
 
 backend-test:		# Run backend unit tests
 	echo "$(YELLOW)▶️  Running backend tests...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint conda backend run --no-capture-output -n backend python /backend/manage.py test
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint conda backend run --no-capture-output -n backend python /app/manage.py test
 
 .SILENT:	all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre makemigrations migrate check-migrations delete-migrations prepare-db prepare-playlists fresh run backend-test
 .PHONY:		all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre makemigrations migrate check-migrations delete-migrations prepare-db prepare-playlists fresh run backend-test

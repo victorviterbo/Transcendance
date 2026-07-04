@@ -34,14 +34,16 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# During dev, used to store user's media
-MEDIA_ROOT = BASE_DIR / 'DB' / 'media'
+DATA_DIR = Path('/data')
 
 MEDIA_URL = '/media/'
+MEDIA_ROOT = DATA_DIR / 'media'
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'DB' / 'static'
+STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = [
+    ('default_avatars', BASE_DIR / 'default_avatars'),
+]
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -144,7 +146,7 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'DB/website/db.sqlite3',
+        'NAME': DATA_DIR / 'database' / 'db.sqlite3',
     }
 }
 

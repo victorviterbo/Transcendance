@@ -31,7 +31,7 @@ This command:
 The app is then reachable at:
 
 ```text
-https://localhost
+https://localhost:4443
 ```
 
 The browser will warn about the certificate because it is self-signed.
@@ -39,7 +39,7 @@ The browser will warn about the certificate because it is self-signed.
 For normal restarts after the first setup, use:
 
 ```bash
-make up
+make run
 ```
 
 # Final Goal: TBD
