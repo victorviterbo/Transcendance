@@ -13,8 +13,8 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import StarIcon from "@mui/icons-material/Star";
-import { ttrf } from "../../../localization/localization";
 import { appColors } from "../../../styles/theme";
+import { useLang } from "../../../components/contexts/CLanguageProvider";
 
 interface PGameEndedRoundProps extends GPageProps {
 	round: IGameRound;
@@ -25,6 +25,8 @@ function PGameEndedRound({ round, settings }: PGameEndedRoundProps) {
 	const style: IGameRoundEndedNodeStyle = useMemo(() => {
 		return PGameRoundEndedNodeStyle(round, settings);
 	}, [round, settings]);
+
+	const { ttrf } = useLang();
 
 	return (
 		<Stack sx={style.main} direction={{ xs: "column", sm: "row" }}>

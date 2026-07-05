@@ -3,7 +3,7 @@ import { useState, type SyntheticEvent, type ReactNode, Children, useMemo } from
 import type { GCompProps } from "../../components/common/GProps.tsx";
 import { CTabStyle, type ITabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 import type { TSize } from "../../types/string.ts";
-import { useLang } from "../layout/CLanguageProvider.tsx";
+import { useLang } from "../contexts/CLanguageProvider.tsx";
 
 export interface CTabsProps extends GCompProps, TabsProps {
 	tabs: string[] | ReactNode[];

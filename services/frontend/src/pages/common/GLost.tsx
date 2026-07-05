@@ -1,12 +1,15 @@
-import { Box, ThemeProvider } from "@mui/material";
+import { Box, CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
 import GBackground from "./GBackground";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CText from "../../components/text/CText";
 import appTheme from "../../styles/theme";
+import { getFontRegistry } from "../../styles/fonts/fonts";
 
 function GLost() {
 	return (
 		<ThemeProvider theme={appTheme}>
+			<GlobalStyles styles={getFontRegistry()} />
+			<CssBaseline />
 			<Box sx={{ position: "fixed", inset: 0 }}>
 				<GBackground />
 				<CBasePaper

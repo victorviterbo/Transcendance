@@ -147,10 +147,7 @@ const PProfileMe = () => {
 
 	if (status !== "ready" || profile === null) {
 		return (
-			<CProfileRequestState
-				status={status === "error" ? "error" : "loading"}
-				error={error}
-			/>
+			<CProfileRequestState status={status === "error" ? "error" : "loading"} error={error} />
 		);
 	}
 

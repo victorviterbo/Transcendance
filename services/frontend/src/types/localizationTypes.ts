@@ -26,4 +26,7 @@ export interface ILangContext {
 	ttrfn: (id: string, params: Record<string, ReactElement>) => ReactNode[];
 	ttrn: (value: number, options?: Intl.NumberFormatOptions) => string;
 	ttrd: (value: string | number | Date, options?: Intl.DateTimeFormatOptions) => string;
+	formatPercentage: (value: number) => string;
+	formatSeconds: (value: number) => string;
+	changeLang: (value: string) => void;
 }

@@ -1,11 +1,12 @@
 import { DialogTitle, type DialogTitleProps } from "@mui/material";
-import { ttr } from "../../../localization/localization";
 import { CDialogTitleStyle } from "../../../styles/components/feedback/CDialogTitleStyle";
 import type { GProps } from "../../common/GProps";
+import { useLang } from "../../contexts/CLanguageProvider";
 
 export interface CDialogTitleProps extends GProps, DialogTitleProps {}
 
 function CDialogTitle({ children, sx, ...other }: CDialogTitleProps) {
+	const { ttr } = useLang();
 	return (
 		<DialogTitle
 			sx={[CDialogTitleStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}

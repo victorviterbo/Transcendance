@@ -4,7 +4,7 @@ import { CAuthProvider } from "./components/auth/CAuthProvider.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
-import CLanguageProvider from "./components/layout/CLanguageProvider.tsx";
+import CLanguageProvider from "./components/contexts/CLanguageProvider.tsx";
 import CAppNotifContext from "./components/contexts/CAppNotifContext.tsx";
 import CWebsocketContext from "./components/websocket/CWebsocket.tsx";
 //import { startWS } from "./system/websocket.ts";
@@ -20,13 +20,13 @@ const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
 		<StrictMode>
 			<CAuthProvider>
-				<CLanguageProvider>
-					<CAppNotifContext>
+				<CAppNotifContext>
+					<CLanguageProvider>
 						<CWebsocketContext>
 							<RouterProvider router={router} />
 						</CWebsocketContext>
-					</CAppNotifContext>
-				</CLanguageProvider>
+					</CLanguageProvider>
+				</CAppNotifContext>
 			</CAuthProvider>
 		</StrictMode>,
 	);

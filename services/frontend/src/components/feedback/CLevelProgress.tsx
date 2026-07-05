@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import CTitle from "../text/CTitle";
-import { useLang } from "../layout/CLanguageProvider";
+import { useLang } from "../contexts/CLanguageProvider";
 
 interface CLevelProgressProps {
 	level: number;

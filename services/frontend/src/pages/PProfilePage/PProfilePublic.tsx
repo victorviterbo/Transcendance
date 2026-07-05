@@ -113,11 +113,7 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 		return (
 			<CProfileRequestState
 				status={
-					status === "notFound"
-						? "notFound"
-						: status === "error"
-							? "error"
-							: "loading"
+					status === "notFound" ? "notFound" : status === "error" ? "error" : "loading"
 				}
 				error={error}
 			/>

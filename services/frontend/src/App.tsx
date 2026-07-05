@@ -12,8 +12,7 @@ import PGameBase from "./pages/PGame/PGameBase";
 import GPageBase from "./pages/common/GPageBases";
 
 function App() {
-
-	const { pathname } = useLocation()
+	const { pathname } = useLocation();
 	const onGamePage = matchPath("/game/*", pathname) ? true : false;
 
 	return (

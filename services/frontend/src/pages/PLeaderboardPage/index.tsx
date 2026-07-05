@@ -11,7 +11,7 @@ import {
 	PLeaderboardStyle,
 	type ILeaderboardStyle,
 } from "../../styles/pages/leaderboard/PLeaderboardStyle";
-import { useLang } from "../../components/layout/CLanguageProvider";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 type LeaderboardStatus = "loading" | "ready" | "error";
 

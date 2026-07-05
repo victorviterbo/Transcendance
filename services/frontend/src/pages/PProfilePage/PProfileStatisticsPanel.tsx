@@ -16,7 +16,6 @@ import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
 import type { IGlobalStatsResponse } from "../../types/stats";
 import { getErrorMessage } from "../../utils/error";
-import { formatPercentage, formatSeconds } from "../../utils/string";
 import PProfileStatisticsMetricCard from "./PProfileStatisticsMetricCard";
 import {
 	PProfileStatisticsStyle,
@@ -26,7 +25,7 @@ import {
 	PProfileTextStyle,
 	type IProfileTextStyle,
 } from "../../styles/pages/profile/PProfileTextStyle";
-import { useLang } from "../../components/layout/CLanguageProvider";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 type ProfileStatisticsStatus = "idle" | "loading" | "ready" | "error";
 
@@ -48,7 +47,6 @@ interface StatisticMetricDefinition {
 	value: string;
 }
 
-
 function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps) {
 	const [statisticsState, setStatisticsState] = useState<ProfileStatisticsState>({
 		status: "idle",
@@ -57,58 +55,60 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 		username: "",
 	});
 
-	const { ttrf, ttrn } = useLang();
+	const { ttrn, formatSeconds, formatPercentage } = useLang();
 
-	
-	const getStatisticMetrics = useCallback((stats: IGlobalStatsResponse): StatisticMetricDefinition[] => {
-		return [
-			{
-				icon: <SportsEsportsIcon fontSize="large" />,
-				label: "STATS_GAMES_PLAYED",
-				value: ttrn(stats.totalGamesPlayed),
-			},
-			{
-				icon: <QueueMusicIcon fontSize="large" />,
-				label: "STATS_SONGS_PLAYED",
-				value: ttrn(stats.totalSongsPlayed),
-			},
-			{
-				icon: <EmojiEventsIcon fontSize="large" />,
-				label: "STATS_GAMES_WON",
-				value: ttrn(stats.totalGamesWon),
-			},
-			{
-				icon: <StarIcon fontSize="large" />,
-				label: "STATS_AVERAGE_SCORE",
-				value: ttrn(stats.averageScore),
-			},
-			{
-				icon: <TimerIcon fontSize="large" />,
-				label: "STATS_AVERAGE_TIME",
-				value: stats.averageTime >= 0 ? formatSeconds(ttrf, ttrn, stats.averageTime) : "N/A",
-			},
-			{
-				icon: <LeaderboardIcon fontSize="large" />,
-				label: "STATS_RANKING",
-				value: `${ttrn(stats.ranking)} / ${ttrn(stats.totalPlayers)}`,
-			},
-			{
-				icon: <MicIcon fontSize="large" />,
-				label: "STATS_ARTIST_RATE",
-				value: formatPercentage(ttrn, stats.successRateArtist),
-			},
-			{
-				icon: <AudiotrackIcon fontSize="large" />,
-				label: "STATS_SONG_RATE",
-				value: formatPercentage(ttrn, stats.successRateSong),
-			},
-			{
-				icon: <LibraryMusicIcon fontSize="large" />,
-				label: "STATS_COMPLETE_RATE",
-				value: formatPercentage(ttrn, stats.successRateComplete),
-			},
-		];
-	}, [ttrn, ttrf]);
+	const getStatisticMetrics = useCallback(
+		(stats: IGlobalStatsResponse): StatisticMetricDefinition[] => {
+			return [
+				{
+					icon: <SportsEsportsIcon fontSize="large" />,
+					label: "STATS_GAMES_PLAYED",
+					value: ttrn(stats.totalGamesPlayed),
+				},
+				{
+					icon: <QueueMusicIcon fontSize="large" />,
+					label: "STATS_SONGS_PLAYED",
+					value: ttrn(stats.totalSongsPlayed),
+				},
+				{
+					icon: <EmojiEventsIcon fontSize="large" />,
+					label: "STATS_GAMES_WON",
+					value: ttrn(stats.totalGamesWon),
+				},
+				{
+					icon: <StarIcon fontSize="large" />,
+					label: "STATS_AVERAGE_SCORE",
+					value: ttrn(stats.averageScore),
+				},
+				{
+					icon: <TimerIcon fontSize="large" />,
+					label: "STATS_AVERAGE_TIME",
+					value: stats.averageTime >= 0 ? formatSeconds(stats.averageTime) : "N/A",
+				},
+				{
+					icon: <LeaderboardIcon fontSize="large" />,
+					label: "STATS_RANKING",
+					value: `${ttrn(stats.ranking)} / ${ttrn(stats.totalPlayers)}`,
+				},
+				{
+					icon: <MicIcon fontSize="large" />,
+					label: "STATS_ARTIST_RATE",
+					value: formatPercentage(stats.successRateArtist),
+				},
+				{
+					icon: <AudiotrackIcon fontSize="large" />,
+					label: "STATS_SONG_RATE",
+					value: formatPercentage(stats.successRateSong),
+				},
+				{
+					icon: <LibraryMusicIcon fontSize="large" />,
+					label: "STATS_COMPLETE_RATE",
+					value: formatPercentage(stats.successRateComplete),
+				},
+			];
+		},
+		[ttrn, formatPercentage, formatSeconds],
+	);
 
 	const style: IProfileStatisticsStyle = useMemo(() => {
 		return PProfileStatisticsStyle();
@@ -207,7 +207,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 								<Grid size={{ xs: 12, sm: 6, md: 4 }} key={tag}>
 									<PProfileStatisticsMetricCard
 										label={tag}
-										value={formatPercentage(ttrn, value)}
+										value={formatPercentage(value)}
 										variant="inline"
 										tone="secondary"
 									/>

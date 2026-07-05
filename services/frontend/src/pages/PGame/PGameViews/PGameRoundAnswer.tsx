@@ -9,7 +9,7 @@ import {
 	PGameRoundAnswerStyle,
 	type IGameRoundAnswerStyle,
 } from "../../../styles/pages/game/PGameRoundStyle";
-import { ttrf } from "../../../localization/localization";
+import { useLang } from "../../../components/contexts/CLanguageProvider";
 
 interface PGameRoundAnswerProps extends GPageProps {
 	answer: IGamePlayerAnswer;
@@ -21,6 +21,8 @@ function PGameRoundAnswer({ answer, settings, variant }: PGameRoundAnswerProps) 
 	const style: IGameRoundAnswerStyle = useMemo(() => {
 		return PGameRoundAnswerStyle(answer, variant);
 	}, [answer, variant]);
+
+	const { ttrf } = useLang();
 
 	return (
 		<Stack sx={style.main} direction={"row"}>

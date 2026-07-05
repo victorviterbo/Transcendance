@@ -164,10 +164,6 @@ function GPageBase({ inGame, children }: GPageProps) {
 		);
 	}
 
-	return (
-		<>
-			{getBody()}
-		</>
-	);
+	return <>{getBody()}</>;
 }
 export default GPageBase;

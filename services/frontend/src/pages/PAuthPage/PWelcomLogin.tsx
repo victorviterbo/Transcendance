@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { IAuthUser } from "../../types/user";
 import type { GPageProps } from "../common/GPageBases";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
-import { useLang } from "../../components/layout/CLanguageProvider";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 //--------------------------------------------------
 //                TYPES / INTERFACES

@@ -18,7 +18,7 @@ import {
 	PRoomCardPlayerTextStyle,
 } from "../../styles/pages/home/PRoomCardStyle";
 import { useNavigate } from "react-router-dom";
-import { useLang } from "../../components/layout/CLanguageProvider";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface PRoomCardProps extends CButtonProps {
 	infos: IGameListEntry;

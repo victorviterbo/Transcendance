@@ -13,7 +13,7 @@ import { getErrorMessage } from "../../utils/error";
 import LockIcon from "@mui/icons-material/Lock";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PublicIcon from "@mui/icons-material/Public";
-import { useLang } from "../../components/layout/CLanguageProvider";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 function PCreateRoom() {
 	const [name, setName] = useState("");

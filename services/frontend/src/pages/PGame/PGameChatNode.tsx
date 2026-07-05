@@ -5,14 +5,16 @@ import CText from "../../components/text/CText";
 import { colorFromID } from "../../utils/styles";
 import { appColors, appTexts } from "../../styles/theme";
 import { PGameChatNodeStyle } from "../../styles/pages/game/PGameChatStyle";
-import { ttrfn } from "../../localization/localization";
 import { memo } from "react";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface PGameChatNodeProps extends GPageProps {
 	message: IGameChatMsg;
 }
 
 function PGameChatNode({ message }: PGameChatNodeProps) {
+	const { ttrfn } = useLang();
+
 	//====================== RETURS ======================
 	if (message.type == "message" && message.body) {
 		return (

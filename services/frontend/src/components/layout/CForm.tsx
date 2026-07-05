@@ -8,7 +8,7 @@ import type { TConfirmConfig, TFormFieldConfig } from "../../types/form.ts";
 import CTextField from "../inputs/textFields/CTextField.tsx";
 import CText from "../text/CText.tsx";
 import CButtonText from "../inputs/buttons/CButtonText.tsx";
-import { useLang } from "./CLanguageProvider.tsx";
+import { useLang } from "../contexts/CLanguageProvider.tsx";
 
 interface CFormProps extends GCompProps {
 	submitText: string;
@@ -54,9 +54,8 @@ function CPasswordVisibilityAdornment({ visible, onToggle }: CPasswordVisibility
 }
 
 function CForm({ submitText, submittingText, fields, onSubmit }: CFormProps) {
-	
 	const { ttr } = useLang();
-	
+
 	//====================== MEMOS ======================
 	const { specs, specByName, confirmByOriginal } = useMemo(() => {
 		const nextSpecs: IFieldSpec[] = [];

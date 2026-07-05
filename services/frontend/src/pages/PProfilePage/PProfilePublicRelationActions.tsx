@@ -4,7 +4,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import { ttr } from "../../localization/localization";
 import {
 	PProfilePublicRelationStyle,
 	type IProfilePublicRelationStyle,
@@ -17,6 +16,7 @@ import type {
 	TRelationAction,
 	TFriendRelation,
 } from "../../types/socials";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface RelationActionButtonProps {
 	pendingAction: TRelationAction | null;
@@ -59,6 +59,7 @@ function RelationStatusChip({ icon, label, style, tone }: RelationStatusChipProp
 }
 
 function RelationChip({ status, relation, style }: RelationChipProps) {
+	const { ttr } = useLang();
 	if (status === "loading") {
 		return (
 			<RelationStatusChip
@@ -101,6 +102,7 @@ function RemoveFriendButton({
 	onConfirmableAction,
 	style,
 }: ConfirmableRelationActionButtonProps) {
+	const { ttr } = useLang();
 	return (
 		<Button
 			{...style.dangerButton}
@@ -120,6 +122,7 @@ function CancelFriendRequestButton({
 	onConfirmableAction,
 	style,
 }: ConfirmableRelationActionButtonProps) {
+	const { ttr } = useLang();
 	return (
 		<Button
 			{...style.dangerButton}
@@ -139,6 +142,7 @@ function IncomingFriendRequestActions({
 	onAction,
 	style,
 }: ImmediateRelationActionButtonProps) {
+	const { ttr } = useLang();
 	return (
 		<Stack
 			direction={{ xs: "column", sm: "row" }}
@@ -177,6 +181,8 @@ function AddFriendButton({
 	onAction,
 	style: _style,
 }: ImmediateRelationActionButtonProps) {
+	const { ttr } = useLang();
+
 	return (
 		<Button
 			variant="contained"

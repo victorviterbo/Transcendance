@@ -5,7 +5,7 @@ import { appPositions } from "../../styles/theme";
 import { Box, Stack } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLang } from "../../components/layout/CLanguageProvider";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 function PJoinRoom() {
 	const [gameCode, setGameCode] = useState("");

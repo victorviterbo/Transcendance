@@ -144,17 +144,20 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 }
 
 interface CWebsocketContextProps {
-	children: ReactNode
+	children: ReactNode;
 }
 
-function CWebsocketContext({children}: CWebsocketContextProps) {
-
+function CWebsocketContext({ children }: CWebsocketContextProps) {
 	const { status } = useAuth();
 	if (status == "loading") return <GLoading />;
 
-	return <>
-		<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>{children}</CWebsocket>
-	</>
+	return (
+		<>
+			<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>
+				{children}
+			</CWebsocket>
+		</>
+	);
 }
 
 export default CWebsocketContext;

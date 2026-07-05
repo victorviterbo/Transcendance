@@ -1,41 +1,5 @@
-
 import type { ILangData, ILocalizationData } from "../types/localizationTypes";
 import { LANGUAGE_STORAGE_KEY } from "../constants";
-
-
-
-// function writeStoredLanguage(lang: string): void {
-// 	if (typeof localStorage === "undefined") return;
-// 	try {
-// 		localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-// 	} catch {
-// 		return;
-// 	}
-// }
-
-
-// function applyDocumentLanguage(lang: string): void {
-// 	if (typeof document === "undefined") return;
-// 	document.documentElement.lang = lang;
-// }
-
-
-
-// let onLangChangedBind: (() => void) | null = null;
-// export function onLangChanged(lang: string) {
-// 	const nextLang = normalizeLang(lang);
-// 	if (!isLangAvailable(nextLang)) return;
-// 	currentLang = nextLang;
-// 	writeStoredLanguage(nextLang);
-// 	applyDocumentLanguage(nextLang);
-// 	if (onLangChangedBind) onLangChangedBind();
-// }
-// export function setOnLangChanged(func: () => void): void {
-// 	onLangChangedBind = func;
-// }
-
-
-
 
 //--------------------------------------------------
 //                    UTIL
@@ -45,6 +9,15 @@ function normalizeLang(lang: string | null | undefined): string | null {
 	return lang.trim().toLowerCase().split("-")[0] || null;
 }
 
+export function writeStoredLanguage(lang: string): void {
+	if (typeof localStorage === "undefined") return;
+	try {
+		localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+	} catch {
+		return;
+	}
+}
+
 //--------------------------------------------------
 //                  INTI
 //--------------------------------------------------
@@ -52,7 +25,6 @@ function isLangAvailable(langData: ILocalizationData, lang: string | null): lang
 	if (!lang) return false;
 	return langData.langs.some((item: ILangData) => item.code === lang);
 }
-
 
 function readStoredLanguage(): string | null {
 	if (typeof localStorage === "undefined") return null;
@@ -76,9 +48,10 @@ function readBrowserLanguage(): string | null {
 export function getLanguage(langData?: ILocalizationData): string {
 	const storedLang = readStoredLanguage();
 	const browserLang = readBrowserLanguage();
+	if (!langData || langData.headers.length == 0 || langData.langs.length == 0)
+		return storedLang ?? browserLang ?? "en";
 	const preferredLang = [storedLang, browserLang, "en"].find((Lang) => {
-		if(!langData)
-			return false;
+		if (!langData) return false;
 		return isLangAvailable(langData, Lang);
 	});
 
@@ -176,7 +149,7 @@ export async function getLocalization(): Promise<ILocalizationData> {
 			}
 			return reponse.text();
 		})
-		.then((text: string | undefined) : ILocalizationData => {
+		.then((text: string | undefined): ILocalizationData => {
 			const langData: ILocalizationData = {
 				headers: [],
 				langs: [],
@@ -198,7 +171,14 @@ export async function getLocalization(): Promise<ILocalizationData> {
 				applyContent(langData, splitLines(line), index);
 			});
 			return langData;
+		})
+		.catch(() => {
+			return {
+				headers: [],
+				langs: [],
+				idPos: -1,
+				descPos: -1,
+				totalCol: -1,
+			};
 		});
 }
-
-
