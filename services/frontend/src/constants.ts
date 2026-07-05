@@ -31,7 +31,7 @@ export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "/api/social/friend-request/re
 export const API_SOCIAL_FRIEND_REMOVE = "/api/social/friend/remove/";
 export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "/api/social/message/";
 export const API_SOCIAL_NOTIFS = "/api/social/notifs/";
-export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read/";
+export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs/read/";
 
 //GAME
 export const API_CREATE_GAME = "/api/game/";
