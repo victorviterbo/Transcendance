@@ -6,7 +6,11 @@ import PStaticPageShell from "./PStaticPageShell";
 const privacySections = [
 	{
 		title: "PRIVACY_DATA_TITLE",
-		paragraphs: ["PRIVACY_DATA_BODY_1", "PRIVACY_DATA_BODY_2"],
+		paragraphs: ["PRIVACY_DATA_BODY_1", "PRIVACY_DATA_BODY_2", "PRIVACY_DATA_BODY_3"],
+	},
+	{
+		title: "PRIVACY_COOKIES_TITLE",
+		paragraphs: ["PRIVACY_COOKIES_BODY_1", "PRIVACY_COOKIES_BODY_2"],
 	},
 	{
 		title: "PRIVACY_USAGE_TITLE",
@@ -14,15 +18,15 @@ const privacySections = [
 	},
 	{
 		title: "PRIVACY_SHARING_TITLE",
-		paragraphs: ["PRIVACY_SHARING_BODY_1", "PRIVACY_SHARING_BODY_2"],
+		paragraphs: ["PRIVACY_SHARING_BODY_1", "PRIVACY_SHARING_BODY_2", "PRIVACY_SHARING_BODY_3"],
 	},
 	{
 		title: "PRIVACY_RETENTION_TITLE",
-		paragraphs: ["PRIVACY_RETENTION_BODY_1", "PRIVACY_RETENTION_BODY_2"],
+		paragraphs: ["PRIVACY_RETENTION_BODY_1", "PRIVACY_RETENTION_BODY_2", "PRIVACY_RETENTION_BODY_3"],
 	},
 	{
 		title: "PRIVACY_RIGHTS_TITLE",
-		paragraphs: ["PRIVACY_RIGHTS_BODY_1", "PRIVACY_RIGHTS_BODY_2"],
+		paragraphs: ["PRIVACY_RIGHTS_BODY_1", "PRIVACY_RIGHTS_BODY_2", "PRIVACY_RIGHTS_BODY_3"],
 	},
 ];
 

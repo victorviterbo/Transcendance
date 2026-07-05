@@ -9,6 +9,10 @@ const termsSections = [
 		paragraphs: ["TERMS_ACCOUNTS_BODY_1", "TERMS_ACCOUNTS_BODY_2"],
 	},
 	{
+		title: "TERMS_ELIGIBILITY_TITLE",
+		paragraphs: ["TERMS_ELIGIBILITY_BODY_1", "TERMS_ELIGIBILITY_BODY_2"],
+	},
+	{
 		title: "TERMS_CONDUCT_TITLE",
 		paragraphs: ["TERMS_CONDUCT_BODY_1", "TERMS_CONDUCT_BODY_2"],
 	},
@@ -18,15 +22,19 @@ const termsSections = [
 	},
 	{
 		title: "TERMS_CONTENT_TITLE",
-		paragraphs: ["TERMS_CONTENT_BODY_1", "TERMS_CONTENT_BODY_2"],
+		paragraphs: ["TERMS_CONTENT_BODY_1", "TERMS_CONTENT_BODY_2", "TERMS_CONTENT_BODY_3"],
 	},
 	{
 		title: "TERMS_ENFORCEMENT_TITLE",
 		paragraphs: ["TERMS_ENFORCEMENT_BODY_1", "TERMS_ENFORCEMENT_BODY_2"],
 	},
 	{
+		title: "TERMS_LIABILITY_TITLE",
+		paragraphs: ["TERMS_LIABILITY_BODY_1", "TERMS_LIABILITY_BODY_2"],
+	},
+	{
 		title: "TERMS_CHANGES_TITLE",
-		paragraphs: ["TERMS_CHANGES_BODY_1", "TERMS_CHANGES_BODY_2"],
+		paragraphs: ["TERMS_CHANGES_BODY_1", "TERMS_CHANGES_BODY_2", "TERMS_CHANGES_BODY_3"],
 	},
 ];
 
