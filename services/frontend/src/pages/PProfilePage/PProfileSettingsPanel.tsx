@@ -38,7 +38,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 	const [pendingDeletePassword, setPendingDeletePassword] = useState<string | null>(null);
 	const [deleteConfirmError, setDeleteConfirmError] = useState<string | null>(null);
 	const [isDeletingProfile, setIsDeletingProfile] = useState(false);
-	const { setAuth, user, logout } = useAuth();
+	const { user, login, logout } = useAuth();
 	const style: IProfileTextStyle = useMemo(() => {
 		return PProfileTextStyle();
 	}, []);
@@ -127,7 +127,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 			onProfileUpdated?.(nextProfile);
 			const accessToken = getAccessToken();
 			if (accessToken) {
-				setAuth(accessToken, {
+				login(accessToken, {
 					username: nextProfile.username,
 					email: nextProfile.email ?? user?.email,
 				});
@@ -149,7 +149,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 			onProfileUpdated?.(nextProfile);
 			const accessToken = getAccessToken();
 			if (accessToken) {
-				setAuth(accessToken, {
+				login(accessToken, {
 					username: nextProfile.username,
 					email: nextProfile.email ?? user?.email,
 				});
@@ -169,7 +169,7 @@ const PProfileSettingsPanel = ({ username, onProfileUpdated }: ProfileSettingsPa
 				values.newPassword,
 			);
 			if (response.access) {
-				setAuth(response.access, {
+				login(response.access, {
 					username: response.username ?? user?.username ?? username ?? "",
 					email: user?.email,
 				});

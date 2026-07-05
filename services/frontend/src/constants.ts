@@ -1,3 +1,8 @@
+// AUTH CHANNEL
+export const AUTH_CHANNEL = "auth";
+export const AUTH_CHANNEL_LOGIN = "login";
+export const AUTH_CHANNEL_LOGOUT = "logout";
+
 // AUTH ENDPOINTS
 export const API_AUTH_REFRESH = "/api/auth/refresh/";
 export const API_AUTH_LOGOUT = "/api/auth/logout/";

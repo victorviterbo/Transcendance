@@ -51,7 +51,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 		],
 		[],
 	);
-	const { setAuth } = useAuth();
+	const { login } = useAuth();
 
 	//====================== EVENTS ======================
 	async function handleRegister(values: Record<string, string>): Promise<IEventStatus> {
@@ -65,7 +65,7 @@ const PRegisterForm = ({ onSuccess }: PRegisterFormProps) => {
 				return { valid: false, msg: "REGISTRATION_FAILED" };
 			}
 			const user: IAuthUser = { username: res.data.username, email: values.email };
-			setAuth(res.data.access, user);
+			login(res.data.access, user);
 			onSuccess?.(user);
 			return { valid: true };
 		} catch (error) {

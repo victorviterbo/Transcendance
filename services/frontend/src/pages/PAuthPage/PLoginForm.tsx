@@ -39,7 +39,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 		],
 		[],
 	);
-	const { setAuth } = useAuth();
+	const { login } = useAuth();
 
 	//====================== EVENTS ======================
 	async function handleLogin(values: Record<string, string>): Promise<IEventStatus> {
@@ -53,7 +53,7 @@ const PLoginForm = ({ onSuccess }: LoginFormProps) => {
 			}
 			const username = res.data.username;
 			const user: IAuthUser = { username, email: values.email };
-			setAuth(res.data.access, user);
+			login(res.data.access, user);
 			onSuccess?.(user);
 			return { valid: true };
 		} catch (error) {

@@ -101,8 +101,9 @@ const PProfileMe = () => {
 		});
 	};
 	const username = user?.username ?? "";
-	const hasReadyProfile = profileState.status === "ready" && profileState.profile !== null;
 	const isCurrentUsername = profileState.username === username;
+	const hasReadyProfile =
+		isCurrentUsername && profileState.status === "ready" && profileState.profile !== null;
 	const profile = hasReadyProfile ? profileState.profile : null;
 	const error = isCurrentUsername ? profileState.error : null;
 	const status: ProfileStatus = !username
