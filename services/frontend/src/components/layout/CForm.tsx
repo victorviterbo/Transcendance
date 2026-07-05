@@ -46,6 +46,7 @@ function CPasswordVisibilityAdornment({ visible, onToggle }: CPasswordVisibility
 				edge="end"
 				onClick={onToggle}
 				onMouseDown={(event) => event.preventDefault()}
+				tabIndex={-1}
 			>
 				{visible ? <VisibilityOff /> : <Visibility />}
 			</IconButton>
