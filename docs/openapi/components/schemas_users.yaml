@@ -13,4 +13,4 @@ ExtUserInfo:
     status:
       type: string
       format: "not-friends | friends | incoming | outgoing | self"
-      descripion: "Give the current relation with the target user (Note: self is used for self detection in game)"
+      description: "Give the current relation with the target user (Note: self is used for self detection in game)"

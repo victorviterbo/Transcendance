@@ -15,7 +15,7 @@ FriendInfo:
     status:
       type: string
       format: "offline | busy | online"
-      descripion: "Give the current user status"
+      description: "Give the current user status"
 
 # MESSAGE
 Message:
@@ -27,18 +27,18 @@ Message:
     direction:
       type: string
       format: "outgoing | incoming"
-      descripion: "Defines if a message in incoming or outcoming"
+      description: "Defines if a message in incoming or outcoming"
     status:
       type: string
       format: "not-sent | sent | recieved | read | error"
-      descripion: "Defines the current status of a message"
+      description: "Defines the current status of a message"
     target-id:
       type: string
-      descripion: "Targeted friend UID"
+      description: "Targeted friend UID"
     target:
       type: string
-      descripion: "Targeted friend"
-    uid: { type: string, descripion: "message unique ID" }
+      description: "Targeted friend"
+    uid: { type: string, description: "message unique ID" }
 
 # NOTIF
 NotifRequests:
@@ -52,7 +52,7 @@ NotifRequests:
     date: { type: string, format: date-time }
     read:
       type: boolean
-      descripion: "Defines if the notification is already read"
+      description: "Defines if the notification is already read"
 
 NotifAccepted:
   type: object
@@ -65,4 +65,4 @@ NotifAccepted:
     date: { type: string, format: date-time }
     read:
       type: boolean
-      descripion: "Defines if the notification is already read"
+      description: "Defines if the notification is already read"

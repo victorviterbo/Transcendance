@@ -7,67 +7,74 @@ info:
     name: ft_transcendence Team
     email: support@example.com
 servers:
-  - url: http://localhost:8000
+  - url: https://localhost
 
 paths:
-  /api/auth/register:
+  /api/health/:
+    get:
+      summary: Health check
+      description: Return a simple backend health status.
+      operationId: healthCheck
+      tags: [health]
+      responses:
+        "200":
+          description: Backend is reachable.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+  /api/auth/register/:
     $ref: ./paths/auth.yaml#/register
-  /api/auth/login:
+  /api/auth/login/:
     $ref: ./paths/auth.yaml#/login
-  /api/auth/refresh:
+  /api/auth/refresh/:
     $ref: ./paths/auth.yaml#/refresh
-  /api/auth/logout:
+  /api/auth/logout/:
     $ref: ./paths/auth.yaml#/logout
-  /api/auth/password:
+  /api/auth/password/:
     $ref: ./paths/auth.yaml#/password
-  /api/auth/delete:
+  /api/auth/delete/:
     $ref: ./paths/auth.yaml#/delete
-  /api/social/friends:
+  /api/social/friends/:
     $ref: ./paths/social.yaml#/friends-list
-  /api/social/friends-search:
+  /api/social/friends-search/:
     $ref: ./paths/social.yaml#/friends-search
-  /api/social/friends-request:
+  /api/social/friends-request/:
     $ref: ./paths/social.yaml#/friends-requests
-  /api/social/friends-request/send:
+  /api/social/friend-request/send/:
     $ref: ./paths/social.yaml#/friends-requests-send
-  /api/social/friends-request/respond:
+  /api/social/friend-request/respond/:
     $ref: ./paths/social.yaml#/friends-requests-respond
-  /api/social/friend/remove:
+  /api/social/friend/remove/:
     $ref: ./paths/social.yaml#/friend-remove
-  /api/social/message:
+  /api/social/message/:
     $ref: ./paths/social.yaml#/social-message
-  /api/social/notifs:
+  /api/social/notifs/:
     $ref: ./paths/social.yaml#/notif
-  /api/social/notifs_read":
+  /api/social/notifs/read/:
     $ref: ./paths/social.yaml#/notif-read
-  /api/profile:
+  /api/profile/:
     $ref: ./paths/profile.yaml#/profile
-  /api/profile/search:
+  /api/profile/search/:
     $ref: ./paths/profile.yaml#/search
-  /api/profile/guest-create:
+  /api/profile/guest-create/:
     $ref: ./paths/profile.yaml#/guest-create
-  /api/profile/guest-delete:
+  /api/profile/guest-delete/:
     $ref: ./paths/profile.yaml#/guest-delete
-  /api/stats/global:
+  /api/stats/global/:
     $ref: ./paths/stats.yaml#/global
-  /api/stats/leaderboard:
+  /api/stats/leaderboard/:
     $ref: ./paths/stats.yaml#/leaderboard
-  /api/stats/history:
+  /api/stats/history/:
     $ref: ./paths/stats.yaml#/history
-  /api/game/friends:
+  /api/game/friends/:
     $ref: ./paths/game.yaml#/game-friends-list
   /api/game/:
     $ref: ./paths/game.yaml#/game
-  /api/game/{ROOMID}:
+  /api/game/{uid}/:
     $ref: ./paths/game.yaml#/game-common
-  WS/#friend-chat:
-    $ref: ./paths/websocket.yaml#/WS-friend-chat
-  WS/#notif:
-    $ref: ./paths/websocket.yaml#/WS-notif
-  WS/#friend-request:
-    $ref: ./paths/websocket.yaml#/WS-friend-request
-  WS/#game:
-    $ref: ./paths/websocket.yaml#/WS-game
 
 components:
   schemas:
@@ -125,18 +132,6 @@ components:
       $ref: ./components/schemas_game.yaml#/GameCreationRequest
     GameCreationResponse:
       $ref: ./components/schemas_game.yaml#/GameCreationResponse
-    WS - StoC - friend-chat:
-      $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendChat
-    WS - StoC - notif:
-      $ref: ./components/schemas_ws.yaml#/WS-StoC-Notif
-    WS - StoC - friend-request:
-      $ref: ./components/schemas_ws.yaml#/WS-StoC-FriendRequests
-    WS - StoC - game:
-      $ref: ./components/schemas_ws.yaml#/WS-StoC-Game
-    WS - CtoS - friend-chat:
-      $ref: ./components/schemas_ws.yaml#/WS-CtoS-FriendChat
-    WS - CtoS - game:
-      $ref: ./components/schemas_ws.yaml#/WS-CtoS-Game
 
   securitySchemes:
     bearerAuth:
@@ -145,6 +140,8 @@ components:
       bearerFormat: JWT
 
 tags:
+  - name: health
+    description: Backend status endpoint.
   - name: auth
     description: Authentication and registration endpoints.
   - name: social
@@ -155,5 +152,3 @@ tags:
     description: User statistics
   - name: game
     description: "All game related endpoints"
-  - name: websockets
-    description: "Websockets data (Open AI don't handle websocket -> Posts = MODULES, Requests = Client to Server, Reponse = Server to Clients)"
