@@ -8,6 +8,9 @@ import type {
 	TWSModuleName,
 	TWSRcv,
 } from "../../types/websocket";
+import { useAuth } from "../auth/CAuthProvider";
+import GLoading from "../../pages/common/GLoading";
+import GLost from "../../pages/common/GLost";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -140,4 +143,18 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	);
 }
 
-export default CWebsocket;
+interface CWebsocketContextProps {
+	children: ReactNode
+}
+
+function CWebsocketContext({children}: CWebsocketContextProps) {
+
+	const { status } = useAuth();
+	if (status == "loading") return <GLoading />;
+
+	return <>
+		<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>{children}</CWebsocket>
+	</>
+}
+
+export default CWebsocketContext;

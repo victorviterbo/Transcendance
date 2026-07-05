@@ -2,7 +2,6 @@ import { Avatar, Box, Container, Stack, useMediaQuery, useTheme } from "@mui/mat
 import { useEffect, useMemo, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTitle from "../../components/text/CTitle";
-import GPageBase from "../common/GPageBases";
 import ProfileStatisticsPanel from "./PProfileStatisticsPanel";
 import { getErrorMessage } from "../../utils/error";
 import CLevelProgress from "../../components/feedback/CLevelProgress";
@@ -112,18 +111,16 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 
 	if (status !== "ready" || profile === null) {
 		return (
-			<GPageBase>
-				<CProfileRequestState
-					status={
-						status === "notFound"
-							? "notFound"
-							: status === "error"
-								? "error"
-								: "loading"
-					}
-					error={error}
-				/>
-			</GPageBase>
+			<CProfileRequestState
+				status={
+					status === "notFound"
+						? "notFound"
+						: status === "error"
+							? "error"
+							: "loading"
+				}
+				error={error}
+			/>
 		);
 	}
 
@@ -133,69 +130,67 @@ function PProfilePublic({ username }: PProfilePublicProps) {
 	const levelProgress = getProfileLevelProgress(displayXp);
 
 	return (
-		<GPageBase>
-			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-				<Stack spacing={3} sx={{ mt: 3 }}>
-					<CBasePaper sx={{ p: 3 }}>
+		<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+			<Stack spacing={3} sx={{ mt: 3 }}>
+				<CBasePaper sx={{ p: 3 }}>
+					<Stack
+						direction={{ xs: "column", md: "row" }}
+						spacing={3}
+						alignItems={{ xs: "center", md: "normal" }}
+						justifyContent={{ xs: "normal", md: "space-between" }}
+					>
 						<Stack
-							direction={{ xs: "column", md: "row" }}
-							spacing={3}
-							alignItems={{ xs: "center", md: "normal" }}
-							justifyContent={{ xs: "normal", md: "space-between" }}
+							direction="row"
+							spacing={2.5}
+							alignItems="center"
+							sx={{ minWidth: 0, maxWidth: "100%", overflow: "hidden" }}
 						>
-							<Stack
-								direction="row"
-								spacing={2.5}
-								alignItems="center"
-								sx={{ minWidth: 0, maxWidth: "100%", overflow: "hidden" }}
+							<Avatar src={resolveProfileImage(profile.avatar)} sx={style.avatar}>
+								{displayUsername.charAt(0).toUpperCase()}
+							</Avatar>
+							<CTitle
+								noTr={true}
+								size={isTiny ? "sm" : "md"}
+								sx={{
+									minWidth: 0,
+									mb: 0,
+									overflow: "hidden",
+									whiteSpace: "nowrap",
+									textOverflow: "ellipsis",
+								}}
 							>
-								<Avatar src={resolveProfileImage(profile.avatar)} sx={style.avatar}>
-									{displayUsername.charAt(0).toUpperCase()}
-								</Avatar>
-								<CTitle
-									noTr={true}
-									size={isTiny ? "sm" : "md"}
-									sx={{
-										minWidth: 0,
-										mb: 0,
-										overflow: "hidden",
-										whiteSpace: "nowrap",
-										textOverflow: "ellipsis",
-									}}
-								>
-									{displayUsername}
-								</CTitle>
-							</Stack>
-							<Stack
-								direction={"column"}
-								alignItems={{ xs: "center", md: "normal" }}
-								sx={{ flex: 1, minWidth: "200px", maxWidth: "400px" }}
-							>
-								<Box
-									sx={{
-										width: "100%",
-										maxWidth: 400,
-									}}
-								>
-									<CLevelProgress
-										level={levelProgress.level}
-										progressPercent={levelProgress.progressPercent}
-										title={displayBadge}
-									/>
-								</Box>
-								<Box sx={{ mt: "15px" }}>
-									<PProfilePublicRelation profile={profile} />
-								</Box>
-							</Stack>
+								{displayUsername}
+							</CTitle>
 						</Stack>
-					</CBasePaper>
+						<Stack
+							direction={"column"}
+							alignItems={{ xs: "center", md: "normal" }}
+							sx={{ flex: 1, minWidth: "200px", maxWidth: "400px" }}
+						>
+							<Box
+								sx={{
+									width: "100%",
+									maxWidth: 400,
+								}}
+							>
+								<CLevelProgress
+									level={levelProgress.level}
+									progressPercent={levelProgress.progressPercent}
+									title={displayBadge}
+								/>
+							</Box>
+							<Box sx={{ mt: "15px" }}>
+								<PProfilePublicRelation profile={profile} />
+							</Box>
+						</Stack>
+					</Stack>
+				</CBasePaper>
 
-					<CBasePaper>
-						<ProfileStatisticsPanel username={profile.username} />
-					</CBasePaper>
-				</Stack>
-			</Container>
-		</GPageBase>
+				<CBasePaper>
+					<ProfileStatisticsPanel username={profile.username} />
+				</CBasePaper>
+			</Stack>
+		</Container>
 	);
 }
 
