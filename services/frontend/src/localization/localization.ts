@@ -19,7 +19,7 @@ export function writeStoredLanguage(lang: string): void {
 }
 
 //--------------------------------------------------
-//                  INTI
+//                  INIT
 //--------------------------------------------------
 function isLangAvailable(langData: ILocalizationData, lang: string | null): lang is string {
 	if (!lang) return false;
