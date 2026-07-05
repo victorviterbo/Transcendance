@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { IAuthUser } from "../../types/user";
 import type { GPageProps } from "../common/GPageBases";
 import CButtonText from "../../components/inputs/buttons/CButtonText";
-import { ttrf } from "../../localization/localization";
+import { useLang } from "../../components/layout/CLanguageProvider";
 
 //--------------------------------------------------
 //                TYPES / INTERFACES
@@ -19,9 +19,11 @@ interface PWelcomLoginProps extends GPageProps {
 //--------------------------------------------------
 function PWelcomLogin({ user, isBack }: PWelcomLoginProps) {
 	const navigate = useNavigate();
+	const { ttrf } = useLang();
 	const message = ttrf(isBack ? "WELCOME_BACK_USER" : "WELCOME_ACCOUNT_READY_USER", {
 		username: user.username,
 	});
+
 	//====================== DOM ======================
 	return (
 		<>

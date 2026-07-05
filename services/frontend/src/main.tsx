@@ -4,8 +4,7 @@ import { CAuthProvider } from "./components/auth/CAuthProvider.tsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.tsx";
 import mockStart from "./mock/mock.ts";
-import { startLocalization } from "./localization/localization.ts";
-import CLanguageLayout from "./components/layout/CLanguageLayout.tsx";
+import CLanguageProvider from "./components/layout/CLanguageProvider.tsx";
 import CAppNotifContext from "./components/contexts/CAppNotifContext.tsx";
 import CWebsocketContext from "./components/websocket/CWebsocket.tsx";
 //import { startWS } from "./system/websocket.ts";
@@ -21,26 +20,16 @@ const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
 		<StrictMode>
 			<CAuthProvider>
-				<CLanguageLayout>
+				<CLanguageProvider>
 					<CAppNotifContext>
 						<CWebsocketContext>
 							<RouterProvider router={router} />
 						</CWebsocketContext>
 					</CAppNotifContext>
-				</CLanguageLayout>
+				</CLanguageProvider>
 			</CAuthProvider>
 		</StrictMode>,
 	);
-};
-
-const startLoc = () => {
-	startLocalization()
-		.catch((error) => {
-			console.error("Localization failed to start:", error);
-		})
-		.finally(() => {
-			startApp();
-		});
 };
 
 void mockStart()
@@ -48,5 +37,5 @@ void mockStart()
 		console.error("MSW failed to start:", error);
 	})
 	.finally(() => {
-		startLoc();
+		startApp();
 	});

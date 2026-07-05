@@ -81,3 +81,12 @@ export const SETTINGS_SONG_DURATION_STEP = 5;
 export const SETTINGS_BREAK_DURATION_MIN = 5;
 export const SETTINGS_BREAK_DURATION_MAX = 30;
 export const SETTINGS_BREAK_DURATION_STEP = 5;
+
+//LANGUAGES
+export const LANGUAGE_STORAGE_KEY = "guess_tunes_language";
+export const NUMBER_FORMAT_LOCALES: Record<string, string> = {
+	en: "en-US",
+	fr: "fr-FR",
+	ja: "ja-JP",
+	de: "de-DE",
+};

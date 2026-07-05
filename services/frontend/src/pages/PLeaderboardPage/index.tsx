@@ -7,11 +7,11 @@ import { getErrorMessage } from "../../utils/error";
 import type { ILeaderboardResponse } from "../../types/stats";
 import { appPositions } from "../../styles/theme";
 import PLeaderboardRow from "./PLeaderboardRow";
-import { ttrf } from "../../localization/localization";
 import {
 	PLeaderboardStyle,
 	type ILeaderboardStyle,
 } from "../../styles/pages/leaderboard/PLeaderboardStyle";
+import { useLang } from "../../components/layout/CLanguageProvider";
 
 type LeaderboardStatus = "loading" | "ready" | "error";
 
@@ -31,6 +31,7 @@ function PLeaderboardPage() {
 		data: null,
 		error: null,
 	});
+	const { ttrf } = useLang();
 
 	useEffect(() => {
 		let ignore = false;

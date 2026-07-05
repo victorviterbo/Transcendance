@@ -8,13 +8,12 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import MicIcon from "@mui/icons-material/Mic";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import LibraryMusicIcon from "@mui/icons-material/LibraryMusic";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { fetchGlobalStats } from "../../api/stats";
 import { MUSIC_TAGS } from "../../constants";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
-import { ttrn } from "../../localization/localization";
 import type { IGlobalStatsResponse } from "../../types/stats";
 import { getErrorMessage } from "../../utils/error";
 import { formatPercentage, formatSeconds } from "../../utils/string";
@@ -27,6 +26,7 @@ import {
 	PProfileTextStyle,
 	type IProfileTextStyle,
 } from "../../styles/pages/profile/PProfileTextStyle";
+import { useLang } from "../../components/layout/CLanguageProvider";
 
 type ProfileStatisticsStatus = "idle" | "loading" | "ready" | "error";
 
@@ -48,53 +48,6 @@ interface StatisticMetricDefinition {
 	value: string;
 }
 
-const getStatisticMetrics = (stats: IGlobalStatsResponse): StatisticMetricDefinition[] => [
-	{
-		icon: <SportsEsportsIcon fontSize="large" />,
-		label: "STATS_GAMES_PLAYED",
-		value: ttrn(stats.totalGamesPlayed),
-	},
-	{
-		icon: <QueueMusicIcon fontSize="large" />,
-		label: "STATS_SONGS_PLAYED",
-		value: ttrn(stats.totalSongsPlayed),
-	},
-	{
-		icon: <EmojiEventsIcon fontSize="large" />,
-		label: "STATS_GAMES_WON",
-		value: ttrn(stats.totalGamesWon),
-	},
-	{
-		icon: <StarIcon fontSize="large" />,
-		label: "STATS_AVERAGE_SCORE",
-		value: ttrn(stats.averageScore),
-	},
-	{
-		icon: <TimerIcon fontSize="large" />,
-		label: "STATS_AVERAGE_TIME",
-		value: stats.averageTime >= 0 ? formatSeconds(stats.averageTime) : "N/A",
-	},
-	{
-		icon: <LeaderboardIcon fontSize="large" />,
-		label: "STATS_RANKING",
-		value: `${ttrn(stats.ranking)} / ${ttrn(stats.totalPlayers)}`,
-	},
-	{
-		icon: <MicIcon fontSize="large" />,
-		label: "STATS_ARTIST_RATE",
-		value: formatPercentage(stats.successRateArtist),
-	},
-	{
-		icon: <AudiotrackIcon fontSize="large" />,
-		label: "STATS_SONG_RATE",
-		value: formatPercentage(stats.successRateSong),
-	},
-	{
-		icon: <LibraryMusicIcon fontSize="large" />,
-		label: "STATS_COMPLETE_RATE",
-		value: formatPercentage(stats.successRateComplete),
-	},
-];
 
 function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps) {
 	const [statisticsState, setStatisticsState] = useState<ProfileStatisticsState>({
@@ -103,6 +56,60 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 		error: null,
 		username: "",
 	});
+
+	const { ttrf, ttrn } = useLang();
+
+	
+	const getStatisticMetrics = useCallback((stats: IGlobalStatsResponse): StatisticMetricDefinition[] => {
+		return [
+			{
+				icon: <SportsEsportsIcon fontSize="large" />,
+				label: "STATS_GAMES_PLAYED",
+				value: ttrn(stats.totalGamesPlayed),
+			},
+			{
+				icon: <QueueMusicIcon fontSize="large" />,
+				label: "STATS_SONGS_PLAYED",
+				value: ttrn(stats.totalSongsPlayed),
+			},
+			{
+				icon: <EmojiEventsIcon fontSize="large" />,
+				label: "STATS_GAMES_WON",
+				value: ttrn(stats.totalGamesWon),
+			},
+			{
+				icon: <StarIcon fontSize="large" />,
+				label: "STATS_AVERAGE_SCORE",
+				value: ttrn(stats.averageScore),
+			},
+			{
+				icon: <TimerIcon fontSize="large" />,
+				label: "STATS_AVERAGE_TIME",
+				value: stats.averageTime >= 0 ? formatSeconds(ttrf, ttrn, stats.averageTime) : "N/A",
+			},
+			{
+				icon: <LeaderboardIcon fontSize="large" />,
+				label: "STATS_RANKING",
+				value: `${ttrn(stats.ranking)} / ${ttrn(stats.totalPlayers)}`,
+			},
+			{
+				icon: <MicIcon fontSize="large" />,
+				label: "STATS_ARTIST_RATE",
+				value: formatPercentage(ttrn, stats.successRateArtist),
+			},
+			{
+				icon: <AudiotrackIcon fontSize="large" />,
+				label: "STATS_SONG_RATE",
+				value: formatPercentage(ttrn, stats.successRateSong),
+			},
+			{
+				icon: <LibraryMusicIcon fontSize="large" />,
+				label: "STATS_COMPLETE_RATE",
+				value: formatPercentage(ttrn, stats.successRateComplete),
+			},
+		];
+	}, [ttrn, ttrf]);
+
 	const style: IProfileStatisticsStyle = useMemo(() => {
 		return PProfileStatisticsStyle();
 	}, []);
@@ -154,7 +161,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 
 	const statisticMetrics = useMemo(() => {
 		return viewState.stats ? getStatisticMetrics(viewState.stats) : [];
-	}, [viewState.stats]);
+	}, [viewState.stats, getStatisticMetrics]);
 
 	const tagRates = useMemo(() => {
 		return MUSIC_TAGS.map((tag) => ({
@@ -200,7 +207,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 								<Grid size={{ xs: 12, sm: 6, md: 4 }} key={tag}>
 									<PProfileStatisticsMetricCard
 										label={tag}
-										value={formatPercentage(value)}
+										value={formatPercentage(ttrn, value)}
 										variant="inline"
 										tone="secondary"
 									/>

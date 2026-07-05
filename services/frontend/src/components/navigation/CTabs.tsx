@@ -1,9 +1,9 @@
 import { Tabs, Tab, type TabsProps } from "@mui/material";
 import { useState, type SyntheticEvent, type ReactNode, Children, useMemo } from "react";
 import type { GCompProps } from "../../components/common/GProps.tsx";
-import { ttr } from "../../localization/localization.ts";
 import { CTabStyle, type ITabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 import type { TSize } from "../../types/string.ts";
+import { useLang } from "../layout/CLanguageProvider.tsx";
 
 export interface CTabsProps extends GCompProps, TabsProps {
 	tabs: string[] | ReactNode[];
@@ -17,6 +17,7 @@ export interface CTabsProps extends GCompProps, TabsProps {
 function CTabs({ tabs, defaultTab, testid, size = "sm", children, sx, ...others }: CTabsProps) {
 	//====================== STATS ======================
 	const [tab, setTab] = useState<number>(defaultTab == undefined ? 0 : defaultTab);
+	const { ttr } = useLang();
 
 	//====================== DATA ======================
 	const childList = Children.toArray(children);
@@ -33,7 +34,7 @@ function CTabs({ tabs, defaultTab, testid, size = "sm", children, sx, ...others 
 				data-testid={testid ? testid + index : null}
 			/>
 		));
-	}, [tabs, testid, style]);
+	}, [tabs, testid, style, ttr]);
 
 	//====================== DOM ======================
 	return (
