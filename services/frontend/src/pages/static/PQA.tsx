@@ -34,8 +34,16 @@ const faqItems = [
 		answer: "QA_MATCH_RULES_ANSWER",
 	},
 	{
+		question: "QA_SCORING_QUESTION",
+		answer: "QA_SCORING_ANSWER",
+	},
+	{
 		question: "QA_GAME_CONFIGURATION_QUESTION",
 		answer: "QA_GAME_CONFIGURATION_ANSWER",
+	},
+	{
+		question: "QA_ANSWER_SETTINGS_QUESTION",
+		answer: "QA_ANSWER_SETTINGS_ANSWER",
 	},
 	{
 		question: "QA_GAME_ACCESSIBILITY_QUESTION",
@@ -46,9 +54,6 @@ const faqItems = [
 const PQA = () => {
 	return (
 		<PStaticPageShell title="Q_AND_A" maxWidth="md">
-			<CText size="md" align="center">
-				QA_INTRO
-			</CText>
 			<Stack spacing={2}>
 				{faqItems.map((item, _) => (
 					<Accordion key={item.question} disableGutters>
