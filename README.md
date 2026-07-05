@@ -277,6 +277,12 @@ Total claimed points: **21**.
 | Gamification system                         | Minor |      1 | Persistent XP, levels/progress, titles, leaderboard, match history, and profile progression feedback.                              | hcavet, vviterbo                  |
 | Support for additional browsers             | Minor |      1 | Compatibility with Firefox and Brave                                                                                               | everyone                          |
 
+## Browser Compatibility
+
+The mandatory browser target is the latest stable Google Chrome. The additional browser compatibility module covers Firefox and Brave.
+
+Detailed compatibility notes and code-review findings are documented in [BROWSER_COMPATIBILITY.md](BROWSER_COMPATIBILITY.md).
+
 ## Individual Contributions
 
 ### hcavet / Hugo Cavet
