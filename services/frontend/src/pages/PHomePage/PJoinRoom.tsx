@@ -5,7 +5,8 @@ import { appPositions } from "../../styles/theme";
 import { Box, Stack } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLang } from "../../components/contexts/CLanguageProvider";
+import { useLang } from "../../components/layout/CLanguageProvider";
+import { isKeyboardSubmit } from "../../utils/keyboard";
 
 function PJoinRoom() {
 	const [gameCode, setGameCode] = useState("");
@@ -27,7 +28,7 @@ function PJoinRoom() {
 					value={gameCode}
 					onChange={(event) => setGameCode(event.target.value)}
 					onKeyUp={(event) => {
-						if (event.code == "Enter") handleJoinRoom();
+						if (isKeyboardSubmit(event)) handleJoinRoom();
 					}}
 				/>
 				<Box sx={{ minHeight: 24, mt: 1, mb: 1 }} />

@@ -14,6 +14,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PublicIcon from "@mui/icons-material/Public";
 import { useLang } from "../../components/contexts/CLanguageProvider";
+import { isKeyboardSubmit } from "../../utils/keyboard";
 
 function PCreateRoom() {
 	const [name, setName] = useState("");
@@ -49,7 +50,7 @@ function PCreateRoom() {
 					value={name}
 					onChange={(event) => setName(event.target.value)}
 					onKeyUp={(event) => {
-						if (event.code == "Enter") handleCreateRoom();
+						if (isKeyboardSubmit(event)) handleCreateRoom();
 					}}
 				/>
 				<Box sx={{ minHeight: 24, mt: 1, mb: 1 }}>

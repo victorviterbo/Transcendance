@@ -12,6 +12,7 @@ import { appTexts } from "../../styles/theme";
 import type { IWSContextModule, IWSGameSendEvent, TWSRcv, TWSSend } from "../../types/websocket";
 import { useWS } from "../../components/websocket/CWebsocket";
 import { fetchFriendMessages } from "../../api/social";
+import { isKeyboardSubmit } from "../../utils/keyboard";
 
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
@@ -157,7 +158,7 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 						setMessageField(event.target.value);
 					}}
 					onKeyUp={(event) => {
-						if (event.code == "Enter") handleSendMessage();
+						if (isKeyboardSubmit(event)) handleSendMessage();
 					}}
 					data-testid="PFriendChat_NewMessage"
 				></CTextField>
