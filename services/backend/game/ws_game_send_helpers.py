@@ -15,11 +15,13 @@ async def _send_game_error(consumer: 'GlobalConsumer', game_uid: str , message: 
     await consumer.send_json({
         'target': 'game',
         'event': 'error',
-        'uid': game_uid,
-        'currentGameUid': str(consumer.current_game.uid),
+        'uid': str(game_uid),
         'self': consumer.profile_data,
         'message': message,
-        'critical': critical
+        'critical': critical,
+        'currentGameUid': str(consumer.current_game.uid)
+                            if (message == 'ALREADY_IN_GAME'
+                            and getattr(consumer, 'current_game', None)) else None
     })
 
 async def _send_existing_player_game_info(consumer: 'GlobalConsumer') -> None:
@@ -149,4 +151,12 @@ async def _send_game_restarted(
         'type': 'game_restarted_event',
         'uid': old_game_uid,
         'newGame': new_game_uid,
+    })
+
+async def _send_game_closed(consumer: 'GlobalConsumer', game_uid: str) -> None:
+    """Broadcast a game closed event to all players."""
+    await consumer.group_send(consumer.game_group_name, {
+        'type': 'game_closed_event',
+        'uid': str(game_uid),
+        'self': consumer.profile_data,
     })

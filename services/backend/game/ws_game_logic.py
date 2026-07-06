@@ -50,6 +50,7 @@ from .ws_game_send_helpers import (
     _send_round_stats,
     _send_start_signal,
     _send_track,
+    _send_game_closed,
 )
 
 if TYPE_CHECKING:
@@ -143,7 +144,11 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     except asyncio.CancelledError:
         pass
     finally:
-        ACTIVE_GAMES.pop(consumer.current_game.uid, None)
+        game_uid = consumer.current_game.uid
+        await asyncio.sleep(30)
+        await _send_game_closed(consumer, game_uid)
+        await database_sync_to_async(consumer.current_game.delete)()
+        ACTIVE_GAMES.pop(game_uid, None)
 
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
@@ -162,9 +167,7 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     #FIXME: The consumer is registered to a game, but is still inside if an error is met
     consumer.current_game = await _get_game(consumer, game_uid, False)
     if not getattr(consumer, 'current_game', None):
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'Game not found'})
+        await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
     is_already_in_game = await _check_game_membership(consumer.current_game,
                                                     consumer.profile)

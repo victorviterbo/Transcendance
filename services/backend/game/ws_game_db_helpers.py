@@ -8,7 +8,7 @@ from chat.models import Room
 from django.db.models import Count, Q, Sum
 from music.models import Playlist, Track
 from music.serializers import TrackSerializer
-from project.defaults import default_pts
+from project.defaults import default_pts, get_badge
 from rest_framework import serializers
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from stats.serializers import GameHistorySerializer, GameLeaderboardSerializer, LiveGameSerializer, LiveRoundSerializer
@@ -257,6 +257,19 @@ def _compute_game_stats(game: Game) -> dict:
 			)
 			.order_by('-total_points', 'total_time')
 	)
+	# Persist each player's earned game XP directly on profile at game end.
+	xp_by_player = {
+		entry['player']: entry['total_points'] or 0
+		for entry in player_scores
+	}
+	if xp_by_player:
+		profiles_to_update = list(Profile.objects.filter(id__in=xp_by_player.keys()))
+		for profile in profiles_to_update:
+			xp_gain = xp_by_player.get(profile.id, 0)
+			if xp_gain > 0:
+				profile.exp_points += xp_gain
+		if profiles_to_update:
+			Profile.objects.bulk_update(profiles_to_update, ['exp_points'])
 	winner_stats = player_scores.first()
 	if winner_stats:
 		UserGameStats.objects.filter(
