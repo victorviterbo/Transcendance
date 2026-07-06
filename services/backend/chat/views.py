@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .chat_utils import accepted_friendship, resolve_recipient_user, direct_key
+from .chat_utils import accepted_friendship, create_direct_room, resolve_recipient_user, direct_key
 from .models import Message, Room
 from .serializers import MessageSerializer, RoomSerializer, FriendChatMessageSerializer
 
@@ -25,10 +25,9 @@ class RoomView(APIView):
         """Return room metadata."""
         try:
             room = Room.objects.get(uid=room_uid)
-            if room:
-                serializer = RoomSerializer(room)
-                return Response(serializer.data,
-                    status=status.HTTP_200_OK)
+            serializer = RoomSerializer(room)
+            return Response(serializer.data,
+                status=status.HTTP_200_OK)
         except Room.DoesNotExist:
             return Response({'error': {'room': 'ROOM_NOT_FOUND'}},
                             status=status.HTTP_404_NOT_FOUND)
@@ -78,6 +77,12 @@ class DirectMessageView(APIView):
         if not accepted_friendship(current_profile, recipient_profile):
             return Response({'error': {'user_uid': 'USER_NOT_FRIEND'}},
                                 status=status.HTTP_403_FORBIDDEN)
+        room, created = create_direct_room(current_profile, recipient_profile)
+        return Response({
+            'room_uid': room.uid,
+            'is_new': created,
+            'is_direct': True,
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
         
 class FriendMessageFeed(APIView):
     """Return direct-message history between the authenticated user and a friend."""
@@ -136,7 +141,7 @@ class FriendMessageFeed(APIView):
                         },)
                     logger.info('feed.notified_sender sender_uid=%s message_uid=%s', m.sender.uid, m.uid)
             
-            feed.append (FriendChatMessageSerializer(
+            feed.append(FriendChatMessageSerializer(
                 m,
                 context={'recipient_profile': recipient_user.profile, 'direction': 'outgoing' if is_outgoing else 'incoming'},
             ).data)

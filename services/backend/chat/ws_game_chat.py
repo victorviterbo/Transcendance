@@ -121,30 +121,3 @@ async def handle_game_chat_payload(consumer: 'GlobalConsumer', content: dict) ->
 		return
 	payload = chat_message_payload(message, consumer._sender_name())
 	await consumer.group_send(f'user_{consumer.profile.uid}', payload)
-
-
-
-
-#TODO Not yet call this function, maybe need to delete at the end, will see 
-@database_sync_to_async
-def create_chat_message(room: Room, sender, body: str) -> Message:
-	"""Persist a room message that can later be replayed from chat history."""
-	return Message.objects.create(
-		sender=sender,
-		room=room,
-		body=body,
-	)
-async def send_room_message(consumer: 'GlobalConsumer', body: str, group: str, room: Room) -> None:
-	"""Create room message and broadcast it to the supplied websocket group."""
-	if not room or not getattr(consumer, 'profile', None):
-		return
-	message = await create_chat_message(room, consumer.profile, body)
-	# broadcast using per-user groups so game events delivered in expected order
-	if getattr(consumer, 'current_game', None):
-		payload = chat_message_payload(message, consumer._sender_name())
-		recipient_uids = await get_recipient_uids(consumer.current_game)
-		logger.debug('send_room_message recipients=%s room=%s', recipient_uids, getattr(room, 'uid', None))
-		for recipient_uid in recipient_uids:
-			await consumer.group_send(f'user_{recipient_uid}', payload)
-		return
-	await consumer.group_send(f'user_{consumer.profile.uid}', chat_message_payload(message, consumer._sender_name()))
