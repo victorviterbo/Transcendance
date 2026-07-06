@@ -3,43 +3,7 @@
 from rest_framework import serializers
 
 from userprofile.serializers import LightProfileSerializer
-from .models import Message, Room
-
-class RoomSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's friendship requests."""
-    participants = LightProfileSerializer(read_only=True, many=True)
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Room
-        fields = ['name',
-                  'participants',
-                  'is_direct',
-                  'direct_key',
-                  'uid']
-
-class MessageSerializer(serializers.ModelSerializer):
-    """Set how to serialize a user's friendship requests."""
-    sender = LightProfileSerializer(read_only=True)
-    room = RoomSerializer(read_only=True)
-    class Meta:
-        """Defines the metaclass for the Profile serializer.
-        
-        This part tells the rest_framework serializer how to contruct the
-        ProfileSerializer class itself
-        """
-        model = Message
-        fields = ['sender',
-                  'room',
-                  'body',
-                  'delivered',
-                  'seen',
-                  'updated',
-                  'created',
-                  'uid']
+from .models import Message
 
 
 class RoomHistorySerializer(serializers.ModelSerializer):
