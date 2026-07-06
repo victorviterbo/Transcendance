@@ -34,7 +34,7 @@ class Game(models.Model):
     
     
     playlist = models.ForeignKey(Playlist,
-                                    on_delete=models.SET_NULL,
+                                    on_delete=models.CASCADE,
                                     null=True,
                                     related_name='games')
     
