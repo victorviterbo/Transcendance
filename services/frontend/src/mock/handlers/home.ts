@@ -104,8 +104,7 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 		uid: "ended-host",
 		name: "Ended Host room",
 		genres: [...MUSIC_TAGS],
-		playerCount: Math.floor(Math.random() * 100),
-		playerMax: 100,
+		players: generatePlayers(),
 	});
 
 	tempRooms.push({
