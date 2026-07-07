@@ -68,7 +68,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 				{
 					icon: <QueueMusicIcon fontSize="large" />,
 					label: "STATS_SONGS_PLAYED",
-					value: ttrn(stats.totalSongsPlayed),
+					value: ttrn(stats.totalTitlesPlayed),
 				},
 				{
 					icon: <EmojiEventsIcon fontSize="large" />,
@@ -98,7 +98,7 @@ function ProfileStatisticsPanel({ title, username }: ProfileStatisticsPanelProps
 				{
 					icon: <AudiotrackIcon fontSize="large" />,
 					label: "STATS_SONG_RATE",
-					value: formatPercentage(stats.successRateSong),
+					value: formatPercentage(stats.successRateTitle),
 				},
 				{
 					icon: <LibraryMusicIcon fontSize="large" />,

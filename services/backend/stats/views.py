@@ -94,7 +94,7 @@ class GlobalStatsView(APIView):
                                     'totalPlayers': _total_players(),
                                     'averageTime': avg_time,
                                     'successRateArtist': artist_rate,
-                                    'successRatetitle': title_rate,
+                                    'successRateTitle': title_rate,
                                     'successRateComplete': complete_rate,
                                     'successRatesCompleteByTag': tag_rates,
         })
