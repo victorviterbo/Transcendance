@@ -1,6 +1,7 @@
 """Handle all DB hits for the game."""
 import json
 import uuid
+import re
 from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
@@ -162,9 +163,11 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		artist_newly_found = False
 		title_newly_found = False
 		update_fields = []
+		feat_pattern = r'[\s\(\[\-]+(feat\.?|ft\.?|featuring)\b.*'
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
-			if ((fuzz.ratio(player_answer, track_artist) >= 80
+			clean_track_artist = re.sub(feat_pattern, '', track_artist).strip()
+			if ((fuzz.ratio(player_answer, clean_track_artist) >= 80
 		and consumer.current_game.fuzzy)
 				or player_answer == track_artist):
 				player_stats.artist_found = True
@@ -174,7 +177,8 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				update_fields.extend(['artist_found', 'artist_found_at'])
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
-			if ((fuzz.ratio(player_answer, track_title) >= 80
+			clean_track_title = re.sub(feat_pattern, '', track_title).strip()
+			if ((fuzz.ratio(player_answer, clean_track_title) >= 80
 		and consumer.current_game.fuzzy)
 				or player_answer == track_title):
 				player_stats.title_found = True
