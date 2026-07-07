@@ -163,7 +163,7 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		artist_newly_found = False
 		title_newly_found = False
 		update_fields = []
-		feat_pattern = r'[\s\(\[\-]+(feat\.?|ft\.?|featuring)\b.*'
+		feat_pattern = r'[\s\-]+[\(\[][^\]\)]+[\)\]]$'
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
 			clean_track_artist = re.sub(feat_pattern, '', track_artist).strip()
