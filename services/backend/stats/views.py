@@ -88,7 +88,7 @@ class GlobalStatsView(APIView):
                                     'averageScore': avg_score,
                                     'xp': profile.exp_points,
                                     'totalGamesPlayed': total_games,
-                                    'totaltitlesPlayed': total_rounds,
+                                    'totalTitlesPlayed': total_rounds,
                                     'totalGamesWon': total_games_won,
                                     'ranking': _ranking(profile),
                                     'totalPlayers': _total_players(),
