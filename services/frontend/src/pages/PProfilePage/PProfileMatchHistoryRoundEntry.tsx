@@ -7,14 +7,13 @@ import { Box, Stack } from "@mui/material";
 import { useMemo, type ReactNode } from "react";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
-import { ttrn } from "../../localization/localization";
 import type { IHistoryRound } from "../../types/stats";
-import { formatSeconds } from "../../utils/string";
 import CCover from "../../components/images/CCover";
 import {
 	PProfileMatchHistoryStyle,
 	type IProfileMatchHistoryStyle,
 } from "../../styles/pages/profile/PProfileMatchHistoryStyle";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface PProfileMatchHistoryRoundEntryProps {
 	round: IHistoryRound;
@@ -46,6 +45,8 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 		return PProfileMatchHistoryStyle();
 	}, []);
 
+	const { ttrn, formatSeconds } = useLang();
+
 	const roundInfos = useMemo(() => {
 		const isRoundFullyFound = round.artistFound && round.songFound;
 
@@ -57,7 +58,7 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 			songStatusColor: style.roundStatusColor(round.songFound),
 			timeLabel: isRoundFullyFound ? formatSeconds(round.time) : undefined,
 		};
-	}, [round, style]);
+	}, [round, style, formatSeconds, ttrn]);
 
 	return (
 		<Stack

@@ -1,11 +1,13 @@
 import { Button, type ButtonProps } from "@mui/material";
 import type { GProps } from "../../common/GProps.ts";
-import { ttr } from "../../../localization/localization.ts";
 import { CButtonStyle } from "../../../styles/components/inputs/CButtonStyle.ts";
+import { useLang } from "../../contexts/CLanguageProvider.tsx";
 
 export interface CButtonProps extends GProps, ButtonProps {}
 
 function CButton({ children, sx, ...other }: CButtonProps) {
+	const { ttr } = useLang();
+
 	return (
 		<Button
 			variant="contained"

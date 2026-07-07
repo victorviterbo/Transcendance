@@ -4,12 +4,12 @@ import type { TNotif } from "../../types/socials";
 import type { GPageProps } from "../common/GPageBases";
 import { appTexts } from "../../styles/theme";
 import { PNotifNodeStyle, type INotifNodeStyle } from "../../styles/pages/social/PNotifNodeStyle";
-import { ttrf, ttrfn } from "../../localization/localization";
 import { memo, useCallback, useMemo, type ReactNode } from "react";
 import CIconButton from "../../components/inputs/buttons/CIconButton";
 import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import LaunchIcon from "@mui/icons-material/Launch";
 import { DAY_MS, HOUR_MS, MINUTE_MS } from "../../constants";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 export interface PNotifNodeProps extends GPageProps {
 	notif: TNotif;
@@ -21,6 +21,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 	const style: INotifNodeStyle = useMemo(() => {
 		return PNotifNodeStyle({ notif });
 	}, [notif]);
+	const { ttrf, ttrfn } = useLang();
 
 	const handleSee = useCallback(() => {
 		if (notif.kind == "friend_request" && onSeeFriendsReq) onSeeFriendsReq();
@@ -43,7 +44,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 				COUNT: Number(Math.trunc(timeSinceNotifMilliseconds / MINUTE_MS)).toString(),
 			});
 		return "NOTIF_AGO_LESS";
-	}, [notif]);
+	}, [notif, ttrf]);
 
 	const theme = useTheme();
 	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
@@ -96,7 +97,7 @@ function PNotifNode({ notif, onSeeFriendsReq, onSeeFriends }: PNotifNodeProps) {
 				</>
 			);
 		return <CText>NOTIF_UNKNOWN</CText>;
-	}, [notif, style, isTiny]);
+	}, [notif, style, isTiny, ttrfn]);
 
 	return (
 		<Box sx={style.main} data-testid="PNotifNode">

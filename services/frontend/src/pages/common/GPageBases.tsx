@@ -10,9 +10,6 @@ import CFooter from "../../components/navigation/CFooter";
 import { cssAddSizes, sizeMakeString } from "../../utils/styles";
 import PSocial from "../PSocial";
 import PNotif from "../PNotif";
-import CWebsocket from "../../components/websocket/CWebsocket";
-import GLoading from "./GLoading";
-import GLost from "./GLost";
 
 export interface GPageProps extends GProps {
 	children?: ReactNode;
@@ -26,7 +23,7 @@ const ESocialView: Record<string, number> = {
 };
 
 function GPageBase({ inGame, children }: GPageProps) {
-	const { user, status } = useAuth();
+	const { user } = useAuth();
 	const [friendOpen, setFriendOpen] = useState<boolean>(false);
 	// 0: friendList, 1: addFriends, 2: friendRequests
 	const [friendTab, setFriendTab] = useState<number>(ESocialView.LIST);
@@ -167,12 +164,6 @@ function GPageBase({ inGame, children }: GPageProps) {
 		);
 	}
 
-	if (status == "loading") return <GLoading />;
-
-	return (
-		<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>
-			{getBody()}
-		</CWebsocket>
-	);
+	return <>{getBody()}</>;
 }
 export default GPageBase;

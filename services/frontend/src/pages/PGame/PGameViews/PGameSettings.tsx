@@ -18,7 +18,6 @@ import {
 	PGameSettingsTagListStyle,
 } from "../../../styles/pages/game/PGameSettingsStyle";
 import { GameInstance, gameThemeCount } from "../../../handlers/gameHandlers";
-import { ttr, ttrfn } from "../../../localization/localization";
 import {
 	SETTINGS_BREAK_DURATION_MAX,
 	SETTINGS_BREAK_DURATION_MIN,
@@ -32,6 +31,7 @@ import {
 } from "../../../constants";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
+import { useLang } from "../../../components/contexts/CLanguageProvider";
 
 interface PGameSettingsProps extends GPageProps {
 	settings: IGameSettings;
@@ -60,6 +60,8 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 
 	const theme = useTheme();
 	const mobile = useMediaQuery(theme.breakpoints.down("md"));
+
+	const { ttr, ttrfn } = useLang();
 
 	//====================== HANDLERS ======================
 	const handleSaveChanges = useCallback(() => {
@@ -110,7 +112,7 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 				</CButtonToggle>
 			);
 		});
-	}, [tags, setTags, searchFilter]);
+	}, [tags, setTags, searchFilter, ttr]);
 
 	//====================== LOCAL COMPONENTS ======================
 	const getSlider = (

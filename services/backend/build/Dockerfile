@@ -1,16 +1,16 @@
 FROM continuumio/miniconda3
 
-WORKDIR /backend
-
-COPY ./environment.yml .
-
-RUN conda env create -f environment.yml && \
-    conda clean -afy
-
-COPY init.sh .
-
 EXPOSE 8000
 
-RUN chmod +x init.sh
+WORKDIR /app
 
-ENTRYPOINT ["bash", "/backend/build/init.sh"]
+COPY backend/build/environment.yml /tmp/backend-environment.yml
+RUN conda env create --file /tmp/backend-environment.yml && conda clean -afy
+
+
+COPY backend/build/init.sh /usr/local/bin/backend-init.sh
+RUN chmod +x /usr/local/bin/backend-init.sh
+
+COPY backend/ /app
+
+ENTRYPOINT ["bash", "/usr/local/bin/backend-init.sh"]

@@ -2,7 +2,6 @@ import { Box, Stack } from "@mui/material";
 import type { IGamePlayer, IGameSettings, IGameStatus } from "../../../types/game";
 import CTitle from "../../../components/text/CTitle";
 import CText from "../../../components/text/CText";
-import { ttrf, ttrfn, ttrn } from "../../../localization/localization";
 import { useCallback, useMemo, type ReactNode } from "react";
 import { colorFromID } from "../../../utils/styles";
 import { appColors } from "../../../styles/theme";
@@ -17,6 +16,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import type { GameInstance } from "../../../handlers/gameHandlers";
 import CCountdownCircular from "../../../components/feedback/loading/CCountdownCircular";
 import { GAME_COUNTDOWNM_TIME_MS } from "../../../constants";
+import { useLang } from "../../../components/contexts/CLanguageProvider";
 
 interface PGameLobbyProps {
 	game: React.RefObject<GameInstance | undefined>;
@@ -36,6 +36,8 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 		if (!targetUser) return undefined;
 		return targetUser;
 	}, [players]);
+
+	const { ttrfn, ttrn, ttrf } = useLang();
 
 	//Sub comp
 	const centralData = useMemo(() => {
@@ -113,7 +115,7 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 				)}
 			</>
 		);
-	}, [game, host, players, status, onOpenSettings]);
+	}, [game, host, players, status, onOpenSettings, ttrfn, ttrf, ttrn]);
 
 	//====================== COMPONENTS ======================
 	const genreTags: ReactNode[] = useMemo(() => {
@@ -159,15 +161,18 @@ function PGameLobby({ game, status, players, settings, onOpenSettings }: PGameLo
 		);
 	}, []);
 
-	const sliderValue = useCallback((label: string, value: number) => {
-		return (
-			<CText size="sm" testid={"PGameLobby_" + label}>
-				{ttrfn(label, {
-					COUNT: <span style={{ color: appColors.primary[0] }}>{value}</span>,
-				})}
-			</CText>
-		);
-	}, []);
+	const sliderValue = useCallback(
+		(label: string, value: number) => {
+			return (
+				<CText size="sm" testid={"PGameLobby_" + label}>
+					{ttrfn(label, {
+						COUNT: <span style={{ color: appColors.primary[0] }}>{value}</span>,
+					})}
+				</CText>
+			);
+		},
+		[ttrfn],
+	);
 
 	if (!game.current) return <></>;
 

@@ -131,8 +131,8 @@ GlobalStatsResponse:
       description: Average score across matches.
     xp: { type: integer, description: Total experience points. }
     totalGamesPlayed: { type: integer, description: Number of games played. }
-    totalSongsPlayed:
-      { type: integer, descripion: Number of songs listened to. }
+    totaltitlesPlayed:
+      { type: integer, description: Number of title rounds played. }
     totalGamesWon:
       { type: integer, description: Number of games played and won. }
     ranking: { type: integer, description: Current player ranking. }
@@ -148,12 +148,12 @@ GlobalStatsResponse:
       minimum: 0
       maximum: 100
       description: Artist answer success rate as a percentage in the 0 to 100 range.
-    successRateSong:
+    successRatetitle:
       type: number
       format: float
       minimum: 0
       maximum: 100
-      description: Song answer success rate as a percentage in the 0 to 100 range.
+      description: Title answer success rate as a percentage in the 0 to 100 range.
     successRateComplete:
       type: number
       format: float
@@ -170,7 +170,7 @@ GlobalStatsResponse:
       totalPlayers,
       averageTime,
       successRateArtist,
-      successRateSong,
+      successRatetitle,
       successRateComplete,
       successRatesCompleteByTag,
     ]
@@ -262,7 +262,7 @@ HistoryRound:
   properties:
     trackName: { type: string }
     trackArtist: { type: string }
-    songFound: { type: boolean }
+    titleFound: { type: boolean }
     artistFound: { type: boolean }
     time:
       type: number
@@ -276,7 +276,7 @@ HistoryRound:
     [
       trackName,
       trackArtist,
-      songFound,
+      titleFound,
       artistFound,
       time,
       ranking,

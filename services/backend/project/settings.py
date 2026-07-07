@@ -3,8 +3,28 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-
+import logging
 from dotenv import load_dotenv
+
+def get_env_bool(key: str, *, default: bool = False) -> bool:
+    value = os.getenv(key)
+
+    if value is None:
+        logger.debug(f"{key} missing from environment - using default")
+        return default
+
+    return value.strip().lower() in {"true", "1"}
+
+def get_env_list(key: str, *, default: list[str] | None = None) -> list[str]:
+    value = os.getenv(key)
+
+    if value is None:
+        logger.debug(f"{key} missing from environment - using default")
+        return default or []
+
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+logger = logging.getLogger(__name__)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -12,32 +32,47 @@ from dotenv import load_dotenv
 # Use the .env to load env variables in Django
 load_dotenv()
 
-# Music provider settings, used for the music module
-MUSIC_PROVIDER = os.getenv("MUSIC_PROVIDER", "itunes")
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# During dev, used to store user's media
-MEDIA_ROOT = BASE_DIR / 'DB' / 'media'
+DATA_DIR = Path('/data')
 
 MEDIA_URL = '/media/'
+MEDIA_ROOT = DATA_DIR / 'media'
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'DB' / 'static'
+STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = [
+    ('default_avatars', BASE_DIR / 'default_avatars'),
+]
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is required")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = get_env_bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend']
+# Host validation
+ALLOWED_HOSTS = get_env_list('ALLOWED_HOSTS',
+                             default=["localhost", "127.0.0.1", "backend"])
+
+
+# Cross-Site Request Forgery (CSRF) middleware
+CSRF_TRUSTED_ORIGINS = get_env_list('CSRF_TRUSTED_ORIGINS',
+                                    default=['https://localhost'])
+
+# Security middleware
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Cookie creation
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 # Definition of all installed modules
 INSTALLED_APPS = [
 	'daphne',
+	'project',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,12 +80,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
-    'corsheaders',
     'django_extensions',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-    'drf_spectacular',
-
     'game.apps.GameConfig',
     'music.apps.MusicConfig',
     'userauth.apps.UsersauthConfig',
@@ -66,7 +98,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -78,7 +109,6 @@ MIDDLEWARE = [
 # Definition of Django Rest Framework (drf) parameters, enable Django to communicate
 # more efficiently with the React Frontend
 REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'userauth.authentication.CookieJWTAuthentication',
     ),
@@ -97,15 +127,6 @@ SIMPLE_JWT = {
     'CHECK_REVOKE_TOKEN': True,
 }
 
-# Cross Origin Ressource Sharing (CORS) - One of the middlewares
-# In this context, enables the Back to accept requests from the front
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost",
-    "http://127.0.0.1",
-    "http://0.0.0.0",
-]
-
 # Added for Channels: point ASGI application to channels routing(for chatroom)
 ASGI_APPLICATION = 'project.asgi.application'
 
@@ -122,7 +143,7 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'DB/website/db.sqlite3',
+        'NAME': DATA_DIR / 'database' / 'db.sqlite3',
     }
 }
 

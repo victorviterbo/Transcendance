@@ -1,3 +1,8 @@
+// AUTH CHANNEL
+export const AUTH_CHANNEL = "auth";
+export const AUTH_CHANNEL_LOGIN = "login";
+export const AUTH_CHANNEL_LOGOUT = "logout";
+
 // AUTH ENDPOINTS
 export const API_AUTH_REFRESH = "/api/auth/refresh/";
 export const API_AUTH_LOGOUT = "/api/auth/logout/";
@@ -26,7 +31,7 @@ export const API_SOCIAL_FRIENDS_REQUEST_RESPOND = "/api/social/friend-request/re
 export const API_SOCIAL_FRIEND_REMOVE = "/api/social/friend/remove/";
 export const API_SOCIAL_FRIENDS_MESSAGE_FEED = "/api/social/message/";
 export const API_SOCIAL_NOTIFS = "/api/social/notifs/";
-export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs_read/";
+export const API_SOCIAL_NOTIFS_READ = "/api/social/notifs/read/";
 
 //GAME
 export const API_CREATE_GAME = "/api/game/";
@@ -36,8 +41,9 @@ export const API_GAME = "/api/game/{ROOMID}/";
 export const PAGE_GAME = "/game/{UID}";
 
 // WS
-export const WS_ADRESS_WMS = "ws://localhost:5173/";
-export const WS_ADRESS = "ws://localhost:8000/ws/global/";
+export const WS_ADDRESS_WMS = "ws://localhost:5173/";
+const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+export const WS_ADDRESS = `${wsProtocol}//${window.location.host}/ws/global/`;
 
 // GAME-SPECIFIC
 export const MUSIC_TAGS = [
@@ -75,3 +81,12 @@ export const SETTINGS_SONG_DURATION_STEP = 5;
 export const SETTINGS_BREAK_DURATION_MIN = 5;
 export const SETTINGS_BREAK_DURATION_MAX = 30;
 export const SETTINGS_BREAK_DURATION_STEP = 5;
+
+//LANGUAGES
+export const LANGUAGE_STORAGE_KEY = "guess_tunes_language";
+export const NUMBER_FORMAT_LOCALES: Record<string, string> = {
+	en: "en-US",
+	fr: "fr-FR",
+	ja: "ja-JP",
+	de: "de-DE",
+};

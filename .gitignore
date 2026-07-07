@@ -26,12 +26,8 @@ ENV/
 *.py[cod]
 **/.pytest_cache/
 *.sqlite3
-**/migrations/*
-!**/migrations/__init__.py
-services/backend/DB/media/*
-services/backend/DB/static/*
-!services/backend/DB/static/default_avatars/
-!services/backend/DB/static/default_avatars/*
+services/backend/DB/
+services/backend/static/
 
 # =========================
 # Environment variables
@@ -51,6 +47,12 @@ services/backend/DB/static/*
 *.njsproj
 *.sln
 *.sw?
+
+# =========================
+# Nginx certificates
+# =========================
+services/nginx/certs/*
+!services/nginx/certs/.gitkeep
 
 # =========================
 # Docker

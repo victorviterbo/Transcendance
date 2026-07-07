@@ -4,7 +4,6 @@ import CTextField from "../../../components/inputs/textFields/CTextField";
 import SendIcon from "@mui/icons-material/Send";
 import CIconButton from "../../../components/inputs/buttons/CIconButton";
 import { appColors, appTexts } from "../../../styles/theme";
-import { ttrf, ttrfn } from "../../../localization/localization";
 import type { GPageProps } from "../../common/GPageBases";
 import type {
 	IGamePlayer,
@@ -32,6 +31,8 @@ import {
 import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import { useLang } from "../../../components/contexts/CLanguageProvider";
+import { isKeyboardSubmit } from "../../../utils/keyboard";
 
 interface PGameRoundProps extends GPageProps {
 	players: IGamePlayer[];
@@ -57,6 +58,7 @@ function PGameRound({
 }: PGameRoundProps) {
 	//====================== STATES ======================
 	const [answerField, setAnswerField] = useState<string>("");
+	const { ttrf, ttrfn } = useLang();
 
 	//====================== EVENTS ======================
 	const handleSendMessage = useCallback(() => {
@@ -150,7 +152,7 @@ function PGameRound({
 				</Stack>
 			</Stack>
 		);
-	}, [rounds, status, style, isLarge, isMedium]);
+	}, [rounds, status, style, isLarge, isMedium, ttrf]);
 
 	//====================== MAPS ======================
 	const roundHistory = useMemo((): ReactNode[] => {
@@ -369,7 +371,7 @@ function PGameRound({
 							setAnswerField(event.target.value);
 						}}
 						onKeyUp={(event) => {
-							if (event.code == "Enter") handleSendMessage();
+							if (isKeyboardSubmit(event)) handleSendMessage();
 						}}
 						data-testid="PGameChat-TextField"
 						disabled={isLocked}

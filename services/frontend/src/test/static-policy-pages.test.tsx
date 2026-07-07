@@ -29,6 +29,7 @@ describe("Static policy pages", () => {
 			expect(screen.getByRole("heading", { name: "PRIVACY_POLICY" })).toBeInTheDocument();
 			expect(screen.getByText("PRIVACY_INTRO")).toBeInTheDocument();
 			expect(screen.getByText("PRIVACY_DATA_TITLE")).toBeInTheDocument();
+			expect(screen.getByText("PRIVACY_COOKIES_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("PRIVACY_USAGE_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("PRIVACY_SHARING_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("PRIVACY_RETENTION_TITLE")).toBeInTheDocument();
@@ -50,10 +51,12 @@ describe("Static policy pages", () => {
 			expect(screen.getByRole("heading", { name: "TERMS_OF_SERVICE" })).toBeInTheDocument();
 			expect(screen.getByText("TERMS_INTRO")).toBeInTheDocument();
 			expect(screen.getByText("TERMS_ACCOUNTS_TITLE")).toBeInTheDocument();
+			expect(screen.getByText("TERMS_ELIGIBILITY_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("TERMS_CONDUCT_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("TERMS_SERVICE_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("TERMS_CONTENT_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("TERMS_ENFORCEMENT_TITLE")).toBeInTheDocument();
+			expect(screen.getByText("TERMS_LIABILITY_TITLE")).toBeInTheDocument();
 			expect(screen.getByText("TERMS_CHANGES_TITLE")).toBeInTheDocument();
 			expect(screen.queryByText("Terms of service page")).not.toBeInTheDocument();
 		});

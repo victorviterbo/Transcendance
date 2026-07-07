@@ -1,5 +1,0 @@
-dist/**
-node_modules/**
-.prettierignore
-.prettierrc
-eslint.config.js

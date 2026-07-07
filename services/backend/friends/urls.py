@@ -23,7 +23,7 @@ urlpatterns = [
     path('friend/remove/', FriendRemove.as_view()),
 
     path('notifs/', NotifSee.as_view()),
-    path('notifs_read/', NotifRead.as_view()),
+    path('notifs/read/', NotifRead.as_view()),
     
     path('message/', FriendMessageFeed.as_view()),
 ]

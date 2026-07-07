@@ -1,8 +1,8 @@
 import type { GCompProps } from "../common/GProps";
 import type { TAlign, TSize, TVAlign } from "../../types/string.ts";
 import { Typography, type TypographyOwnProps, type TypographyVariant } from "@mui/material";
-import { ttr } from "../../localization/localization.ts";
-import { Children } from "react";
+import { Children, useMemo } from "react";
+import { useLang } from "../contexts/CLanguageProvider.tsx";
 
 export interface CTextBaseProps extends GCompProps, TypographyOwnProps {
 	align?: TAlign;
@@ -37,7 +37,9 @@ function CTextBase({
 	testid,
 	...other
 }: CTextBaseProps) {
-	const getChildren = () => {
+	const { ttr } = useLang();
+
+	const currentChildren = useMemo(() => {
 		if (noTr) return children;
 		if (typeof children === "string") {
 			if (span) return <span>{ttr(children)}</span>;
@@ -52,7 +54,7 @@ function CTextBase({
 		});
 
 		return mapped;
-	};
+	}, [noTr, children, span, ttr]);
 
 	//====================== DOM ======================
 	return (
@@ -73,7 +75,7 @@ function CTextBase({
 			{...other}
 			data-testid={testid ? testid : "CTextBase"}
 		>
-			{getChildren()}
+			{currentChildren}
 		</Typography>
 	);
 }

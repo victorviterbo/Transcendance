@@ -2,7 +2,6 @@ import { Container, Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import CBasePaper from "../../components/surfaces/CBasePaper";
 import CTitle from "../../components/text/CTitle";
-import GPageBase from "../common/GPageBases";
 import CTabs from "../../components/navigation/CTabs";
 import { useAuth } from "../../components/auth/CAuthProvider";
 import ProfileMatchHistoryPanel from "./PProfileMatchHistoryPanel";
@@ -101,8 +100,9 @@ const PProfileMe = () => {
 		});
 	};
 	const username = user?.username ?? "";
-	const hasReadyProfile = profileState.status === "ready" && profileState.profile !== null;
 	const isCurrentUsername = profileState.username === username;
+	const hasReadyProfile =
+		isCurrentUsername && profileState.status === "ready" && profileState.profile !== null;
 	const profile = hasReadyProfile ? profileState.profile : null;
 	const error = isCurrentUsername ? profileState.error : null;
 	const status: ProfileStatus = !username
@@ -147,38 +147,31 @@ const PProfileMe = () => {
 
 	if (status !== "ready" || profile === null) {
 		return (
-			<GPageBase>
-				<CProfileRequestState
-					status={status === "error" ? "error" : "loading"}
-					error={error}
-				/>
-			</GPageBase>
+			<CProfileRequestState status={status === "error" ? "error" : "loading"} error={error} />
 		);
 	}
 
 	return (
-		<GPageBase>
-			<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-				<Stack spacing={3}>
-					<ProfileInfo profile={profile} onAvatarUploaded={setReadyProfile} />
+		<Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+			<Stack spacing={3}>
+				<ProfileInfo profile={profile} onAvatarUploaded={setReadyProfile} />
 
-					<CBasePaper>
-						<CTabs
-							tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}
-							orientation={isTiny ? "vertical" : "horizontal"}
-							size={isTiny ? "xs" : "sm"}
-						>
-							<ProfileStatisticsPanel username={profile.username} />
-							<ProfileMatchHistoryPanel />
-							<ProfileModifyMePanel
-								username={user?.username}
-								onProfileUpdated={setReadyProfile}
-							/>
-						</CTabs>
-					</CBasePaper>
-				</Stack>
-			</Container>
-		</GPageBase>
+				<CBasePaper>
+					<CTabs
+						tabs={["STATISTICS", "MATCH_HISTORY", "PROFILE_SETTINGS"]}
+						orientation={isTiny ? "vertical" : "horizontal"}
+						size={isTiny ? "xs" : "sm"}
+					>
+						<ProfileStatisticsPanel username={profile.username} />
+						<ProfileMatchHistoryPanel />
+						<ProfileModifyMePanel
+							username={user?.username}
+							onProfileUpdated={setReadyProfile}
+						/>
+					</CTabs>
+				</CBasePaper>
+			</Stack>
+		</Container>
 	);
 };
 

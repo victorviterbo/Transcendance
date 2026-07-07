@@ -1,8 +1,8 @@
 import { Tabs, Tab } from "@mui/material";
 import { type ReactNode, type SyntheticEvent, Children, useMemo } from "react";
-import { ttr } from "../../localization/localization.ts";
 import { CTabStyle, type ITabStyle } from "../../styles/components/navigation/CTabsStyle.ts";
 import type { CTabsProps } from "./CTabs.tsx";
+import { useLang } from "../contexts/CLanguageProvider.tsx";
 
 interface CCtrlTabsProps extends CTabsProps {
 	activeTab: number;
@@ -22,6 +22,8 @@ function CCtrlTabs({
 }: CCtrlTabsProps) {
 	//====================== DATA ======================
 	const childList = Children.toArray(children);
+	const { ttr } = useLang();
+
 	const style: ITabStyle = useMemo(() => {
 		return CTabStyle(size);
 	}, [size]);
@@ -35,7 +37,7 @@ function CCtrlTabs({
 				data-testid={testid ? testid + index : null}
 			/>
 		));
-	}, [tabs, testid, style]);
+	}, [tabs, testid, style, ttr]);
 
 	//====================== DOM ======================
 	return (

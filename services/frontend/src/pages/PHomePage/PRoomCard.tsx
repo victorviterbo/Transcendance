@@ -4,7 +4,6 @@ import type { IGameListEntry } from "../../types/game";
 import type { CButtonProps } from "../../components/inputs/buttons/CButton";
 import CButton from "../../components/inputs/buttons/CButton";
 import CText from "../../components/text/CText";
-import { ttr } from "../../localization/localization";
 import { MAX_PLAYERS, MUSIC_TAGS } from "../../constants";
 import {
 	PRoomCardButtonStyle,
@@ -19,6 +18,7 @@ import {
 	PRoomCardPlayerTextStyle,
 } from "../../styles/pages/home/PRoomCardStyle";
 import { useNavigate } from "react-router-dom";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface PRoomCardProps extends CButtonProps {
 	infos: IGameListEntry;
@@ -28,6 +28,7 @@ function PRoomCard({ infos, ...other }: PRoomCardProps) {
 	const selectedGenres = new Set(infos.genres);
 	const playerCount = `${infos.players.length} / ${MAX_PLAYERS}`;
 	const navigate = useNavigate();
+	const { ttr } = useLang();
 
 	return (
 		<CButton

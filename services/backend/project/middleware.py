@@ -16,6 +16,8 @@ class ProfileMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         """Define procedure to be performed prior to treatment of request."""
+        if request.path == '/api/health/':
+            return self.get_response(request)
         request.profile = None
         if request.user and request.user.is_authenticated:
             request.profile = getattr(request.user, 'profile', None)

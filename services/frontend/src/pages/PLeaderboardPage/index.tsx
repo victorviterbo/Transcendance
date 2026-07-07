@@ -5,14 +5,13 @@ import CTitlePaper from "../../components/surfaces/CTitlePaper";
 import CText from "../../components/text/CText";
 import { getErrorMessage } from "../../utils/error";
 import type { ILeaderboardResponse } from "../../types/stats";
-import GPageBase from "../common/GPageBases";
 import { appPositions } from "../../styles/theme";
 import PLeaderboardRow from "./PLeaderboardRow";
-import { ttrf } from "../../localization/localization";
 import {
 	PLeaderboardStyle,
 	type ILeaderboardStyle,
 } from "../../styles/pages/leaderboard/PLeaderboardStyle";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 type LeaderboardStatus = "loading" | "ready" | "error";
 
@@ -32,6 +31,7 @@ function PLeaderboardPage() {
 		data: null,
 		error: null,
 	});
+	const { ttrf } = useLang();
 
 	useEffect(() => {
 		let ignore = false;
@@ -60,42 +60,40 @@ function PLeaderboardPage() {
 	}, []);
 
 	return (
-		<GPageBase>
-			<Container maxWidth="md" sx={{ py: spacing }}>
-				<CTitlePaper title="LEADERBOARD" titleType="title" titleSize="md">
-					{leaderboardState.status === "loading" ? (
-						<CText size="md">LEADERBOARD_LOADING</CText>
-					) : null}
+		<Container maxWidth="md" sx={{ py: spacing }}>
+			<CTitlePaper title="LEADERBOARD" titleType="title" titleSize="md">
+				{leaderboardState.status === "loading" ? (
+					<CText size="md">LEADERBOARD_LOADING</CText>
+				) : null}
 
-					{leaderboardState.status === "error" ? (
-						<Stack spacing={1}>
-							<CText size="md" sx={style.errorText}>
-								{leaderboardState.error ?? "LEADERBOARD_LOADING_FAILED"}
-							</CText>
-						</Stack>
-					) : null}
+				{leaderboardState.status === "error" ? (
+					<Stack spacing={1}>
+						<CText size="md" sx={style.errorText}>
+							{leaderboardState.error ?? "LEADERBOARD_LOADING_FAILED"}
+						</CText>
+					</Stack>
+				) : null}
 
-					{leaderboardState.status === "ready" && leaderboardState.data ? (
-						<Stack spacing={3}>
-							<CText align="center">LEADERBOARD_MESSAGE</CText>
-							<Stack spacing={1.25} sx={style.rows}>
-								{leaderboardState.data.leaderboard.map((entry) => (
-									<PLeaderboardRow
-										key={`${entry.ranking}-${entry.username}`}
-										entry={entry}
-									/>
-								))}
-							</Stack>
-							<Typography align="center" sx={style.footerText}>
-								{ttrf("LEADERBOARD_TOTAL_PLAYERS", {
-									number: String(leaderboardState.data.totalNumberPlayer),
-								})}
-							</Typography>
+				{leaderboardState.status === "ready" && leaderboardState.data ? (
+					<Stack spacing={3}>
+						<CText align="center">LEADERBOARD_MESSAGE</CText>
+						<Stack spacing={1.25} sx={style.rows}>
+							{leaderboardState.data.leaderboard.map((entry) => (
+								<PLeaderboardRow
+									key={`${entry.ranking}-${entry.username}`}
+									entry={entry}
+								/>
+							))}
 						</Stack>
-					) : null}
-				</CTitlePaper>
-			</Container>
-		</GPageBase>
+						<Typography align="center" sx={style.footerText}>
+							{ttrf("LEADERBOARD_TOTAL_PLAYERS", {
+								number: String(leaderboardState.data.totalNumberPlayer),
+							})}
+						</Typography>
+					</Stack>
+				) : null}
+			</CTitlePaper>
+		</Container>
 	);
 }
 

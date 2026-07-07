@@ -10,6 +10,7 @@ import { PGameChatSendStack } from "../../styles/pages/game/PGameChatStyle";
 import { useMemo, useState, type ReactNode } from "react";
 import PGameChatNode from "./PGameChatNode";
 import type { GameInstance } from "../../handlers/gameHandlers";
+import { isKeyboardSubmit } from "../../utils/keyboard";
 
 interface PGameChatProps extends GPageProps {
 	game: React.RefObject<GameInstance | undefined>;
@@ -79,7 +80,7 @@ function PGameChat({ game, chat }: PGameChatProps) {
 							setMessageField(event.target.value);
 						}}
 						onKeyUp={(event) => {
-							if (event.code == "Enter") handleSendMessage();
+							if (isKeyboardSubmit(event)) handleSendMessage();
 						}}
 						data-testid="PGameChat-TextField"
 					></CTextField>

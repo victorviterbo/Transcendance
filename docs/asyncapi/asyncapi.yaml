@@ -1,0 +1,1960 @@
+asyncapi: 3.1.0
+id: urn:ft-transcendence:websocket:global
+info:
+  title: ft_transcendence Global WebSocket API
+  version: 1.2.0
+  description: |
+    Realtime messages exchanged through the global WebSocket connection.
+    This document covers the implemented friend chat, friend request,
+    notification, and game lifecycle payloads.
+defaultContentType: application/json
+x-known-implementation-differences:
+  - >-
+    The backend also emits a legacy `type: chat_message` payload during direct
+    message delivery; it is excluded because it is not represented by the
+    frontend `TWSRcv` social contract.
+  - >-
+    The backend can return `type: error` payloads for invalid friend-chat
+    commands; those are excluded because the frontend does not type them as
+    social WebSocket messages yet.
+  - >-
+    For `friend-accepted` notifications, the backend emits the compact
+    relation-bearing external-user payload, while the frontend TypeScript type
+    currently declares the larger friend-info payload.
+  - >-
+    The frontend game WebSocket TypeScript types and mock still use the former
+    `join`, `player-join`, and `players-update` protocol. The game schemas below
+    describe the current backend implementation on the `game-event-based`
+    branch.
+channels:
+  globalSocket:
+    address: /ws/global/
+    title: Global realtime connection
+    messages:
+      friend_chat_send:
+        $ref: "#/components/messages/FriendChatSend"
+      friend_chat_open:
+        $ref: "#/components/messages/FriendChatOpen"
+      friend_chat_close:
+        $ref: "#/components/messages/FriendChatClose"
+      friend_chat_new:
+        $ref: "#/components/messages/FriendChatNew"
+      friend_chat_update_status:
+        $ref: "#/components/messages/FriendChatStatusUpdated"
+      friend_request_new_incoming:
+        $ref: "#/components/messages/FriendRequestIncoming"
+      notif_new:
+        $ref: "#/components/messages/NotificationNew"
+      player_join:
+        $ref: "#/components/messages/GameJoin"
+      game_start:
+        $ref: "#/components/messages/GameStart"
+      settings_update:
+        $ref: "#/components/messages/GameUpdateSettings"
+      answer_submit:
+        $ref: "#/components/messages/GameSubmitAnswer"
+      message_send:
+        $ref: "#/components/messages/GameMessageSend"
+      player_leave:
+        $ref: "#/components/messages/GameLeave"
+      player_joined:
+        $ref: "#/components/messages/GamePlayerJoined"
+      game_info:
+        $ref: "#/components/messages/GameInfo"
+      settings_updated:
+        $ref: "#/components/messages/GameSettingsUpdated"
+      game_started:
+        $ref: "#/components/messages/GameStartSignal"
+      round_preview:
+        $ref: "#/components/messages/GameRoundPreview"
+      round_started:
+        $ref: "#/components/messages/GameRoundStarted"
+      answer_validation:
+        $ref: "#/components/messages/GameAnswerValidation"
+      answer_broadcast:
+        $ref: "#/components/messages/GameAnswerBroadcast"
+      message_history:
+        $ref: "#/components/messages/GameMessageHistory"
+      message_broadcast:
+        $ref: "#/components/messages/GameMessageBroadcast"
+      round_ended:
+        $ref: "#/components/messages/GameRoundEnd"
+      player_left:
+        $ref: "#/components/messages/GamePlayerLeft"
+      game_ended:
+        $ref: "#/components/messages/GameEnded"
+      game_restarted:
+        $ref: "#/components/messages/GameRestarted"
+      error:
+        $ref: "#/components/messages/GameError"
+
+operations:
+  SOCIAL_RECEIVE:
+    action: receive
+    title: SOCIAL_RECEIVE
+    summary: Messages the backend receives from the frontend for social features.
+    channel:
+      $ref: "#/channels/globalSocket"
+    messages:
+      - $ref: "#/channels/globalSocket/messages/friend_chat_send"
+      - $ref: "#/channels/globalSocket/messages/friend_chat_open"
+      - $ref: "#/channels/globalSocket/messages/friend_chat_close"
+
+  SOCIAL_SEND:
+    action: send
+    title: SOCIAL_SEND
+    summary: Messages the backend sends to the frontend for social features.
+    channel:
+      $ref: "#/channels/globalSocket"
+    messages:
+      - $ref: "#/channels/globalSocket/messages/friend_chat_new"
+      - $ref: "#/channels/globalSocket/messages/friend_chat_update_status"
+      - $ref: "#/channels/globalSocket/messages/friend_request_new_incoming"
+      - $ref: "#/channels/globalSocket/messages/notif_new"
+
+  GAME_RECEIVE:
+    action: receive
+    title: GAME_RECEIVE
+    summary: Messages the backend receives from a frontend participating in a game.
+    channel:
+      $ref: "#/channels/globalSocket"
+    messages:
+      - $ref: "#/channels/globalSocket/messages/player_join"
+      - $ref: "#/channels/globalSocket/messages/game_start"
+      - $ref: "#/channels/globalSocket/messages/settings_update"
+      - $ref: "#/channels/globalSocket/messages/answer_submit"
+      - $ref: "#/channels/globalSocket/messages/message_send"
+      - $ref: "#/channels/globalSocket/messages/player_leave"
+
+  GAME_SEND:
+    action: send
+    title: GAME_SEND
+    summary: Messages the backend sends to one player or broadcasts to players in a game.
+    channel:
+      $ref: "#/channels/globalSocket"
+    messages:
+      - $ref: "#/channels/globalSocket/messages/player_joined"
+      - $ref: "#/channels/globalSocket/messages/game_info"
+      - $ref: "#/channels/globalSocket/messages/settings_updated"
+      - $ref: "#/channels/globalSocket/messages/game_started"
+      - $ref: "#/channels/globalSocket/messages/round_preview"
+      - $ref: "#/channels/globalSocket/messages/round_started"
+      - $ref: "#/channels/globalSocket/messages/answer_validation"
+      - $ref: "#/channels/globalSocket/messages/answer_broadcast"
+      - $ref: "#/channels/globalSocket/messages/message_history"
+      - $ref: "#/channels/globalSocket/messages/message_broadcast"
+      - $ref: "#/channels/globalSocket/messages/round_ended"
+      - $ref: "#/channels/globalSocket/messages/player_left"
+      - $ref: "#/channels/globalSocket/messages/game_ended"
+      - $ref: "#/channels/globalSocket/messages/game_restarted"
+      - $ref: "#/channels/globalSocket/messages/error"
+
+components:
+  messages:
+    FriendChatSend:
+      name: friend-chat.send
+      title: friend-chat - Send a private friend message
+      summary: Frontend command to persist and deliver a private message.
+      payload:
+        $ref: "#/components/schemas/FriendChatSendPayload"
+      examples:
+        - name: sendMessage
+          payload:
+            target: friend-chat
+            event: send
+            message:
+              message: Hey, are you ready?
+              date: "2026-04-26T10:33:49.316Z"
+              direction: outgoing
+              status: not-sent
+              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              target: alice
+              uid: TEMP_ID
+
+    FriendChatOpen:
+      name: friend-chat.open
+      title: friend-chat - Open a friend conversation
+      summary: Frontend command used by the backend to track read-state delivery.
+      payload:
+        $ref: "#/components/schemas/FriendChatOpenPayload"
+      examples:
+        - name: openChat
+          payload:
+            target: friend-chat
+            event: open
+            to: alice
+            toUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+
+    FriendChatClose:
+      name: friend-chat.close
+      title: friend-chat - Close a friend conversation
+      summary: Frontend command clearing backend tracking for an open conversation.
+      payload:
+        $ref: "#/components/schemas/FriendChatClosePayload"
+      examples:
+        - name: closeChat
+          payload:
+            target: friend-chat
+            event: close
+            to: alice
+            toUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+
+    FriendChatNew:
+      name: friend-chat.new
+      title: friend-chat - New friend chat message
+      summary: Server delivery of a newly persisted private message.
+      payload:
+        $ref: "#/components/schemas/FriendChatNewPayload"
+      examples:
+        - name: outgoingConfirmation
+          payload:
+            target: friend-chat
+            event: new
+            message:
+              message: Hey, are you ready?
+              date: "2026-04-26T10:33:49.316Z"
+              direction: outgoing
+              status: sent
+              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              target: alice
+              uid: 57092788-491a-484c-a162-b67657584fa5
+        - name: incomingMessage
+          payload:
+            target: friend-chat
+            event: new
+            message:
+              message: Yes.
+              date: "2026-04-26T10:34:02.101Z"
+              direction: incoming
+              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              target: alice
+              uid: 831a10b5-91c5-464d-a27d-a76246a9d21f
+
+    FriendChatStatusUpdated:
+      name: friend-chat.update_status
+      title: friend-chat - Friend message status updated
+      summary: Server update for an already known outgoing message.
+      payload:
+        $ref: "#/components/schemas/FriendChatStatusUpdatedPayload"
+      examples:
+        - name: messageRead
+          payload:
+            target: friend-chat
+            event: update_status
+            message:
+              message: Hey, are you ready?
+              date: "2026-04-26T10:33:49.316Z"
+              direction: outgoing
+              status: read
+              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              target: alice
+              uid: 57092788-491a-484c-a162-b67657584fa5
+        - name: deliveredAfterReconnect
+          payload:
+            target: friend-chat
+            event: update_status
+            message:
+              uid: 57092788-491a-484c-a162-b67657584fa5
+              status: recieved
+
+    FriendRequestIncoming:
+      name: friend-request.new-incoming
+      title: friend-request - Incoming friend request
+      summary: Server update used to append an entry to the incoming request list.
+      payload:
+        $ref: "#/components/schemas/FriendRequestIncomingPayload"
+      examples:
+        - name: aliceRequestsFriendship
+          payload:
+            target: friend-request
+            event: new-incoming
+            user:
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              username: alice
+              image: /static/default_avatars/default_avatar_1.png
+              badges: curious
+              relation: incoming
+
+    NotificationNew:
+      name: notif.new
+      title: notif - New social notification
+      summary: Server push for either a pending request or an accepted request.
+      payload:
+        $ref: "#/components/schemas/NotificationNewPayload"
+      x-contract-note: |
+        The backend currently serializes `from` as ExternalUser for both
+        notification kinds. The frontend TypeScript type declares FriendInfo
+        for `friend-accepted`, while its renderer only consumes fields present
+        in ExternalUser. This schema reflects the backend wire payload.
+      examples:
+        - name: incomingRequestNotification
+          payload:
+            target: notif
+            event: new
+            notif:
+              uid: 57092788-491a-484c-a162-b67657584fa5
+              kind: friend-request
+              from:
+                uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                username: alice
+                image: /static/default_avatars/default_avatar_1.png
+                badges: curious
+                relation: incoming
+              date: "2026-04-26T10:33:49.316Z"
+              read: false
+        - name: acceptedRequestNotification
+          payload:
+            target: notif
+            event: new
+            notif:
+              uid: 57092788-491a-484c-a162-b67657584fa5
+              kind: friend-accepted
+              from:
+                uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                username: alice
+                image: /static/default_avatars/default_avatar_1.png
+                badges: curious
+                relation: friends
+              date: "2026-04-26T10:33:49.316Z"
+              read: false
+
+    GameJoin:
+      name: game.player_join
+      title: game - Join a game
+      payload:
+        $ref: "#/components/schemas/GameJoinPayload"
+      examples:
+        - name: joinGame
+          payload:
+            target: game
+            event: player_join
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+
+    GameStart:
+      name: game.game_start
+      title: game - Start a game
+      payload:
+        $ref: "#/components/schemas/GameStartPayload"
+      examples:
+        - name: startGame
+          payload:
+            target: game
+            event: game_start
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+
+    GameUpdateSettings:
+      name: game.settings_update
+      title: game - Update game settings
+      payload:
+        $ref: "#/components/schemas/GameUpdateSettingsPayload"
+      examples:
+        - name: updateSettings
+          payload:
+            target: game
+            event: settings_update
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            settings:
+              genres: [TAG_POP, TAG_ROCK]
+              mode: speed
+              trackCount: 5
+              playbackDuration: 10
+              breakDuration: 5
+              reveal: true
+              fuzzy: true
+
+    GameSubmitAnswer:
+      name: game.answer_submit
+      title: game - Submit an answer
+      payload:
+        $ref: "#/components/schemas/GameSubmitAnswerPayload"
+      examples:
+        - name: submitAnswer
+          payload:
+            target: game
+            event: answer_submit
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            answer: Artist name
+            time: 2.4
+
+    GameMessageSend:
+      name: game.message_send
+      title: game - Send chat message
+      summary: Frontend command to send a chat message to the current game.
+      payload:
+        $ref: "#/components/schemas/GameMessageSendPayload"
+      examples:
+        - name: sendGameMessage
+          payload:
+            target: game
+            event: message_send
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            message: Good luck everyone!
+
+    GameLeave:
+      name: game.player_leave
+      title: game - Leave a game
+      payload:
+        $ref: "#/components/schemas/GameLeavePayload"
+      examples:
+        - name: leaveGame
+          payload:
+            target: game
+            event: player_leave
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+
+    GamePlayerJoined:
+      name: game.player_joined
+      title: game - Player joined the game
+      summary: Broadcast after joining; also used by two exceptional backend paths.
+      payload:
+        $ref: "#/components/schemas/GamePlayerJoinedPayload"
+      examples:
+        - name: playerJoined
+          payload:
+            target: game
+            event: player_joined
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            player:
+              username: bob
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+    GameInfo:
+      name: game.game_info
+      title: game - Joined game information
+      summary: Direct message sent to a player after joining, containing the current game information.
+      payload:
+        $ref: "#/components/schemas/GameInfoPayload"
+      examples:
+        - name: currentGameInfo
+          payload:
+            target: game
+            event: game_info
+            uid: a6592217-2ffe-47f8-8440-40b3eb043c38
+            self:
+              username: ws_owner
+              avatar: /static/default_avatars/default_avatar_9.png
+              guest: false
+              uid: cda01f95-85a2-4b5b-8892-7f9ea71309da
+            game:
+              uid: a6592217-2ffe-47f8-8440-40b3eb043c38
+              name: WS Full Lifecycle
+              owner:
+                username: ws_owner
+                avatar: /static/default_avatars/default_avatar_9.png
+                guest: false
+                uid: cda01f95-85a2-4b5b-8892-7f9ea71309da
+              status: playing_break
+              round: 3
+              visibility: public
+            settings:
+              genres: [TAG_ROCK]
+              mode: speed
+              trackCount: 5
+              playbackDuration: 10.0
+              breakDuration: 5.0
+              reveal: true
+              fuzzy: true
+            leaderboard:
+              - player:
+                  username: ws_owner
+                  avatar: /static/default_avatars/default_avatar_9.png
+                  guest: false
+                  uid: cda01f95-85a2-4b5b-8892-7f9ea71309da
+                points: 42
+              - player:
+                  username: alice
+                  avatar: /static/default_avatars/default_avatar_1.png
+                  guest: false
+                  uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                points: 35
+              - player:
+                  username: bob
+                  avatar: /static/default_avatars/default_avatar_2.png
+                  guest: false
+                  uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+                points: 27
+              - player:
+                  username: guest_player
+                  avatar: /static/default_avatars/default_avatar_3.png
+                  guest: true
+                  uid: 71f43851-df63-489f-9a80-b14d5c0c4f15
+                points: 12
+            history:
+              - track:
+                  title: Test Track 20
+                  artist: Test Artist 20
+                  preview: https://example.com/track.mp3
+                  artwork: https://example.com/artwork.jpg
+                titleFound: true
+                artistFound: false
+                time: 8.4
+                ranking: 2
+                points: 35
+                round: 1
+              - track:
+                  title: Test Track 21
+                  artist: Test Artist 21
+                  preview: https://example.com/track-21.mp3
+                  artwork: https://example.com/artwork-21.jpg
+                titleFound: false
+                artistFound: true
+                time: 12.1
+                ranking: 3
+                points: 22
+                round: 2
+              - track:
+                  title: Test Track 22
+                  artist: Test Artist 22
+                  preview: https://example.com/track-22.mp3
+                  artwork: https://example.com/artwork-22.jpg
+                titleFound: true
+                artistFound: true
+                time: 5.6
+                ranking: 1
+                points: 48
+                round: 3
+
+    GameSettingsUpdated:
+      name: game.settings_updated
+      title: game - Game settings updated
+      payload:
+        $ref: "#/components/schemas/GameSettingsUpdatedPayload"
+      examples:
+        - name: settingsUpdated
+          payload:
+            target: game
+            event: settings_updated
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            settings:
+              genres: [TAG_POP]
+              mode: speed
+              trackCount: 5
+              playbackDuration: 10
+              breakDuration: 5
+              reveal: true
+              fuzzy: true
+
+    GameStartSignal:
+      name: game.game_started
+      title: game - Game countdown started
+      payload:
+        $ref: "#/components/schemas/GameStartSignalPayload"
+
+    GameRoundStarted:
+      name: game.round_started
+      title: game - Round started
+      payload:
+        $ref: "#/components/schemas/GameRoundStartedPayload"
+      examples:
+        - name: roundStarted
+          payload:
+            target: game
+            event: round_started
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            round: 3
+            preview: https://example.com/track.mp3
+            playbackDuration: 10
+
+    GameRoundPreview:
+      name: game.round_preview
+      title: game - Round preview
+      summary: Sent before the round starts so clients can cache the track preview.
+      payload:
+        $ref: "#/components/schemas/GameRoundPreviewPayload"
+      examples:
+        - name: roundPreview
+          payload:
+            target: game
+            event: round_preview
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            round: 3
+            preview: https://example.com/track.mp3
+            playbackDuration: 10
+
+    GameAnswerValidation:
+      name: game.answer_validation
+      title: game - Answer validation
+      summary: Direct private response to the player who submitted an answer.
+      payload:
+        $ref: "#/components/schemas/GameAnswerValidationPayload"
+      examples:
+        - name: incorrectAnswer
+          payload:
+            target: game
+            event: answer_validation
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            titleFound: false
+            artistFound: false
+            time: 2.4
+        - name: titleFound
+          payload:
+            target: game
+            event: answer_validation
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            titleFound: true
+            artistFound: false
+            time: 3.1
+        - name: artistFound
+          payload:
+            target: game
+            event: answer_validation
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            titleFound: false
+            artistFound: true
+            time: 4.6
+        - name: titleAndArtistFound
+          payload:
+            target: game
+            event: answer_validation
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            titleFound: true
+            artistFound: true
+            time: 5.2
+            track:
+              title: Test Track 20
+              artist: Test Artist 20
+              preview: https://example.com/track.mp3
+              artwork: https://example.com/artwork.jpg
+
+    GameAnswerBroadcast:
+      name: game.answer_broadcast
+      title: game - Answer broadcast
+      summary: Broadcast when a guess should appear publicly in the game chat.
+      payload:
+        $ref: "#/components/schemas/GameAnswerBroadcastPayload"
+      examples:
+        - name: incorrectAnswerBroadcast
+          payload:
+            target: game
+            event: answer_broadcast
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            player:
+              username: bob
+              avatar: /static/default_avatars/default_avatar_2.png
+              guest: false
+              uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+            kind: incorrect
+            answer: Wrong guess
+        - name: bothFoundBroadcast
+          payload:
+            target: game
+            event: answer_broadcast
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            player:
+              username: bob
+              avatar: /static/default_avatars/default_avatar_2.png
+              guest: false
+              uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+            kind: bothFound
+
+    GameMessageHistory:
+      name: game.message_history
+      title: game - Chat message history
+      summary: Direct message containing existing game chat messages sorted by chronological chat appearance.
+      payload:
+        $ref: "#/components/schemas/GameMessageHistoryPayload"
+      examples:
+        - name: gameMessageHistory
+          payload:
+            target: game
+            event: message_history
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            messages:
+              - uid: 2d0a0ab9-f633-4a5f-9c4e-a9f53120eafb
+                sender:
+                  username: bob
+                  avatar: /static/default_avatars/default_avatar_2.png
+                  guest: false
+                  uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+                body: Good luck everyone!
+              - uid: b5f4ed9f-0e58-491c-88ff-0f95815fa0d6
+                sender:
+                  username: alice
+                  avatar: /static/default_avatars/default_avatar_1.png
+                  guest: false
+                  uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                body: Have fun!
+
+    GameMessageBroadcast:
+      name: game.message_broadcast
+      title: game - Chat message broadcast
+      summary: Broadcast when a new game chat message is sent.
+      payload:
+        $ref: "#/components/schemas/GameMessageBroadcastPayload"
+      examples:
+        - name: gameMessageBroadcast
+          payload:
+            target: game
+            event: message_broadcast
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            message:
+              uid: 2d0a0ab9-f633-4a5f-9c4e-a9f53120eafb
+              sender:
+                username: bob
+                avatar: /static/default_avatars/default_avatar_2.png
+                guest: false
+                uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+              body: Good luck everyone!
+
+    GameRoundEnd:
+      name: game.round_ended
+      title: game - Round ended
+      payload:
+        $ref: "#/components/schemas/GameRoundEndedPayload"
+      examples:
+        - name: roundEnded
+          payload:
+            target: game
+            event: round_ended
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            track:
+              title: Test Track 20
+              artist: Test Artist 20
+              preview: https://example.com/track.mp3
+              artwork: https://example.com/artwork.jpg
+            leaderboard:
+              - player:
+                  username: alice
+                  avatar: /static/default_avatars/default_avatar_1.png
+                  guest: false
+                  uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                points: 48
+              - player:
+                  username: bob
+                  avatar: /static/default_avatars/default_avatar_2.png
+                  guest: false
+                  uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+                points: 36
+            results:
+              - player:
+                  username: alice
+                  avatar: /static/default_avatars/default_avatar_1.png
+                  guest: false
+                  uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                titleFound: true
+                artistFound: true
+                time: 5.6
+                ranking: 1
+                points: 48
+              - player:
+                  username: bob
+                  avatar: /static/default_avatars/default_avatar_2.png
+                  guest: false
+                  uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+                titleFound: true
+                artistFound: false
+                time: 12.1
+                ranking: 2
+                points: 36
+
+    GamePlayerLeft:
+      name: game.player_left
+      title: game - Player left the game
+      payload:
+        $ref: "#/components/schemas/GamePlayerLeftPayload"
+
+    GameEnded:
+      name: game.game_ended
+      title: game - Game ended
+      payload:
+        $ref: "#/components/schemas/GameEndedPayload"
+      examples:
+        - name: gameEnded
+          payload:
+            target: game
+            event: game_ended
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            leaderboard:
+              - player:
+                  username: alice
+                  avatar: /static/default_avatars/default_avatar_1.png
+                  guest: false
+                  uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+                points: 126
+              - player:
+                  username: bob
+                  avatar: /static/default_avatars/default_avatar_2.png
+                  guest: false
+                  uid: 831a10b5-91c-464d-a27d-a76246a9d21f
+                points: 98
+            history:
+              - track:
+                  title: Test Track 20
+                  artist: Test Artist 20
+                  preview: https://example.com/track.mp3
+                  artwork: https://example.com/artwork.jpg
+                titleFound: true
+                artistFound: true
+                time: 5.6
+                ranking: 1
+                points: 48
+                round: 1
+              - track:
+                  title: Test Track 21
+                  artist: Test Artist 21
+                  preview: https://example.com/track-21.mp3
+                  artwork: https://example.com/artwork-21.jpg
+                titleFound: true
+                artistFound: false
+                time: 12.1
+                ranking: 2
+                points: 36
+                round: 2
+              - track:
+                  title: Test Track 22
+                  artist: Test Artist 22
+                  preview: https://example.com/track-22.mp3
+                  artwork: https://example.com/artwork-22.jpg
+                titleFound: false
+                artistFound: true
+                time: 15.8
+                ranking: 3
+                points: 24
+                round: 3
+
+    GameRestarted:
+      name: game.game_restarted
+      title: game - Game restarted
+      summary: Server broadcast asking clients to redirect from an old game session to a newly created one.
+      payload:
+        $ref: "#/components/schemas/GameRestartedPayload"
+      examples:
+        - name: gameRestarted
+          payload:
+            target: game
+            event: game_restarted
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            newGame: 4b9ee5fd-14ec-474d-814d-d76c7859d2dd
+
+    GameError:
+      name: game.error
+      title: game - Game command failed
+      payload:
+        $ref: "#/components/schemas/GameErrorPayload"
+      examples:
+        - name: alreadyInGame
+          payload:
+            target: game
+            event: error
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            message: ALREADY_IN_GAME
+            currentGameUid: 1b138f6d-2f0f-4a34-81b3-c9747a95bd1d
+        - name: gameFull
+          payload:
+            target: game
+            event: error
+            uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+            self:
+              username: alice
+              avatar: /static/default_avatars/default_avatar_1.png
+              guest: false
+              uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+            message: GAME_FULL
+
+  schemas:
+    FriendChatSendPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, message]
+      properties:
+        target:
+          const: friend-chat
+        event:
+          const: send
+        message:
+          $ref: "#/components/schemas/ClientOutgoingMessage"
+
+    FriendChatOpenPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, toUid]
+      properties:
+        target:
+          const: friend-chat
+        event:
+          const: open
+        toUid:
+          type: string
+          format: uuid
+          description: Profile UID of the selected friend.
+        to:
+          type: string
+          description: Selected friend's display name; not used for backend lookup.
+
+    FriendChatClosePayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, toUid]
+      properties:
+        target:
+          const: friend-chat
+        event:
+          const: close
+        toUid:
+          type: string
+          format: uuid
+          description: Profile UID of the selected friend.
+        to:
+          type: string
+          description: Selected friend's display name; not used for backend lookup.
+
+    FriendChatNewPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, message]
+      properties:
+        target:
+          const: friend-chat
+        event:
+          const: new
+        message:
+          oneOf:
+            - $ref: "#/components/schemas/ServerOutgoingMessage"
+            - $ref: "#/components/schemas/ServerIncomingMessage"
+
+    FriendChatStatusUpdatedPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, message]
+      properties:
+        target:
+          const: friend-chat
+        event:
+          const: update_status
+        message:
+          oneOf:
+            - $ref: "#/components/schemas/ServerOutgoingMessage"
+            - $ref: "#/components/schemas/MessageStatusPatch"
+
+    ClientOutgoingMessage:
+      type: object
+      additionalProperties: false
+      required: [message, target-id]
+      description: |
+        The backend consumes `message` and `target-id`. The remaining fields are
+        optimistic UI metadata currently sent by the frontend.
+      properties:
+        message:
+          type: string
+          minLength: 1
+        target-id:
+          type: string
+          format: uuid
+          description: Profile UID of the friend receiving the message.
+        date:
+          type: string
+          format: date-time
+        direction:
+          const: outgoing
+        status:
+          const: not-sent
+        target:
+          type: string
+        uid:
+          type: string
+
+    MessageCommon:
+      type: object
+      required: [message, date, direction, target-id, target, uid]
+      properties:
+        message:
+          type: string
+        date:
+          type: string
+          format: date-time
+        direction:
+          enum: [outgoing, incoming]
+        target-id:
+          type: string
+          format: uuid
+          description: Profile UID of the other participant.
+        target:
+          type: string
+          description: Username of the other participant.
+        uid:
+          type: string
+          format: uuid
+
+    ServerOutgoingMessage:
+      allOf:
+        - $ref: "#/components/schemas/MessageCommon"
+        - type: object
+          required: [status]
+          properties:
+            direction:
+              const: outgoing
+            status:
+              enum: [sent, recieved, read]
+              description: |
+                Delivery state. `recieved` is intentionally spelled as in the
+                current frontend/backend contract.
+
+    MessageStatusPatch:
+      type: object
+      additionalProperties: false
+      required: [uid, status]
+      properties:
+        uid:
+          type: string
+          format: uuid
+        status:
+          enum: [sent, recieved, read]
+          description: "`recieved` is intentionally spelled as implemented."
+
+    ServerIncomingMessage:
+      allOf:
+        - $ref: "#/components/schemas/MessageCommon"
+        - type: object
+          properties:
+            direction:
+              const: incoming
+
+    FriendRequestIncomingPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, user]
+      properties:
+        target:
+          const: friend-request
+        event:
+          const: new-incoming
+        user:
+          $ref: "#/components/schemas/IncomingRequestUser"
+
+    NotificationNewPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, notif]
+      properties:
+        target:
+          const: notif
+        event:
+          const: new
+        notif:
+          oneOf:
+            - $ref: "#/components/schemas/FriendRequestNotification"
+            - $ref: "#/components/schemas/FriendAcceptedNotification"
+
+    FriendRequestNotification:
+      type: object
+      additionalProperties: false
+      required: [uid, kind, from, date, read]
+      properties:
+        uid:
+          type: string
+          format: uuid
+          description: Friendship UID.
+        kind:
+          const: friend-request
+        from:
+          $ref: "#/components/schemas/IncomingRequestUser"
+        date:
+          type: string
+          format: date-time
+        read:
+          type: boolean
+
+    FriendAcceptedNotification:
+      type: object
+      additionalProperties: false
+      required: [uid, kind, from, date, read]
+      properties:
+        uid:
+          type: string
+          format: uuid
+          description: Friendship UID.
+        kind:
+          const: friend-accepted
+        from:
+          $ref: "#/components/schemas/AcceptedRequestUser"
+        date:
+          type: string
+          format: date-time
+        read:
+          type: boolean
+
+    ExternalUser:
+      type: object
+      additionalProperties: false
+      required: [uid, username, image, badges, relation]
+      properties:
+        uid:
+          type: string
+          format: uuid
+        username:
+          type: string
+        image:
+          type: string
+          format: uri-reference
+        badges:
+          type: string
+        relation:
+          enum: [not-friends, friends, incoming, outgoing]
+
+    IncomingRequestUser:
+      allOf:
+        - $ref: "#/components/schemas/ExternalUser"
+        - type: object
+          properties:
+            relation:
+              const: incoming
+
+    AcceptedRequestUser:
+      allOf:
+        - $ref: "#/components/schemas/ExternalUser"
+        - type: object
+          properties:
+            relation:
+              const: friends
+
+    GameJoinPayload:
+      type: object
+      additionalProperties: false
+      required: [target, event, uid]
+      properties:
+        target:
+          const: game
+        event:
+          const: player_join
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+
+    GameStartPayload:
+      type: object
+      required: [target, event, uid]
+      properties:
+        target:
+          const: game
+        event:
+          const: game_start
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+
+    GameUpdateSettingsPayload:
+      type: object
+      required: [target, event, uid, settings]
+      properties:
+        target:
+          const: game
+        event:
+          const: settings_update
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        settings:
+          $ref: "#/components/schemas/GameSettings"
+
+    GameSubmitAnswerPayload:
+      type: object
+      required: [target, event, uid, answer, time]
+      properties:
+        target:
+          const: game
+        event:
+          const: answer_submit
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        answer:
+          type: string
+        time:
+          type: number
+
+    GameMessageSendPayload:
+      type: object
+      required: [target, event, uid, message]
+      properties:
+        target:
+          const: game
+        event:
+          const: message_send
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        message:
+          type: string
+
+    GameLeavePayload:
+      type: object
+      required: [target, event, uid]
+      properties:
+        target:
+          const: game
+        event:
+          const: player_leave
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+
+    GameProfile:
+      type: object
+      required: [username, avatar, guest, uid]
+      properties:
+        username:
+          type: string
+        avatar:
+          type: string
+          format: uri-reference
+        guest:
+          type: boolean
+        uid:
+          type: string
+          format: uuid
+
+    GameReceiveHeader:
+      type: object
+      required: [uid]
+      properties:
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+
+    GameSendHeader:
+      type: object
+      required: [uid, self]
+      properties:
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+          description: Player receiving this message.
+
+    GamePlayerJoinedPayload:
+      $ref: "#/components/schemas/GamePlayerJoinedBroadcastPayload"
+
+    GameInfoPayload:
+      type: object
+      required: [target, event, uid, self, game, settings, leaderboard, history]
+      properties:
+        target:
+          const: game
+        event:
+          const: game_info
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        game:
+          $ref: "#/components/schemas/GameInfo"
+        settings:
+          $ref: "#/components/schemas/GameSettings"
+        leaderboard:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        history:
+          $ref: "#/components/schemas/History"
+
+    GameInfo:
+      type: object
+      additionalProperties: false
+      required: [uid, name, owner, status, round, visibility]
+      properties:
+        uid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        owner:
+          $ref: "#/components/schemas/PlayerInfo"
+        status:
+          enum: [waiting, playing_round, playing_break, finished]
+        round:
+          type: integer
+          minimum: 0
+        visibility:
+          enum: [public, friends, private]
+
+    GameSettings:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          genres,
+          mode,
+          trackCount,
+          playbackDuration,
+          breakDuration,
+          reveal,
+          fuzzy,
+        ]
+      properties:
+        genres:
+          type: array
+          items:
+            enum:
+              [
+                TAG_POP,
+                TAG_RAP,
+                TAG_ROCK,
+                TAG_ELECTRO,
+                TAG_FRENCH_VARIETY,
+                TAG_RNB,
+              ]
+        mode:
+          enum: [normal, speed, armageddon]
+        trackCount:
+          type: integer
+          minimum: 5
+          maximum: 50
+        playbackDuration:
+          type: number
+          minimum: 5
+          maximum: 30
+        breakDuration:
+          type: number
+          minimum: 5
+          maximum: 30
+        reveal:
+          type: boolean
+        fuzzy:
+          type: boolean
+
+    PlayerInfo:
+      type: object
+      additionalProperties: false
+      required: [username, avatar, guest, uid]
+      properties:
+        username:
+          type: string
+        avatar:
+          type: string
+          format: uri-reference
+        guest:
+          type: boolean
+        uid:
+          type: string
+          format: uuid
+
+    GameChatMessage:
+      type: object
+      additionalProperties: false
+      required: [uid, sender, body]
+      properties:
+        uid:
+          type: string
+          format: uuid
+        sender:
+          $ref: "#/components/schemas/PlayerInfo"
+        body:
+          type: string
+
+    LeaderboardEntry:
+      type: object
+      additionalProperties: false
+      required: [player, points]
+      properties:
+        player:
+          $ref: "#/components/schemas/PlayerInfo"
+        points:
+          type: number
+
+    TrackInfo:
+      type: object
+      additionalProperties: false
+      required: [title, artist, preview, artwork]
+      properties:
+        title:
+          type: string
+        artist:
+          type: string
+        preview:
+          type: string
+          format: uri
+        artwork:
+          type: string
+          format: uri
+
+    RoundResult:
+      type: object
+      additionalProperties: false
+      description: Result summary for one round, with track metadata reused from TrackInfo.
+      required: [track, titleFound, artistFound, time, ranking, points, round]
+      properties:
+        track:
+          $ref: "#/components/schemas/TrackInfo"
+        titleFound:
+          type: boolean
+        artistFound:
+          type: boolean
+        time:
+          type: number
+        ranking:
+          type: integer
+        points:
+          type: number
+        round:
+          type: integer
+
+    History:
+      type: array
+      items:
+        $ref: "#/components/schemas/RoundResult"
+
+    RoundEndedPlayerResult:
+      type: object
+      additionalProperties: false
+      description: Result of the ended round for one player.
+      required: [player, titleFound, artistFound, time, ranking, points]
+      properties:
+        player:
+          $ref: "#/components/schemas/PlayerInfo"
+        titleFound:
+          type: boolean
+        artistFound:
+          type: boolean
+        time:
+          type: number
+        ranking:
+          type: integer
+        points:
+          type: number
+
+    GamePlayerJoinedBroadcastPayload:
+      type: object
+      required: [target, event, uid, self, player]
+      properties:
+        target:
+          const: game
+        event:
+          const: player_joined
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        player:
+          $ref: "#/components/schemas/GameProfile"
+
+    GameSettingsUpdatedPayload:
+      type: object
+      required: [target, event, uid, self, settings]
+      properties:
+        target:
+          const: game
+        event:
+          const: settings_updated
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        settings:
+          $ref: "#/components/schemas/GameSettings"
+
+    GameStartSignalPayload:
+      type: object
+      required: [target, event, uid, self, settings]
+      properties:
+        target:
+          const: game
+        event:
+          const: game_started
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        settings:
+          $ref: "#/components/schemas/GameSettings"
+
+    FullTrack:
+      type: object
+      required: [itunes_id, title, artist, genre, preview_url, artwork_url]
+      properties:
+        itunes_id:
+          type: integer
+        title:
+          type: string
+        artist:
+          type: string
+        genre:
+          oneOf:
+            - type: string
+            - type: "null"
+        preview_url:
+          oneOf:
+            - type: string
+              format: uri
+            - type: "null"
+        artwork_url:
+          oneOf:
+            - type: string
+              format: uri
+            - type: "null"
+
+    RoundPreview:
+      type: object
+      required: [round, preview, playbackDuration]
+      properties:
+        round:
+          type: integer
+          description: One-based round index.
+        preview:
+          type: string
+          format: uri
+        playbackDuration:
+          type: number
+
+    GameRoundStartedPayload:
+      type: object
+      required: [target, event, uid, self, round, preview, playbackDuration]
+      properties:
+        target:
+          const: game
+        event:
+          const: round_started
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        round:
+          $ref: "#/components/schemas/RoundPreview/properties/round"
+        preview:
+          $ref: "#/components/schemas/RoundPreview/properties/preview"
+        playbackDuration:
+          $ref: "#/components/schemas/RoundPreview/properties/playbackDuration"
+
+    GameRoundPreviewPayload:
+      type: object
+      required: [target, event, uid, self, round, preview, playbackDuration]
+      properties:
+        target:
+          const: game
+        event:
+          const: round_preview
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        round:
+          $ref: "#/components/schemas/RoundPreview/properties/round"
+        preview:
+          $ref: "#/components/schemas/RoundPreview/properties/preview"
+        playbackDuration:
+          $ref: "#/components/schemas/RoundPreview/properties/playbackDuration"
+
+    GameAnswerValidationPayload:
+      oneOf:
+        - $ref: "#/components/schemas/GameAnswerValidationIncorrectPayload"
+        - $ref: "#/components/schemas/GameAnswerValidationTitleFoundPayload"
+        - $ref: "#/components/schemas/GameAnswerValidationArtistFoundPayload"
+        - $ref: "#/components/schemas/GameAnswerValidationTitleAndArtistFoundPayload"
+
+    GameAnswerValidationIncorrectPayload:
+      type: object
+      required: [target, event, uid, self, titleFound, artistFound, time]
+      properties:
+        target:
+          const: game
+        event:
+          const: answer_validation
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        titleFound:
+          const: false
+          description: Absolute title-found state for this player after validation, not only the result of the current submit.
+        artistFound:
+          const: false
+          description: Absolute artist-found state for this player after validation, not only the result of the current submit.
+        time:
+          type: number
+          description: Time value provided by the frontend in answer_submit.time.
+
+    GameAnswerValidationTitleFoundPayload:
+      type: object
+      required: [target, event, uid, self, titleFound, artistFound, time]
+      properties:
+        target:
+          const: game
+        event:
+          const: answer_validation
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        titleFound:
+          const: true
+          description: Absolute title-found state for this player after validation, not only the result of the current submit.
+        artistFound:
+          const: false
+          description: Absolute artist-found state for this player after validation, not only the result of the current submit.
+        time:
+          type: number
+          description: Time value provided by the frontend in answer_submit.time.
+
+    GameAnswerValidationArtistFoundPayload:
+      type: object
+      required: [target, event, uid, self, titleFound, artistFound, time]
+      properties:
+        target:
+          const: game
+        event:
+          const: answer_validation
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        titleFound:
+          const: false
+          description: Absolute title-found state for this player after validation, not only the result of the current submit.
+        artistFound:
+          const: true
+          description: Absolute artist-found state for this player after validation, not only the result of the current submit.
+        time:
+          type: number
+          description: Time value provided by the frontend in answer_submit.time.
+
+    GameAnswerValidationTitleAndArtistFoundPayload:
+      type: object
+      required: [target, event, uid, self, titleFound, artistFound, time, track]
+      properties:
+        target:
+          const: game
+        event:
+          const: answer_validation
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        titleFound:
+          const: true
+          description: Absolute title-found state for this player after validation, not only the result of the current submit.
+        artistFound:
+          const: true
+          description: Absolute artist-found state for this player after validation, not only the result of the current submit.
+        time:
+          type: number
+          description: Time value provided by the frontend in answer_submit.time.
+        track:
+          $ref: "#/components/schemas/TrackInfo"
+
+    GameAnswerBroadcastPayload:
+      type: object
+      required: [target, event, uid, self, player, kind]
+      properties:
+        target:
+          const: game
+        event:
+          const: answer_broadcast
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        player:
+          $ref: "#/components/schemas/PlayerInfo"
+          description: Player whose guess is being broadcast.
+        kind:
+          enum: [incorrect, titleFound, artistFound, bothFound]
+        answer:
+          type: string
+          description: Present for incorrect guesses when reveal is enabled.
+
+    GameMessageHistoryPayload:
+      type: object
+      required: [target, event, uid, self, messages]
+      properties:
+        target:
+          const: game
+        event:
+          const: message_history
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        messages:
+          type: array
+          description: Messages sorted by chronological order of appearance in the game chat.
+          items:
+            $ref: "#/components/schemas/GameChatMessage"
+
+    GameMessageBroadcastPayload:
+      type: object
+      required: [target, event, uid, self, message]
+      properties:
+        target:
+          const: game
+        event:
+          const: message_broadcast
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        message:
+          $ref: "#/components/schemas/GameChatMessage"
+
+    LiveRoundResult:
+      type: object
+      required:
+        [
+          player,
+          track,
+          artist_found,
+          title_found,
+          artist_found_at,
+          title_found_at,
+          time,
+          xp_earned,
+          totalXpEarned,
+        ]
+      properties:
+        player:
+          $ref: "#/components/schemas/GameProfile"
+        track:
+          $ref: "#/components/schemas/FullTrack"
+        artist_found:
+          type: boolean
+        title_found:
+          type: boolean
+        artist_found_at:
+          type: number
+        title_found_at:
+          type: number
+        time:
+          type: number
+        xp_earned:
+          type: integer
+        totalXpEarned:
+          type: integer
+
+    GameRoundEndedPayload:
+      type: object
+      required: [target, event, uid, self, track, leaderboard, results]
+      properties:
+        target:
+          const: game
+        event:
+          const: round_ended
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        track:
+          $ref: "#/components/schemas/TrackInfo"
+        leaderboard:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoundEndedPlayerResult"
+
+    GamePlayerLeftPayload:
+      type: object
+      required: [target, event, uid, self, player]
+      properties:
+        target:
+          const: game
+        event:
+          const: player_left
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        player:
+          $ref: "#/components/schemas/GameProfile"
+
+    GameEndedPayload:
+      type: object
+      required: [target, event, uid, self, leaderboard, history]
+      properties:
+        target:
+          const: game
+        event:
+          const: game_ended
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        leaderboard:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        history:
+          $ref: "#/components/schemas/History"
+
+    GameRestartedPayload:
+      type: object
+      required: [target, event, uid, self, newGame]
+      properties:
+        target:
+          const: game
+        event:
+          const: game_restarted
+        uid:
+          type: string
+          format: uuid
+          description: Old game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        newGame:
+          type: string
+          format: uuid
+          description: New game UID.
+
+    GameErrorPayload:
+      oneOf:
+        - $ref: "#/components/schemas/GameAlreadyInGameErrorPayload"
+        - $ref: "#/components/schemas/GameFullErrorPayload"
+
+    GameAlreadyInGameErrorPayload:
+      type: object
+      required: [target, event, uid, self, message, currentGameUid]
+      properties:
+        target:
+          const: game
+        event:
+          const: error
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        message:
+          const: ALREADY_IN_GAME
+        currentGameUid:
+          type: string
+          format: uuid
+          description: Game UID the player is already in.
+
+    GameFullErrorPayload:
+      type: object
+      required: [target, event, uid, self, message]
+      properties:
+        target:
+          const: game
+        event:
+          const: error
+        uid:
+          type: string
+          format: uuid
+          description: Game UID.
+        self:
+          $ref: "#/components/schemas/PlayerInfo"
+        message:
+          const: GAME_FULL

@@ -4,18 +4,19 @@ import CDialog, { type CDialogProps } from "./CDialog";
 import CRadioGroup from "../../inputs/radio/CRadioGroup";
 import CButtonText from "../../inputs/buttons/CButtonText";
 import { Stack, DialogActions } from "@mui/material";
-import { currentLang, onLangChanged } from "../../../localization/localization";
 import CDialogTitle from "./CDialogTitle";
+import { useLang } from "../../contexts/CLanguageProvider";
 
 export interface CDialogLanguageProps extends CDialogProps {}
 
 function CDialogLanguage({ open, ...other }: CDialogLanguageProps) {
 	//====================== STATE ======================
 	const [isOpen, setIsOpen] = useState<boolean>(open);
+	const { currentLang, changeLang } = useLang();
 	const [currentLangState, setCurrentLangState] = useState<string>(currentLang);
 
 	function onClose() {
-		onLangChanged(currentLangState);
+		changeLang(currentLangState);
 		setIsOpen(false);
 	}
 

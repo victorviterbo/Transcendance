@@ -18,7 +18,6 @@ import CUserProfileLink from "../../components/navigation/CUserProfileLink";
 import CTabs from "../../components/navigation/CTabs";
 import CText from "../../components/text/CText";
 import CTitle from "../../components/text/CTitle";
-import { ttr, ttrd, ttrf, ttrn } from "../../localization/localization";
 import type { IHistoryEntry } from "../../types/stats";
 import PProfileMatchHistoryRoundEntry from "./PProfileMatchHistoryRoundEntry";
 import {
@@ -26,6 +25,7 @@ import {
 	type IProfileMatchHistoryStyle,
 } from "../../styles/pages/profile/PProfileMatchHistoryStyle";
 import { appColors } from "../../styles/theme";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface PProfileMatchHistoryAccordionCardProps {
 	entry: IHistoryEntry;
@@ -36,30 +36,32 @@ function PProfileMatchHistoryAccordionCard({ entry }: PProfileMatchHistoryAccord
 		return PProfileMatchHistoryStyle();
 	}, []);
 
+	const { ttr, ttrd, ttrf, ttrn } = useLang();
+
 	const playedAtLabel = useMemo(() => {
 		return ttrd(entry.playedAt, {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
 		});
-	}, [entry.playedAt]);
+	}, [entry.playedAt, ttrd]);
 
 	const rankingLabel = useMemo(() => {
 		return ttrf("HISTORY_RANKING", {
 			rank: ttrn(entry.ranking),
 			players: ttrn(entry.players.length),
 		});
-	}, [entry.players.length, entry.ranking]);
+	}, [entry.players.length, entry.ranking, ttrf, ttrn]);
 
 	const scoreLabel = useMemo(() => {
 		return ttrf("HISTORY_SCORE", {
 			score: ttrn(entry.xpEarned),
 		});
-	}, [entry.xpEarned]);
+	}, [entry.xpEarned, ttrf, ttrn]);
 
 	const tagChips = useMemo((): ReactNode[] => {
 		return entry.tags.map((tag) => <Chip key={tag} size="small" label={ttr(tag)} />);
-	}, [entry.tags]);
+	}, [entry.tags, ttr]);
 
 	const roundList = useMemo((): ReactNode[] => {
 		return entry.rounds.map((round, index) => (
@@ -117,7 +119,7 @@ function PProfileMatchHistoryAccordionCard({ entry }: PProfileMatchHistoryAccord
 				{index < entry.players.length - 1 ? <Divider sx={style.divider} /> : null}
 			</Box>
 		));
-	}, [entry.playedAt, entry.players, style.divider]);
+	}, [entry.playedAt, entry.players, style.divider, ttrn, ttrf]);
 
 	return (
 		<Accordion disableGutters sx={style.card}>

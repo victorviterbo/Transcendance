@@ -1,6 +1,6 @@
 import { useContext, useEffect, type ReactNode, createContext, type Context, useRef } from "react";
 import useWebSocket, { ReadyState, type SendMessage } from "react-use-websocket";
-import { WS_ADRESS, WS_ADRESS_WMS } from "../../constants";
+import { WS_ADDRESS, WS_ADDRESS_WMS } from "../../constants";
 import type {
 	IWSContext,
 	IWSContextModule,
@@ -8,6 +8,9 @@ import type {
 	TWSModuleName,
 	TWSRcv,
 } from "../../types/websocket";
+import { useAuth } from "../auth/CAuthProvider";
+import GLoading from "../../pages/common/GLoading";
+import GLost from "../../pages/common/GLost";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -99,8 +102,8 @@ interface AppWebsocketProps {
 function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	const { sendMessage, lastMessage, readyState } = useWebSocket(
 		import.meta.env.MODE !== "mock" && import.meta.env.MODE !== "test"
-			? WS_ADRESS
-			: WS_ADRESS_WMS,
+			? WS_ADDRESS
+			: WS_ADDRESS_WMS,
 		{
 			skipAssert: true,
 			shouldReconnect: (_) => true,
@@ -140,4 +143,21 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	);
 }
 
-export default CWebsocket;
+interface CWebsocketContextProps {
+	children: ReactNode;
+}
+
+function CWebsocketContext({ children }: CWebsocketContextProps) {
+	const { status } = useAuth();
+	if (status == "loading") return <GLoading />;
+
+	return (
+		<>
+			<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>
+				{children}
+			</CWebsocket>
+		</>
+	);
+}
+
+export default CWebsocketContext;

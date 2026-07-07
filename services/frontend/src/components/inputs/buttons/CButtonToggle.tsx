@@ -6,8 +6,8 @@ import {
 } from "../../../styles/components/inputs/CToggleStyle";
 import CText from "../../text/CText";
 import type { ReactNode } from "react";
-import { ttr } from "../../../localization/localization";
 import { sxMerger } from "../../../utils/styles";
+import { useLang } from "../../contexts/CLanguageProvider";
 
 export interface CButtonToggleProps extends GCompProps, ToggleButtonProps {
 	notifCount?: number;
@@ -34,6 +34,8 @@ function CButtonToggle({
 			</Box>
 		);
 	}
+
+	const { ttr } = useLang();
 
 	return (
 		<Box

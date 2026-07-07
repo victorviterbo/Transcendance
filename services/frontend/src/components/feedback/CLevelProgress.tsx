@@ -1,6 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import CTitle from "../text/CTitle";
-import { ttr } from "../../localization/localization";
+import { useLang } from "../contexts/CLanguageProvider";
 
 interface CLevelProgressProps {
 	level: number;
@@ -12,6 +12,7 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 	const safeLevel = Math.max(0, Math.floor(level));
 	const safeProgressPercent = Math.min(100, Math.max(0, Math.round(progressPercent)));
 	const displayTitle = title.trim();
+	const { ttr } = useLang();
 
 	return (
 		<Stack
