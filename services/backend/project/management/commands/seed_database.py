@@ -34,25 +34,6 @@ class Command(BaseCommand):
 		users = []
 		profiles = []
 
-		admin_user, _ = SiteUser.objects.update_or_create(
-			email="admin@example.com",
-			defaults={"is_staff": True, "is_superuser": True},
-		)
-		admin_user.set_password(DEMO_PASSWORD)
-		admin_user.save()
-
-		admin_profile, _ = Profile.objects.update_or_create(
-			user=admin_user,
-			defaults={
-				"username": "admin_master",
-				"exp_points": 9999,
-				"guest": False,
-				"is_online": False,
-			},
-		)
-		users.append(admin_user)
-		profiles.append(admin_profile)
-
 		for i in range(1, 21):
 			email = f"player{i}@mail.com"
 			user, _ = SiteUser.objects.get_or_create(email=email)
