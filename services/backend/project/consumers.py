@@ -440,8 +440,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                                getattr(self.profile, 'guest', None),
                                bool(getattr(self, 'user', None) and self.user.is_authenticated),
                                getattr(self.profile, 'user_id', None))
-                return False, {'type': 'error',
-                               'message': 'Authentication failed'}
+                return False, {'target': 'error',
+                               'message': 'USER_NOT_FOUND'}
             recipient_uid = content.get('user_uid')
             recipient_user = SiteUser.objects.filter(uid=recipient_uid).first()
             if recipient_user is None and recipient_uid is not None:
@@ -449,16 +449,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 if recipient_profile is not None:
                     recipient_user = recipient_profile.user
             if recipient_user is None:
-                return False, {'type': 'error',
-                               'message': 'User not found'}
+                return False, {'target': 'error',
+                               'message': 'USER_NOT_FOUND'}
             if not accepted_friendship(self.profile, recipient_user.profile):
                 return False, {'target': 'error',
                                'message': 'USER_NOT_FRIEND'}
             recipient_profile = recipient_user.profile
             room, _ = create_direct_room(self.profile, recipient_profile)
             if room is None:
-                return False, {'type': 'error',
-                    'message': 'Chat room does not exist'}
+                return False, {'target': 'error',
+                    'message': 'ROOM_NOT_FOUND'}
             
         elif event == 'chat-message':
             if getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
@@ -477,8 +477,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                     self.room = game.room
                     room = self.room
         if room is None or self.profile is None:
-            return False, {'type': 'error',
-                           'message': 'An unexpected error occured'}
+            return False, {'target': 'error',
+                           'message': 'ROOM_NOT_FOUND'}
         if not room.participants.filter(uid=self.profile.uid).exists():
             is_game_room = (
                 not room.is_direct
@@ -486,8 +486,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 and getattr(self.current_game, 'room_id', None) == room.id
             )
             if not is_game_room:
-                return False, {'type': 'error',
-                           'message': 'Not a chat member'}
+                return False, {'target': 'error',
+                           'message': 'INVALID_ROOM'}
         message = Message.objects.create(
             sender=self.profile,
             room=room,
