@@ -23,7 +23,8 @@ export type TWSModuleName =
 	| "notif"
 	| "game"
 	| "test_counter_event"
-	| "test_counter";
+	| "test_counter"
+	| "error";
 
 export interface IWSContext {
 	modules: RefObject<IWSContextModule[]>;
@@ -57,6 +58,10 @@ export type TWSRcv =
 			target: Extract<TWSModuleName, "friend_request">;
 			event: "new_incoming";
 			user: IExtUserInfo;
+	  }
+	| {
+			target: Extract<TWSModuleName, "error">;
+			message: string;
 	  }
 
 	//TESTER
