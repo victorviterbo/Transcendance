@@ -3,6 +3,7 @@
 import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from channels.db import database_sync_to_async
 from chat.ws_game_chat import (
@@ -153,6 +154,11 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
     game_uid = content.get('uid')
+    try:
+        UUID(str(game_uid))
+    except ValueError:
+        await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
+        return
     if getattr(consumer, 'current_game', None):
         if game_uid and str(consumer.current_game.uid) == str(game_uid):
             await _send_existing_player_game_info(consumer)
