@@ -111,7 +111,7 @@ async def handle_direct_message(consumer, content: dict) -> None:
         return
     success, message = await consumer._save_message(body, 'direct-message', content)
     if not success:
-        expected_validation_errors = {'Target is not a friend', 'User not found'}
+        expected_validation_errors = {'USER_NOT_FRIEND', 'User not found'}
         message_text = message.get('message') if isinstance(message, dict) else None
         log_fn = logger.info if message_text in expected_validation_errors else logger.warning
         log_fn('ws.direct_message.save_failed profile_id=%s error=%s',

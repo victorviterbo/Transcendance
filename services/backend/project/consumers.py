@@ -452,8 +452,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                                'message': 'User not found'}
             if not accepted_friendship(self.profile, recipient_user.profile):
-                return False, {'type': 'error',
-                               'message': 'Target is not a friend'}
+                return False, {'target': 'error',
+                               'message': 'USER_NOT_FRIEND'}
             recipient_profile = recipient_user.profile
             room, _ = create_direct_room(self.profile, recipient_profile)
             if room is None:
