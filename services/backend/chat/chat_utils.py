@@ -8,7 +8,6 @@ from .models import Room
 
 
 def direct_key(profile_a: Profile, profile_b: Profile) -> str:
-    """Return the canonical key for a private direct-message room."""
     """Generate a stable, unique key for a direct message room between two users.
 
     Ensures Alice↔Bob has the same key regardless of call order.
@@ -33,7 +32,7 @@ def accepted_friendship(profile_a: Profile, profile_b: Profile) -> bool:
         to_user__in=[user_a, user_b],
     ).exists()
 
-def create_direct_room(profile_a: Profile, profile_b: Profile) -> Room:
+def create_direct_room(profile_a: Profile, profile_b: Profile) -> tuple[Room, bool]:
     """Return the direct room shared by two profiles, creating it if necessary."""
     key = direct_key(profile_a, profile_b)
     
@@ -47,7 +46,7 @@ def create_direct_room(profile_a: Profile, profile_b: Profile) -> Room:
     if created:
         room.participants.add(profile_a, profile_b)
 
-    return room
+    return room, created
 
 def resolve_recipient_user(recipient_uid: str | None) -> SiteUser | None:
     """Resolve a recipient user from either SiteUser.uid or Profile.uid.

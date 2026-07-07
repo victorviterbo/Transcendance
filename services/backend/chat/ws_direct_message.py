@@ -33,7 +33,7 @@ async def update_online_status(consumer, current_profile_id: int, is_online: boo
                 await consumer.group_send(f'user_{sender_uid}', {
                     'type': 'send.notification',
                     'payload': {
-                        'target': '',
+                        'target': 'friend_chat',
                         'event': 'update_status',
                         'message': {
                             'uid': str(ref.get('uid')),
@@ -72,7 +72,7 @@ def mark_pendmessage_delivered(recipient_profile_id: int) -> int:
 
 
 async def handle_friend_chat_payload(consumer, content: dict, event: str | None) -> None:
-    """Translate frontend  payloads into direct-message operations."""
+    """Translate frontend friend_chat payloads into direct-message operations."""
     if event == 'send':
         frontend_message = content.get('message')
         if not isinstance(frontend_message, dict):

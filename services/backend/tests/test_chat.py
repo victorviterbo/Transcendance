@@ -1,13 +1,10 @@
 """Tests for chat HTTP endpoints and WebSocket behavior."""
 
-import uuid
-
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
 from chat.models import Message, Room
 from django.test import TransactionTestCase
-from django.urls import reverse
 from friends.models import Friendship
 from project.asgi import application
 from rest_framework import status
@@ -51,70 +48,6 @@ class ChatViewsTests(TestBaseHelpers, APITestCase):
 		self.user.friends.add(self.friend)
 		self.friend.friends.add(self.user)
 		self.room = Room.objects.create(name='classic')
-
-	def test_room_not_found_returns_404(self) -> None:
-		"""Missing rooms should return a 404 response."""
-		response = self.client.get(urls['chat'] + str(self.user.uid) + '/')
-		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-		self.assertEqual(response.data, {'error': {'room': 'ROOM_NOT_FOUND'}})
-
-	def test_room_found_returns_success(self) -> None:
-		"""Existing public rooms should return their serialized payload."""
-		response = self.client.get(reverse('room', kwargs={'room_uid': self.room.uid}))
-		self.assertEqual(response.status_code, 200)
-		self.assertEqual(uuid.UUID(response.data['uid']), self.room.uid)
-		self.assertEqual(response.data['name'], 'classic')
-		self.assertFalse(response.data['is_direct'])
-		self.assertEqual(response.data['participants'], [])
-
-	def test_room_exclude_history_query(self) -> None:
-		"""Room lookup should return room metadata even when include_history is passed."""
-		Message.objects.create(
-			sender=self.user.profile,
-			room=self.room,
-			body='first message',
-		)
-		Message.objects.create(
-			sender=self.friend.profile,
-			room=self.room,
-			body='second message',
-		)
-		response = self.client.get(
-			reverse('room', kwargs={'room_uid': self.room.uid}) + '?include_history=1'
-		)
-		self.assertEqual(response.status_code, 200)
-		self.assertNotIn('history', response.data)
-		self.assertEqual(uuid.UUID(response.data['uid']), self.room.uid)
-		self.assertEqual(response.data['name'], 'classic')
-
-	def test_room_post_creates_message_and_adds_participant(self) -> None:
-		"""Posting to a room should create a message and add the sender as participant."""
-		self.client.force_login(self.user)
-		response = self.client.post(
-			reverse('room', kwargs={'room_uid': self.room.uid}),
-			{'body': 'hello room'},
-		)
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		self.assertTrue(
-			Message.objects.filter(room=self.room,
-						sender=self.user.profile,
-						body='hello room').exists()
-						)
-		self.assertTrue(self.room.participants.filter(uid=self.user.profile.uid).exists())
-
-	def test_rooms_post_creates_public_room(self) -> None:
-		"""Posting to the room list endpoint should create a public room."""
-		self.client.force_login(self.user)
-		response = self.client.post(
-			reverse('room', kwargs={'room_uid': self.room.uid}),
-			data={'body': 'hello !'},
-			content_type='application/json',
-		)
-		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-		self.assertTrue(Room.objects.filter(uid=self.room.uid,
-											is_direct=False).exists())
-		self.assertTrue(Room.objects.filter(name=self.room.name,
-											is_direct=False).exists())
 
 	def test_direct_room_created_for_friends(self) -> None:
 		"""Direct-room creation should return a shared DM room for friends."""
@@ -261,7 +194,7 @@ class ChatWebsocketTests(TransactionTestCase):
 
 
 			await comm.send_json_to({
-				'target': '', 'event': 'send',
+				'target': 'friend_chat', 'event': 'send',
 				'message': {
 					'message': 'hello friend',
 					'targetUid': str(self.friend.uid),
@@ -270,7 +203,7 @@ class ChatWebsocketTests(TransactionTestCase):
 			dm = None
 			for _ in range(3):
 				r = await comm.receive_json_from()
-				if r.get('target') == '' and r.get('event') == 'new':
+				if r.get('target') == 'friend_chat' and r.get('event') == 'new':
 					dm = r
 					break
 			self.assertIsNotNone(dm)

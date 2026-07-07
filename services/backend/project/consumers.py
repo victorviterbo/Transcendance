@@ -436,7 +436,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 return False, {'type': 'error',
                                'message': 'Target is not a friend'}
             recipient_profile = recipient_user.profile
-            room = create_direct_room(self.profile, recipient_profile)
+            room, _ = create_direct_room(self.profile, recipient_profile)
             if room is None:
                 return False, {'type': 'error',
                     'message': 'Chat room does not exist'}

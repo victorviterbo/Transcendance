@@ -48,7 +48,6 @@ urls = {
     'friends_list': '/api/social/friends/',
     'friend_search': '/api/social/friends-search/',
     'friends_notif': '/api/social/notifs/',
-    'chat': '/api/chat/room/',
     'direct_chat': '/api/chat/direct/',
 }
 
