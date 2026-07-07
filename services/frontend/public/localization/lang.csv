@@ -344,3 +344,5 @@ GAME_ANSWER_NOT_FOUND,Not found,Introuvable,見つかりません,Nicht gefunden
 DELETE_ACCOUNT_SUCCESS,Account deleted successfully,Compte supprimé avec succès,アカウントを削除しました,Konto erfolgreich gelöscht,Message displayed when the account has been deleted
 CONN_LOST,Connection to the server has been lost...,La connexion au serveur a été perdue...,サーバーとの接続が切断されました...,Die Verbindung zum Server wurde unterbrochen...,Message when the connection with websocket is lost
 LOADING,Loading...,Chargement...,読み込み中...,Wird geladen...,Loading wording
+GAME_NOT_FOUND,Game not found,Partie introuvable,ゲームが見つかりません,Spiel nicht gefunden,Error message shown when the game is not found
+GAME_FULL,Game is full,La partie est complète,ゲームは満員です,Das Spiel ist voll,Error message shown when the game has reached its maximum number of players
