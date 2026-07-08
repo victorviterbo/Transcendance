@@ -105,7 +105,7 @@ def _set_current_round(game: Game, round_number: int) -> None:
 
 
 @database_sync_to_async
-def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | None:
+def _get_track_reveal_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None, content: dict | None = None) -> dict | None:
 	"""Get full track data for revealing to players.
 	
 	Args:
@@ -114,10 +114,12 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 	Returns:
 		dict with track details (title, artist, preview_url, artwork_url) or None
 	"""
+	if game is None:
+		game = consumer.current_game
 	try:
-		if not consumer.current_game.current_track:
+		if not game.current_track:
 			return None, None
-		serialized_track = TrackSerializer(consumer.current_game.current_track).data
+		serialized_track = TrackSerializer(game.current_track).data
 		track_data = {
 			'title': serialized_track['title'],
 			'artist': serialized_track['artist'],
@@ -309,7 +311,6 @@ def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 
 
 @database_sync_to_async
-@database_sync_to_async
 def _remove_player_from_game_stats(game: Game, player: Profile) -> bool:
     """Remove a player from a game by deleting UserGameStats entry."""
     try:
@@ -334,24 +335,30 @@ def _get_num_curr_players(game: Game) -> int:
 	return len(game.players.all())
 
 @database_sync_to_async
-def _get_game_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
 	"""Retrieve game data for header."""
-	return GameHeaderSerializer(consumer.current_game).data
+	if game is None:
+		game = consumer.current_game
+	return GameHeaderSerializer(game).data
 
 @database_sync_to_async
-def _get_game_settings_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_settings_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
 	"""Retrieve game setting data."""
-	return GameSettingsSerializer(consumer.current_game).data
+	if game is None:
+		game = consumer.current_game
+	return GameSettingsSerializer(game).data
 
 @database_sync_to_async
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:
 	"""Retrieve player data."""
 	return LightProfileSerializer(consumer.profile).data
 
-def _build_base_game_payload(consumer: 'GlobalConsumer') -> dict:
+def _build_base_game_payload(consumer: 'GlobalConsumer' | None = None, game: Game | None = None, current_player: Profile | None = None) -> dict:
     """Helper to build the shared payload data (leaderboard, history, self, uid)."""
-    game = consumer.current_game
-    current_player = consumer.profile
+    if game is None:
+        game = consumer.current_game
+    if current_player is None:
+        current_player = consumer.profile
 
     leaderboard_rows = (
         UserGameStats.objects.filter(game=game)
@@ -378,20 +385,22 @@ def _build_base_game_payload(consumer: 'GlobalConsumer') -> dict:
 
 
 @database_sync_to_async
-def _get_game_info_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_info_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
     """Build the game_info payload for a joining player."""
-    payload = _build_base_game_payload(consumer)
+    payload = _build_base_game_payload(consumer, game, consumer.profile if consumer else None)
 
-    payload['game'] = GameHeaderSerializer(consumer.current_game).data
-    payload['settings'] = GameSettingsSerializer(consumer.current_game).data
+    if game is None:
+        game = consumer.current_game
+    payload['game'] = GameHeaderSerializer(game).data
+    payload['settings'] = GameSettingsSerializer(game).data
     
     return payload
 
 
 @database_sync_to_async
-def _get_game_ended_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_ended_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
     """Build the game_ended payload for all players."""
-    return _build_base_game_payload(consumer)
+    return _build_base_game_payload(consumer, game, consumer.profile if consumer else None)
 
 @database_sync_to_async
 def _get_game_history_data(game_uid: str, player: Profile) -> list[dict]:

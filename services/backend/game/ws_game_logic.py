@@ -101,46 +101,49 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     try:
         game = consumer.current_game
         game_uid = game.uid
-        await _setup_game_assets(consumer.current_game)
-        serialized_game = await _get_game_data(consumer)
-        serialized_settings = await _get_game_settings_data(consumer)
-        await _send_start_signal(consumer, serialized_game, serialized_settings)
+        game_group_name = f'game_{game_uid}'
+        
+        await _setup_game_assets(game)
+        serialized_game = await _get_game_data(game=game)
+        serialized_settings = await _get_game_settings_data(game=game)
+        await _send_start_signal(consumer, serialized_game, serialized_settings, game_group_name)
         await asyncio.sleep(answer_buffer_time)
-        for round in range(1, consumer.current_game.trackCount + 1):
-            ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].clear()
-            await _set_current_round(consumer.current_game, round)
-            await _init_round_stats(consumer.current_game)
-            serialized_game = await _get_game_data(consumer)
+        for round in range(1, game.trackCount + 1):
+            ACTIVE_GAMES[game_uid]['all_answers_received'].clear()
+            await _set_current_round(game, round)
+            await _init_round_stats(game)
+            serialized_game = await _get_game_data(game=game)
             serialized_track_full, serialized_track_blind = (
-                await _get_track_reveal_data(consumer, content)
+                await _get_track_reveal_data(game=game, content=content)
             )
-            #Preview sent for buffering, countdown starts - Fabien
             #TODO: put serialized_track_blind for  _send_round_preview for prod
-            await _send_round_preview(consumer, serialized_game, serialized_track_full)
+            await _send_round_preview(consumer, serialized_game, serialized_track_full, game_group_name, game)
             await asyncio.sleep(countdown_time)
             #Track sent to start the round (should we keep both? or just send the track in advance?) - Fabien
-            await _send_track(consumer, serialized_game, serialized_track_blind)
+            await _send_track(consumer, serialized_game, serialized_track_blind, game_group_name, game)
             with suppress(TimeoutError):
                 await asyncio.wait_for(
-                    ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].wait(),
-                    timeout=consumer.current_game.playbackDuration
+                    ACTIVE_GAMES[game_uid]['all_answers_received'].wait(),
+                    timeout=game.playbackDuration
                         + answer_buffer_time
                 )
-            round_stats = await _compute_round_stats(consumer.current_game)
-            serialized_game = await _get_game_data(consumer)
-            game_leaderboard_data = await _get_game_ended_data(consumer)
+            round_stats = await _compute_round_stats(game)
+            serialized_game = await _get_game_data(game=game)
+            game_leaderboard_data = await _get_game_ended_data(consumer=consumer, game=game)
             await _send_round_stats(consumer,
                                     round_stats,
                                     serialized_game,
                                     serialized_track_full,
-                                    game_leaderboard_data.get('leaderboard'))
-            if round < consumer.current_game.trackCount:
-                await asyncio.sleep(consumer.current_game.breakDuration - countdown_time)
+                                    game_leaderboard_data.get('leaderboard'),
+                                    game_group_name,
+                                    game)
+            if round < game.trackCount:
+                await asyncio.sleep(game.breakDuration - countdown_time)
             else:
-                await asyncio.sleep(consumer.current_game.breakDuration)
-        await _compute_game_stats(consumer.current_game)
-        serialized_game_ended = await _get_game_ended_data(consumer)
-        await _send_game_ended(consumer, serialized_game_ended)
+                await asyncio.sleep(game.breakDuration)
+        await _compute_game_stats(game)
+        serialized_game_ended = await _get_game_ended_data(consumer=consumer, game=game)
+        await _send_game_ended(consumer, serialized_game_ended, game_group_name)
     except serializers.ValidationError as e:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
@@ -149,7 +152,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         pass
     finally:
         await asyncio.sleep(30)
-        await _send_game_closed(consumer, game_uid)
+        await _send_game_closed(consumer, game_uid, game_group_name)
         await _game_cleanup(game)
         ACTIVE_GAMES.pop(game_uid, None)
 
