@@ -27,7 +27,7 @@ function PGameRoundAnswer({ answer, settings, variant }: PGameRoundAnswerProps) 
 	return (
 		<Stack sx={style.main} direction={"row"}>
 			<Box sx={style.iconBG}></Box>
-			<CText size="sm" sx={style.message}>
+			<CText size="sm" noTr={true} sx={style.message}>
 				{answer.message}
 			</CText>
 			<CText size="2xs" sx={style.time}>

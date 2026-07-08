@@ -58,7 +58,7 @@ function PLeaderboardRow({ entry }: PLeaderboardRowProps) {
 						alignItems={{ xs: "flex-start", sm: "center" }}
 					>
 						<CUserProfileLink username={entry.username}>
-							<CTitle size="sm" sx={{ mb: 0 }}>
+							<CTitle noTr={true} size="sm" sx={{ mb: 0 }}>
 								{entry.username}
 							</CTitle>
 						</CUserProfileLink>
