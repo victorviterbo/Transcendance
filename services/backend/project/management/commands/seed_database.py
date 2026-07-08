@@ -1,5 +1,6 @@
 """Seed demo users, friendships, games, and stats."""
 import random
+import uuid
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -76,11 +77,6 @@ class Command(BaseCommand):
 			))
 			return 0
 
-		playlist = (
-			Playlist.objects.filter(tracks__isnull=False)
-			.distinct()
-			.first()
-		)
 		games_created = 0
 
 		for game_index in range(1, 11):
@@ -88,6 +84,13 @@ class Command(BaseCommand):
 			game_tracks = random.sample(tracks, min(5, len(tracks)))
 			owner = players[0]
 			winner = random.choice(players)
+			
+			playlist = Playlist.objects.create(
+				name=f"Blind Test Playlist {game_index}",
+				uid=uuid.uuid4()
+			)
+			playlist.tracks.set(game_tracks)
+			
 			game = Game.objects.create(
 				name=f"Blind Test Arena {game_index}",
 				status="finished",

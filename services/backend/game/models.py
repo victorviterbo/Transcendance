@@ -28,15 +28,15 @@ class Game(models.Model):
                                     )
     
     room = models.OneToOneField(Room,
-                                on_delete=models.CASCADE,
+                                on_delete=models.SET_NULL,
                                 null=True)
     
     
     
-    playlist = models.ForeignKey(Playlist,
-                                    on_delete=models.CASCADE,
+    playlist = models.OneToOneField(Playlist,
+                                    on_delete=models.SET_NULL,
                                     null=True,
-                                    related_name='games')
+                                    related_name='game')
     
     status = models.CharField(max_length=20,
                                 choices=[
@@ -111,6 +111,14 @@ class Game(models.Model):
                                 on_delete=models.SET_NULL,
                                 null=True,
                                 related_name='owned_games')
+
+    def delete(self, *args, **kwargs):
+        """Delete the game and its associated room and playlist."""
+        if self.room:
+            self.room.delete()
+        if self.playlist:
+            self.playlist.delete()
+        super().delete(*args, **kwargs)
 
     class Meta:
         """Define special behaviour of database."""

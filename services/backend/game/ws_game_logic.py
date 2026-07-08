@@ -98,6 +98,8 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
 async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     """Run the main game loop, cycling through rounds and sending updates."""
     try:
+        game = consumer.current_game
+        game_uid = game.uid
         await _setup_game_assets(consumer.current_game)
         serialized_game = await _get_game_data(consumer)
         serialized_settings = await _get_game_settings_data(consumer)
@@ -145,10 +147,9 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     except asyncio.CancelledError:
         pass
     finally:
-        game_uid = consumer.current_game.uid
         await asyncio.sleep(30)
         await _send_game_closed(consumer, game_uid)
-        await database_sync_to_async(consumer.current_game.delete)()
+        await database_sync_to_async(game.delete)()
         ACTIVE_GAMES.pop(game_uid, None)
 
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
