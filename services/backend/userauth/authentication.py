@@ -33,6 +33,7 @@ class CookieJWTAuthentication(JWTAuthentication):
                         request.auth is set to None
                         permissions are set (IsAuthenticated, IsAdminUser)
         """
+        print(f"Authenticating request: {request}\n")
         header = self.get_header(request)
         if header is None:
             return None
@@ -40,15 +41,21 @@ class CookieJWTAuthentication(JWTAuthentication):
         if raw_token is None:
             return None
         try:
+            print(f"Raw token: {raw_token}\n")
             validated_token = self.get_validated_token(raw_token)
+            if not validated_token:
+                raise AuthenticationFailed(detail="Token is invalid or corrupted.", code="TOKEN_INVALID")
             user = self.get_user(validated_token)
             if user:
                 request.profile = user.profile
                 return user, validated_token
-            return None
+            raise AuthenticationFailed(detail="User not found.", code="USER_NOT_FOUND")
         except InvalidToken as e:
+            print("Invalid token error:", e.detail)
             raise AuthenticationFailed(detail=e.detail) from e
         except TokenError as e:
+            print("Token error:", e.detail)
             raise AuthenticationFailed(detail="Token is invalid or corrupted.") from e
-        except Exception:
-            return None
+        except Exception as e:
+            print("Unexpected error:", e)
+            raise AuthenticationFailed(detail="Authentication failed due to an unexpected error.", code="AUTHENTICATION_OUTDATED")

@@ -10,12 +10,12 @@ from channels.generic.websocket import (
 )
 from chat.chat_utils import accepted_friendship, create_direct_room
 from chat.models import Message, Room
-from chat.ws_game_chat import handle_game_chat_payload
 from chat.ws_direct_message import (
     handle_friend_chat_payload,
     set_chat_open,
     update_online_status,
 )
+from chat.ws_game_chat import handle_game_chat_payload
 from game.models import Game
 from game.ws_game_db_helpers import _get_game_history_data
 from game.ws_game_logic import handle_game_action

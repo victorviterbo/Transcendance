@@ -114,7 +114,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
-    ]
+    ],
+    'EXCEPTION_HANDLER': 'userauth.exceptions.custom_auth_exception_handler',
 }
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -125,6 +126,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'CHECK_REVOKE_TOKEN': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # Added for Channels: point ASGI application to channels routing(for chatroom)

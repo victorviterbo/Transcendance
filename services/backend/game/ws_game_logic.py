@@ -303,13 +303,12 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'event': 'error',
                             'message': 'Only owner can edit game'})
         return
-    settings_payload = content#.get('settings', {}) #TODO recheck
+    settings_payload = content.get('settings', {})
     print(f"Settings payload: {settings_payload}\n")
     try:
         updated_game = await _apply_game_settings(consumer.current_game,
                                                     settings_payload,
                                                     partial=True)
-        print(f"Updated game settings: {updated_game.__dict__}\n")
     except serializers.ValidationError as exc:
             await consumer.send_json({
                 'target': 'game',

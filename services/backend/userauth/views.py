@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
 
@@ -167,6 +167,7 @@ class RefreshTokenView(TokenRefreshView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handles display of user profile."""
+        print(f'HELLLOOOOOOO {request.COOKIES.get("refresh-token")}\n')
         refresh_token = request.COOKIES.get('refresh-token')
         if not refresh_token:
             return Response({'error': {'cookie': 'MISSING_FIELD'}},
@@ -175,19 +176,16 @@ class RefreshTokenView(TokenRefreshView):
         serializer = self.get_serializer(data={'refresh': refresh_token})
         try:
             serializer.is_valid(raise_exception=True)
-        except (InvalidToken, TokenError):
+            AccessToken(refresh_token)
+        except (InvalidToken, TokenError, Exception, serializers.ValidationError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)
-        except Exception:
-            return Response({'error': {'cookie': 'INVALID'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
         response_data = serializer.validated_data.copy()
         new_refresh = response_data.pop('refresh', None)
-
         try:
             token = RefreshToken(new_refresh or refresh_token)
             user = SiteUser.objects.get(id=token['user_id'])
+            print(f'id: {user.id}, username: {user.profile.username}, email: {user.email}\n')
             response_data['username'] = user.profile.username
         except (KeyError, SiteUser.DoesNotExist, TokenError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
