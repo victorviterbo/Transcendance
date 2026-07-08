@@ -149,7 +149,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     finally:
         await asyncio.sleep(30)
         await _send_game_closed(consumer, game_uid)
-        await database_sync_to_async(game.delete)()
+        await _game_cleanup(game)
         ACTIVE_GAMES.pop(game_uid, None)
 
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
@@ -160,20 +160,16 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     except ValueError:
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
+    #FIXME: Need DB check, not consumercheck
     if getattr(consumer, 'current_game', None):
         if game_uid and str(consumer.current_game.uid) == str(game_uid):
             await _send_existing_player_game_info(consumer)
         else:
             await _send_game_error(consumer, 'ALREADY_IN_GAME')
         return
-    if game_uid is None:
-        await consumer.send_json({'target': 'game',
-                                'event': 'error',
-                                'message': 'uid: missing field'})
-        return
     #FIXME: The consumer is registered to a game, but is still inside if an error is met
     consumer.current_game = await _get_game(consumer, game_uid, False)
-    if not getattr(consumer, 'current_game', None):
+    if not getattr(consumer, 'current_game', None) or consumer.current_game.status == 'finished':
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
     is_already_in_game = await _check_game_membership(consumer.current_game,
@@ -399,3 +395,14 @@ def _clone_game_for_restart(game: Game) -> Game:
     new_game.room = room
     new_game.save(update_fields=['room'])
     return new_game
+
+
+async def _game_cleanup(game: Game) -> None:
+    """Delete room and playlist but keep the game record for stats."""
+    if game.room:
+        await database_sync_to_async(game.room.delete)()
+    if game.playlist:
+        await database_sync_to_async(game.playlist.delete)()
+    game.room = None
+    game.playlist = None
+    await database_sync_to_async(game.save)(update_fields=['room', 'playlist'])
