@@ -20,8 +20,7 @@ async def _send_game_error(consumer: 'GlobalConsumer', game_uid: str , message: 
         'message': message,
         'critical': critical,
         'currentGameUid': str(consumer.current_game.uid)
-                            if (message == 'ALREADY_IN_GAME'
-                            and getattr(consumer, 'current_game', None)) else None
+                            if (message == 'ALREADY_IN_GAME') else None
     })
 
 async def _send_existing_player_game_info(consumer: 'GlobalConsumer') -> None:

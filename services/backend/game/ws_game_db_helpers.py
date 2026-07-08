@@ -309,15 +309,14 @@ def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 
 
 @database_sync_to_async
-def _remove_player_from_game_stats(consumer: 'GlobalConsumer', content: dict) -> bool:
-	"""Remove a player from a game by deleting UserGameStats entry."""
-	try:
-		UserGameStats.objects.filter(game=consumer.current_game,
-									player=consumer.profile).delete()
-		consumer.current_game.player.remove(consumer.profile)
-		return True
-	except Exception:
-		return False
+@database_sync_to_async
+def _remove_player_from_game_stats(game: Game, player: Profile) -> bool:
+    """Remove a player from a game by deleting UserGameStats entry."""
+    try:
+        UserGameStats.objects.filter(game=game, player=player).delete()
+        return True
+    except Exception:
+        return False
 
 @database_sync_to_async
 def _apply_game_settings(game: Game,
@@ -408,3 +407,15 @@ def _get_game_history_data(game_uid: str, player: Profile) -> list[dict]:
 def _check_game_membership(game: Game, player: Profile) -> bool:
 	"""Check if player is in a game."""
 	return Game.objects.filter(uid=game.uid, players__id=player.id).exists()
+
+
+@database_sync_to_async
+def _get_active_game_for_player(player: Profile) -> Game | None:
+	"""Return the game a player is currently attached to, if any (excluding finished games)."""
+	stats = (
+		UserGameStats.objects
+		.filter(player=player, game__status__in=['waiting', 'playing_round', 'playing_break'])
+		.select_related('game')
+		.first()
+	)
+	return stats.game if stats else None

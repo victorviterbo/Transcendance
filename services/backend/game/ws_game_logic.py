@@ -23,6 +23,7 @@ from .ws_game_db_helpers import (
     _apply_game_settings,
     _check_game_membership,
     _compute_round_stats,
+    _get_active_game_for_player,
     _get_game,
     _get_game_data,
     _get_game_ended_data,
@@ -160,14 +161,17 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     except ValueError:
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
-    #FIXME: Need DB check, not consumercheck
-    if getattr(consumer, 'current_game', None):
-        if game_uid and str(consumer.current_game.uid) == str(game_uid):
+    # Check if player is already in an active game (DB check)
+    existing_game = await _get_active_game_for_player(consumer.profile)
+    if existing_game:
+        consumer.current_game = existing_game
+        consumer.game_group_name = f'game_{existing_game.uid}'
+        await consumer.add_to_layer(consumer.game_group_name)
+        if game_uid and str(existing_game.uid) == str(game_uid):
             await _send_existing_player_game_info(consumer)
         else:
-            await _send_game_error(consumer, 'ALREADY_IN_GAME')
+            await _send_game_error(consumer, game_uid, 'ALREADY_IN_GAME')
         return
-    #FIXME: The consumer is registered to a game, but is still inside if an error is met
     consumer.current_game = await _get_game(consumer, game_uid, False)
     if not getattr(consumer, 'current_game', None) or consumer.current_game.status == 'finished':
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
