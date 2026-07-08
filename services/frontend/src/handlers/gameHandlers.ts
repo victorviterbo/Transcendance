@@ -179,7 +179,7 @@ export class GameInstance {
 		const playerIndex: number = this.players.findIndex(
 			(player: IGamePlayer) => player.player.uid == data.player.uid,
 		);
-		if (!playerIndex) return;
+		if (playerIndex < 0) return;
 		const player: IGamePlayer = this.players.splice(playerIndex, 1)[0];
 		this.log("Player: '" + player.player.username + "' has left");
 		this.addMessage(player, "leaved");
