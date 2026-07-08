@@ -228,7 +228,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'self': self.profile_data,
             'answer': event.get('answer'),
             'trackArtist': event.get('trackArtist'),
-            'tracktitle': event.get('tracktitle'),
+            'trackTitle': event.get('trackTitle'),
             'correct': event.get('is_correct', False),
             'time': event.get('time'),
         })

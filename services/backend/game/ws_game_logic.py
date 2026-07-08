@@ -22,6 +22,7 @@ from .ws_game_db_helpers import (
     _add_player_to_game_stats,
     _apply_game_settings,
     _check_game_membership,
+    _compute_game_stats,
     _compute_round_stats,
     _get_active_game_for_player,
     _get_game,
@@ -43,8 +44,8 @@ from .ws_game_db_helpers import (
 )
 from .ws_game_send_helpers import (
     _send_existing_player_game_info,
-    _send_game_error,
     _send_game_ended,
+    _send_game_error,
     _send_game_info,
     _send_game_restarted,
     _send_new_player,
@@ -302,7 +303,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'event': 'error',
                             'message': 'Only owner can edit game'})
         return
-    settings_payload = content.get('settings', {}) #TODO recheck
+    settings_payload = content#.get('settings', {}) #TODO recheck
     print(f"Settings payload: {settings_payload}\n")
     try:
         updated_game = await _apply_game_settings(consumer.current_game,

@@ -190,7 +190,11 @@ class TestWebsocketHelpers(APITransactionTestCase):
             payloads['start'].append(payload)
         for answers in player_answer:
             await answers['socket'].send_json_to(answers['payload'])
-            if (answers['is_correct']) or (not answers['is_correct'] and public):
+            for p in players:
+                payload = await self.expect_event(p, 'answer_broadcast')
+                payloads['end'].append(payload)
+                self.assertTrue(not public or payload.get('answer') is None, True)
+            if not answers['is_correct'] and public:
                 for p in players:
                     print(p)
                     payload = await self.expect_event(p, answers['expected_response'])
@@ -199,6 +203,7 @@ class TestWebsocketHelpers(APITransactionTestCase):
                 payload = await self.expect_event(answers['socket'],
                                                 answers['expected_response'])
                 payloads['in_game'].append(payload)
+            
         for p in players:
             payload = await self.expect_event(p, 'round_ended')
             payloads['end'].append(payload)

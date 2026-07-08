@@ -279,7 +279,7 @@ def _compute_game_stats(game: Game) -> dict:
 	winner_stats = player_scores.first()
 	if winner_stats:
 		UserGameStats.objects.filter(
-            game=game, 
+            game=game,
             player_id=winner_stats['player']
         ).update(is_won=True)
 	game.status = 'finished'
