@@ -37,7 +37,7 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 			>
 				<Box
 					sx={(theme) => ({
-						fontFamily: "Knewave, " + theme.typography.fontFamily,
+						fontFamily: "TitleFont, " + theme.typography.fontFamily,
 						fontSize: { xs: "1.05rem", sm: "1.2rem" },
 						lineHeight: 1,
 						color: theme.palette.text.primary,

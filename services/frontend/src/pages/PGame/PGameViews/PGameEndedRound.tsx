@@ -39,7 +39,7 @@ function PGameEndedRound({ round, settings }: PGameEndedRoundProps) {
 					<CText size="md" sx={{ m: 0 }} noTr={true}>
 						{round.track.title}
 					</CText>
-					<CText size="sm" sx={{ m: 0, color: appColors.greys[0] }}  noTr={true}>
+					<CText size="sm" sx={{ m: 0, color: appColors.greys[0] }} noTr={true}>
 						{round.track.artist}
 					</CText>
 				</Stack>
