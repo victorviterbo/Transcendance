@@ -2,7 +2,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AudiotrackIcon from "@mui/icons-material/Audiotrack";
 import CircleIcon from "@mui/icons-material/Circle";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import MicIcon from "@mui/icons-material/Mic";
+import MicExternalOnIcon from "@mui/icons-material/MicExternalOn";
 import { Box, Stack } from "@mui/material";
 import { useMemo, type ReactNode } from "react";
 import CText from "../../components/text/CText";
@@ -101,7 +101,7 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 					/>
 				) : null}
 				<RoundMetaItem
-					icon={<MicIcon fontSize="small" />}
+					icon={<MicExternalOnIcon fontSize="small" />}
 					style={style}
 					value={undefined}
 					statusColor={roundInfos.artistStatusColor}
