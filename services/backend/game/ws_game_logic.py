@@ -32,18 +32,16 @@ from .ws_game_db_helpers import (
     _get_game_settings_data,
     _get_num_curr_players,
     _get_player_data,
-    _get_round_stats_completeness,
     _get_track_reveal_data,
     _init_round_stats,
-    _compute_game_stats,
     _remove_player_from_game_stats,
     _set_current_round,
     _setup_game_assets,
-    _compute_game_stats,
     _validate_answer,
 )
 from .ws_game_send_helpers import (
     _send_existing_player_game_info,
+    _send_game_closed,
     _send_game_ended,
     _send_game_error,
     _send_game_info,
@@ -53,7 +51,6 @@ from .ws_game_send_helpers import (
     _send_round_stats,
     _send_start_signal,
     _send_track,
-    _send_game_closed,
 )
 
 if TYPE_CHECKING:

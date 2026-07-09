@@ -292,19 +292,6 @@ def _compute_game_stats(game: Game) -> dict:
 	stats = UserGameStats.objects.filter(game=game).select_related('player').all()
 	return LiveGameSerializer(stats, many=True).data
 
-
-@database_sync_to_async
-def _get_round_stats_completeness(game: Game) -> dict:
-    """Performs a single database query to count artist_fount and title_found."""
-    return UserRoundStats.objects.filter(
-        round__game=game,
-        round__round_number=game.current_round
-    ).aggregate(
-        titles=Count('id', filter=Q(title_found=True)),
-        artists=Count('id', filter=Q(artist_found=True))
-    )
-
-
 @database_sync_to_async
 def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 	"""Add a player to a game by creating UserGameStats entry."""

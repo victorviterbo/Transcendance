@@ -9,7 +9,6 @@ def custom_auth_exception_handler(exc: Exception, context: dict) -> Response | N
     """Call DRF's standard exception handler first to get the standard error response."""
     response = exception_handler(exc, context)
     request = context.get('request')
-    print(response)
     if response is not None and getattr(exc, 'detail', None):
         exc_code = getattr(exc.detail, 'code', None)
         if exc_code == "AUTHENTICATION_OUTDATED":

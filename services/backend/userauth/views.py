@@ -167,7 +167,6 @@ class RefreshTokenView(TokenRefreshView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handles display of user profile."""
-        print(f'HELLLOOOOOOO {request.COOKIES.get("refresh-token")}\n')
         refresh_token = request.COOKIES.get('refresh-token')
         if not refresh_token:
             return Response({'error': {'cookie': 'MISSING_FIELD'}},
@@ -185,7 +184,6 @@ class RefreshTokenView(TokenRefreshView):
         try:
             token = RefreshToken(new_refresh or refresh_token)
             user = SiteUser.objects.get(id=token['user_id'])
-            print(f'id: {user.id}, username: {user.profile.username}, email: {user.email}\n')
             response_data['username'] = user.profile.username
         except (KeyError, SiteUser.DoesNotExist, TokenError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
