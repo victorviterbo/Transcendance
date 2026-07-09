@@ -5,8 +5,10 @@ import logging
 from channels.db import database_sync_to_async
 from chat.models import Message
 from chat.serializers import FriendChatMessageSerializer
+from chat.validators import validate_chat_message_body
 from django.core.cache import cache
 from django.db import models
+from rest_framework import serializers
 from django.db import transaction
 from userprofile.models import Profile
 
@@ -121,9 +123,12 @@ async def handle_friend_chat_payload(consumer, content: dict, event: str | None)
 
 async def handle_direct_message(consumer, content: dict) -> None:
     """Handle a direct-message payload from the websocket consumer."""
-    body = str(content.get('message', '')).strip()
-    if not body:
-        await consumer.send_json({'type': 'error', 'message': 'message is required'})
+    try:
+        body = validate_chat_message_body(content.get('message'))
+    except serializers.ValidationError as exc:
+        codes = exc.get_codes()
+        message = 'MESSAGE_TOO_LONG' if 'max_length' in codes else 'MESSAGE_REQUIRED'
+        await consumer.send_json({'type': 'error', 'message': message})
         return
     success, message = await consumer._save_message(body, 'direct-message', content)
     if not success:

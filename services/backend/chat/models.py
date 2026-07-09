@@ -4,6 +4,8 @@ import uuid
 
 from django.db import models
 
+from .validators import chat_message_body_validators
+
 
 class Room(models.Model):
 	"""Represents either a public chat room or a private direct-message room."""
@@ -29,7 +31,7 @@ class Message(models.Model):
 
 	sender = models.ForeignKey('userprofile.Profile', on_delete=models.CASCADE)
 	room = models.ForeignKey(Room, on_delete=models.CASCADE)
-	body = models.TextField()
+	body = models.TextField(validators=chat_message_body_validators)
 	delivered = models.BooleanField(default=False)
 	seen = models.BooleanField(default=False)
 	updated = models.DateTimeField(auto_now=True)

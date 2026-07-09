@@ -11,6 +11,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import PGameChatNode from "./PGameChatNode";
 import type { GameInstance } from "../../handlers/gameHandlers";
 import { isKeyboardSubmit } from "../../utils/keyboard";
+import { CHAT_MESSAGE_MAX_LENGTH } from "../../constants";
 
 interface PGameChatProps extends GPageProps {
 	game: React.RefObject<GameInstance | undefined>;
@@ -30,14 +31,9 @@ function PGameChat({ game, chat }: PGameChatProps) {
 
 	//====================== EVENT ======================
 	function handleSendMessage() {
-		if (
-			!game.current ||
-			!messageField ||
-			messageField.length == 0 ||
-			/^\s+$/g.test(messageField)
-		)
-			return;
-		game.current.sendChatMessage(messageField);
+		const message = messageField.trim();
+		if (!game.current || !message || message.length > CHAT_MESSAGE_MAX_LENGTH) return;
+		game.current.sendChatMessage(message);
 		setMessageField("");
 	}
 
@@ -77,7 +73,9 @@ function PGameChat({ game, chat }: PGameChatProps) {
 						verticalPadding="10px"
 						value={messageField}
 						onChange={(event) => {
-							setMessageField(event.target.value);
+							if (event.target.value.trim().length <= CHAT_MESSAGE_MAX_LENGTH) {
+								setMessageField(event.target.value);
+							}
 						}}
 						onKeyUp={(event) => {
 							if (isKeyboardSubmit(event)) handleSendMessage();

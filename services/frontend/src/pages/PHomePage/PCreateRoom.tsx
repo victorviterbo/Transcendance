@@ -16,6 +16,8 @@ import PublicIcon from "@mui/icons-material/Public";
 import { useLang } from "../../components/contexts/CLanguageProvider";
 import { isKeyboardSubmit } from "../../utils/keyboard";
 
+const GAME_NAME_MAX_LENGTH = 40;
+
 function PCreateRoom() {
 	const [name, setName] = useState("");
 	const [visibility, setVisibility] = useState<TGameVisibility>("public");
@@ -48,7 +50,11 @@ function PCreateRoom() {
 					sx={{ m: 0 }}
 					label={ttr("GAME_NAME")}
 					value={name}
-					onChange={(event) => setName(event.target.value)}
+					onChange={(event) => {
+						if (event.target.value.trim().length <= GAME_NAME_MAX_LENGTH) {
+							setName(event.target.value);
+						}
+					}}
 					onKeyUp={(event) => {
 						if (isKeyboardSubmit(event)) handleCreateRoom();
 					}}

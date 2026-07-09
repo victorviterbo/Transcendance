@@ -13,6 +13,7 @@ import type { IWSContextModule, IWSGameSendEvent, TWSRcv, TWSSend } from "../../
 import { useWS } from "../../components/websocket/CWebsocket";
 import { fetchFriendMessages } from "../../api/social";
 import { isKeyboardSubmit } from "../../utils/keyboard";
+import { CHAT_MESSAGE_MAX_LENGTH } from "../../constants";
 
 interface PFriendChatProps extends GPageProps {
 	targetFriend?: IFriendInfo;
@@ -100,11 +101,12 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 
 	//====================== OUTGOING ======================
 	const handleSendMessage = useCallback(() => {
-		if (!messageField || messageField.length == 0) return;
+		const message = messageField.trim();
+		if (!message || message.length > CHAT_MESSAGE_MAX_LENGTH) return;
 		if (!targetFriend) return;
 
 		const nMessage: IFriendMessage = {
-			message: messageField,
+			message,
 			date: new Date(),
 			status: "not-sent",
 			targetUid: targetFriend.uid,
@@ -155,7 +157,9 @@ function PFriendChat({ targetFriend }: PFriendChatProps) {
 					fontSize={appTexts.text.sizes.sm}
 					value={messageField}
 					onChange={(event) => {
-						setMessageField(event.target.value);
+						if (event.target.value.trim().length <= CHAT_MESSAGE_MAX_LENGTH) {
+							setMessageField(event.target.value);
+						}
 					}}
 					onKeyUp={(event) => {
 						if (isKeyboardSubmit(event)) handleSendMessage();
