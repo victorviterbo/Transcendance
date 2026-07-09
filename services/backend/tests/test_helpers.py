@@ -52,6 +52,7 @@ urls = {
 }
 
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'
+STATIC_ROOT = settings.STATIC_ROOT
 
 class TestBaseHelpers:
     """Shared setup and helper functions for game tests."""

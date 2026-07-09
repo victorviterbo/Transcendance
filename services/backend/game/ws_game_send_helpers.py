@@ -83,6 +83,7 @@ async def _send_round_preview(consumer: 'GlobalConsumer',
         'round': game.current_round,
     })
 
+
 async def _send_round_stats(consumer: 'GlobalConsumer',
                             serialized_round_stats: dict,
                             serialized_game: dict,
@@ -110,15 +111,15 @@ async def _send_round_stats(consumer: 'GlobalConsumer',
             'is_last_round': (game.current_round >= game.trackCount)}
     await consumer.group_send(group_name, event)
 
-async def _send_game_stats(consumer: 'GlobalConsumer',
-                           serialized_stats: dict,
-                           serialized_game: dict) -> None:
-    """Send final game stats to players at the end of a game."""
-    await consumer.group_send(consumer.game_group_name, {
-        'type': 'game_completed',
-        'game': serialized_game,
-        'leaderboard': serialized_stats
-        })
+async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict, group_name: str | None = None) -> None:
+    """Broadcast game_ended to all players."""
+    if group_name is None:
+        group_name = consumer.game_group_name
+    await consumer.group_send(group_name, {
+        'type': 'game_ended_event',
+        'uid': game_ended['uid'],
+        'leaderboard': game_ended['leaderboard'],
+    })
 
 async def _send_new_player(consumer: 'GlobalConsumer',
                             serialized_game: dict,
@@ -153,16 +154,6 @@ async def _send_game_info(consumer: 'GlobalConsumer', game_info: dict) -> None:
         'settings': game_info['settings'],
         'leaderboard': game_info['leaderboard'],
         'history': game_info['history']
-    })
-
-async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict, group_name: str | None = None) -> None:
-    """Broadcast game_ended to all players."""
-    if group_name is None:
-        group_name = consumer.game_group_name
-    await consumer.group_send(group_name, {
-        'type': 'game_ended_event',
-        'uid': game_ended['uid'],
-        'leaderboard': game_ended['leaderboard'],
     })
 
 

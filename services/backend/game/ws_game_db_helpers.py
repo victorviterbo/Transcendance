@@ -36,11 +36,11 @@ def _get_game(consumer: Any,
 	"""Fetch a Game instance by uid, and check for player's membership if requested."""
 	if not game_uid:
 		return None
-	if game_uid in ACTIVE_GAMES:
-		if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
-			return None
-		else:
-			return ACTIVE_GAMES[game_uid]['task']
+	#if game_uid in ACTIVE_GAMES:
+	#	if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
+	#		return None
+	#	else:
+	#		return ACTIVE_GAMES[game_uid]['task']
 	if req_membership:
 		return (Game.objects.filter(uid=game_uid,
 							players=consumer.profile)
@@ -125,14 +125,14 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer' | None = None, game: Game 
 		if not game.current_track:
 			return None, None
 		serialized_track = TrackSerializer(game.current_track).data
-		track_data = {
+		"""track_data = {
 			'title': serialized_track['title'],
 			'artist': serialized_track['artist'],
 			'preview': serialized_track['preview_url'],
 			'artwork': serialized_track['artwork_url'],
-		}
-		track_data_hidden = {'preview': track_data['preview']}
-		return track_data, track_data_hidden
+		}"""
+		serialized_track_hidden = {'preview': serialized_track['preview']}
+		return serialized_track, serialized_track_hidden
 	except Game.DoesNotExist:
 		return None, None
 
@@ -307,7 +307,15 @@ def _remove_player_from_game_stats(game: Game, player: Profile) -> bool:
     """Remove a player from a game by deleting UserGameStats entry."""
     try:
         UserGameStats.objects.filter(game=game, player=player).delete()
-        return True
+        game.players.remove(player)
+        if not game.players.exists():
+            game.status = 'finished'
+            game.save(update_fields=['status'])
+            ACTIVE_GAMES[game.uid]['task'].cancel()
+            return False
+        elif game.owned_by == player:
+            game.save(update_fields=['owned_by'])
+            return True
     except Exception:
         return False
 

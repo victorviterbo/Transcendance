@@ -69,14 +69,14 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     if game_event == 'player_join':
         await player_join(consumer, content)
         return
-    if game_event == 'player_leave':
-        await _leave_game(consumer, content)
-        return
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'Game not found for this player'})
+        return 
+    if game_event == 'player_leave':
+        await _leave_game(consumer, content)
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
@@ -331,7 +331,13 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
                             'event': 'error',
                             'message': 'No game context'})
         return
-    await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
+    was_owner = await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
+    if was_owner:
+        consumer.group_send(consumer.game_group_name, {
+            'type': 'game_new_owner',
+            'uid': str(consumer.current_game.uid),
+            'player': _get_player_data(consumer.current_game.owned_by),
+            })
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',
         'uid': content.get('uid'),

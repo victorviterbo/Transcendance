@@ -39,7 +39,6 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.profile_data = None
         self.active_layers = set()
         self.group_name = None
-        self.game = None
         self.current_game = None
         self.game_group_name = None
         self.open_chat_recipient = set() 
@@ -218,33 +217,19 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(payload)
 
     #TODO: Legacy methods for answer validation, to be removed
-    async def game_answer_correct(self, event: dict) -> None:
-        """Notify of an answer submission."""
+    
+
+    async def game_new_owner(self, event: dict) -> None:
+        """Notify of a player becoming the new owner of the game."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_validation',
+            'event': 'new_owner',
             'uid': event.get('uid'),
-            'senderPlayer': event.get('sender_player'),
             'self': self.profile_data,
-            'answer': event.get('answer'),
-            'trackArtist': event.get('trackArtist'),
-            'trackTitle': event.get('trackTitle'),
-            'correct': event.get('is_correct', False),
-            'time': event.get('time'),
+            'player': event.get('player')
         })
 
-    async def game_answer_incorrect(self, event: dict) -> None:
-        """Notify of an answer submission."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'answer_validation',
-            'uid': event.get('uid'),
-            'senderPlayer': event.get('senderPlayer'),
-            'self': self.profile_data,
-            'answer': event.get('answer'),
-            'correct': event.get('is_correct', False),
-        })
-
+    
     async def game_player_left(self, event: dict) -> None:
         """Notify of a player leaving the game room."""
         await self.send_json({
