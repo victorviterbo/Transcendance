@@ -323,7 +323,6 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
         'settings': settings_data,
     })
 
-
 async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Leave a game group."""
     if not getattr(consumer, 'current_game', None):
