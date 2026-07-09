@@ -22,7 +22,6 @@ import { useNotif } from "../../components/contexts/CAppNotifContext";
 
 interface PProfilePublicRelationProps {
 	profile: IProfileData;
-	onProfileMissing?: () => void;
 }
 
 const getTargetUser = (profile: IProfileData): IExtUserInfo => ({
@@ -39,7 +38,7 @@ const findExactRelation = (users: IExtUserInfo[], profile: IProfileData) => {
 	});
 };
 
-function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRelationProps) {
+function PProfilePublicRelation({ profile }: PProfilePublicRelationProps) {
 	const { status: authStatus } = useAuth();
 	const [relationState, setRelationState] = useState<IRelationState>({
 		status: "idle",
@@ -138,7 +137,11 @@ function PProfilePublicRelation({ profile, onProfileMissing }: PProfilePublicRel
 				return;
 			}
 			if (hasSocialErrorCode(actionError, "USER_NOT_FOUND")) {
-				onProfileMissing?.();
+				setRelationState({
+					status: "ready",
+					relation: "not-friends",
+					error: "USER_NOT_FOUND",
+				});
 				return;
 			}
 			if (action !== "send" && hasSocialErrorCode(actionError, "FRIENDSHIP_NOT_FOUND")) {
