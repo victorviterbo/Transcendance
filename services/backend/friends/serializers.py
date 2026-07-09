@@ -24,14 +24,7 @@ class FriendInfoSerializer(serializers.ModelSerializer):
     class Meta:
         """Define the friend list payload."""
         model = Profile
-        fields = ['uid',
-                  'username',
-                  'image',
-                  'exp_points',
-                  'badges',
-                  'created_at',
-                  'status'
-                ]
+        fields = ['uid', 'username', 'avatar', 'exp_points', 'badges', 'created_at', 'status']
 
     def get_avatar(self, instance: Profile) -> str:
         """Return an absolute avatar URL when possible."""
