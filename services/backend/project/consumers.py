@@ -42,7 +42,7 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.game = None
         self.current_game = None
         self.game_group_name = None
-        self.open_chat_recipient = set() # tracker when frontend sends open/close so can mark as seen
+        self.open_chat_recipient = set() 
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
