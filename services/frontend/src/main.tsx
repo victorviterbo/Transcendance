@@ -20,13 +20,13 @@ const startApp = () => {
 	createRoot(document.getElementById("root")!).render(
 		<StrictMode>
 			<CAuthProvider>
-				<CAppNotifContext>
-					<CLanguageProvider>
+				<CLanguageProvider>
+					<CAppNotifContext>
 						<CWebsocketContext>
 							<RouterProvider router={router} />
 						</CWebsocketContext>
-					</CLanguageProvider>
-				</CAppNotifContext>
+					</CAppNotifContext>
+				</CLanguageProvider>
 			</CAuthProvider>
 		</StrictMode>,
 	);
