@@ -36,11 +36,11 @@ def _get_game(consumer: Any,
 	"""Fetch a Game instance by uid, and check for player's membership if requested."""
 	if not game_uid:
 		return None
-	#if game_uid in ACTIVE_GAMES:
-	#	if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
-	#		return None
-	#	else:
-	#		return ACTIVE_GAMES[game_uid]['task']
+	if game_uid in ACTIVE_GAMES:
+		if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
+			return None
+		else:
+			return ACTIVE_GAMES[game_uid]['task']
 	if req_membership:
 		return (Game.objects.filter(uid=game_uid,
 							players=consumer.profile)

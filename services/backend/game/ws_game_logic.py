@@ -69,14 +69,14 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     if game_event == 'player_join':
         await player_join(consumer, content)
         return
+    if game_event == 'player_leave':
+        await _leave_game(consumer, content)
+        return
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'Game not found for this player'})
-        return
-    if game_event == 'player_leave':
-        await _leave_game(consumer, content)
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
@@ -108,7 +108,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         await _send_start_signal(consumer, serialized_game, serialized_settings, game_group_name)
         await asyncio.sleep(answer_buffer_time)
         for round in range(1, game.trackCount + 1):
-            ACTIVE_GAMES[game_uid]['all_answers_received'].clear()
+            #ACTIVE_GAMES[game_uid]['all_answers_received'].clear()
             await _set_current_round(game, round)
             await _init_round_stats(game)
             serialized_game = await _get_game_data(game=game)
@@ -120,12 +120,10 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
             await asyncio.sleep(countdown_time)
             #Track sent to start the round (should we keep both? or just send the track in advance?) - Fabien
             await _send_track(consumer, serialized_game, serialized_track_blind, game_group_name, game)
-            with suppress(TimeoutError):
-                await asyncio.wait_for(
-                    ACTIVE_GAMES[game_uid]['all_answers_received'].wait(),
-                    timeout=game.playbackDuration
-                        + answer_buffer_time
-                )
+            #with suppress(TimeoutError):
+            await asyncio.sleep(game.playbackDuration
+                    + answer_buffer_time
+            )
             round_stats = await _compute_round_stats(game)
             serialized_game = await _get_game_data(game=game)
             game_leaderboard_data = await _get_game_ended_data(consumer=consumer, game=game)
@@ -206,7 +204,8 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
                                   'message': 'Game already started'})
         return
     ACTIVE_GAMES[consumer.current_game.uid] = {
-            "task": asyncio.create_task(run_game_loop(consumer, content))
+            "task": asyncio.create_task(run_game_loop(consumer, content)),
+            #"all_answers_received": asyncio.Event(),
         }
 
 async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
