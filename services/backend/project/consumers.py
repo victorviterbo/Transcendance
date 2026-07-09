@@ -130,6 +130,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     async def remove_from_layer(self, group_name: str) -> None:
         """Remove layer from subscribed channels."""
+        if group_name not in self.active_layers:
+            return
         await self.channel_layer.group_discard(group_name, self.channel_name)
         self.active_layers.remove(group_name)
 

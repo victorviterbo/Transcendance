@@ -367,7 +367,8 @@ def _build_base_game_payload(consumer: 'GlobalConsumer' | None = None, game: Gam
         .order_by('-total_points', 'player__username')
     )
     round_rows = (
-        UserRoundStats.objects.filter(round__game=game, player=current_player)
+        UserRoundStats.objects.filter(round__game=game, player=current_player,
+						round__round_number__lt=game.current_round)
         .select_related('round__track')
         .order_by('round__round_number')
     )

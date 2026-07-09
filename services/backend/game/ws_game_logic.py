@@ -194,14 +194,10 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
 async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
     """Start a game session / Begin the round loop."""
     if not getattr(consumer, 'current_game', None):
-        await consumer.send_json({'target': 'game',
-                            'event': 'error',
-                            'message': 'No game context'})
+        await _send_game_error(consumer, None, 'NO_GAME_CONTEXT', critical=True)
         return
     if (consumer.current_game.uid in ACTIVE_GAMES):
-        await consumer.send_json({'target': 'game',
-                                  'event': 'error',
-                                  'message': 'Game already started'})
+        await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
         return
     ACTIVE_GAMES[consumer.current_game.uid] = {
             "task": asyncio.create_task(run_game_loop(consumer, content)),
@@ -210,12 +206,14 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
 
 async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
     """Handle the game joining process."""
+    if consumer.current_game.status != 'waiting':
+        await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
+        return
+
     player_added = await _add_player_to_game_stats(consumer.current_game,
                                                 consumer.profile)
     if not player_added:
-        await consumer.send_json({'target': 'game',
-                            'event': 'error',
-                            'message': 'Failed to join game'})
+        await _send_game_error(consumer, consumer.current_game.uid, 'FAILED_TO_JOIN_GAME', critical=True)
         return
     await consumer.add_to_layer(consumer.game_group_name)
     await add_gameroom_participant(consumer.current_game, consumer.profile)
