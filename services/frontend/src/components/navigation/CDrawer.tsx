@@ -18,7 +18,7 @@ function CDrawer(props: CDrawerProps) {
 			variant={over ? "temporary" : "persistent"}
 			anchor="right"
 			{...other}
-			ModalProps={over ? { disablePortal: true } : props.ModalProps}
+			ModalProps={over ? { disablePortal: true, keepMounted: true } : props.ModalProps}
 		></Drawer>
 	);
 }
