@@ -5,17 +5,17 @@ from .models import Playlist, Track
 
 class TrackSerializer(serializers.ModelSerializer):
 	"""Serialize a single music track."""
+	preview = serializers.URLField(source='preview_url')
+	artwork = serializers.URLField(source='artwork_url')
 
 	class Meta:
 		"""Defines the metaclass for the TrackSerializer."""
 		model = Track
 		fields = [
-			'itunes_id',
 			'title',
 			'artist',
-			'genre',
-			'preview_url',
-			'artwork_url',
+			'preview',
+			'artwork',
 		]
 
 

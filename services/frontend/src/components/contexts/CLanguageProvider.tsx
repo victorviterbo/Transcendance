@@ -19,7 +19,6 @@ import type {
 } from "../../types/localizationTypes";
 import { NUMBER_FORMAT_LOCALES } from "../../constants";
 import GLoading from "../../pages/common/GLoading";
-import { useNotif } from "./CAppNotifContext";
 
 interface CLanguageContextProps {
 	children: ReactNode;
@@ -60,7 +59,6 @@ function CLanguageProvider({ children }: CLanguageContextProps) {
 	const [currentLang, setCurrentLang] = useState<string>(getLanguage());
 	const [langData, setLangData] = useState<undefined | ILocalizationData>(undefined);
 	const [notifSent, setNotifSent] = useState<boolean>(false);
-	const { push } = useNotif();
 
 	//====================== EFFECT ======================
 	useEffect(() => {
@@ -81,15 +79,12 @@ function CLanguageProvider({ children }: CLanguageContextProps) {
 				else if (currentLang == "ja") msg = "ローカライズファイルを読み込めませんでした";
 				else if (currentLang == "de")
 					msg = "Die Lokalisierungsdatei konnte nicht geladen werden.";
-				push({
-					severity: "error",
-					message: msg,
-				});
+				console.log(msg);
 				setNotifSent(true);
 			}
 		};
 		checkValid();
-	}, [push, langData, currentLang, notifSent, setNotifSent]);
+	}, [langData, currentLang, notifSent, setNotifSent]);
 
 	//====================== FUNCTIONS ======================
 	const ttr = useCallback(

@@ -10,12 +10,12 @@ from channels.generic.websocket import (
 )
 from chat.chat_utils import accepted_friendship, create_direct_room
 from chat.models import Message, Room
-from chat.ws_game_chat import handle_game_chat_payload
 from chat.ws_direct_message import (
     handle_friend_chat_payload,
     set_chat_open,
     update_online_status,
 )
+from chat.ws_game_chat import handle_game_chat_payload
 from game.models import Game
 from game.ws_game_db_helpers import _get_game_history_data
 from game.ws_game_logic import handle_game_action
@@ -39,10 +39,9 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         self.profile_data = None
         self.active_layers = set()
         self.group_name = None
-        self.game = None
         self.current_game = None
         self.game_group_name = None
-        self.open_chat_recipient = set() # tracker when frontend sends open/close so can mark as seen
+        self.open_chat_recipient = set() 
     
     async def connect(self) -> None:
         """Define process upon client connection to websocket."""
@@ -131,6 +130,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
 
     async def remove_from_layer(self, group_name: str) -> None:
         """Remove layer from subscribed channels."""
+        if group_name not in self.active_layers:
+            return
         await self.channel_layer.group_discard(group_name, self.channel_name)
         self.active_layers.remove(group_name)
 
@@ -218,39 +219,25 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(payload)
 
     #TODO: Legacy methods for answer validation, to be removed
-    async def game_answer_correct(self, event: dict) -> None:
-        """Notify of an answer submission."""
+    
+
+    async def game_new_owner(self, event: dict) -> None:
+        """Notify of a player becoming the new owner of the game."""
         await self.send_json({
             'target': 'game',
-            'event': 'answer_validation',
+            'event': 'new_owner',
             'uid': event.get('uid'),
-            'senderPlayer': event.get('sender_player'),
             'self': self.profile_data,
-            'answer': event.get('answer'),
-            'trackArtist': event.get('trackArtist'),
-            'tracktitle': event.get('tracktitle'),
-            'correct': event.get('is_correct', False),
-            'time': event.get('time'),
+            'player': event.get('player')
         })
 
-    async def game_answer_incorrect(self, event: dict) -> None:
-        """Notify of an answer submission."""
-        await self.send_json({
-            'target': 'game',
-            'event': 'answer_validation',
-            'uid': event.get('uid'),
-            'senderPlayer': event.get('senderPlayer'),
-            'self': self.profile_data,
-            'answer': event.get('answer'),
-            'correct': event.get('is_correct', False),
-        })
-
+    
     async def game_player_left(self, event: dict) -> None:
         """Notify of a player leaving the game room."""
         await self.send_json({
             'target': 'game',
             'event': 'player_left',
-            'game': event.get('game'),
+            'uid': event.get('uid'),
             'self': self.profile_data,
             'player': event.get('player'),
         })
@@ -338,7 +325,26 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'leaderboard': event.get('leaderboard'),
             'history': history,
         })
-    
+
+    async def game_restarted_event(self, event: dict) -> None:
+        """Broadcast a game restart and the UID of the new session."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_restarted',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+            'newGame': event.get('newGame'),
+        })
+
+    async def game_closed_event(self, event: dict) -> None:
+        """Broadcast a game closed event to all players."""
+        await self.send_json({
+            'target': 'game',
+            'event': 'game_closed',
+            'uid': event.get('uid'),
+            'self': self.profile_data,
+        })
+
     def _sender_name(self) -> str:
         """Return the authenticated sender username or an anonymous fallback."""
         if self.profile:
@@ -421,8 +427,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                                getattr(self.profile, 'guest', None),
                                bool(getattr(self, 'user', None) and self.user.is_authenticated),
                                getattr(self.profile, 'user_id', None))
-                return False, {'type': 'error',
-                               'message': 'Authentication failed'}
+                return False, {'target': 'error',
+                               'message': 'USER_NOT_FOUND'}
             recipient_uid = content.get('user_uid')
             recipient_user = SiteUser.objects.filter(uid=recipient_uid).first()
             if recipient_user is None and recipient_uid is not None:
@@ -430,16 +436,16 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 if recipient_profile is not None:
                     recipient_user = recipient_profile.user
             if recipient_user is None:
-                return False, {'type': 'error',
-                               'message': 'User not found'}
+                return False, {'target': 'error',
+                               'message': 'USER_NOT_FOUND'}
             if not accepted_friendship(self.profile, recipient_user.profile):
-                return False, {'type': 'error',
-                               'message': 'Target is not a friend'}
+                return False, {'target': 'error',
+                               'message': 'USER_NOT_FRIEND'}
             recipient_profile = recipient_user.profile
             room, _ = create_direct_room(self.profile, recipient_profile)
             if room is None:
-                return False, {'type': 'error',
-                    'message': 'Chat room does not exist'}
+                return False, {'target': 'error',
+                    'message': 'ROOM_NOT_FOUND'}
             
         elif event == 'chat-message':
             if getattr(self, 'current_game', None) and getattr(self.current_game, 'room', None):
@@ -458,8 +464,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                     self.room = game.room
                     room = self.room
         if room is None or self.profile is None:
-            return False, {'type': 'error',
-                           'message': 'An unexpected error occured'}
+            return False, {'target': 'error',
+                           'message': 'ROOM_NOT_FOUND'}
         if not room.participants.filter(uid=self.profile.uid).exists():
             is_game_room = (
                 not room.is_direct
@@ -467,8 +473,8 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
                 and getattr(self.current_game, 'room_id', None) == room.id
             )
             if not is_game_room:
-                return False, {'type': 'error',
-                           'message': 'Not a chat member'}
+                return False, {'target': 'error',
+                           'message': 'INVALID_ROOM'}
         message = Message.objects.create(
             sender=self.profile,
             room=room,

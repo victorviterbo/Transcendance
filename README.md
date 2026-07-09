@@ -204,7 +204,100 @@ Django was chosen because it provides a strong ORM, authentication foundation, m
 
 ## Database Schema
 
-#TODO
+The backend uses **SQLite** with Django ORM. All models include a `uid` (UUID, unique) for API identification.
+
+### Relationship Diagram
+
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         USER DOMAIN                             │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐     ┌─────────────┐       ┌─────────────┐      │
+│  │  SiteUser   │◄───►│   Profile   │       │ Friendship  │      │
+│  │   (Auth)    │1:1  │   (Stats)   │       │ (Social)    │      │
+│  └─────────────┘     └─────────────┘       └─────────────┘      │
+│         │                                         │             │
+│         └────────────────────┼────────────────────┘             │
+│                              ▼                                  │
+│                    ┌─────────────────────┐                      │
+│                    │       Room          │                      │
+│                    │      (Chat)         │                      │
+│                    └─────────────────────┘                      │
+│                               │                                 │
+│                    ┌─────────────────────┐                      │
+│                    │      Message        │                      │
+│                    └─────────────────────┘                      │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      MUSIC DOMAIN                               │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐         ┌─────────────┐                        │
+│  │  Playlist   │◄───────►│    Track    │                        │
+│  └─────────────┘ M:N     └─────────────┘                        │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      GAME DOMAIN                                │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐       ┌─────────────┐                          │
+│  │    Game     │──────►│ GameRound   │                          │
+│  │  (Session)  │1:N    │   Stats     │                          │
+│  └─────────────┘       └─────────────┘                          │
+│       │                     │                                   │
+│       ▼                     ▼                                   │
+│  ┌─────────────┐       ┌─────────────┐                          │
+│  │ UserGame    │       │ UserRound   │                          │
+│  │   Stats     │       │   Stats     │                          │
+│  └─────────────┘       └─────────────┘                          │
+└─────────────────────────────────────────────────────────────────┘
+
+CONNECTIONS:
+  Profile ──► Room (M:N) - users join chat rooms
+  Room ─────► Game (1:1) - each game has a chat room
+  Game ──────► Profile (M:N via UserGameStats) - players in game
+  Game ──────► Playlist (M:1) - game uses a playlist
+  Game ──────► Track (M:1) - current track
+```
+
+### Models Overview
+
+**Users & Authentication**
+| Table | Purpose | Key fields |
+| ----- | ------- | ------------------------ |
+| `SiteUser` | Authentication account model. Uses email as the login identifier and stores the Django auth flags. | `email` is unique, `uid` is a UUID, `friends` is a self-referential M2M through `Friendship`. |
+| `Profile` | Public player profile, including guest accounts. | `user` is a nullable one-to-one link to `SiteUser`, `username` is unique except for the default `Anonymous` value, `avatar`, `exp_points`, `session_key`, `guest`, `is_online`, `last_active`, `uid`. |
+
+**Social Features**
+| Table | Purpose | Key fields |
+| ----- | ------- | ------------------------ |
+| `Friendship` | Friend request / friendship relation between two users. | `from_user`, `to_user`, `status` (`pending` or `accepted`), `read`, `uid`, `created_at`, unique pair on `(from_user, to_user)`. |
+| `Room` | Chat room or direct message room. | `name` is unique, `participants` links to `Profile`, `is_direct`, `direct_key`, `uid`. |
+| `Message` | Persisted chat message. | `sender`, `room`, `body`, `delivered`, `seen`, `created`, `updated`, `uid`. |
+
+**Music Data**
+| Table | Purpose | Key fields |
+| ----- | ------- | ------------------------ |
+| `Playlist` | Music playlist/genre grouping. | `name` is unique, `rss_url`, `uid`. |
+| `Track` | Imported music track metadata. | `itunes_id` is the primary key and unique, `title`, `artist`, `genre`, `preview_url`, `artwork_url`, many-to-many `playlists`. |
+
+**Game & Statistics**
+| Table | Purpose | Key fields |
+| ----- | ------- | ------------------------ |
+| `Game` | Single multiplayer quiz session. | `name`, `genres` JSON, `room` one-to-one, `playlist`, `status`, `playbackDuration`, `breakDuration`, `mode`, `current_round`, `current_track`, `trackCount`, `visibility`, `fuzzy`, `reveal`, `owned_by`, `uid`. |
+| `GameRoundStats` | Per-round game record. | `round_number`, `game`, `track`, `players` through `UserRoundStats`. |
+| `UserGameStats` | Per-player summary for a game. | `game`, `player`, `is_won`, `played_at`, unique constraint on `(game, player)`. |
+| `UserRoundStats` | Per-player stats for one round. | `game_stats`, `round`, `player`, `time`, `artist_found`, `title_found`, `artist_found_at`, `title_found_at`, `xp_earned`, `ranking`, `played_at`. |
+
+### Relationship Notes
+
+- A `SiteUser` can have one `Profile`, while guest profiles may exist without an attached user account.
+- `Friendship` stores both friend requests and accepted friendships in one table, with directionality kept through `from_user` and `to_user`.
+- `Room` and `Message` power the chat system, while direct rooms use `is_direct` and `direct_key` to identify one-to-one conversations.
+- `Game` links the social and music layers together by attaching to a `Room`, a `Playlist`, an optional current `Track`, and an owning `Profile`.
+- Player progression is normalized through `UserGameStats` and `UserRoundStats`, with `GameRoundStats` describing the round itself and each player’s result stored separately.
+- `Track` entries are shared across playlists and games, which avoids duplicating imported music metadata.
 
 ## Features List
 

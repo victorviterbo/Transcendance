@@ -28,15 +28,13 @@ class Game(models.Model):
                                     )
     
     room = models.OneToOneField(Room,
-                                on_delete=models.CASCADE,
+                                on_delete=models.SET_NULL,
                                 null=True)
     
-    
-    
-    playlist = models.ForeignKey(Playlist,
+    playlist = models.OneToOneField(Playlist,
                                     on_delete=models.SET_NULL,
                                     null=True,
-                                    related_name='games')
+                                    related_name='game')
     
     status = models.CharField(max_length=20,
                                 choices=[
@@ -111,7 +109,6 @@ class Game(models.Model):
                                 on_delete=models.SET_NULL,
                                 null=True,
                                 related_name='owned_games')
-
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-created_at']

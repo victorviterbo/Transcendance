@@ -1,5 +1,5 @@
 import { Stack, useMediaQuery, useTheme } from "@mui/material";
-import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { IExtUserInfo } from "../../types/user";
 import { getErrorNode } from "../../utils/error";
 import PFriendNode from "./PFriendNode";
@@ -19,7 +19,6 @@ function PFriendReq({ open }: PFriendReqProps) {
 	const [outgoing, setOutgoing] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const wsContext: IWSContextModule = useWS("friend_request");
-	const localId = useId();
 
 	const theme = useTheme();
 	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
@@ -58,30 +57,51 @@ function PFriendReq({ open }: PFriendReqProps) {
 		if (error) return error;
 
 		if (incoming.length == 0) return <CText align="center">SOCIAL_NO_INCOMING</CText>;
-		return incoming.map((value: IExtUserInfo, index: number) => {
+		return incoming.map((value: IExtUserInfo) => {
 			return (
 				<PFriendNode
 					type="user"
 					user={value}
-					key={localId + index}
+					key={value.uid}
 					onStateChanged={() => {
 						getUsers();
 					}}
 				></PFriendNode>
 			);
 		});
-	}, [incoming, error, getUsers, localId]);
+	}, [incoming, error, getUsers]);
 
 	const outgoingNodes: ReactNode | ReactNode[] = useMemo(() => {
 		if (error) return error;
 
 		if (outgoing.length == 0) return <CText align="center">SOCIAL_NO_OUTGOING</CText>;
-		return outgoing.map((value: IExtUserInfo, index: number) => {
-			return <PFriendNode type="user" user={value} key={localId + index}></PFriendNode>;
+		return outgoing.map((value: IExtUserInfo) => {
+			return <PFriendNode type="user" user={value} key={value.uid}></PFriendNode>;
 		});
-	}, [outgoing, error, localId]);
+	}, [outgoing, error]);
 
 	//====================== EVENTS / UPDATES ======================
+	const onFriendRequest = useCallback(
+		(user: IExtUserInfo) => {
+			//Checking if present in sent
+			const found: number = outgoing.findIndex(
+				(userCheck: IExtUserInfo) => userCheck.uid == user.uid,
+			);
+			if (found >= 0) {
+				outgoing.splice(found, 1);
+				setOutgoing(structuredClone(outgoing));
+			}
+
+			const foundIncoming: number = incoming.findIndex(
+				(userCheck: IExtUserInfo) => userCheck.uid == user.uid,
+			);
+			if (foundIncoming >= 0) return;
+
+			incoming.splice(0, 0, user);
+			setIncoming(structuredClone(incoming));
+		},
+		[incoming, setIncoming, outgoing, setOutgoing],
+	);
 
 	useEffect(() => {
 		wsContext.setOnUpdate(() => {
@@ -89,13 +109,12 @@ function PFriendReq({ open }: PFriendReqProps) {
 				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
 				if (last?.target == "friend_request") {
 					if (last.event == "new_incoming") {
-						incoming.splice(0, 0, last.user);
-						setIncoming(structuredClone(incoming));
+						onFriendRequest(last.user);
 					}
 				}
 			}
 		});
-	}, [wsContext, incoming, setIncoming]);
+	}, [wsContext, incoming, setIncoming, onFriendRequest]);
 
 	useEffect(() => {
 		if (!open) return;

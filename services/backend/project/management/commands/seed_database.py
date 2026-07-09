@@ -1,5 +1,6 @@
 """Seed demo users, friendships, games, and stats."""
 import random
+import uuid
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -33,25 +34,6 @@ class Command(BaseCommand):
 	def _create_users(self) -> tuple[list[SiteUser], list[Profile]]:
 		users = []
 		profiles = []
-
-		admin_user, _ = SiteUser.objects.update_or_create(
-			email="admin@example.com",
-			defaults={"is_staff": True, "is_superuser": True},
-		)
-		admin_user.set_password(DEMO_PASSWORD)
-		admin_user.save()
-
-		admin_profile, _ = Profile.objects.update_or_create(
-			user=admin_user,
-			defaults={
-				"username": "admin_master",
-				"exp_points": 9999,
-				"guest": False,
-				"is_online": False,
-			},
-		)
-		users.append(admin_user)
-		profiles.append(admin_profile)
 
 		for i in range(1, 21):
 			email = f"player{i}@mail.com"
@@ -95,11 +77,6 @@ class Command(BaseCommand):
 			))
 			return 0
 
-		playlist = (
-			Playlist.objects.filter(tracks__isnull=False)
-			.distinct()
-			.first()
-		)
 		games_created = 0
 
 		for game_index in range(1, 11):
@@ -107,6 +84,13 @@ class Command(BaseCommand):
 			game_tracks = random.sample(tracks, min(5, len(tracks)))
 			owner = players[0]
 			winner = random.choice(players)
+			
+			playlist = Playlist.objects.create(
+				name=f"Blind Test Playlist {game_index}",
+				uid=uuid.uuid4()
+			)
+			playlist.tracks.set(game_tracks)
+			
 			game = Game.objects.create(
 				name=f"Blind Test Arena {game_index}",
 				status="finished",

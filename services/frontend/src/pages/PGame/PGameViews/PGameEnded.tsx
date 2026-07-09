@@ -1,7 +1,7 @@
 import { Box, Stack, useMediaQuery, useTheme } from "@mui/material";
 import type { GPageProps } from "../../common/GPageBases";
 import type { IGamePlayer, IGameRound, IGameSettings } from "../../../types/game";
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, type ReactNode } from "react";
 import PGameEndedRound from "./PGameEndedRound";
 import {
 	PGameRoundEndedStyle,
@@ -22,9 +22,10 @@ interface PGameEndedProps extends GPageProps {
 	rounds: IGameRound[];
 	settings: IGameSettings;
 	players: IGamePlayer[];
+	onEndLeave: () => void;
 }
 
-function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
+function PGameEnded({ game, rounds, settings, players, onEndLeave }: PGameEndedProps) {
 	const style: IGameRoundEndedStyle = useMemo(() => {
 		return PGameRoundEndedStyle();
 	}, []);
@@ -102,6 +103,12 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 		};
 	}, [rounds, settings]);
 
+	//====================== EVENTS ======================
+	const hanldeRestartGame = useCallback(() => {
+		if (!game.current) return;
+		game.current.restartGame();
+	}, [game]);
+
 	return (
 		<Stack sx={{ flex: 1, position: "absolute", inset: "5px" }} direction={"column"}>
 			<Box sx={style.box}>
@@ -117,12 +124,14 @@ function PGameEnded({ game, rounds, settings, players }: PGameEndedProps) {
 				{roundList}
 			</Stack>
 			<Stack direction={"row"} sx={style.bottom}>
-				<CButton sx={{ mr: "10px" }}>
+				<CButton onClick={onEndLeave} sx={{ mr: "10px" }}>
 					<CText size={isTiny ? "xs" : "sm"}>GAME_ENDED_BACK</CText>
 				</CButton>
-				<CButton sx={{ ml: "10px" }}>
-					<CText size={isTiny ? "xs" : "sm"}>GAME_ENDED_AGAIN</CText>
-				</CButton>
+				{game.current && game.current.isHost && (
+					<CButton onClick={hanldeRestartGame} sx={{ ml: "10px" }}>
+						<CText size={isTiny ? "xs" : "sm"}>GAME_ENDED_AGAIN</CText>
+					</CButton>
+				)}
 			</Stack>
 		</Stack>
 	);

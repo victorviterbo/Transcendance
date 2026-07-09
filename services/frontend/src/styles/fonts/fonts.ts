@@ -15,6 +15,7 @@ import MPlusSemiBold from "./MPLUS1-SemiBold.ttf";
 import MPlusBold from "./MPLUS1-Bold.ttf";
 import MPlusExtraBold from "./MPLUS1-ExtraBold.ttf";
 import MPlusExtraBlack from "./MPLUS1-Black.ttf";
+import Kalam from "./Kalam-Bold.ttf";
 
 function makeFontFace(name: string, target: string, weight: number, style: string): CSSObject {
 	return {
@@ -44,8 +45,8 @@ function makeFontFaceMW(
 
 export function getFontRegistry(): CSSObject[] {
 	const fonts: CSSObject[] = [];
-
-	fonts.push(makeFontFace("Knewave", Knewave, 400, "normal"));
+	if (!("chrome" in window)) fonts.push(makeFontFace("TitleFont", Kalam, 700, "normal"));
+	else fonts.push(makeFontFace("TitleFont", Knewave, 400, "normal"));
 	fonts.push(makeFontFace("CherryBomb", CherryBomb, 400, "normal"));
 	fonts.push(makeFontFace("MochiyPop", MochiyPop, 400, "normal"));
 	fonts.push(

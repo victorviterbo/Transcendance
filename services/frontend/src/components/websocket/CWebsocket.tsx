@@ -11,6 +11,7 @@ import type {
 import { useAuth } from "../auth/CAuthProvider";
 import GLoading from "../../pages/common/GLoading";
 import GLost from "../../pages/common/GLost";
+import { useNotif } from "../contexts/CAppNotifContext";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -110,6 +111,8 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 		},
 	);
 	const modules = useRef<IWSContextModule[]>([]);
+	const lastReadMessage = useRef<MessageEvent<unknown> | undefined>(undefined);
+	const { push } = useNotif();
 
 	useEffect(() => {
 		wsStatus = readyState;
@@ -120,18 +123,33 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	}, [readyState]);
 
 	useEffect(() => {
-		if (!lastMessage?.data) return;
+		if (
+			!lastMessage?.data ||
+			(lastReadMessage.current && lastReadMessage.current == lastMessage)
+		)
+			return;
 
 		const currentData: TWSRcv =
 			typeof lastMessage.data == "string"
 				? (JSON.parse(lastMessage.data) as TWSRcv)
 				: (lastMessage.data as TWSRcv);
+
+		lastReadMessage.current = lastMessage;
+		if (currentData.target == "error") {
+			push({
+				severity: "error",
+				message: currentData.message,
+			});
+
+			return;
+		}
+
 		const targetModule = wsGetModule(currentData.target, modules.current);
 
 		targetModule.messages.push(currentData);
 		targetModule.count = targetModule.messages.length;
 		if (targetModule.onUpdate) targetModule.onUpdate();
-	}, [lastMessage, modules]);
+	}, [lastMessage, modules, push]);
 
 	return (
 		<wsContext.Provider value={{ modules: modules, sendMessage, state: readyState }}>

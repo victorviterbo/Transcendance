@@ -11,9 +11,7 @@ export interface IError {
 	code: string;
 }
 
-export interface IErrorStruct {
-	[key: string]: IError[];
-}
+export type IErrorStruct = Record<string, IError[]> | Record<string, string>;
 
 export interface IErrorOptions {
 	size?: TSize;

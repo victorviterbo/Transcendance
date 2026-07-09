@@ -2,13 +2,13 @@ export interface IGlobalStatsResponse {
 	averageScore: number;
 	xp: number;
 	totalGamesPlayed: number;
-	totalSongsPlayed: number;
+	totalTitlesPlayed: number;
 	totalGamesWon: number;
 	ranking: number;
 	totalPlayers: number;
 	averageTime: number;
 	successRateArtist: number;
-	successRateSong: number;
+	successRateTitle: number;
 	successRateComplete: number;
 	successRatesCompleteByTag: Record<string, number>;
 }
@@ -38,7 +38,7 @@ export interface IHistoryPlayer {
 export interface IHistoryRound {
 	trackName: string;
 	trackArtist: string;
-	songFound: boolean;
+	titleFound: boolean;
 	artistFound: boolean;
 	time: number;
 	ranking: number;

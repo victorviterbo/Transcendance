@@ -224,6 +224,7 @@ function PGameSettings({ settings, game, onReturnToLobby }: PGameSettingsProps) 
 						fontSize="xs"
 						padding="7px"
 						value={speedMode}
+						allowUnselect={false}
 						onValueChanged={(value: string) => {
 							setSpeedMode(value as TScoreOption);
 						}}

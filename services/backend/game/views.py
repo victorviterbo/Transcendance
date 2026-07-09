@@ -48,6 +48,7 @@ class GeneralGameView(APIView):
 		except serializers.ValidationError as e:
 			return Response(format_validation_errors(e),
 							status=status.HTTP_400_BAD_REQUEST)
+
 class FriendsGameView(APIView):
 	"""Handle the listing of game."""
 	permission_classes = [IsAuthenticated]

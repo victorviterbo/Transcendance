@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
 
@@ -175,16 +175,12 @@ class RefreshTokenView(TokenRefreshView):
         serializer = self.get_serializer(data={'refresh': refresh_token})
         try:
             serializer.is_valid(raise_exception=True)
-        except (InvalidToken, TokenError):
+            AccessToken(serializer.validated_data['access'])
+        except (InvalidToken, TokenError, Exception, serializers.ValidationError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)
-        except Exception:
-            return Response({'error': {'cookie': 'INVALID'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
         response_data = serializer.validated_data.copy()
         new_refresh = response_data.pop('refresh', None)
-
         try:
             token = RefreshToken(new_refresh or refresh_token)
             user = SiteUser.objects.get(id=token['user_id'])

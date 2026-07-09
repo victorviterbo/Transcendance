@@ -14,6 +14,7 @@ import {
 } from "../../styles/pages/social/PFriendChatNodeStyle";
 import { appTexts } from "../../styles/theme";
 import { memo, useMemo } from "react";
+import { useLang } from "../../components/contexts/CLanguageProvider";
 
 interface PFriendChatNodeProps extends GPageProps {
 	message: IFriendMessage;
@@ -22,13 +23,19 @@ interface PFriendChatNodeProps extends GPageProps {
 
 function PFriendChatNode({ message }: PFriendChatNodeProps) {
 	const isUser: boolean = message.direction == "outgoing";
+	const { ttrd } = useLang();
 
 	const currentDate: string = useMemo(() => {
 		if (isUser && message.status && message.status == "error") return "";
-		let currentDate: Date | string = message.date;
-		if (typeof currentDate == "string") currentDate = new Date(message.date.toString());
-		return currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-	}, [isUser, message]);
+		return ttrd(message.date, {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+		});
+	}, [isUser, message, ttrd]);
 
 	const theme = useTheme();
 	const isTiny = useMediaQuery(theme.breakpoints.down("tn"));
@@ -50,7 +57,7 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 						sx={(theme) => PFriendChatNodeDateStyle(theme, isUser)}
 						family={appTexts.text.secondaryFamily}
 						size="2xs"
-						fontWeight={400}
+						fontWeight={600}
 					>
 						{currentDate}
 					</CText>

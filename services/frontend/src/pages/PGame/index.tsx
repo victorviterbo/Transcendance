@@ -54,6 +54,7 @@ function PGame() {
 	const [rounds, setRounds] = useState<IGameRound[]>([]);
 	const [volume, setVolume] = useState<number>(50);
 	const [muted, setMuted] = useState<boolean>(false);
+	const [redirect, setRedirect] = useState<undefined | string>(undefined);
 
 	//Updatable Data
 	const [players, setPlayers] = useState<IGamePlayer[]>([]);
@@ -100,6 +101,11 @@ function PGame() {
 		setInGame(undefined);
 	}, [inGame, setInGame, navigate, clearGame]);
 
+	const handleEndLeave = useCallback(() => {
+		clearGame();
+		navigate("/");
+	}, [navigate, clearGame]);
+
 	const handleStay = useCallback(() => {
 		if (game.current && inGame != undefined) {
 			game.current.send({
@@ -116,6 +122,15 @@ function PGame() {
 	}, [navigate, setInGame, game, inGame, clearGame]);
 
 	//--------------------- EFFECTs ---------------------
+	useEffect(() => {
+		if (redirect == undefined || redirect == "") return;
+		const redirFunc = async () => {
+			clearGame();
+			navigate(redirect);
+		};
+		redirFunc();
+	}, [redirect, navigate, clearGame]);
+
 	useEffect(() => {
 		async function setLoading() {
 			setSessionState("loading");
@@ -147,6 +162,7 @@ function PGame() {
 			setError,
 			setInGame,
 			setSongPlayable,
+			setRedirect,
 			answerRef,
 		});
 	}, [gameid, wsContext, answerRef, push, sessionState]);
@@ -168,6 +184,7 @@ function PGame() {
 			setError,
 			setInGame,
 			setSongPlayable,
+			setRedirect,
 			answerRef,
 		};
 	}, [
@@ -184,6 +201,7 @@ function PGame() {
 		setError,
 		setInGame,
 		setSongPlayable,
+		setRedirect,
 		wsContext,
 		answerRef,
 	]);
@@ -317,6 +335,7 @@ function PGame() {
 								volume={volume}
 								muted={muted}
 								answerRef={answerRef}
+								onEndLeave={handleEndLeave}
 							/>
 						</Grid>
 						<Grid size={3}>
@@ -367,6 +386,7 @@ function PGame() {
 								volume={volume}
 								muted={muted}
 								answerRef={answerRef}
+								onEndLeave={handleLeave}
 							/>
 						)}
 						{currentView == "chat" && <PGameChat game={game} chat={chat} />}

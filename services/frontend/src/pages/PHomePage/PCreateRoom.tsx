@@ -18,7 +18,7 @@ import { isKeyboardSubmit } from "../../utils/keyboard";
 
 function PCreateRoom() {
 	const [name, setName] = useState("");
-	const [visibility, setVisibility] = useState<TGameVisibility>("private");
+	const [visibility, setVisibility] = useState<TGameVisibility>("public");
 	const [isCreating, setIsCreating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const navigate = useNavigate();

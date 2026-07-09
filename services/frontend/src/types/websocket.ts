@@ -23,7 +23,8 @@ export type TWSModuleName =
 	| "notif"
 	| "game"
 	| "test_counter_event"
-	| "test_counter";
+	| "test_counter"
+	| "error";
 
 export interface IWSContext {
 	modules: RefObject<IWSContextModule[]>;
@@ -57,6 +58,10 @@ export type TWSRcv =
 			target: Extract<TWSModuleName, "friend_request">;
 			event: "new_incoming";
 			user: IExtUserInfo;
+	  }
+	| {
+			target: Extract<TWSModuleName, "error">;
+			message: string;
 	  }
 
 	//TESTER
@@ -110,7 +115,8 @@ export type IWSGameEventRcvList =
 	| "game_start"
 	| "answer_submit"
 	| "message_send"
-	| "player_leave";
+	| "player_leave"
+	| "game_restart";
 
 export type IWSGameEventSndList =
 	| "player_joined"
@@ -126,6 +132,8 @@ export type IWSGameEventSndList =
 	| "message_history"
 	| "message_broadcast"
 	| "game_ended"
+	| "game_restarted"
+	| "game_closed"
 	| "error";
 
 export interface IWSGameEvent {
@@ -223,6 +231,11 @@ export interface IWSGameSendEventGameEnd extends IWSGameSendEvent {
 	event: Extract<IWSGameEventSndList, "game_ended">;
 	leaderboard: IGamePlayer[];
 	history: TWSRoundInfo[];
+}
+
+export interface IWSGameSendEventGameRestart extends IWSGameSendEvent {
+	event: Extract<IWSGameEventSndList, "game_restarted">;
+	newGame: string;
 }
 
 export interface IWSGameSendEventError extends IWSGameSendEvent {

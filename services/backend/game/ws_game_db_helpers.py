@@ -1,5 +1,6 @@
 """Handle all DB hits for the game."""
 import json
+import re
 import uuid
 from typing import TYPE_CHECKING, Any
 
@@ -8,10 +9,15 @@ from chat.models import Room
 from django.db.models import Count, Q, Sum
 from music.models import Playlist, Track
 from music.serializers import TrackSerializer
-from project.defaults import default_pts
+from project.defaults import default_pts, get_badge
 from rest_framework import serializers
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
-from stats.serializers import GameHistorySerializer, GameLeaderboardSerializer, LiveGameSerializer, LiveRoundSerializer
+from stats.serializers import (
+    GameHistorySerializer,
+    GameLeaderboardSerializer,
+    LiveGameSerializer,
+    LiveRoundSerializer,
+)
 from thefuzz import fuzz
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
@@ -30,11 +36,11 @@ def _get_game(consumer: Any,
 	"""Fetch a Game instance by uid, and check for player's membership if requested."""
 	if not game_uid:
 		return None
-	if game_uid in ACTIVE_GAMES:
-		if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
-			return None
-		else:
-			return ACTIVE_GAMES[game_uid]['task']
+	#if game_uid in ACTIVE_GAMES:
+	#	if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
+	#		return None
+	#	else:
+	#		return ACTIVE_GAMES[game_uid]['task']
 	if req_membership:
 		return (Game.objects.filter(uid=game_uid,
 							players=consumer.profile)
@@ -104,7 +110,7 @@ def _set_current_round(game: Game, round_number: int) -> None:
 
 
 @database_sync_to_async
-def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | None:
+def _get_track_reveal_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict | None:
 	"""Get full track data for revealing to players.
 	
 	Args:
@@ -113,18 +119,20 @@ def _get_track_reveal_data(consumer: 'GlobalConsumer', content: dict) -> dict | 
 	Returns:
 		dict with track details (title, artist, preview_url, artwork_url) or None
 	"""
+	if game is None:
+		game = consumer.current_game
 	try:
-		if not consumer.current_game.current_track:
+		if not game.current_track:
 			return None, None
-		serialized_track = TrackSerializer(consumer.current_game.current_track).data
-		track_data = {
+		serialized_track = TrackSerializer(game.current_track).data
+		"""track_data = {
 			'title': serialized_track['title'],
 			'artist': serialized_track['artist'],
 			'preview': serialized_track['preview_url'],
 			'artwork': serialized_track['artwork_url'],
-		}
-		track_data_hidden = {'preview': track_data['preview']}
-		return track_data, track_data_hidden
+		}"""
+		serialized_track_hidden = {'preview': serialized_track['preview']}
+		return serialized_track, serialized_track_hidden
 	except Game.DoesNotExist:
 		return None, None
 
@@ -162,9 +170,11 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 		artist_newly_found = False
 		title_newly_found = False
 		update_fields = []
+		feat_pattern = r'[\s\-]+[\(\[][^\]\)]+[\)\]]$'
 		if not player_stats.artist_found:
 			track_artist = track['artist'].lower().strip()
-			if ((fuzz.ratio(player_answer, track_artist) >= 80
+			clean_track_artist = re.sub(feat_pattern, '', track_artist).strip()
+			if ((fuzz.ratio(player_answer, clean_track_artist) >= 80
 		and consumer.current_game.fuzzy)
 				or player_answer == track_artist):
 				player_stats.artist_found = True
@@ -174,7 +184,8 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
 				update_fields.extend(['artist_found', 'artist_found_at'])
 		if not player_stats.title_found:
 			track_title = track['title'].lower().strip()
-			if ((fuzz.ratio(player_answer, track_title) >= 80
+			clean_track_title = re.sub(feat_pattern, '', track_title).strip()
+			if ((fuzz.ratio(player_answer, clean_track_title) >= 80
 		and consumer.current_game.fuzzy)
 				or player_answer == track_title):
 				player_stats.title_found = True
@@ -257,29 +268,29 @@ def _compute_game_stats(game: Game) -> dict:
 			)
 			.order_by('-total_points', 'total_time')
 	)
+	# Persist each player's earned game XP directly on profile at game end.
+	xp_by_player = {
+		entry['player']: entry['total_points'] or 0
+		for entry in player_scores
+	}
+	if xp_by_player:
+		profiles_to_update = list(Profile.objects.filter(id__in=xp_by_player.keys()))
+		for profile in profiles_to_update:
+			xp_gain = xp_by_player.get(profile.id, 0)
+			if xp_gain > 0:
+				profile.exp_points += xp_gain
+		if profiles_to_update:
+			Profile.objects.bulk_update(profiles_to_update, ['exp_points'])
 	winner_stats = player_scores.first()
 	if winner_stats:
 		UserGameStats.objects.filter(
-            game=game, 
+            game=game,
             player_id=winner_stats['player']
         ).update(is_won=True)
 	game.status = 'finished'
 	game.save(update_fields=['status'])
 	stats = UserGameStats.objects.filter(game=game).select_related('player').all()
 	return LiveGameSerializer(stats, many=True).data
-
-
-@database_sync_to_async
-def _get_round_stats_completeness(game: Game) -> dict:
-    """Performs a single database query to count artist_fount and title_found."""
-    return UserRoundStats.objects.filter(
-        round__game=game,
-        round__round_number=game.current_round
-    ).aggregate(
-        titles=Count('id', filter=Q(title_found=True)),
-        artists=Count('id', filter=Q(artist_found=True))
-    )
-
 
 @database_sync_to_async
 def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
@@ -292,15 +303,21 @@ def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 
 
 @database_sync_to_async
-def _remove_player_from_game_stats(consumer: 'GlobalConsumer', content: dict) -> bool:
-	"""Remove a player from a game by deleting UserGameStats entry."""
-	try:
-		UserGameStats.objects.filter(game=consumer.current_game,
-									player=consumer.profile).delete()
-		consumer.current_game.player.remove(consumer.profile)
-		return True
-	except Exception:
-		return False
+def _remove_player_from_game_stats(game: Game, player: Profile) -> bool:
+    """Remove a player from a game by deleting UserGameStats entry."""
+    try:
+        UserGameStats.objects.filter(game=game, player=player).delete()
+        game.players.remove(player)
+        if not game.players.exists():
+            game.status = 'finished'
+            game.save(update_fields=['status'])
+            ACTIVE_GAMES[game.uid]['task'].cancel()
+            return False
+        elif game.owned_by == player:
+            game.save(update_fields=['owned_by'])
+            return True
+    except Exception:
+        return False
 
 @database_sync_to_async
 def _apply_game_settings(game: Game,
@@ -318,24 +335,30 @@ def _get_num_curr_players(game: Game) -> int:
 	return len(game.players.all())
 
 @database_sync_to_async
-def _get_game_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
 	"""Retrieve game data for header."""
-	return GameHeaderSerializer(consumer.current_game).data
+	if game is None:
+		game = consumer.current_game
+	return GameHeaderSerializer(game).data
 
 @database_sync_to_async
-def _get_game_settings_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_settings_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
 	"""Retrieve game setting data."""
-	return GameSettingsSerializer(consumer.current_game).data
+	if game is None:
+		game = consumer.current_game
+	return GameSettingsSerializer(game).data
 
 @database_sync_to_async
 def _get_player_data(consumer: 'GlobalConsumer') -> dict:
 	"""Retrieve player data."""
 	return LightProfileSerializer(consumer.profile).data
 
-def _build_base_game_payload(consumer: 'GlobalConsumer') -> dict:
+def _build_base_game_payload(consumer: 'GlobalConsumer' | None = None, game: Game | None = None, current_player: Profile | None = None) -> dict:
     """Helper to build the shared payload data (leaderboard, history, self, uid)."""
-    game = consumer.current_game
-    current_player = consumer.profile
+    if game is None:
+        game = consumer.current_game
+    if current_player is None:
+        current_player = consumer.profile
 
     leaderboard_rows = (
         UserGameStats.objects.filter(game=game)
@@ -344,7 +367,8 @@ def _build_base_game_payload(consumer: 'GlobalConsumer') -> dict:
         .order_by('-total_points', 'player__username')
     )
     round_rows = (
-        UserRoundStats.objects.filter(round__game=game, player=current_player)
+        UserRoundStats.objects.filter(round__game=game, player=current_player,
+						round__round_number__lt=game.current_round)
         .select_related('round__track')
         .order_by('round__round_number')
     )
@@ -362,20 +386,22 @@ def _build_base_game_payload(consumer: 'GlobalConsumer') -> dict:
 
 
 @database_sync_to_async
-def _get_game_info_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_info_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
     """Build the game_info payload for a joining player."""
-    payload = _build_base_game_payload(consumer)
+    payload = _build_base_game_payload(consumer, game, consumer.profile if consumer else None)
 
-    payload['game'] = GameHeaderSerializer(consumer.current_game).data
-    payload['settings'] = GameSettingsSerializer(consumer.current_game).data
+    if game is None:
+        game = consumer.current_game
+    payload['game'] = GameHeaderSerializer(game).data
+    payload['settings'] = GameSettingsSerializer(game).data
     
     return payload
 
 
 @database_sync_to_async
-def _get_game_ended_data(consumer: 'GlobalConsumer') -> dict:
+def _get_game_ended_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict:
     """Build the game_ended payload for all players."""
-    return _build_base_game_payload(consumer)
+    return _build_base_game_payload(consumer, game, consumer.profile if consumer else None)
 
 @database_sync_to_async
 def _get_game_history_data(game_uid: str, player: Profile) -> list[dict]:
@@ -391,3 +417,15 @@ def _get_game_history_data(game_uid: str, player: Profile) -> list[dict]:
 def _check_game_membership(game: Game, player: Profile) -> bool:
 	"""Check if player is in a game."""
 	return Game.objects.filter(uid=game.uid, players__id=player.id).exists()
+
+
+@database_sync_to_async
+def _get_active_game_for_player(player: Profile) -> Game | None:
+	"""Return the game a player is currently attached to, if any (excluding finished games)."""
+	stats = (
+		UserGameStats.objects
+		.filter(player=player, game__status__in=['waiting', 'playing_round', 'playing_break'])
+		.select_related('game')
+		.first()
+	)
+	return stats.game if stats else None

@@ -23,6 +23,7 @@ interface PGameViewsProps {
 	volume: number;
 	muted: boolean;
 	answerRef: React.RefObject<HTMLDivElement | null>;
+	onEndLeave: () => void;
 }
 
 type ECurrentViewType = {
@@ -49,6 +50,7 @@ function PGameViews({
 	volume,
 	muted,
 	answerRef,
+	onEndLeave,
 }: PGameViewsProps) {
 	//====================== STATES ======================
 	const getCurrentView = useCallback((): number => {
@@ -134,7 +136,13 @@ function PGameViews({
 				/>
 			)}
 			{currentView == ECurrentView.ENDED && (
-				<PGameEnded game={game} rounds={rounds} settings={settings} players={players} />
+				<PGameEnded
+					onEndLeave={onEndLeave}
+					game={game}
+					rounds={rounds}
+					settings={settings}
+					players={players}
+				/>
 			)}
 		</CGamePaper>
 	);

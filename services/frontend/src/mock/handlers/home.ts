@@ -101,6 +101,13 @@ export const FetchPrivateRoom = http.get(API_GAME_FRIENDS, async () => {
 	});
 
 	tempRooms.push({
+		uid: "ended-host",
+		name: "Ended Host room",
+		genres: [...MUSIC_TAGS],
+		players: generatePlayers(),
+	});
+
+	tempRooms.push({
 		uid: "error",
 		name: "Error room",
 		genres: [...MUSIC_TAGS],

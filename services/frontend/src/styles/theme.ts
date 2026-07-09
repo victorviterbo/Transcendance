@@ -152,7 +152,7 @@ export const appTexts: IThemeTexts = {
 			"2xl": 64,
 		},
 
-		mainFamily: "Knewave, MochiyPop, roboto, arial",
+		mainFamily: "TitleFont, MochiyPop, roboto, arial",
 	},
 };
 

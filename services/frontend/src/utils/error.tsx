@@ -51,6 +51,18 @@ export const getErrorNode = (
 				})}
 			</Stack>
 		);
+	else if (typeof finalError == "object" && Object.keys(finalError).length > 0) {
+		return (
+			<Stack>
+				{Object.keys(finalError).map((key: string, index: number) => {
+					return getComponent(
+						typeof finalError[key] == "string" ? finalError[key] : fallback,
+						key + index,
+					);
+				})}
+			</Stack>
+		);
+	}
 	return getComponent(fallback);
 };
 
