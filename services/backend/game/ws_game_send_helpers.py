@@ -89,7 +89,7 @@ async def _send_round_stats(consumer: 'GlobalConsumer',
                             game_leaderboard: dict | None = None,
                             group_name: str | None = None,
                             game: Game | None = None) -> None:
-    """Send final game stats to players at the end of a game."""
+    """Send final game stats to players at the end of a round."""
     if game is None:
         game = consumer.current_game
     if group_name is None:

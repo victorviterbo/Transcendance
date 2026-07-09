@@ -105,7 +105,7 @@ def _set_current_round(game: Game, round_number: int) -> None:
 
 
 @database_sync_to_async
-def _get_track_reveal_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None, content: dict | None = None) -> dict | None:
+def _get_track_reveal_data(consumer: 'GlobalConsumer' | None = None, game: Game | None = None) -> dict | None:
 	"""Get full track data for revealing to players.
 	
 	Args:

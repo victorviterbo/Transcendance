@@ -114,7 +114,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
             await _init_round_stats(game)
             serialized_game = await _get_game_data(game=game)
             serialized_track_full, serialized_track_blind = (
-                await _get_track_reveal_data(game=game, content=content)
+                await _get_track_reveal_data(game=game)
             )
             #TODO: put serialized_track_blind for  _send_round_preview for prod
             await _send_round_preview(consumer, serialized_game, serialized_track_full, game_group_name, game)
@@ -247,7 +247,7 @@ async def _answer_submit(consumer: 'GlobalConsumer', content: dict) -> None:
         })
         return
 
-    track_data, _ = await _get_track_reveal_data(consumer, content)
+    track_data, _ = await _get_track_reveal_data(consumer)
     assert track_data is not None
     (
         artist_correct,
