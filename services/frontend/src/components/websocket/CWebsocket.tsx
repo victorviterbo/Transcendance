@@ -111,8 +111,8 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 		},
 	);
 	const modules = useRef<IWSContextModule[]>([]);
-	const lastReadMessage = useRef<MessageEvent<unknown> | undefined>(undefined)
-	const { push } = useNotif()
+	const lastReadMessage = useRef<MessageEvent<unknown> | undefined>(undefined);
+	const { push } = useNotif();
 
 	useEffect(() => {
 		wsStatus = readyState;
@@ -123,7 +123,11 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	}, [readyState]);
 
 	useEffect(() => {
-		if (!lastMessage?.data || (lastReadMessage.current && lastReadMessage.current == lastMessage)) return;
+		if (
+			!lastMessage?.data ||
+			(lastReadMessage.current && lastReadMessage.current == lastMessage)
+		)
+			return;
 
 		const currentData: TWSRcv =
 			typeof lastMessage.data == "string"
@@ -131,13 +135,12 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 				: (lastMessage.data as TWSRcv);
 
 		lastReadMessage.current = lastMessage;
-		if(currentData.target == "error")
-		{
+		if (currentData.target == "error") {
 			push({
 				severity: "error",
-				message: currentData.message
-			})
-			
+				message: currentData.message,
+			});
+
 			return;
 		}
 
@@ -147,7 +150,6 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 		targetModule.count = targetModule.messages.length;
 		if (targetModule.onUpdate) targetModule.onUpdate();
 	}, [lastMessage, modules, push]);
-
 
 	return (
 		<wsContext.Provider value={{ modules: modules, sendMessage, state: readyState }}>

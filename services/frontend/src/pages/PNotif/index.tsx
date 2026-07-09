@@ -83,6 +83,11 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 				const last: TWSRcv | IWSGameSendEvent | undefined = wsContext.getLast();
 				if (last?.target == "notif") {
 					if (last.event == "new") {
+						const foundNotif: TNotif | undefined = notifs.find(
+							(notif: TNotif) => notif.uid == last.notif.uid,
+						);
+						if (foundNotif) return;
+
 						notifs.splice(0, 0, last.notif);
 						setNotifs(structuredClone(notifs));
 					}

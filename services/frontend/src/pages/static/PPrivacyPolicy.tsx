@@ -22,7 +22,11 @@ const privacySections = [
 	},
 	{
 		title: "PRIVACY_RETENTION_TITLE",
-		paragraphs: ["PRIVACY_RETENTION_BODY_1", "PRIVACY_RETENTION_BODY_2", "PRIVACY_RETENTION_BODY_3"],
+		paragraphs: [
+			"PRIVACY_RETENTION_BODY_1",
+			"PRIVACY_RETENTION_BODY_2",
+			"PRIVACY_RETENTION_BODY_3",
+		],
 	},
 	{
 		title: "PRIVACY_RIGHTS_TITLE",
