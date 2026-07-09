@@ -196,7 +196,6 @@ class TestWebsocketHelpers(APITransactionTestCase):
                 self.assertTrue(not public or payload.get('answer') is None, True)
             if not answers['is_correct'] and public:
                 for p in players:
-                    print(p)
                     payload = await self.expect_event(p, answers['expected_response'])
                     payloads['in_game'].append(payload)
             else:

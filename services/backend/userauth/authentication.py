@@ -57,5 +57,7 @@ class CookieJWTAuthentication(JWTAuthentication):
             print("Token error:", e.detail)
             raise AuthenticationFailed(detail="Token is invalid or corrupted.") from e
         except Exception as e:
-            print("Unexpected error:", e)
-            raise AuthenticationFailed(detail="Authentication failed due to an unexpected error.", code="AUTHENTICATION_OUTDATED")
+            raise AuthenticationFailed(
+                detail="Authentication failed due to an unexpected error.",
+                code="AUTHENTICATION_ERROR"
+                )

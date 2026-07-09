@@ -31,8 +31,6 @@ class Game(models.Model):
                                 on_delete=models.SET_NULL,
                                 null=True)
     
-    
-    
     playlist = models.OneToOneField(Playlist,
                                     on_delete=models.SET_NULL,
                                     null=True,

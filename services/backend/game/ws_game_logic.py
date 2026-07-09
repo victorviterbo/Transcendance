@@ -63,6 +63,7 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     """Route game events to appropriate handlers."""
     game_event = content.get('event')
     game_uid = content.get('uid')
+    print(content)
     if not consumer.profile:
         await consumer.send_json({'target': 'game',
                             'event': 'error',
@@ -71,14 +72,14 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     if game_event == 'player_join':
         await player_join(consumer, content)
         return
-    if game_event == 'player_leave' :
-        await _leave_game(consumer, content)
-        return
     consumer.current_game = await _get_game(consumer, game_uid, True)
     if getattr(consumer, 'current_game', None) is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'Game not found for this player'})
+        return
+    if game_event == 'player_leave':
+        await _leave_game(consumer, content)
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
@@ -208,8 +209,7 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
                                   'message': 'Game already started'})
         return
     ACTIVE_GAMES[consumer.current_game.uid] = {
-            "task": asyncio.create_task(run_game_loop(consumer, content)),
-            "all_answers_received": asyncio.Event(),
+            "task": asyncio.create_task(run_game_loop(consumer, content))
         }
 
 async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
@@ -304,7 +304,6 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                             'message': 'Only owner can edit game'})
         return
     settings_payload = content.get('settings', {})
-    print(f"Settings payload: {settings_payload}\n")
     try:
         updated_game = await _apply_game_settings(consumer.current_game,
                                                     settings_payload,
@@ -373,15 +372,6 @@ async def _game_restart(consumer: 'GlobalConsumer', content: dict) -> None:
         old_game_uid,
         str(new_game.uid),
     )
-
-
-async def check_all_answers_received(consumer: 'GlobalConsumer', game: Game) -> None:
-    """Unlocks the game loop if both artist and title has been found."""
-    found = await _get_round_stats_completeness(game)
-    game_over = found['titles'] > 0 and found['artists'] > 0
-    if game_over:
-        ACTIVE_GAMES[consumer.current_game.uid]['all_answers_received'].set()
-
 
 @database_sync_to_async
 def _clone_game_for_restart(game: Game) -> Game:

@@ -176,7 +176,7 @@ class RefreshTokenView(TokenRefreshView):
         serializer = self.get_serializer(data={'refresh': refresh_token})
         try:
             serializer.is_valid(raise_exception=True)
-            AccessToken(refresh_token)
+            AccessToken(serializer.validated_data['access'])
         except (InvalidToken, TokenError, Exception, serializers.ValidationError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)

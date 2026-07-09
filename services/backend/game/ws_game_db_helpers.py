@@ -1,7 +1,7 @@
 """Handle all DB hits for the game."""
 import json
-import uuid
 import re
+import uuid
 from typing import TYPE_CHECKING, Any
 
 from channels.db import database_sync_to_async
@@ -12,7 +12,12 @@ from music.serializers import TrackSerializer
 from project.defaults import default_pts, get_badge
 from rest_framework import serializers
 from stats.models import GameRoundStats, UserGameStats, UserRoundStats
-from stats.serializers import GameHistorySerializer, GameLeaderboardSerializer, LiveGameSerializer, LiveRoundSerializer
+from stats.serializers import (
+    GameHistorySerializer,
+    GameLeaderboardSerializer,
+    LiveGameSerializer,
+    LiveRoundSerializer,
+)
 from thefuzz import fuzz
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
@@ -31,11 +36,11 @@ def _get_game(consumer: Any,
 	"""Fetch a Game instance by uid, and check for player's membership if requested."""
 	if not game_uid:
 		return None
-	if game_uid in ACTIVE_GAMES:
-		if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
-			return None
-		else:
-			return ACTIVE_GAMES[game_uid]['task']
+	#if game_uid in ACTIVE_GAMES:
+	#	if consumer.profile not in ACTIVE_GAMES[game_uid]['players']:
+	#		return None
+	#	else:
+	#		return ACTIVE_GAMES[game_uid]['task']
 	if req_membership:
 		return (Game.objects.filter(uid=game_uid,
 							players=consumer.profile)
