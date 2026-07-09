@@ -74,8 +74,7 @@ export class GameInstance {
 		const mutedStorage: string | null = localStorage.getItem("default_mute");
 		if (mutedStorage) this.muted = mutedStorage == "true";
 
-		if(navigator.mediaSession)
-		{
+		if (navigator.mediaSession) {
 			navigator.mediaSession.setActionHandler("play", function () {});
 			navigator.mediaSession.setActionHandler("pause", function () {});
 			navigator.mediaSession.setActionHandler("seekbackward", function () {});
@@ -220,8 +219,7 @@ export class GameInstance {
 		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
 		if (song) {
 			song.volume = this.muted ? 0 : this.volume / 100;
-			if(!navigator.userActivation.hasBeenActive)
-				this.updatePlayable(false);
+			if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
 			else {
 				song.play()
 					.then(() => {
@@ -238,8 +236,7 @@ export class GameInstance {
 		this.updateResults();
 		this.updateStatus();
 		setTimeout(() => {
-			if(navigator.userActivation.hasBeenActive)
-				this.focusInput();
+			if (navigator.userActivation.hasBeenActive) this.focusInput();
 		}, 50);
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer) {
@@ -718,8 +715,7 @@ export class GameInstance {
 		}
 	}
 	async pingAudio() {
-		if(!navigator.userActivation.hasBeenActive)
-				this.updatePlayable(false);
+		if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
 	}
 
 	//-------------------  Messages ---------------------
