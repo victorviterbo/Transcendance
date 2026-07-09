@@ -48,14 +48,14 @@ function PProfileMatchHistoryRoundEntry({ round }: PProfileMatchHistoryRoundEntr
 	const { ttrn, formatSeconds } = useLang();
 
 	const roundInfos = useMemo(() => {
-		const isRoundFullyFound = round.artistFound && round.songFound;
+		const isRoundFullyFound = round.artistFound && round.titleFound;
 
 		return {
 			artistStatusColor: style.roundStatusColor(round.artistFound),
 			coverAlt: `${round.trackArtist} - ${round.trackName}`,
 			isRoundFullyFound,
 			rankingLabel: isRoundFullyFound ? ttrn(round.ranking) : undefined,
-			songStatusColor: style.roundStatusColor(round.songFound),
+			songStatusColor: style.roundStatusColor(round.titleFound),
 			timeLabel: isRoundFullyFound ? formatSeconds(round.time) : undefined,
 		};
 	}, [round, style, formatSeconds, ttrn]);

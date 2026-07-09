@@ -38,7 +38,7 @@ export interface IHistoryPlayer {
 export interface IHistoryRound {
 	trackName: string;
 	trackArtist: string;
-	songFound: boolean;
+	titleFound: boolean;
 	artistFound: boolean;
 	time: number;
 	ranking: number;
