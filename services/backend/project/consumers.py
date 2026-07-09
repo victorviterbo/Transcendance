@@ -87,11 +87,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             if getattr(self, 'profile', None):
                 await set_chat_open(self.profile.id, recipient_profile_id, is_open=False)
         if getattr(self, "profile", None):
-            await update_online_status(self, self.profile.id, is_online=False)
-            logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
-                        self.profile.id,
-                        self.profile.username,
-                        self.group_name)
+            is_still_online = await update_online_status(self, self.profile.id, is_online=False)
+            if not is_still_online:
+                logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
+                            self.profile.id,
+                            self.profile.username,
+                            self.group_name)
         return
     
     async def receive_json(self, content: dict) -> None:
