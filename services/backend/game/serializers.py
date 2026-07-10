@@ -53,7 +53,20 @@ class GameSettingsSerializer(serializers.ModelSerializer):
                 )
         return value
 
-
+    def validate_name(self, value : str)-> Any:
+        """Validate that the name is correct."""
+        if not value:
+            raise serializers.ValidationError(
+                f"Invalid name: {value}. Name cannot be empty.",
+                code='invalid_name',
+            )
+        elif len(value) > 40:
+            raise serializers.ValidationError(
+                f"Invalid name: {value}. \
+                    Name must be less than or equal to 40 characters.",
+                code='invalid_name',
+            )
+        return value
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
     players = LightProfileSerializer(many=True, read_only=True) # TODO : remove players, playerCount and playerMax instead

@@ -182,7 +182,6 @@ class ProfileTests(TestBaseHelpers, TestImageHelpers):
         self.assertEqual(login_res.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertFalse(Profile.objects.filter(username='user1').exists())
         self.assertFalse(SiteUser.objects.filter(email='user1@mail.com').exists())
-        print(STATIC_ROOT)
         file_path = STATIC_ROOT / image
         time.sleep(1000000)
         self.assertTrue(file_path.exists(), f"File not found at {file_path}")

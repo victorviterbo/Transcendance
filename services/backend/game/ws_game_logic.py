@@ -2,10 +2,12 @@
 
 import asyncio
 from contextlib import suppress
+from datetime import timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID
 
 from channels.db import database_sync_to_async
+from channels.layers import get_channel_layer
 from chat.ws_game_chat import (
     add_gameroom_participant,
     create_gamechat_room,
@@ -38,6 +40,7 @@ from .ws_game_db_helpers import (
     _set_current_round,
     _setup_game_assets,
     _validate_answer,
+    _delete_aborted_game
 )
 from .ws_game_send_helpers import (
     _send_existing_player_game_info,
@@ -101,14 +104,12 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         game = consumer.current_game
         game_uid = game.uid
         game_group_name = f'game_{game_uid}'
-        
         await _setup_game_assets(game)
         serialized_game = await _get_game_data(game=game)
         serialized_settings = await _get_game_settings_data(game=game)
         await _send_start_signal(consumer, serialized_game, serialized_settings, game_group_name)
         await asyncio.sleep(answer_buffer_time)
         for round in range(1, game.trackCount + 1):
-            #ACTIVE_GAMES[game_uid]['all_answers_received'].clear()
             await _set_current_round(game, round)
             await _init_round_stats(game)
             serialized_game = await _get_game_data(game=game)
@@ -156,6 +157,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
 async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     """Define the process to join a game."""
     game_uid = content.get('uid')
+    print(f'uid: {game_uid}')
     try:
         UUID(str(game_uid))
     except ValueError:
@@ -196,13 +198,37 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
     if not getattr(consumer, 'current_game', None):
         await _send_game_error(consumer, None, 'NO_GAME_CONTEXT', critical=True)
         return
-    if (consumer.current_game.uid in ACTIVE_GAMES):
+    if consumer.current_game.status != 'waiting':
         await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
         return
+    ACTIVE_GAMES[consumer.current_game.uid]['started'].set()
     ACTIVE_GAMES[consumer.current_game.uid] = {
             "task": asyncio.create_task(run_game_loop(consumer, content)),
-            #"all_answers_received": asyncio.Event(),
         }
+
+async def _start_lobby_timer(game: Game) -> None:
+    """Start a countdown timer for the game lobby."""
+    print(f"Starting lobby timer for game {game.uid}\n\n\n\n\n\n\n")
+    try:
+        print(f"Waiting for game {game.uid} to start...\n\n\n\n\n\n\n")
+        await asyncio.wait(ACTIVE_GAMES[game.uid]["started"],
+                               timeout=timedelta(seconds=3))
+        print(f"Game {game.uid} started!\n\n\n\n\n\n\n")
+    except TimeoutError:
+        # If the game hasn't started within the timeout, close it
+        await _send_game_closed(get_channel_layer(), game.uid, f'game_{game.uid}')
+        ACTIVE_GAMES.pop(game.uid, None)
+        await _delete_aborted_game(game)
+    return
+
+"""
+async def _game_cleanup(game: Game) -> None:
+    Clean up game resources for aborted games.
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(f'game_{game.uid}', 
+                             {'type': 'game_closed_event',
+                            'uid': str(game.uid),
+    })"""
 
 async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
     """Handle the game joining process."""
@@ -309,6 +335,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
                 'error': format_validation_errors(exc)['error'],
             })
             return
+    
     consumer.current_game = updated_game
     serialized_game = await _get_game_data(consumer)
     settings_data = await _get_game_settings_data(consumer)

@@ -1,7 +1,9 @@
 """HTTP views for game management and testing."""
 
+import asyncio
 import uuid
 
+from asgiref.sync import async_to_sync
 from chat.ws_game_chat import create_gamechat_room
 from django.shortcuts import get_object_or_404
 from friends.models import Friendship
@@ -18,6 +20,8 @@ from .serializers import (
 	GameDetailSerializer,
 )
 from .services import format_validation_errors
+from .ws_game_logic import _start_lobby_timer
+from .ws_game_shared import ACTIVE_GAMES
 
 
 class GeneralGameView(APIView):
@@ -39,6 +43,11 @@ class GeneralGameView(APIView):
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
+			ACTIVE_GAMES[new_game.uid] = {}
+			ACTIVE_GAMES[new_game.uid]["started"] = asyncio.Event()
+			ACTIVE_GAMES[new_game.uid]["started"].clear()
+			print
+			ACTIVE_GAMES[new_game.uid]["lobby_timer"] = async_to_sync(_start_lobby_timer(new_game))
 			# create the chat room after the game exists
 			room = create_gamechat_room(new_game)
 			new_game.room = room

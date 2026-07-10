@@ -177,5 +177,5 @@ async def _send_game_closed(consumer: 'GlobalConsumer', game_uid: str, group_nam
     await consumer.group_send(group_name, {
         'type': 'game_closed_event',
         'uid': str(game_uid),
-        'self': consumer.profile_data,
     })
+

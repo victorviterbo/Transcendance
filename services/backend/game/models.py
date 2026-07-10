@@ -18,7 +18,7 @@ def _default_genres() -> list:
 class Game(models.Model):
     """Define the model for a single game session."""
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=40)
     
     genres = models.JSONField(default=_default_genres, blank=True)
     
