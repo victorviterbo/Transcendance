@@ -209,8 +209,7 @@ def _init_round_stats(game: Game) -> None:
     )
     for player in game.players.all():
         game_stats = (UserGameStats.objects.filter(game=game,
-                                                  player=player,
-                                                  is_active=True)
+                                                  player=player)
                                                   .first()
         )
         UserRoundStats.objects.create(
@@ -301,7 +300,7 @@ def _compute_game_stats(game: Game) -> dict:
 def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
     """Add a player to a game by creating UserGameStats entry."""
     try:
-        UserGameStats.objects.get_or_create(game=game, player=player, is_active=True)
+        UserGameStats.objects.create(game=game, player=player, is_active=True)
         return True
     except Exception:
         raise
@@ -312,9 +311,11 @@ def _remove_player_from_game_stats(game: Game, player: Profile) -> bool:
     """Remove a player from a game by deleting UserGameStats entry."""
     try:
         UserGameStats.objects.filter(game=game, player=player).update(is_active=False)
-        if not game.players.exists():
+        if not UserGameStats.objects.filter(game=game, is_active=True).exists():
             game.status = 'finished'
-            game.save(update_fields=['status'])
+            game.room.delete()
+            game.playlist.delete()
+            game.save(update_fields=['status', 'room', 'playlist'])
             task_to_cancel = ACTIVE_GAMES[game.uid]['task']
             task_to_cancel.cancel()
             return False
@@ -421,7 +422,7 @@ def _get_game_history_data(game_uid: str, player: Profile) -> list[dict]:
 @database_sync_to_async
 def _check_game_membership(game: Game, player: Profile) -> bool:
     """Check if player is in a game."""
-    return UserGameStats.objects.filter(game=game, player=player, is_active=True).exists()
+    return UserGameStats.objects.filter(game=game, player=player).exists()
 
 
 @database_sync_to_async

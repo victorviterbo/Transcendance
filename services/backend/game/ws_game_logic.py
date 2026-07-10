@@ -189,7 +189,7 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
         return
     if getattr(consumer, 'game_group_name', None) is None:
         consumer.game_group_name = f'game_{consumer.current_game.uid}'
-        await _add_user_to_players(consumer, content)
+    await _add_user_to_players(consumer, content)
     return
 
 
@@ -201,36 +201,9 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
     if consumer.current_game.status != 'waiting':
         await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
         return
-    #ACTIVE_GAMES[consumer.current_game.uid]['started'].set()
     ACTIVE_GAMES[consumer.current_game.uid] = {
             "task": asyncio.create_task(run_game_loop(consumer, content)),
         }
-
-"""
-async def _start_lobby_timer(game: Game) -> None:
-    Start a countdown timer for the game lobby.
-    print(f"Starting lobby timer for game {game.uid}\n\n\n\n\n\n\n")
-    try:
-        print(f"Waiting for game {game.uid} to start...\n\n\n\n\n\n\n")
-        await asyncio.wait(ACTIVE_GAMES[game.uid]["started"],
-                               timeout=timedelta(seconds=3))
-        print(f"Game {game.uid} started!\n\n\n\n\n\n\n")
-    except TimeoutError:
-        # If the game hasn't started within the timeout, close it
-        await _send_game_closed(get_channel_layer(), game.uid, f'game_{game.uid}')
-        ACTIVE_GAMES.pop(game.uid, None)
-        await _delete_aborted_game(game)
-    return
-
-"""
-"""
-async def _game_cleanup(game: Game) -> None:
-    Clean up game resources for aborted games.
-    channel_layer = get_channel_layer()
-    await channel_layer.group_send(f'game_{game.uid}', 
-                             {'type': 'game_closed_event',
-                            'uid': str(game.uid),
-    })"""
 
 async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
     """Handle the game joining process."""
@@ -430,4 +403,5 @@ async def _game_cleanup(game: Game) -> None:
         await database_sync_to_async(game.playlist.delete)()
     game.room = None
     game.playlist = None
-    await database_sync_to_async(game.save)(update_fields=['room', 'playlist'])
+    game.status = 'finished'
+    await database_sync_to_async(game.save)(update_fields=['room', 'playlist', 'status'])

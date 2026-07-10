@@ -45,15 +45,18 @@ class GlobalStatsView(APIView):
             return Response({'error': {'query': 'USER_NOT_FOUND'}},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        rounds = UserRoundStats.objects.filter(player=profile)
+        rounds = UserRoundStats.objects.filter(player=profile,
+                                               round__game__status='finished')
         total_rounds = rounds.count()
-        total_games = (GameRoundStats.objects.filter(players=profile)
+        total_games = (GameRoundStats.objects.filter(players=profile,
+                                                     game__status='finished')
             .values('game')
             .distinct()
             .count()
         )
         total_games_won = (UserGameStats.objects.filter(player=profile,
-                                                       is_won=True)
+                                                        game__status='finished',
+                                                        is_won=True)
             .count()
         )
         avg_score = round(rounds.aggregate(avg_score=Avg('xp_earned'))['avg_score'] or 0.0, 2)
