@@ -13,7 +13,7 @@ import type {
 	IGameSettings,
 	IGameStatus,
 } from "../../../types/game";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import PGameRoundStateNode from "./PGameRoundStateNode";
 import PGameRoundTracker from "./PGameRoundTracker";
 import PGameRoundAnswer from "./PGameRoundAnswer";
@@ -23,6 +23,7 @@ import CVolumeSilder from "../../../components/inputs/slider/CVolumeSilder";
 import type { GameInstance } from "../../../handlers/gameHandlers";
 import CCountdownCircular from "../../../components/feedback/loading/CCountdownCircular";
 import {
+	CHAT_MESSAGE_MAX_LENGTH,
 	GAME_MAX_ROUND_DISPLAYED,
 	GAME_MAX_ROUND_DISPLAYED_SMALL,
 	GAME_ROUND_PASSED_DISPLAYED,
@@ -61,11 +62,12 @@ function PGameRound({
 	const { ttrf, ttrfn } = useLang();
 
 	//====================== EVENTS ======================
-	const handleSendMessage = useCallback(() => {
-		if (!game.current || answerField == "" || /^\s+$/g.test(answerField)) return;
+	const handleSendMessage = () => {
+		const trimed = answerField.trim();
+		if (!game.current || !trimed || trimed.length > CHAT_MESSAGE_MAX_LENGTH) return;
 		game.current.submitAnswer(answerField);
 		setAnswerField("");
-	}, [game, answerField, setAnswerField]);
+	};
 
 	useEffect(() => {
 		async function clear() {
@@ -368,7 +370,9 @@ function PGameRound({
 						verticalPadding="10px"
 						value={answerField}
 						onChange={(event) => {
-							setAnswerField(event.target.value);
+							if (event.target.value.trim().length <= CHAT_MESSAGE_MAX_LENGTH) {
+								setAnswerField(event.target.value);
+							}
 						}}
 						onKeyUp={(event) => {
 							if (isKeyboardSubmit(event)) handleSendMessage();
