@@ -159,6 +159,11 @@ class LogoutView(APIView):
             samesite='Lax',
             path='/api/auth/'
         )
+        response.delete_cookie(
+            'sessionid',
+            samesite='Lax',
+            path='/'
+        )
         return response
 
 class RefreshTokenView(TokenRefreshView):
