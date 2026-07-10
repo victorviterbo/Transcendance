@@ -8,8 +8,8 @@ from chat.serializers import FriendChatMessageSerializer
 from chat.validators import validate_chat_message_body
 from django.core.cache import cache
 from django.db import models
-from rest_framework import serializers
 from django.db import transaction
+from rest_framework import serializers
 from userprofile.models import Profile
 
 logger = logging.getLogger(__name__)
@@ -19,52 +19,49 @@ async def update_online_status(consumer, current_profile_id: int, is_online: boo
     uid used at wedsocket and API, `id` stay for internal database backend check open close messg"""
     if current_profile_id is None:
         return False
-    updated_state = await set_online_status(current_profile_id, is_online)
-    if updated_state is None:
+    previous_count, current_count = await set_online_status(current_profile_id, is_online)
+    if previous_count is None:
         logger.info('ws.presence.skip_missing_profile profile_id=%s desired_online=%s',
                     current_profile_id,
                     is_online)
         return False
-    previous_connections, active_connections = updated_state
-    if is_online:
-        if previous_connections == 0:
-            pending_message = await get_pending_message(current_profile_id)
-            await mark_pendmessage_delivered(current_profile_id)
+    if is_online and previous_count == 0:
+        pending_message = await get_pending_message(current_profile_id)
+        await mark_pendmessage_delivered(current_profile_id)
 
-            for ref in pending_message:
-                sender_id = ref.get('sender_id')
-                sender_uid = ref.get('sender_uid')
-                if sender_id and sender_uid and await is_chat_open(sender_id, current_profile_id):
-                    await consumer.group_send(f'user_{sender_uid}', {
-                        'type': 'send.notification',
-                        'payload': {
-                            'target': 'friend_chat',
-                            'event': 'update_status',
-                            'message': {
-                                'uid': str(ref.get('uid')),
-                                'status': 'recieved',
-                            },
+        for ref in pending_message:
+            sender_id = ref.get('sender_id')
+            sender_uid = ref.get('sender_uid')
+            if sender_id and sender_uid and await is_chat_open(sender_id, current_profile_id):
+                await consumer.group_send(f'user_{sender_uid}', {
+                    'type': 'send.notification',
+                    'payload': {
+                        'target': 'friend_chat',
+                        'event': 'update_status',
+                        'message': {
+                            'uid': str(ref.get('uid')),
+                            'status': 'recieved',
                         },
-                    })
-    return active_connections > 0
+                    },
+                })
+    return current_count > 0
 
 @database_sync_to_async
-def set_online_status(current_profile_id: int, is_online: bool) -> tuple[int, int] | None:
-    """Track how many websocket connections a profile currently has."""
+def set_online_status(current_profile_id: int, is_online: bool) -> tuple[int | None, int]:
+    """Track websocket connection count and derive the online flag."""
     try:
         with transaction.atomic():
             profile = Profile.objects.select_for_update().get(id=current_profile_id)
-            previous_connections = profile.active_ws_connections
+            previous_count = profile.active_ws_connections
             if is_online:
-                profile.active_ws_connections = previous_connections + 1
-                profile.is_online = True
+                profile.active_ws_connections = previous_count + 1
             else:
-                profile.active_ws_connections = max(previous_connections - 1, 0)
-                profile.is_online = profile.active_ws_connections > 0
+                profile.active_ws_connections = max(previous_count - 1, 0)
+            profile.is_online = profile.active_ws_connections > 0
             profile.save(update_fields=['active_ws_connections', 'is_online'])
-            return previous_connections, profile.active_ws_connections
+            return previous_count, profile.active_ws_connections
     except Profile.DoesNotExist:
-        return None
+        return None, 0
 
 @database_sync_to_async
 def get_pending_message(recipient_profile_id: int) -> list[dict[str, int]]:

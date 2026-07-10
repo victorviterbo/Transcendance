@@ -10,7 +10,6 @@ from project.asgi import application
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
-from userprofile.models import Profile
 from userprofile.serializers import ProfileSerializer
 
 from tests.test_helpers import TestBaseHelpers, urls
@@ -228,13 +227,13 @@ class ChatWebsocketTests(TransactionTestCase):
 
 		async_to_sync(scenario)()
 
-	def test_presence_stays_online_until_last_socket_disconnects(self) -> None:
-		"""A profile should only go offline after its last socket closes."""
+	def test_websocket_disconnect_marks_profile_offline(self) -> None:
+		"""The last websocket disconnect should mark the profile offline."""
 
 		async def get_presence() -> tuple[bool, int]:
 			def fetch() -> tuple[bool, int]:
-				profile = Profile.objects.get(id=self.user.profile.id)
-				return profile.is_online, profile.active_ws_connections
+				self.user.profile.refresh_from_db()
+				return self.user.profile.is_online, getattr(self.user.profile, 'active_ws_connections', 0)
 
 			return await database_sync_to_async(fetch)()
 
