@@ -381,9 +381,6 @@ export class GameInstance {
 		});
 		if (data.critical) {
 			this.stopAll();
-			this.send({
-				...this.getSendBaseData("player_leave"),
-			} as IWSGameRCVEventLeave);
 			this.callbacks.setSessionState("ended");
 			this.callbacks.setError(data.message);
 		}

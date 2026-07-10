@@ -126,5 +126,6 @@ dependencies:
   - zstd=1.5.7
   - pip:
       - autobahn==25.12.2
+      - psycopg[binary]==3.3.4
       - py-ubjson==0.16.1
 prefix: /opt/conda/envs/backend
