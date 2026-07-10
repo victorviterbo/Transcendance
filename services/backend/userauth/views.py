@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -180,7 +181,11 @@ class RefreshTokenView(TokenRefreshView):
         serializer = self.get_serializer(data={'refresh': refresh_token})
         try:
             serializer.is_valid(raise_exception=True)
-            AccessToken(serializer.validated_data['access'])
+            validated_token = JWTAuthentication().get_validated_token(serializer.validated_data['access'])
+            print(validated_token)  # Debugging line
+            if validated_token is None or JWTAuthentication().get_user(validated_token) is None:
+                return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
         except (InvalidToken, TokenError, Exception, serializers.ValidationError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)
