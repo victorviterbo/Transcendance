@@ -115,7 +115,7 @@ fclean:	# Remove containers, volumes, built images and local certs
 	rm -f $(TLS_CERT) $(TLS_KEY)
 	echo "$(GREEN)✨ System fully cleaned$(RESET)"
 
-re:		clean dirs check-certs build # Remove containers then rebuild and start, preserving volumes
+re:		clean dirs check-certs up # Remove containers then rebuild and start, preserving volumes
 
 fre:	fclean certs run # Fully clean, rebuild and start from a fresh local state
 
