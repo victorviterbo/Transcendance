@@ -201,13 +201,14 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
     if consumer.current_game.status != 'waiting':
         await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
         return
-    ACTIVE_GAMES[consumer.current_game.uid]['started'].set()
+    #ACTIVE_GAMES[consumer.current_game.uid]['started'].set()
     ACTIVE_GAMES[consumer.current_game.uid] = {
             "task": asyncio.create_task(run_game_loop(consumer, content)),
         }
 
+"""
 async def _start_lobby_timer(game: Game) -> None:
-    """Start a countdown timer for the game lobby."""
+    Start a countdown timer for the game lobby.
     print(f"Starting lobby timer for game {game.uid}\n\n\n\n\n\n\n")
     try:
         print(f"Waiting for game {game.uid} to start...\n\n\n\n\n\n\n")
@@ -221,6 +222,7 @@ async def _start_lobby_timer(game: Game) -> None:
         await _delete_aborted_game(game)
     return
 
+"""
 """
 async def _game_cleanup(game: Game) -> None:
     Clean up game resources for aborted games.
