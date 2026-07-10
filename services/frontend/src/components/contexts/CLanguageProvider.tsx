@@ -74,7 +74,7 @@ function CLanguageProvider({ children }: CLanguageContextProps) {
 		const checkValid = async () => {
 			if (!langData || notifSent) return;
 			if (langData.headers.length == 0 || langData.langs.length == 0) {
-				let msg = "Failed to loaded localization file.";
+				let msg = "Failed to load localization file.";
 				if (currentLang == "fr") msg = "Impossible de charger le fichier de localisation.";
 				else if (currentLang == "ja") msg = "ローカライズファイルを読み込めませんでした";
 				else if (currentLang == "de")

@@ -364,6 +364,10 @@ export class GameInstance {
 		this.callbacks.setRedirect("/game/" + data.newGame);
 	}
 	onGameClosed() {
+		this.callbacks.push({
+			severity: "info",
+			message: "GAME_ENDED",
+		});
 		this.callbacks.setRedirect("/");
 	}
 	onError(data: IWSGameSendEventError) {

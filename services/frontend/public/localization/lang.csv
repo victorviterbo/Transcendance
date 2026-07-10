@@ -351,3 +351,4 @@ USER_NOT_FRIEND,User is not a friend,Cet utilisateur n'est pas un ami,このユ�
 ROOM_NOT_FOUND,Chat room not found,Salon de discussion introuvable,チャットルームが見つかりません,Chatraum nicht gefunden,Error message shown when the chat room cannot be found
 INVALID_ROOM,Chat room is not valid,Le salon de discussion n'est pas valide,チャットルームが無効です,Der Chatraum ist ungültig,Error message shown when the chat room is invalid
 GAME_ALREADY_STARTED,Game has already started,La partie a déjà commencé,ゲームはすでに開始されています,Das Spiel hat bereits begonnen,Error message shown when trying to join or modify a game that has already started
+GAME_ENDED,The game has been closed,La partie a été fermée,ゲームは終了しました,Das Spiel wurde geschlossen,Message displayed when the game has been closed
