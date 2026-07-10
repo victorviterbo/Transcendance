@@ -142,7 +142,7 @@ function PNotif({ onSeeFriendsReq, onSeeFriends, onNotifCount, isOpen }: PNotifP
 					notif.read = true;
 				});
 				setNotifs(structuredClone(notifs));
-			}, 2000);
+			}, 700);
 		};
 		if (isOpen && unread > 0) sendRead();
 	}, [isOpen, unread, notifs]);
