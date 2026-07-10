@@ -38,6 +38,8 @@ class Profile(models.Model):
     guest = models.BooleanField(default=True)
 
     is_online = models.BooleanField(default=True)
+
+    active_ws_connections = models.PositiveIntegerField(default=0)
     
     last_active = models.DateTimeField(auto_now=True)
 

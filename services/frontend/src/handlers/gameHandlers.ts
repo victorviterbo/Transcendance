@@ -74,13 +74,15 @@ export class GameInstance {
 		const mutedStorage: string | null = localStorage.getItem("default_mute");
 		if (mutedStorage) this.muted = mutedStorage == "true";
 
-		navigator.mediaSession.setActionHandler("play", function () {});
-		navigator.mediaSession.setActionHandler("pause", function () {});
-		navigator.mediaSession.setActionHandler("seekbackward", function () {});
-		navigator.mediaSession.setActionHandler("seekforward", function () {});
-		navigator.mediaSession.setActionHandler("previoustrack", function () {});
-		navigator.mediaSession.setActionHandler("nexttrack", function () {});
-		navigator.mediaSession.setActionHandler("stop", function () {});
+		if (navigator.mediaSession) {
+			navigator.mediaSession.setActionHandler("play", function () {});
+			navigator.mediaSession.setActionHandler("pause", function () {});
+			navigator.mediaSession.setActionHandler("seekbackward", function () {});
+			navigator.mediaSession.setActionHandler("seekforward", function () {});
+			navigator.mediaSession.setActionHandler("previoustrack", function () {});
+			navigator.mediaSession.setActionHandler("nexttrack", function () {});
+			navigator.mediaSession.setActionHandler("stop", function () {});
+		}
 
 		this.pingAudio();
 	}
@@ -217,13 +219,16 @@ export class GameInstance {
 		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
 		if (song) {
 			song.volume = this.muted ? 0 : this.volume / 100;
-			song.play()
-				.then(() => {
-					this.updatePlayable(true);
-				})
-				.catch((reason) => {
-					if (reason.name == "NotAllowedError") this.updatePlayable(false);
-				});
+			if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
+			else {
+				song.play()
+					.then(() => {
+						this.updatePlayable(true);
+					})
+					.catch((reason) => {
+						if (reason.name == "NotAllowedError") this.updatePlayable(false);
+					});
+			}
 			this.songPlayed = this.status.round;
 		}
 		this.roundResult = [];
@@ -231,7 +236,7 @@ export class GameInstance {
 		this.updateResults();
 		this.updateStatus();
 		setTimeout(() => {
-			this.focusInput();
+			if (navigator.userActivation.hasBeenActive) this.focusInput();
 		}, 50);
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer) {
@@ -710,20 +715,7 @@ export class GameInstance {
 		}
 	}
 	async pingAudio() {
-		const audioPing = new Audio();
-		const playPromise = audioPing.play();
-		const toPromise = new Promise((resolve) => {
-			setTimeout(resolve, 1000);
-		});
-		await Promise.race([playPromise, toPromise])
-			.then((_) => {
-				audioPing.src = "";
-				audioPing.load();
-				this.updatePlayable(true);
-			})
-			.catch((reason) => {
-				if (reason.name == "NotAllowedError") this.updatePlayable(false);
-			});
+		if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
 	}
 
 	//-------------------  Messages ---------------------

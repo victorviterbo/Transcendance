@@ -64,7 +64,9 @@ export const fetchFriends = async (): Promise<IFriendsList> => {
 };
 
 export const searchFriends = async (search: string): Promise<IExtUserList> => {
-	const response = await api.post<IExtUserList>(API_SOCIAL_FRIENDS_SEARCH, { search });
+	const response = await api.post<IExtUserList>(API_SOCIAL_FRIENDS_SEARCH, {
+		search: search.trim(),
+	});
 	return throwOnSocialError(response.data);
 };
 

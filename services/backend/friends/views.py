@@ -1,6 +1,7 @@
 """Define the views for the social/friends API."""
 
 from django.db.models import Q
+from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -12,6 +13,7 @@ from userprofile.models import Profile
 from .models import Friendship
 from .serializers import FriendInfoSerializer, FriendUserSerializer
 from .signals import notif_payload
+from .validators import validate_social_search_query
 
 
 def get_request_value(request: Request, *keys: str) -> str | None:
@@ -124,9 +126,15 @@ class FriendSearch(APIView):
 
     def post(self, request: Request) -> Response:
         """Search profiles by username substring."""
-        query = get_request_value(request, 'search', 'q')
-        if query is None:
+        raw_query = get_request_value(request, 'search', 'q')
+        if raw_query is None:
             return _error_response({'search': 'MISSING_FIELD'})
+        try:
+            query = validate_social_search_query(raw_query)
+        except serializers.ValidationError as exc:
+            codes = exc.get_codes()
+            message = 'MAX_LENGTH_SEARCH' if 'max_length' in codes else 'EMPTY_SEARCH'
+            return _error_response({'search': message})
 
         profiles = (
             Profile.objects.filter(username__icontains=query)

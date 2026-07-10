@@ -5,6 +5,8 @@ import logging
 
 from .models import Message, Room
 from .serializers import RoomHistorySerializer
+from .validators import validate_chat_message_body
+from rest_framework import serializers
 from userprofile.serializers import LightProfileSerializer
 
 if TYPE_CHECKING:
@@ -96,9 +98,12 @@ async def broadcast_message(consumer: 'GlobalConsumer', message: Message) -> Non
 
 async def handle_game_chat_payload(consumer: 'GlobalConsumer', content: dict) -> None:
 	"""Handle chat messages that belong to the current game room."""
-	body = str(content.get('message', '')).strip()
-	if not body:
-		await consumer.send_json({'type': 'error', 'message': 'message is required'})
+	try:
+		body = validate_chat_message_body(content.get('message'))
+	except serializers.ValidationError as exc:
+		codes = exc.get_codes()
+		message = 'MESSAGE_TOO_LONG' if 'max_length' in codes else 'MESSAGE_REQUIRED'
+		await consumer.send_json({'type': 'error', 'message': message})
 		return
 	success, message = await consumer._save_message(body, 'chat-message', content)
 	if not success:

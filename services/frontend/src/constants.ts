@@ -55,6 +55,8 @@ export const MUSIC_TAGS = [
 	"TAG_RNB",
 ] as const;
 export const MAX_PLAYERS = 20;
+export const CHAT_MESSAGE_MAX_LENGTH = 500;
+export const SOCIAL_SEARCH_MAX_LENGTH = 20;
 
 // TIME CONVERSIONS
 export const DAY_MS = 1000 * 60 * 60 * 24;

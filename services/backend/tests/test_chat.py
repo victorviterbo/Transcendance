@@ -10,6 +10,7 @@ from project.asgi import application
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from userauth.serializers import RegisterSerializer
+from userprofile.models import Profile
 from userprofile.serializers import ProfileSerializer
 
 from tests.test_helpers import TestBaseHelpers, urls
@@ -224,5 +225,36 @@ class ChatWebsocketTests(TransactionTestCase):
 			connected, _ = await communicator.connect()
 			self.assertTrue(connected)
 			await communicator.disconnect()
+
+		async_to_sync(scenario)()
+
+	def test_presence_stays_online_until_last_socket_disconnects(self) -> None:
+		"""A profile should only go offline after its last socket closes."""
+
+		async def get_presence() -> tuple[bool, int]:
+			def fetch() -> tuple[bool, int]:
+				profile = Profile.objects.get(id=self.user.profile.id)
+				return profile.is_online, profile.active_ws_connections
+
+			return await database_sync_to_async(fetch)()
+
+		async def scenario() -> None:
+			first = WebsocketCommunicator(application, '/ws/global/')
+			first.scope['user'] = self.user
+			connected, _ = await first.connect()
+			self.assertTrue(connected)
+			self.assertEqual(await get_presence(), (True, 1))
+
+			second = WebsocketCommunicator(application, '/ws/global/')
+			second.scope['user'] = self.user
+			connected, _ = await second.connect()
+			self.assertTrue(connected)
+			self.assertEqual(await get_presence(), (True, 2))
+
+			await first.disconnect()
+			self.assertEqual(await get_presence(), (True, 1))
+
+			await second.disconnect()
+			self.assertEqual(await get_presence(), (False, 0))
 
 		async_to_sync(scenario)()
