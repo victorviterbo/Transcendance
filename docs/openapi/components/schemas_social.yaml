@@ -1,68 +1,70 @@
-#FRIENDS
 FriendInfo:
   type: object
-  description: All required information about a friend to be displayed
+  required: [uid, username, avatar, exp_points, badges, created_at, status]
   properties:
-    uid: { type: string }
+    uid: { type: string, format: uuid }
     username: { type: string }
-    image:
-      type: string
-      format: uri-reference
-      description: Usually a relative `/DB/media/...` path.
+    avatar: { type: string, format: uri-reference }
     exp_points: { type: integer }
     badges: { type: string }
     created_at: { type: string, format: date-time }
-    status:
-      type: string
-      format: "offline | busy | online"
-      description: "Give the current user status"
+    status: { type: string, enum: [offline, online] }
 
-# MESSAGE
 Message:
   type: object
-  description: Data about private messages
+  required: [message, date, direction, targetUid, target, uid]
   properties:
-    message: { type: string }
+    message: { type: string, maxLength: 500 }
     date: { type: string, format: date-time }
-    direction:
-      type: string
-      format: "outgoing | incoming"
-      description: "Defines if a message in incoming or outcoming"
+    direction: { type: string, enum: [outgoing, incoming] }
     status:
       type: string
-      format: "not-sent | sent | recieved | read | error"
-      description: "Defines the current status of a message"
-    target-id:
-      type: string
-      description: "Targeted friend UID"
-    target:
-      type: string
-      description: "Targeted friend"
-    uid: { type: string, description: "message unique ID" }
+      enum: [sent, recieved, read]
+      description: Present only on outgoing messages; `recieved` is the implemented spelling.
+    targetUid: { type: string, format: uuid }
+    target: { type: string, description: Other participant's username. }
+    uid: { type: string, format: uuid }
 
-# NOTIF
+FriendTargetRequest:
+  type: object
+  required: [targetUid]
+  properties:
+    targetUid: { type: string, format: uuid }
+    targetUsername:
+      type: string
+      description: Optional display value echoed in the response; identity is resolved by UID.
+
+FriendActionResponse:
+  type: object
+  required: [description, targetUid, targetUsername]
+  properties:
+    description:
+      type: string
+      enum:
+        - FRIENDSHIP_REQUEST_SENT
+        - FRIENDSHIP_REQUEST_ACCEPTED
+        - FRIENDSHIP_REQUEST_REJECTED
+        - FRIENDSHIP_REQUEST_CANCELLED
+        - FRIENDSHIP_REMOVED
+    targetUid: { type: string, format: uuid }
+    targetUsername: { type: string }
+
 NotifRequests:
   type: object
-  description: Notif when user recieve a friend requests
+  required: [uid, kind, from, date, read]
   properties:
-    uid: { type: string }
-    kind: { type: string, format: "friend-request"}
-    from:
-      $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
+    uid: { type: string, format: uuid }
+    kind: { type: string, enum: [friend_request] }
+    from: { $ref: ../openapi.yaml#/components/schemas/ExtUserInfo }
     date: { type: string, format: date-time }
-    read:
-      type: boolean
-      description: "Defines if the notification is already read"
+    read: { type: boolean }
 
 NotifAccepted:
   type: object
-  description: Notif when another user accepted current user requests
+  required: [uid, kind, from, date, read]
   properties:
-    uid: { type: string }
-    kind: { type: string, format: "friend-accepted"}
-    from:
-      $ref: ../openapi.yaml#/components/schemas/FriendInfo
+    uid: { type: string, format: uuid }
+    kind: { type: string, enum: [friend_accepted] }
+    from: { $ref: ../openapi.yaml#/components/schemas/ExtUserInfo }
     date: { type: string, format: date-time }
-    read:
-      type: boolean
-      description: "Defines if the notification is already read"
+    read: { type: boolean }

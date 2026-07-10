@@ -10,6 +10,8 @@ Profile:
     exp_points: { type: integer }
     badges: { type: string }
     created_at: { type: string, format: date-time }
+    guest: { type: boolean }
+    uid: { type: string, format: uuid }
     email:
       type: string
       description: Only present for profiles linked to a registered user.
@@ -27,7 +29,7 @@ OwnProfile:
     exp_points: { type: integer }
     badges: { type: string }
     created_at: { type: string, format: date-time }
-    is_guest: { type: boolean }
+    guest: { type: boolean }
     uid: { type: string, format: uuid }
 
 LightProfile:
@@ -39,10 +41,8 @@ LightProfile:
       type: string
       format: uri-reference
       description: Usually a relative `/DB/media/...` path.
-    is_guest: { type: boolean }
-    session_key:
-      type: string
-      nullable: true
+    guest: { type: boolean }
+    uid: { type: string, format: uuid }
 
 ValidationError:
   type: object
@@ -131,7 +131,7 @@ GlobalStatsResponse:
       description: Average score across matches.
     xp: { type: integer, description: Total experience points. }
     totalGamesPlayed: { type: integer, description: Number of games played. }
-    totaltitlesPlayed:
+    totalTitlesPlayed:
       { type: integer, description: Number of title rounds played. }
     totalGamesWon:
       { type: integer, description: Number of games played and won. }
@@ -148,7 +148,7 @@ GlobalStatsResponse:
       minimum: 0
       maximum: 100
       description: Artist answer success rate as a percentage in the 0 to 100 range.
-    successRatetitle:
+    successRateTitle:
       type: number
       format: float
       minimum: 0
@@ -170,7 +170,7 @@ GlobalStatsResponse:
       totalPlayers,
       averageTime,
       successRateArtist,
-      successRatetitle,
+      successRateTitle,
       successRateComplete,
       successRatesCompleteByTag,
     ]
@@ -198,7 +198,7 @@ LeaderboardResponse:
     totalNumberPlayer:
       type: integer
       description: Total number of players eligible for ranking.
-  required: [leaderboard, leaderboardCount, ranking, totalNumberPlayer]
+  required: [leaderboard, leaderboardCount, totalNumberPlayer]
 
 LeaderboardEntry:
   type: object
@@ -269,8 +269,8 @@ HistoryRound:
       format: float
       description: Time taken to answer during the round, in seconds.
     ranking: { type: integer }
-    previewUrl: { type: string, format: uri }
-    artworkUrl: { type: string, format: uri }
+    previewUrl: { type: string, format: uri, nullable: true }
+    artworkUrl: { type: string, format: uri, nullable: true }
     roundNumber: { type: integer }
   required:
     [

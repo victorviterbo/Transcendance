@@ -2,15 +2,15 @@
 ExtUserInfo:
   type: object
   description: Minimal data about an external user (not friend)
+  required: [uid, username, avatar, badges, relation]
   properties:
-    uid: { type: string }
+    uid: { type: string, format: uuid }
     username: { type: string }
-    image:
+    avatar:
       type: string
       format: uri-reference
       description: Usually a relative `/DB/media/...` path.
     badges: { type: string }
-    status:
+    relation:
       type: string
-      format: "not-friends | friends | incoming | outgoing | self"
-      description: "Give the current relation with the target user (Note: self is used for self detection in game)"
+      enum: [not-friends, friends, incoming, outgoing]

@@ -1,327 +1,197 @@
 friends-list:
   get:
-    summary: List friends
-    description: Return the accepted friends of the authenticated user.
+    summary: List accepted friends
     operationId: listFriends
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     responses:
       "200":
-        description: Friend list.
+        description: Accepted friends.
         content:
           application/json:
             schema:
               type: object
+              required: [friends]
               properties:
                 friends:
                   type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/FriendInfo
-            examples:
-              friends-ok:
-                value:
-                  friends:
-                    - uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "alice"
-                      image: "path/to/image"
-                      exp_points: 100
-                      badges: "deaf octopus"
-                      created_at: "2026-04-26T10:33:49.316Z"
-                      status: "online"
-
+                  items: { $ref: ../openapi.yaml#/components/schemas/FriendInfo }
+      "401": { description: Authentication required. }
 
 friends-search:
   post:
-    summary: Search for users
-    description: Called when user wants to find a user. 
+    summary: Search registered profiles by username substring
     operationId: searchFriends
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     requestBody:
-      description: "User search filter"
       required: true
       content:
         application/json:
           schema:
             type: object
+            required: [search]
             properties:
-              search: { type: string }
-          examples:
-            list:
-              value:
-                search: "ali"
-
+              search: { type: string, minLength: 1, maxLength: 20 }
     responses:
       "200":
-        description: "Returns found users lists"
+        description: Matching profiles excluding the current user.
         content:
           application/json:
             schema:
               type: object
+              required: [users]
               properties:
                 users:
                   type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
-            examples:
-              ok:
-                value:
-                  users:
-                    - uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "alice"
-                      image: "path/to/image"
-                      badges: "deaf octopus"
-                      relation: "not-friends"
-
+                  items: { $ref: ../openapi.yaml#/components/schemas/ExtUserInfo }
+      "400": { description: Missing, empty, or overlong search value. }
+      "401": { description: Authentication required. }
 
 friends-requests:
   get:
-    summary: List requests
-    description: Return the list of all incoming and outgoing requests
-    operationId: listFriendsRequests
+    summary: List pending incoming and outgoing friend requests
+    operationId: listFriendRequests
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     responses:
       "200":
-        description: Two lists are send back one for all incoming and the other for all outgoing
+        description: Pending request lists.
         content:
           application/json:
             schema:
               type: object
+              required: [incoming, outgoing]
               properties:
-                incoming:
-                  type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
-                outgoing:
-                  type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
-            examples:
-              ok:
-                value:
-                  incoming:
-                    - uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "alice"
-                      image: "path/to/image"
-                      badges: "deaf octopus"
-                      relation: "incoming"
-                  outgoing:
-                    - uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "john"
-                      image: "path/to/image"
-                      badges: "deaf octopus"
-                      relation: "outgoing"
+                incoming: { type: array, items: { $ref: ../openapi.yaml#/components/schemas/ExtUserInfo } }
+                outgoing: { type: array, items: { $ref: ../openapi.yaml#/components/schemas/ExtUserInfo } }
+      "401": { description: Authentication required. }
 
 friends-requests-send:
   post:
-    summary: Send a friend requests to another user 
-    description: Called when user wants to ask  another user for friendship. 
-    operationId: addFriends
+    summary: Send a friend request
+    operationId: sendFriendRequest
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     requestBody:
-      description: "Targeted user"
       required: true
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              target-username: { type: string }
-              target-uid: {type: string}
-          examples:
-            list:
-              value:
-                target-username: "alice"
-                target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+          schema: { $ref: ../openapi.yaml#/components/schemas/FriendTargetRequest }
+    responses:
+      "201":
+        description: Request created.
+        content: { application/json: { schema: { $ref: ../openapi.yaml#/components/schemas/FriendActionResponse } } }
+      "400": { description: Missing/unknown target, self-request, or existing relationship. }
+      "401": { description: Authentication required. }
 
-                
 friends-requests-respond:
   post:
-    summary: Send a response
-    description: Called when user wants to reponse to a frienship requests
-    operationId: responseFriends
+    summary: Accept or refuse an incoming pending request
+    operationId: respondFriendRequest
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     requestBody:
-      description: "Targeted user & response value"
       required: true
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              target-username: { type: string }
-              target-uid: {type: string}
-              new-status: {type: string, format: "accept | refuse"}
-          examples:
-            list:
-              value:
-                target-username: "alice"
-                target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                new-status: "refuse"
+            allOf:
+              - { $ref: ../openapi.yaml#/components/schemas/FriendTargetRequest }
+              - type: object
+                required: [newStatus]
+                properties:
+                  newStatus: { type: string, enum: [accept, refuse, reject] }
+    responses:
+      "200":
+        description: Request accepted or refused (`reject` is normalized to `refuse`).
+        content: { application/json: { schema: { $ref: ../openapi.yaml#/components/schemas/FriendActionResponse } } }
+      "400": { description: Missing/unknown target, invalid status, or no applicable pending request. }
+      "401": { description: Authentication required. }
 
 friend-remove:
   post:
-    summary: Remove an accepted friend or cancel an outgoing friend request
-    description: Called from a public profile when the current user wants to remove an accepted friendship or cancel a pending request they sent. Incoming pending requests must still be refused with the friend-request respond endpoint.
+    summary: Remove a friend or cancel an outgoing request
     operationId: removeFriend
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     requestBody:
-      description: Targeted friend or outgoing pending request to remove
       required: true
       content:
         application/json:
-          schema:
-            type: object
-            required: [target-uid]
-            properties:
-              target-username: { type: string }
-              target-uid: { type: string }
-          examples:
-            remove:
-              value:
-                target-username: "alice"
-                target-uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+          schema: { $ref: ../openapi.yaml#/components/schemas/FriendTargetRequest }
     responses:
       "200":
         description: Friendship removed or outgoing request cancelled.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                description:
-                  type: string
-                  enum: [FRIENDSHIP_REMOVED, FRIENDSHIP_REQUEST_CANCELLED]
-                  example: "FRIENDSHIP_REMOVED"
-                target-uid: { type: string }
-                target-username: { type: string }
-      "400":
-        description: Missing target, unknown user, or no removable friendship/request exists.
-        content:
-          application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/SerializerErrorResponse
-            examples:
-              not-friends:
-                value:
-                  error:
-                    friendship: "FRIENDSHIP_NOT_FOUND"
-      "401":
-        description: Authentication required.
-
+        content: { application/json: { schema: { $ref: ../openapi.yaml#/components/schemas/FriendActionResponse } } }
+      "400": { description: Missing/unknown target or no removable relationship. }
+      "401": { description: Authentication required. }
 
 social-message:
   post:
-    summary: Requests the feed history 
-    description: Requests the feed history with a specified friend. 
-    operationId: socialMessages
+    summary: Get direct-message history with a friend
+    operationId: getFriendMessageFeed
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     requestBody:
-      description: "Targeted user"
       required: true
       content:
         application/json:
           schema:
             type: object
+            description: Backend accepts `uid`, `user_uid`, or `targetUid`; the frontend sends `uid`.
             properties:
-              username: { type: string }
-              uid: {type: string}
-          examples:
-            list:
-              value:
-                username: "alice"
-                uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
+              uid: { type: string, format: uuid }
+              user_uid: { type: string, format: uuid }
+              targetUid: { type: string, format: uuid }
+            anyOf: [{ required: [uid] }, { required: [user_uid] }, { required: [targetUid] }]
     responses:
       "200":
-        description: Message feed
+        description: Chronological direct-message feed, or an empty feed if no room exists.
         content:
           application/json:
             schema:
               type: object
+              required: [feed]
               properties:
-                feed:
-                  type: array
-                  items:
-                    $ref: ../openapi.yaml#/components/schemas/Message
-            examples:
-              friends-ok:
-                value:
-                  feed:
-                    - message: "Hey !!!"
-                      date: "2026-04-26T10:33:49.316Z"
-                      direction: "outgoing"
-                      status: "read"
-                      target-id: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      target: "alice"
-                      uid: "57092788-491a-484c-a162-b67657584fa5"
-
+                feed: { type: array, items: { $ref: ../openapi.yaml#/components/schemas/Message } }
+      "400": { description: Missing/unknown target or self-DM. }
+      "403": { description: Target is not an accepted friend. }
+      "401": { description: Authentication required. }
 
 notif:
   get:
-    summary: List all notifications
-    description: Return the lists of all the users notifications
-    operationId: listNotif
+    summary: List pending-request and accepted-request notifications
+    operationId: listNotifications
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     responses:
       "200":
-        description: Notif list.
+        description: Notifications sorted newest first.
         content:
           application/json:
             schema:
               type: object
+              required: [notifs]
               properties:
                 notifs:
                   type: array
                   items:
                     oneOf:
-                      - $ref: ../openapi.yaml#/components/schemas/Notif - Requests
-                      - $ref: ../openapi.yaml#/components/schemas/Notif - Accepted
-            examples:
-              ok:
-                value:
-                  notifs:
-                  - uid: "57092788-491a-484c-a162-b67657584fa5"
-                    kind: "friend-request"
-                    from:
-                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "alice"
-                      image: "path/to/image"
-                      badges: "deaf octopus"
-                      relation: "incoming"
-                    date: 2026-04-26T10:33:49.316Z"
-                    read: false;
-                  - uid: "57092788-491a-484c-a162-b67657584fa5"
-                    kind: "friend-accepted"
-                    from:
-                      uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                      username: "john"
-                      image: "path/to/image"
-                      exp_points: 100
-                      badges: "deaf octopus"
-                      created_at: "2026-04-26T10:33:49.316Z"
-                      status: "online"
-                    date: 2026-04-26T10:33:49.316Z"
-                    read: true;
+                      - { $ref: ../openapi.yaml#/components/schemas/NotifRequests }
+                      - { $ref: ../openapi.yaml#/components/schemas/NotifAccepted }
+      "401": { description: Authentication required. }
 
 notif-read:
-  get:
-    summary: Event when user reads notif
-    description: Event to trigger to indicated the backend the user have read (open) it's notifictions
-    operationId: notifRead
+  post:
+    summary: Mark all current social notifications as read
+    operationId: markNotificationsRead
     tags: [social]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
+    responses:
+      "200":
+        description: Read flags updated.
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      "401": { description: Authentication required. }

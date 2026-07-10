@@ -1,232 +1,60 @@
 game:
   get:
-    summary: List public games
-    description: Return public games visible on the home page.
+    summary: List waiting public games
     operationId: listPublicGames
     tags: [game]
     responses:
       "200":
-        description: Public game list
+        description: Waiting public games.
         content:
           application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/Game - GameListResponse
-            examples:
-              public_rooms:
-                summary: Home public rooms
-                value:
-                  rooms:
-                    - uid: "7d09557c-7a26-4670-9ca5-81daef6dbf6f"
-                      name: "Today challenge"
-                      genres: ["TAG_POP", "TAG_ROCK"]
-                      playerCount: 12
-                      playerMax: 16
-                    - uid: "62a44e17-a1f6-4fb0-86e0-160cf6220174"
-                      name: "80's room"
-                      genres: []
-                      playerCount: 0
-                      playerMax: 16
-
+            schema: { $ref: ../openapi.yaml#/components/schemas/GameListResponse }
   post:
-    summary: Create a new game
-    description: Create a new game with the given name and visibility
+    summary: Create a game
+    description: Uses the authenticated or guest profile injected into the request.
     operationId: createGame
     tags: [game]
     requestBody:
       required: true
       content:
         application/json:
-          schema:
-            $ref: ../openapi.yaml#/components/schemas/GameCreationRequest
-          examples:
-            basic:
-              summary: Basic game creation
-              value:
-                name: "My Game"
-                visibility: "public"
-            private:
-              summary: Private game creation
-              value:
-                name: "Music Quiz"
-                visibility: "private"
+          schema: { $ref: ../openapi.yaml#/components/schemas/GameCreationRequest }
     responses:
       "201":
-        description: Game created successfully
+        description: Created game, including its initially empty player list.
         content:
           application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/GameCreationResponse
-            examples:
-              ok_42:
-                value:
-                  uid: "87de2119-1226-479c-9261-c3c4f4b04b31"
-              ok_58:
-                value:
-                  uid: "62a44e17-a1f6-4fb0-86e0-160cf6220174"
-              ok_109:
-                value:
-                  uid: "f860530f-0211-4548-8e98-31fea4f5f8cb"
-      "400":
-        description: Validation error or invalid game parameters
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: object
-                  additionalProperties:
-                    oneOf:
-                      - type: string
-                      - type: array
-                        items:
-                          type: string
-            examples:
-              missing_name:
-                value:
-                  error:
-                    name: "REQUIRED_GAME_NAME"
-              invalid_visibility:
-                value:
-                  error:
-                    visibility: "INVALID_VISIBILITY"
-      "409":
-        description: The user is already in another active game.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: object
-                  properties:
-                    game:
-                      type: string
-            examples:
-              already_in_game:
-                value:
-                  error:
-                    game: "ALREADY_IN_GAME"
+            schema: { $ref: ../openapi.yaml#/components/schemas/GameDetail }
+      "400": { description: No request profile or invalid name/visibility. }
 
 game-friends-list:
   get:
-    summary: List friends games
-    description: Return friend games visible on the home page.
-    operationId: listFriendsGames
+    summary: List waiting non-private games owned by accepted friends
+    operationId: listFriendGames
     tags: [game]
-    security:
-      - bearerAuth: []
+    security: [{ bearerAuth: [] }]
     responses:
       "200":
-        description: Friends game list
+        description: Friends' waiting games.
         content:
           application/json:
-            schema:
-              $ref: ../openapi.yaml#/components/schemas/Game - GameListResponse
-            examples:
-              friends_rooms:
-                summary: Home friends rooms
-                value:
-                  rooms:
-                    - uid: "f860530f-0211-4548-8e98-31fea4f5f8cb"
-                      name: "Sarah's room"
-                      genres: ["TAG_ROCK"]
-                      playerCount: 3
-                      playerMax: 4
-                    - uid: "87de2119-1226-479c-9261-c3c4f4b04b31"
-                      name: "John's room"
-                      genres: ["TAG_RAP", "TAG_RNB"]
-                      playerCount: 1
-                      playerMax: 4
+            schema: { $ref: ../openapi.yaml#/components/schemas/GameListResponse }
+      "401": { description: Authentication required. }
 
 game-common:
+  parameters:
+    - in: path
+      name: uid
+      required: true
+      schema: { type: string, format: uuid }
   get:
-    summary: All info about current game
-    description: Return all data about the current status of the game
+    summary: Get a game by UID
     operationId: getGame
     tags: [game]
-    security:
-      - bearerAuth: []
     responses:
       "200":
-        description: All game data
+        description: Serialized game detail.
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                game:
-                  $ref: ../openapi.yaml#/components/schemas/Game - GameData
-            examples:
-              ok:
-                value:
-                  game:
-                    id: "123456"
-                    uid: "d76c7859-14ec-474d-814d-4b9ee5fdd2dd"
-                    name: "Sarah's game room"
-                    players:
-                      - user:
-                          uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                          username: "sarah"
-                          image: "path/to/image"
-                          badges: "deaf octopus"
-                          relation: "incoming"
-                        points: 150
-                        host: true
-                        colorid: 5
-                      - user:
-                          uid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                          username: "john"
-                          image: "path/to/image"
-                          badges: "deaf octopus"
-                          relation: "self"
-                        points: 50
-                        host: false
-                        colorid: 8
-                    maxPlayers: 100
-                    isHost: false
-                    chat:
-                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "john"
-                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
-
-                        type: "message"
-                        message: "Hello everyone"
-                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "john"
-                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
-
-                        type: "joined"
-                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "john"
-                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
-
-                        type: "leaved"
-                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "john"
-                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
-
-                        type: "guessed"
-                        message: "Never fade away Samurai"
-                      - useruid: "a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44"
-                        username: "john"
-                        messageuid: "d674a9b6-e22c-4c9c-bafc-2296f5fc1e9c"
-
-                        type: "found"
-      "409":
-        description: The user is already in another active game and cannot join this one.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                error:
-                  type: object
-                  properties:
-                    game:
-                      type: string
-            examples:
-              already_in_game:
-                value:
-                  error:
-                    game: "ALREADY_IN_GAME"
+            schema: { $ref: ../openapi.yaml#/components/schemas/GameDetail }
+      "404": { description: Game not found. }

@@ -26,13 +26,13 @@ global:
                   averageScore: 48
                   xp: 654
                   totalGamesPlayed: 35
-                  totaltitlesPlayed: 468
+                  totalTitlesPlayed: 468
                   totalGamesWon: 5
                   ranking: 3
                   totalPlayers: 1687
                   averageTime: 3.2
                   successRateArtist: 23.6
-                  successRatetitle: 39.7
+                  successRateTitle: 39.7
                   successRateComplete: 45.7
                   successRatesCompleteByTag:
                     TAG_POP: 12.5

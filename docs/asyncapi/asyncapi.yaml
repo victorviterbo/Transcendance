@@ -2,30 +2,12 @@ asyncapi: 3.1.0
 id: urn:ft-transcendence:websocket:global
 info:
   title: ft_transcendence Global WebSocket API
-  version: 1.2.0
+  version: 2.0.0
   description: |
     Realtime messages exchanged through the global WebSocket connection.
     This document covers the implemented friend chat, friend request,
     notification, and game lifecycle payloads.
 defaultContentType: application/json
-x-known-implementation-differences:
-  - >-
-    The backend also emits a legacy `type: chat_message` payload during direct
-    message delivery; it is excluded because it is not represented by the
-    frontend `TWSRcv` social contract.
-  - >-
-    The backend can return `type: error` payloads for invalid friend-chat
-    commands; those are excluded because the frontend does not type them as
-    social WebSocket messages yet.
-  - >-
-    For `friend-accepted` notifications, the backend emits the compact
-    relation-bearing external-user payload, while the frontend TypeScript type
-    currently declares the larger friend-info payload.
-  - >-
-    The frontend game WebSocket TypeScript types and mock still use the former
-    `join`, `player-join`, and `players-update` protocol. The game schemas below
-    describe the current backend implementation on the `game-event-based`
-    branch.
 channels:
   globalSocket:
     address: /ws/global/
@@ -45,6 +27,8 @@ channels:
         $ref: "#/components/messages/FriendRequestIncoming"
       notif_new:
         $ref: "#/components/messages/NotificationNew"
+      command_error:
+        $ref: "#/components/messages/CommandError"
       player_join:
         $ref: "#/components/messages/GameJoin"
       game_start:
@@ -57,6 +41,8 @@ channels:
         $ref: "#/components/messages/GameMessageSend"
       player_leave:
         $ref: "#/components/messages/GameLeave"
+      game_restart:
+        $ref: "#/components/messages/GameRestart"
       player_joined:
         $ref: "#/components/messages/GamePlayerJoined"
       game_info:
@@ -81,10 +67,14 @@ channels:
         $ref: "#/components/messages/GameRoundEnd"
       player_left:
         $ref: "#/components/messages/GamePlayerLeft"
+      new_owner:
+        $ref: "#/components/messages/GameNewOwner"
       game_ended:
         $ref: "#/components/messages/GameEnded"
       game_restarted:
         $ref: "#/components/messages/GameRestarted"
+      game_closed:
+        $ref: "#/components/messages/GameClosed"
       error:
         $ref: "#/components/messages/GameError"
 
@@ -111,6 +101,7 @@ operations:
       - $ref: "#/channels/globalSocket/messages/friend_chat_update_status"
       - $ref: "#/channels/globalSocket/messages/friend_request_new_incoming"
       - $ref: "#/channels/globalSocket/messages/notif_new"
+      - $ref: "#/channels/globalSocket/messages/command_error"
 
   GAME_RECEIVE:
     action: receive
@@ -125,6 +116,7 @@ operations:
       - $ref: "#/channels/globalSocket/messages/answer_submit"
       - $ref: "#/channels/globalSocket/messages/message_send"
       - $ref: "#/channels/globalSocket/messages/player_leave"
+      - $ref: "#/channels/globalSocket/messages/game_restart"
 
   GAME_SEND:
     action: send
@@ -145,133 +137,135 @@ operations:
       - $ref: "#/channels/globalSocket/messages/message_broadcast"
       - $ref: "#/channels/globalSocket/messages/round_ended"
       - $ref: "#/channels/globalSocket/messages/player_left"
+      - $ref: "#/channels/globalSocket/messages/new_owner"
       - $ref: "#/channels/globalSocket/messages/game_ended"
       - $ref: "#/channels/globalSocket/messages/game_restarted"
+      - $ref: "#/channels/globalSocket/messages/game_closed"
       - $ref: "#/channels/globalSocket/messages/error"
 
 components:
   messages:
     FriendChatSend:
-      name: friend-chat.send
-      title: friend-chat - Send a private friend message
+      name: friend_chat.send
+      title: friend_chat - Send a private friend message
       summary: Frontend command to persist and deliver a private message.
       payload:
         $ref: "#/components/schemas/FriendChatSendPayload"
       examples:
         - name: sendMessage
           payload:
-            target: friend-chat
+            target: friend_chat
             event: send
             message:
               message: Hey, are you ready?
               date: "2026-04-26T10:33:49.316Z"
               direction: outgoing
               status: not-sent
-              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              targetUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
               target: alice
               uid: TEMP_ID
 
     FriendChatOpen:
-      name: friend-chat.open
-      title: friend-chat - Open a friend conversation
+      name: friend_chat.open
+      title: friend_chat - Open a friend conversation
       summary: Frontend command used by the backend to track read-state delivery.
       payload:
         $ref: "#/components/schemas/FriendChatOpenPayload"
       examples:
         - name: openChat
           payload:
-            target: friend-chat
+            target: friend_chat
             event: open
             to: alice
             toUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
 
     FriendChatClose:
-      name: friend-chat.close
-      title: friend-chat - Close a friend conversation
+      name: friend_chat.close
+      title: friend_chat - Close a friend conversation
       summary: Frontend command clearing backend tracking for an open conversation.
       payload:
         $ref: "#/components/schemas/FriendChatClosePayload"
       examples:
         - name: closeChat
           payload:
-            target: friend-chat
+            target: friend_chat
             event: close
             to: alice
             toUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
 
     FriendChatNew:
-      name: friend-chat.new
-      title: friend-chat - New friend chat message
+      name: friend_chat.new
+      title: friend_chat - New friend chat message
       summary: Server delivery of a newly persisted private message.
       payload:
         $ref: "#/components/schemas/FriendChatNewPayload"
       examples:
         - name: outgoingConfirmation
           payload:
-            target: friend-chat
+            target: friend_chat
             event: new
             message:
               message: Hey, are you ready?
               date: "2026-04-26T10:33:49.316Z"
               direction: outgoing
               status: sent
-              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              targetUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
               target: alice
               uid: 57092788-491a-484c-a162-b67657584fa5
         - name: incomingMessage
           payload:
-            target: friend-chat
+            target: friend_chat
             event: new
             message:
               message: Yes.
               date: "2026-04-26T10:34:02.101Z"
               direction: incoming
-              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              targetUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
               target: alice
               uid: 831a10b5-91c5-464d-a27d-a76246a9d21f
 
     FriendChatStatusUpdated:
-      name: friend-chat.update_status
-      title: friend-chat - Friend message status updated
+      name: friend_chat.update_status
+      title: friend_chat - Friend message status updated
       summary: Server update for an already known outgoing message.
       payload:
         $ref: "#/components/schemas/FriendChatStatusUpdatedPayload"
       examples:
         - name: messageRead
           payload:
-            target: friend-chat
+            target: friend_chat
             event: update_status
             message:
               message: Hey, are you ready?
               date: "2026-04-26T10:33:49.316Z"
               direction: outgoing
               status: read
-              target-id: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
+              targetUid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
               target: alice
               uid: 57092788-491a-484c-a162-b67657584fa5
         - name: deliveredAfterReconnect
           payload:
-            target: friend-chat
+            target: friend_chat
             event: update_status
             message:
               uid: 57092788-491a-484c-a162-b67657584fa5
               status: recieved
 
     FriendRequestIncoming:
-      name: friend-request.new-incoming
-      title: friend-request - Incoming friend request
+      name: friend_request.new_incoming
+      title: friend_request - Incoming friend request
       summary: Server update used to append an entry to the incoming request list.
       payload:
         $ref: "#/components/schemas/FriendRequestIncomingPayload"
       examples:
         - name: aliceRequestsFriendship
           payload:
-            target: friend-request
-            event: new-incoming
+            target: friend_request
+            event: new_incoming
             user:
               uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
               username: alice
-              image: /static/default_avatars/default_avatar_1.png
+              avatar: /static/default_avatars/default_avatar_1.png
               badges: curious
               relation: incoming
 
@@ -284,7 +278,7 @@ components:
       x-contract-note: |
         The backend currently serializes `from` as ExternalUser for both
         notification kinds. The frontend TypeScript type declares FriendInfo
-        for `friend-accepted`, while its renderer only consumes fields present
+        for `friend_accepted`, while its renderer only consumes fields present
         in ExternalUser. This schema reflects the backend wire payload.
       examples:
         - name: incomingRequestNotification
@@ -293,11 +287,11 @@ components:
             event: new
             notif:
               uid: 57092788-491a-484c-a162-b67657584fa5
-              kind: friend-request
+              kind: friend_request
               from:
                 uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
                 username: alice
-                image: /static/default_avatars/default_avatar_1.png
+                avatar: /static/default_avatars/default_avatar_1.png
                 badges: curious
                 relation: incoming
               date: "2026-04-26T10:33:49.316Z"
@@ -308,15 +302,22 @@ components:
             event: new
             notif:
               uid: 57092788-491a-484c-a162-b67657584fa5
-              kind: friend-accepted
+              kind: friend_accepted
               from:
                 uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
                 username: alice
-                image: /static/default_avatars/default_avatar_1.png
+                avatar: /static/default_avatars/default_avatar_1.png
                 badges: curious
                 relation: friends
               date: "2026-04-26T10:33:49.316Z"
               read: false
+
+    CommandError:
+      name: command.error
+      title: Non-game command error
+      summary: Validation/routing error emitted by friend-chat handlers.
+      payload:
+        $ref: "#/components/schemas/CommandErrorPayload"
 
     GameJoin:
       name: game.player_join
@@ -341,6 +342,12 @@ components:
             target: game
             event: game_start
             uid: d76c7859-14ec-474d-814d-4b9ee5fdd2dd
+
+    GameRestart:
+      name: game.game_restart
+      title: game - Restart a finished game
+      payload:
+        $ref: "#/components/schemas/GameRestartPayload"
 
     GameUpdateSettings:
       name: game.settings_update
@@ -451,7 +458,9 @@ components:
                 uid: cda01f95-85a2-4b5b-8892-7f9ea71309da
               status: playing_break
               round: 3
+              genres: [TAG_ROCK]
               visibility: public
+              maxPlayers: 16
             settings:
               genres: [TAG_ROCK]
               mode: speed
@@ -819,6 +828,12 @@ components:
       payload:
         $ref: "#/components/schemas/GamePlayerLeftPayload"
 
+    GameNewOwner:
+      name: game.new_owner
+      title: game - Ownership transferred
+      payload:
+        $ref: "#/components/schemas/GameNewOwnerPayload"
+
     GameEnded:
       name: game.game_ended
       title: game - Game ended
@@ -902,6 +917,12 @@ components:
               uid: a7e38b2d-3a0d-4b4f-a921-ba8e809bfd44
             newGame: 4b9ee5fd-14ec-474d-814d-d76c7859d2dd
 
+    GameClosed:
+      name: game.game_closed
+      title: game - Game resources closed
+      payload:
+        $ref: "#/components/schemas/GameClosedPayload"
+
     GameError:
       name: game.error
       title: game - Game command failed
@@ -939,7 +960,7 @@ components:
       required: [target, event, message]
       properties:
         target:
-          const: friend-chat
+          const: friend_chat
         event:
           const: send
         message:
@@ -951,7 +972,7 @@ components:
       required: [target, event, toUid]
       properties:
         target:
-          const: friend-chat
+          const: friend_chat
         event:
           const: open
         toUid:
@@ -968,7 +989,7 @@ components:
       required: [target, event, toUid]
       properties:
         target:
-          const: friend-chat
+          const: friend_chat
         event:
           const: close
         toUid:
@@ -985,7 +1006,7 @@ components:
       required: [target, event, message]
       properties:
         target:
-          const: friend-chat
+          const: friend_chat
         event:
           const: new
         message:
@@ -999,7 +1020,7 @@ components:
       required: [target, event, message]
       properties:
         target:
-          const: friend-chat
+          const: friend_chat
         event:
           const: update_status
         message:
@@ -1010,15 +1031,16 @@ components:
     ClientOutgoingMessage:
       type: object
       additionalProperties: false
-      required: [message, target-id]
+      required: [message, targetUid]
       description: |
-        The backend consumes `message` and `target-id`. The remaining fields are
+        The backend consumes `message` and `targetUid`. The remaining fields are
         optimistic UI metadata currently sent by the frontend.
       properties:
         message:
           type: string
+          maxLength: 500
           minLength: 1
-        target-id:
+        targetUid:
           type: string
           format: uuid
           description: Profile UID of the friend receiving the message.
@@ -1036,7 +1058,7 @@ components:
 
     MessageCommon:
       type: object
-      required: [message, date, direction, target-id, target, uid]
+      required: [message, date, direction, targetUid, target, uid]
       properties:
         message:
           type: string
@@ -1045,7 +1067,7 @@ components:
           format: date-time
         direction:
           enum: [outgoing, incoming]
-        target-id:
+        targetUid:
           type: string
           format: uuid
           description: Profile UID of the other participant.
@@ -1096,9 +1118,9 @@ components:
       required: [target, event, user]
       properties:
         target:
-          const: friend-request
+          const: friend_request
         event:
-          const: new-incoming
+          const: new_incoming
         user:
           $ref: "#/components/schemas/IncomingRequestUser"
 
@@ -1116,6 +1138,13 @@ components:
             - $ref: "#/components/schemas/FriendRequestNotification"
             - $ref: "#/components/schemas/FriendAcceptedNotification"
 
+    CommandErrorPayload:
+      type: object
+      required: [type, message]
+      properties:
+        type: { const: error }
+        message: { type: string }
+
     FriendRequestNotification:
       type: object
       additionalProperties: false
@@ -1126,7 +1155,7 @@ components:
           format: uuid
           description: Friendship UID.
         kind:
-          const: friend-request
+          const: friend_request
         from:
           $ref: "#/components/schemas/IncomingRequestUser"
         date:
@@ -1145,7 +1174,7 @@ components:
           format: uuid
           description: Friendship UID.
         kind:
-          const: friend-accepted
+          const: friend_accepted
         from:
           $ref: "#/components/schemas/AcceptedRequestUser"
         date:
@@ -1157,14 +1186,14 @@ components:
     ExternalUser:
       type: object
       additionalProperties: false
-      required: [uid, username, image, badges, relation]
+      required: [uid, username, avatar, badges, relation]
       properties:
         uid:
           type: string
           format: uuid
         username:
           type: string
-        image:
+        avatar:
           type: string
           format: uri-reference
         badges:
@@ -1215,6 +1244,14 @@ components:
           format: uuid
           description: Game UID.
 
+    GameRestartPayload:
+      type: object
+      required: [target, event, uid]
+      properties:
+        target: { const: game }
+        event: { const: game_restart }
+        uid: { type: string, format: uuid }
+
     GameUpdateSettingsPayload:
       type: object
       required: [target, event, uid, settings]
@@ -1261,6 +1298,7 @@ components:
           description: Game UID.
         message:
           type: string
+          maxLength: 500
 
     GameLeavePayload:
       type: object
@@ -1342,7 +1380,7 @@ components:
     GameInfo:
       type: object
       additionalProperties: false
-      required: [uid, name, owner, status, round, visibility]
+      required: [uid, name, owner, status, round, genres, visibility, maxPlayers]
       properties:
         uid:
           type: string
@@ -1356,8 +1394,14 @@ components:
         round:
           type: integer
           minimum: 0
+        genres:
+          type: array
+          items:
+            enum: [TAG_POP, TAG_RAP, TAG_ROCK, TAG_ELECTRO, TAG_FRENCH_VARIETY, TAG_RNB]
         visibility:
           enum: [public, friends, private]
+        maxPlayers:
+          type: integer
 
     GameSettings:
       type: object
@@ -1386,11 +1430,11 @@ components:
                 TAG_RNB,
               ]
         mode:
-          enum: [normal, speed, armageddon]
+          enum: [normal, speed]
         trackCount:
           type: integer
-          minimum: 5
-          maximum: 50
+          minimum: 1
+          maximum: 100
         playbackDuration:
           type: number
           minimum: 5
@@ -1432,6 +1476,7 @@ components:
           $ref: "#/components/schemas/PlayerInfo"
         body:
           type: string
+          maxLength: 500
 
     LeaderboardEntry:
       type: object
@@ -1540,7 +1585,7 @@ components:
 
     GameStartSignalPayload:
       type: object
-      required: [target, event, uid, self, settings]
+      required: [target, event, uid, self, settings, delay]
       properties:
         target:
           const: game
@@ -1554,6 +1599,9 @@ components:
           $ref: "#/components/schemas/PlayerInfo"
         settings:
           $ref: "#/components/schemas/GameSettings"
+        delay:
+          type: number
+          description: Server-configured delay before the first round.
 
     FullTrack:
       type: object
@@ -1836,7 +1884,7 @@ components:
 
     GameRoundEndedPayload:
       type: object
-      required: [target, event, uid, self, track, leaderboard, results]
+      required: [target, event, uid, self, track, leaderboard, results, is_last_round]
       properties:
         target:
           const: game
@@ -1858,6 +1906,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoundEndedPlayerResult"
+        is_last_round:
+          type: boolean
 
     GamePlayerLeftPayload:
       type: object
@@ -1875,6 +1925,16 @@ components:
           $ref: "#/components/schemas/PlayerInfo"
         player:
           $ref: "#/components/schemas/GameProfile"
+
+    GameNewOwnerPayload:
+      type: object
+      required: [target, event, uid, self, player]
+      properties:
+        target: { const: game }
+        event: { const: new_owner }
+        uid: { type: string, format: uuid }
+        self: { $ref: "#/components/schemas/PlayerInfo" }
+        player: { $ref: "#/components/schemas/GameProfile" }
 
     GameEndedPayload:
       type: object
@@ -1916,10 +1976,30 @@ components:
           format: uuid
           description: New game UID.
 
+    GameClosedPayload:
+      type: object
+      required: [target, event, uid, self]
+      properties:
+        target: { const: game }
+        event: { const: game_closed }
+        uid: { type: string, format: uuid }
+        self: { $ref: "#/components/schemas/PlayerInfo" }
+
     GameErrorPayload:
-      oneOf:
-        - $ref: "#/components/schemas/GameAlreadyInGameErrorPayload"
-        - $ref: "#/components/schemas/GameFullErrorPayload"
+      type: object
+      description: Game errors are not normalized to a finite code set by the backend.
+      required: [target, event, message]
+      properties:
+        target: { const: game }
+        event: { const: error }
+        uid: { type: string, format: uuid }
+        self: { $ref: "#/components/schemas/PlayerInfo" }
+        message: { type: string }
+        currentGameUid: { type: string, format: uuid }
+        critical: { type: boolean }
+        error:
+          type: object
+          additionalProperties: true
 
     GameAlreadyInGameErrorPayload:
       type: object
