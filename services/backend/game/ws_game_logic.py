@@ -76,7 +76,7 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
     if getattr(consumer, 'current_game', None) is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
-                                'message': 'Game not found for this player'})
+                                'message': 'NO_GAME_CONTEXT'})
         return 
     if game_event == 'player_leave':
         await _leave_game(consumer, content)
@@ -353,9 +353,10 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Leave a game group."""
     if not getattr(consumer, 'current_game', None):
-        await consumer.send_json({'target': 'game',
-                            'event': 'error',
-                            'message': 'No game context'})
+        await _send_game_error(consumer, consumer.current_game.uid, 'NO_GAME_CONTEXT', critical=True)
+        return
+    if not getattr(consumer, 'game_group_name', None):
+        await _send_game_error(consumer, consumer.current_game.uid, 'NO_GAME_CONTEXT', critical=True)
         return
     was_owner = await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
     if was_owner:
