@@ -366,7 +366,7 @@ def _build_base_game_payload(consumer: 'GlobalConsumer' | None = None, game: Gam
         current_player = consumer.profile
 
     leaderboard_rows = (
-        UserGameStats.objects.filter(game=game)
+        UserGameStats.objects.filter(game=game, is_active=True)
         .select_related('player')
         .annotate(total_points=Sum('round_stats__xp_earned'))
         .order_by('-total_points', 'player__username')

@@ -154,7 +154,7 @@ class HistoryView(APIView):
         profile = request.profile
 
         user_game_stats = (
-            UserGameStats.objects.filter(player=profile)
+            UserGameStats.objects.filter(player=profile, game__status='finished')
             .select_related('game')
             .order_by('-played_at')[:10]
         )
