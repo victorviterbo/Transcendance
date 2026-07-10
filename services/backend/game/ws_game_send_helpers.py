@@ -25,16 +25,6 @@ async def _send_game_error(consumer: 'GlobalConsumer', game_uid: str , message: 
                             if (message == 'ALREADY_IN_GAME') else None
     })
 
-async def _send_existing_player_game_info(consumer: 'GlobalConsumer') -> None:
-    """Reconnect an existing game member to the websocket game session."""
-    consumer.game_group_name = f'game_{consumer.current_game.uid}'
-    if consumer.game_group_name not in consumer.active_layers:
-        await consumer.add_to_layer(consumer.game_group_name)
-    await add_gameroom_participant(consumer.current_game, consumer.profile)
-    await send_join_chatroom(consumer)
-    serialized_game_info = await _get_game_info_data(consumer)
-    await _send_game_info(consumer, serialized_game_info)
-
 async def _send_track(consumer: 'GlobalConsumer',
                       serialized_game: dict,
                       serialized_track: dict,

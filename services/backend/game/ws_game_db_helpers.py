@@ -44,7 +44,7 @@ def _get_game(consumer: Any,
         return (Game.objects.filter(uid=game_uid,
                             players=consumer.profile)
                             .select_related('playlist', 'owned_by')
-                            .prefetch_related('playlist__tracks')
+                            .prefetch_related('playlist__tracks', 'room')
                             .first())
     return (Game.objects.filter(uid=game_uid)
             .select_related('playlist', 'owned_by')
@@ -307,23 +307,21 @@ def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
 
 
 @database_sync_to_async
-def _remove_player_from_game_stats(game: Game, player: Profile) -> bool:
+def _remove_player_from_game_stats(game: Game, player: Profile) -> tuple[bool, bool]:
     """Remove a player from a game by deleting UserGameStats entry."""
     try:
         UserGameStats.objects.filter(game=game, player=player).update(is_active=False)
         if not UserGameStats.objects.filter(game=game, is_active=True).exists():
-            game.status = 'finished'
-            game.room.delete()
-            game.playlist.delete()
-            game.save(update_fields=['status', 'room', 'playlist'])
             task_to_cancel = ACTIVE_GAMES[game.uid]['task']
             task_to_cancel.cancel()
-            return False
-        elif game.owned_by == player:
+            return False, False
+        elif game.owned_by.id == player.id:
+            game.owned_by = UserGameStats.objects.filter(game=game, is_active=True).first().player
             game.save(update_fields=['owned_by'])
-            return True
+            return True, True
+        return False, True
     except Exception:
-        return False
+        return False, True
 
 @database_sync_to_async
 def _apply_game_settings(game: Game,
@@ -430,7 +428,7 @@ def _get_active_game_for_player(player: Profile) -> Game | None:
     """Return the game a player is currently attached to, if any (excluding finished games)."""
     stats = (
         UserGameStats.objects
-        .filter(player=player, is_active=True, game__status__in=['waiting', 'playing_round', 'playing_break'])
+        .filter(player=player, game__status__in=['waiting', 'playing_round', 'playing_break'])
         .select_related('game')
         .first()
     )

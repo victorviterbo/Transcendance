@@ -43,7 +43,6 @@ from .ws_game_db_helpers import (
     _delete_aborted_game
 )
 from .ws_game_send_helpers import (
-    _send_existing_player_game_info,
     _send_game_closed,
     _send_game_ended,
     _send_game_error,
@@ -164,16 +163,18 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
     # Check if player is already in an active game (DB check)
-    existing_game = await _get_active_game_for_player(consumer.profile)
+    """existing_game = await _get_active_game_for_player(consumer.profile)
     if existing_game:
         consumer.current_game = existing_game
         consumer.game_group_name = f'game_{existing_game.uid}'
         await consumer.add_to_layer(consumer.game_group_name)
         if game_uid and str(existing_game.uid) == str(game_uid):
             await _send_existing_player_game_info(consumer)
+
+            await _add_user_to_players(consumer, content, already_exists=True)
         else:
             await _send_game_error(consumer, game_uid, 'ALREADY_IN_GAME')
-        return
+        return"""
     consumer.current_game = await _get_game(consumer, game_uid, False)
     if not getattr(consumer, 'current_game', None) or consumer.current_game.status == 'finished':
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
@@ -181,14 +182,14 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     is_already_in_game = await _check_game_membership(consumer.current_game,
                                                     consumer.profile)
     if is_already_in_game:
-        await _send_existing_player_game_info(consumer)
+        await _add_user_to_players(consumer, content, already_exists=True)
         return
     num_current_players = await _get_num_curr_players(consumer.current_game)
     if num_current_players >= max_players:
         await _send_game_error(consumer, game_uid, 'GAME_FULL', critical=True)
         return
     if getattr(consumer, 'game_group_name', None) is None:
-        consumer.game_group_name = f'game_{consumer.current_game.uid}'
+        consumer.game_group_name = f'game_{consumer.current_game.uid, False}'
     await _add_user_to_players(consumer, content)
     return
 
@@ -196,26 +197,37 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
 async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
     """Start a game session / Begin the round loop."""
     if not getattr(consumer, 'current_game', None):
-        await _send_game_error(consumer, None, 'NO_GAME_CONTEXT', critical=True)
+        await _send_game_error(consumer, None,
+                               'NO_GAME_CONTEXT',
+                               critical=True)
         return
     if consumer.current_game.status != 'waiting':
-        await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
+        await _send_game_error(consumer, consumer.current_game.uid,
+                               'GAME_ALREADY_STARTED',
+                               critical=True)
         return
     ACTIVE_GAMES[consumer.current_game.uid] = {
             "task": asyncio.create_task(run_game_loop(consumer, content)),
         }
 
-async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
+async def _add_user_to_players(consumer: 'GlobalConsumer',
+                               content: dict,
+                               already_exists: bool = False) -> None:
     """Handle the game joining process."""
-    if consumer.current_game.status != 'waiting':
-        await _send_game_error(consumer, consumer.current_game.uid, 'GAME_ALREADY_STARTED', critical=True)
-        return
-
-    player_added = await _add_player_to_game_stats(consumer.current_game,
-                                                consumer.profile)
-    if not player_added:
-        await _send_game_error(consumer, consumer.current_game.uid, 'FAILED_TO_JOIN_GAME', critical=True)
-        return
+    if not already_exists:
+        if consumer.current_game.status != 'waiting':
+            await _send_game_error(consumer, consumer.current_game.uid,
+                                'GAME_ALREADY_STARTED',
+                                critical=True)
+            return
+        player_added = await _add_player_to_game_stats(consumer.current_game,
+                                                    consumer.profile)
+        if not player_added:
+            await _send_game_error(consumer, consumer.current_game.uid,
+                                'FAILED_TO_JOIN_GAME',
+                                critical=True)
+            return
+    consumer.game_group_name = f'game_{consumer.current_game.uid}'
     await consumer.add_to_layer(consumer.game_group_name)
     await add_gameroom_participant(consumer.current_game, consumer.profile)
     serialized_game = await _get_game_data(consumer)
@@ -326,18 +338,28 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Leave a game group."""
     if not getattr(consumer, 'current_game', None):
-        await _send_game_error(consumer, consumer.current_game.uid, 'NO_GAME_CONTEXT', critical=True)
+        await _send_game_error(consumer, consumer.current_game.uid,
+                               'NO_GAME_CONTEXT',
+                               critical=True)
         return
     if not getattr(consumer, 'game_group_name', None):
-        await _send_game_error(consumer, consumer.current_game.uid, 'NO_GAME_CONTEXT', critical=True)
+        await _send_game_error(consumer, consumer.current_game.uid,
+                               'NO_GAME_CONTEXT',
+                               critical=True)
         return
-    was_owner = await _remove_player_from_game_stats(consumer.current_game, consumer.profile)
+    was_owner, player_left = await _remove_player_from_game_stats(consumer.current_game,
+                                                     consumer.profile)
     if was_owner:
-        consumer.group_send(consumer.game_group_name, {
+        player_data = await _get_player_data(consumer)
+        await consumer.group_send(consumer.game_group_name, {
             'type': 'game_new_owner',
             'uid': str(consumer.current_game.uid),
-            'player': _get_player_data(consumer.current_game.owned_by),
+            'player': player_data,
             })
+    if not player_left:
+        print(f"I AM HEEEEEERE {consumer.current_game.owned_by, consumer.current_game.status}")
+        await _game_cleanup(consumer.current_game)
+        print(f"AND NOWWWWW {consumer.current_game.owned_by, consumer.current_game.status}")
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',
         'uid': content.get('uid'),
@@ -395,14 +417,14 @@ def _clone_game_for_restart(game: Game) -> Game:
     new_game.save(update_fields=['room'])
     return new_game
 
-
-async def _game_cleanup(game: Game) -> None:
+@database_sync_to_async
+def _game_cleanup(game: Game) -> None:
     """Delete room and playlist but keep the game record for stats."""
     if game.room:
-        await database_sync_to_async(game.room.delete)()
+        game.room.delete()
     if game.playlist:
-        await database_sync_to_async(game.playlist.delete)()
+        game.playlist.delete()
     game.room = None
     game.playlist = None
     game.status = 'finished'
-    await database_sync_to_async(game.save)(update_fields=['room', 'playlist', 'status'])
+    game.save(update_fields=['room', 'playlist', 'status'])
