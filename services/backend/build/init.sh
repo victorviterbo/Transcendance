@@ -5,7 +5,7 @@ set -eu
 PYTHON=/opt/conda/envs/backend/bin/python
 DAPHNE=/opt/conda/envs/backend/bin/daphne
 
-mkdir -p /data/database /data/media
+mkdir -p /data/media
 
 $PYTHON /app/manage.py migrate
 

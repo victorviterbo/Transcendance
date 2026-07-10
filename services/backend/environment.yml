@@ -119,4 +119,6 @@ dependencies:
   - zope=1.0
   - zope.interface=8.0.1
   - zstd=1.5.7
+  - pip:
+      - psycopg[binary]==3.3.4
 prefix: /opt/conda/envs/backend
