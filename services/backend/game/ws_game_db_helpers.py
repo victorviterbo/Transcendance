@@ -304,8 +304,13 @@ def _compute_game_stats(game: Game) -> dict:
 
 @database_sync_to_async
 def _add_player_to_game_stats(game: Game, player: Profile) -> bool:
-    """Add a player to a game by creating UserGameStats entry."""
+    """Add a player to a game by creating or reactivating UserGameStats entry."""
     try:
+        stats = UserGameStats.objects.filter(game=game, player=player).first()
+        if stats:
+            stats.is_active = True
+            stats.save(update_fields=['is_active'])
+            return True
         UserGameStats.objects.create(game=game, player=player, is_active=True)
         return True
     except Exception:
@@ -357,13 +362,12 @@ def _get_game_settings_data(consumer: 'GlobalConsumer' | None = None, game: Game
     return GameSettingsSerializer(game).data
 
 @database_sync_to_async
-def _get_player_data(consumer: 'GlobalConsumer') -> dict:
+def _get_player_data(consumer: 'GlobalConsumer' | Profile) -> dict:
     """Retrieve player data."""
-    return LightProfileSerializer(consumer.profile).data
-
-@database_sync_to_async
-def _get_specific_player_data(profile: Profile) -> dict:
-    """Retrieve player data."""
+    if isinstance(consumer, Profile):
+        profile = consumer
+    else:
+        profile = consumer.profile
     return LightProfileSerializer(profile).data
 
 def _build_base_game_payload(consumer: 'GlobalConsumer' | None = None, game: Game | None = None, current_player: Profile | None = None) -> dict:

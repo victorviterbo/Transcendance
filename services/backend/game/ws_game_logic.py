@@ -35,7 +35,6 @@ from .ws_game_db_helpers import (
     _get_game_settings_data,
     _get_num_curr_players,
     _get_player_data,
-    _get_specific_player_data,
     _get_track_reveal_data,
     _init_round_stats,
     _remove_player_from_game_stats,
@@ -163,34 +162,23 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
     except ValueError:
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
-    # Check if player is already in an active game (DB check)
-    """existing_game = await _get_active_game_for_player(consumer.profile)
-    if existing_game:
-        consumer.current_game = existing_game
-        consumer.game_group_name = f'game_{existing_game.uid}'
-        await consumer.add_to_layer(consumer.game_group_name)
-        if game_uid and str(existing_game.uid) == str(game_uid):
-            await _send_existing_player_game_info(consumer)
 
-            await _add_user_to_players(consumer, content, already_exists=True)
-        else:
-            await _send_game_error(consumer, game_uid, 'ALREADY_IN_GAME')
-        return"""
     consumer.current_game = await _get_game(consumer, game_uid, False)
     if not getattr(consumer, 'current_game', None) or consumer.current_game.status == 'finished':
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
-    is_already_in_game = await _check_game_membership(consumer.current_game,
-                                                    consumer.profile)
-    if is_already_in_game:
-        await _add_user_to_players(consumer, content, already_exists=True)
+    
+    existing_stats = await _check_game_membership(consumer.current_game, consumer.profile)
+    
+    if consumer.current_game.status != 'waiting' and not existing_stats:
+        await _send_game_error(consumer, game_uid, 'GAME_ALREADY_STARTED', critical=True)
         return
     num_current_players = await _get_num_curr_players(consumer.current_game)
-    if num_current_players >= max_players:
+    if num_current_players >= max_players and not existing_stats:
         await _send_game_error(consumer, game_uid, 'GAME_FULL', critical=True)
         return
     if getattr(consumer, 'game_group_name', None) is None:
-        consumer.game_group_name = f'game_{consumer.current_game.uid, False}'
+        consumer.game_group_name = f'game_{consumer.current_game.uid}'
     await _add_user_to_players(consumer, content)
     return
 
@@ -211,23 +199,14 @@ async def _game_start(consumer: 'GlobalConsumer', content: dict) -> None:
             "task": asyncio.create_task(run_game_loop(consumer, content)),
         }
 
-async def _add_user_to_players(consumer: 'GlobalConsumer',
-                               content: dict,
-                               already_exists: bool = False) -> None:
+async def _add_user_to_players(consumer: 'GlobalConsumer', content: dict) -> None:
     """Handle the game joining process."""
-    if not already_exists:
-        if consumer.current_game.status != 'waiting':
-            await _send_game_error(consumer, consumer.current_game.uid,
-                                'GAME_ALREADY_STARTED',
-                                critical=True)
-            return
-        player_added = await _add_player_to_game_stats(consumer.current_game,
-                                                    consumer.profile)
-        if not player_added:
-            await _send_game_error(consumer, consumer.current_game.uid,
-                                'FAILED_TO_JOIN_GAME',
-                                critical=True)
-            return
+    player_added = await _add_player_to_game_stats(consumer.current_game, consumer.profile)
+    if not player_added:
+        await _send_game_error(consumer, consumer.current_game.uid,
+                            'FAILED_TO_JOIN_GAME',
+                            critical=True)
+        return
     consumer.game_group_name = f'game_{consumer.current_game.uid}'
     await consumer.add_to_layer(consumer.game_group_name)
     await add_gameroom_participant(consumer.current_game, consumer.profile)
@@ -351,7 +330,7 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     was_owner, player_left_in_game = await _remove_player_from_game_stats(consumer.current_game,
                                                      consumer.profile)
     if was_owner:
-        player_data = await _get_specific_player_data(consumer.current_game.owned_by)
+        player_data = await _get_player_data(consumer.current_game.owned_by)
         await consumer.group_send(consumer.game_group_name, {
             'type': 'game_new_owner',
             'uid': str(consumer.current_game.uid),

@@ -69,8 +69,7 @@ class GameSettingsSerializer(serializers.ModelSerializer):
         return value
 class GameDetailSerializer(serializers.ModelSerializer):
     """Full game serializer including player list."""
-    players = LightProfileSerializer(many=True, read_only=True) # TODO : remove players, playerCount and playerMax instead
-
+    players = LightProfileSerializer(source='active_players', many=True, read_only=True)
     class Meta:
         """Meta config for GameDetailSerializer."""
         model = Game
@@ -85,7 +84,6 @@ class GameDetailSerializer(serializers.ModelSerializer):
                             'genres',
                             'players',
                             ]
-
 
 class GameHeaderSerializer(serializers.ModelSerializer):
     """Serializer for sending game data over WebSocket."""

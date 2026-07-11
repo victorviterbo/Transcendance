@@ -112,3 +112,8 @@ class Game(models.Model):
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-created_at']
+
+    @property
+    def active_players(self) -> list:
+        """Return only active players for this game."""
+        return [stats.player for stats in self.player_stats.filter(is_active=True)]
