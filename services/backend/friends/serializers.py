@@ -2,18 +2,15 @@
 
 from django.templatetags.static import static
 from rest_framework import serializers
-from rest_framework.request import Request
 from userprofile.models import Profile
 
 
-def avatar_url(instance: Profile, request: Request | None = None) -> str:
-    """Return uploaded avatar URL or fallback to the profile default avatar."""
+def avatar_url(instance: Profile) -> str:
+    """Return a path resolved against the current frontend origin."""
     if instance.avatar:
         avatar_url = instance.avatar.url
     else:
         avatar_url = static(f'default_avatars/default_avatar_{instance.pk % 18}.png')
-    if request:
-        return request.build_absolute_uri(avatar_url)
     return avatar_url
 
 
@@ -27,9 +24,8 @@ class FriendInfoSerializer(serializers.ModelSerializer):
         fields = ['uid', 'username', 'avatar', 'exp_points', 'badges', 'created_at', 'status']
 
     def get_avatar(self, instance: Profile) -> str:
-        """Return an absolute avatar URL when possible."""
-        request = self.context.get('request')
-        return avatar_url(instance, request)
+        """Return an avatar path resolved by the frontend origin."""
+        return avatar_url(instance)
 
     def get_status(self, instance: Profile) -> str:
         """Map the backend presence flag to the frontend friend status."""
@@ -46,11 +42,9 @@ class FriendUserSerializer(serializers.ModelSerializer):
         fields = ['uid', 'username', 'avatar', 'badges', 'relation']
 
     def get_avatar(self, instance: Profile) -> str:
-        """Return an absolute avatar URL when possible."""
-        request = self.context.get('request')
-        return avatar_url(instance, request)
+        """Return an avatar path resolved by the frontend origin."""
+        return avatar_url(instance)
 
     def get_relation(self, instance: Profile) -> str:
         """Return the computed relation for the serialized profile."""
         return self.context.get('relation', 'not-friends')
-    
