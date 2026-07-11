@@ -42,6 +42,7 @@ class Game(models.Model):
                                     ('playing_round', 'Game Round in progress'),
                                     ('playing_break', 'Game Break in progress'),
                                     ('finished', 'Game finished'),
+                                    ('aborted', 'Game aborted'),
                                     ],
                                     default='waiting')
     
@@ -87,6 +88,8 @@ class Game(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     started_at = models.DateTimeField(null=True, blank=True)
+
+    last_activity_at = models.DateTimeField(null=True, blank=True)
 
     uid = models.UUIDField(default=uuid.uuid4,
                         editable=False,

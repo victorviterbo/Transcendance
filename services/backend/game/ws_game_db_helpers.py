@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 from channels.db import database_sync_to_async
 from chat.models import Room
 from django.db.models import Count, Q, Sum
+from django.utils import timezone
 from music.models import Playlist, Track
 from music.serializers import TrackSerializer
 from project.defaults import default_pts, get_badge
@@ -101,7 +102,18 @@ def _setup_game_assets(game: Game) -> None:
     game.room = room
     game.current_track = all_tracks[0]
     game.status = 'playing_round'
-    game.save(update_fields=['playlist', 'current_track', 'room', 'status'])
+    game.last_activity_at = timezone.now()
+    game.save(update_fields=[
+        'playlist', 'current_track', 'room', 'status', 'last_activity_at'
+    ])
+
+@database_sync_to_async
+def _touch_game_activity(game: Game) -> None:
+    """Record that the live game loop emitted a lifecycle event."""
+    Game.objects.filter(
+        pk=game.pk,
+        status__in=['playing_round', 'playing_break'],
+    ).update(last_activity_at=timezone.now())
 
 @database_sync_to_async
 def _set_current_round(game: Game, round_number: int) -> None:

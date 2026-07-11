@@ -1,3 +1,29 @@
+x-backend-environment: &backend-environment
+  SECRET_KEY: ${SECRET_KEY}
+  DEBUG: ${DEBUG}
+  ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+  CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+  POSTGRES_DB: ${POSTGRES_DB}
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_HOST: ${POSTGRES_HOST}
+  POSTGRES_PORT: ${POSTGRES_PORT}
+  PYTHONUNBUFFERED: "1"
+
+x-backend-dependencies: &backend-dependencies
+  redis:
+    condition: service_healthy
+  database:
+    condition: service_healthy
+
+x-celery-dependencies: &celery-dependencies
+  redis:
+    condition: service_healthy
+  database:
+    condition: service_healthy
+  backend:
+    condition: service_healthy
+
 services:
   database:
     container_name: database
@@ -17,14 +43,20 @@ services:
       timeout: 5s
       retries: 12
       start_period: 10s
-  
+
   redis:
     container_name: redis
     image: redis:7-alpine
-    restart: always
-    ports:
-      - "6379:6379"
-    
+    restart: unless-stopped
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
   backend:
     container_name: backend
     image: transcendence-backend
@@ -36,22 +68,8 @@ services:
       - backend-media:/data/media
     expose:
       - "8000"
-    environment:
-      SECRET_KEY: ${SECRET_KEY}
-      DEBUG: ${DEBUG}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
-      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      PYTHONUNBUFFERED: "1"
-    depends_on:
-      redis:
-        condition: service_started
-      database:
-        condition: service_healthy
+    environment: *backend-environment
+    depends_on: *backend-dependencies
     healthcheck:
       test:
         [
@@ -64,6 +82,24 @@ services:
       timeout: 5s
       retries: 12
       start_period: 20s
+
+  celery-worker:
+    container_name: celery-worker
+    image: transcendence-backend
+    restart: unless-stopped
+    entrypoint: ["/opt/conda/envs/backend/bin/celery"]
+    command: ["-A", "project", "worker", "--loglevel=info"]
+    environment: *backend-environment
+    depends_on: *celery-dependencies
+
+  celery-beat:
+    container_name: celery-beat
+    image: transcendence-backend
+    restart: unless-stopped
+    entrypoint: ["/opt/conda/envs/backend/bin/celery"]
+    command: ["-A", "project", "beat", "--loglevel=info"]
+    environment: *backend-environment
+    depends_on: *celery-dependencies
 
   nginx:
     container_name: nginx

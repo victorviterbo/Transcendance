@@ -106,7 +106,13 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
         await _setup_game_assets(game)
         serialized_game = await _get_game_data(game=game)
         serialized_settings = await _get_game_settings_data(game=game)
-        await _send_start_signal(consumer, serialized_game, serialized_settings, game_group_name)
+        await _send_start_signal(
+            consumer,
+            serialized_game,
+            serialized_settings,
+            game_group_name,
+            game,
+        )
         await asyncio.sleep(answer_buffer_time)
         for round in range(1, game.trackCount + 1):
             await _set_current_round(game, round)
@@ -140,7 +146,12 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
                 await asyncio.sleep(game.breakDuration)
         await _compute_game_stats(game)
         serialized_game_ended = await _get_game_ended_data(consumer=consumer, game=game)
-        await _send_game_ended(consumer, serialized_game_ended, game_group_name)
+        await _send_game_ended(
+            consumer,
+            serialized_game_ended,
+            game_group_name,
+            game,
+        )
     except serializers.ValidationError as e:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
@@ -164,7 +175,8 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
         return
 
     consumer.current_game = await _get_game(consumer, game_uid, False)
-    if not getattr(consumer, 'current_game', None) or consumer.current_game.status == 'finished':
+    if (not getattr(consumer, 'current_game', None)
+            or consumer.current_game.status in {'finished', 'aborted'}):
         await _send_game_error(consumer, game_uid, 'GAME_NOT_FOUND', critical=True)
         return
     

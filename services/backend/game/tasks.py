@@ -5,39 +5,65 @@ from datetime import timedelta
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
-from django.utils import timezone
 from django.db.models import Q
+from django.utils import timezone
 from game.models import Game
-from game.ws_game_db_helpers import _delete_aborted_game
-from game.ws_game_shared import ACTIVE_GAMES
 from project.defaults import lobby_timeout, finished_timeout
 
-@shared_task
-def reap_foresaken_waiting_games() -> None:
-    """Find every game that has been in the loby for over 15 minutes and delete them."""
-    cutoff_lobby = timezone.now() - timedelta(minutes=lobby_timeout)
-    cutoff_finished = timezone.now() - timedelta(minutes=finished_timeout)
 
-    print(f"Reaping games created before {cutoff_lobby}\n\n\n\n")
-    stale_games = Game.objects.filter(
-    Q(status='waiting', created_at__lte=cutoff_lobby) |
-    Q(~Q(status='finished'), created_at__lte=cutoff_finished)
-)
+def _delete_game_with_runtime_data(game: Game) -> None:
+    """Remove a stale game and the temporary room and playlist it owns."""
+    if game.room_id:
+        game.room.delete()
+    if game.playlist_id:
+        game.playlist.delete()
+    game.delete()
+
+
+@shared_task
+def reap_foresaken_waiting_games() -> str:
+    """Clean abandoned lobbies and signal stale active games."""
+    now = timezone.now()
+    cutoff_lobby = now - timedelta(minutes=lobby_timeout)
+    cutoff_active = now - timedelta(minutes=finished_timeout)
+
+    stale_waiting = list(Game.objects.filter(
+        status='waiting',
+        created_at__lte=cutoff_lobby,
+    ))
+    stale_aborted = list(Game.objects.filter(status='aborted'))
+    stale_active = list(Game.objects.filter(
+        status__in=['playing_round', 'playing_break'],
+    ).filter(
+        Q(last_activity_at__isnull=True) |
+        Q(last_activity_at__lte=cutoff_active),
+    ))
+
     channel_layer = get_channel_layer()
-    print(f"Found stale games: {stale_games.count()}")
-    for game in stale_games:
-        print(f"Reaping game {game.uid}")
+    for game in stale_aborted:
+        _delete_game_with_runtime_data(game)
+
+    for game in stale_waiting:
         group_name = f'game_{game.uid}'
         async_to_sync(channel_layer.group_send)(group_name, {
             'type': 'game_closed_event',
             'uid': str(game.uid),
         })
-        if game.uid in ACTIVE_GAMES:
-            if 'task' in ACTIVE_GAMES[game.uid]:
-                task_to_cancel = ACTIVE_GAMES[game.uid]['task']
-                task_to_cancel.cancel()
-            ACTIVE_GAMES.pop(game.uid)
-        game.delete()
-    print(f"Deleted {stale_games.count()} stale games.")
-    all_games = Game.objects.filter(status='waiting').all()
-    return f"Deleted {', '.join([str(game.uid) for game in stale_games])}., found {''.join([str(game.uid) for game in all_games])}."
+        _delete_game_with_runtime_data(game)
+
+    for game in stale_active:
+        marked = Game.objects.filter(
+            pk=game.pk,
+            status__in=['playing_round', 'playing_break'],
+        ).update(status='aborted')
+        if marked:
+            group_name = f'game_{game.uid}'
+            async_to_sync(channel_layer.group_send)(group_name, {
+                'type': 'game_abort_event',
+                'uid': str(game.uid),
+            })
+
+    return (
+        f"Deleted {len(stale_aborted) + len(stale_waiting)} games and "
+        f"marked {len(stale_active)} active games as aborted."
+    )
