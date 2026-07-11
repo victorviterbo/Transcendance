@@ -34,7 +34,7 @@ import type {
 	IWSGameSendEventSettings,
 	TWSRoundInfo,
 } from "../types/websocket";
-import { MUSIC_TAGS, PAGE_GAME } from "../constants";
+import { MUSIC_TAGS, PAGE_GAME, VOLUME_RATIO } from "../constants";
 import type { IAppNotif } from "../types/events";
 
 export interface IGameInstanceCallbacks {
@@ -218,7 +218,7 @@ export class GameInstance {
 		this.rounds[this.status.round].phase = "playing";
 		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
 		if (song) {
-			song.volume = this.muted ? 0 : this.volume / 100;
+			song.volume = this.getVolume();
 			if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
 			else {
 				song.play()
@@ -683,11 +683,15 @@ export class GameInstance {
 	}
 
 	//--------------------- Other ---------------------
+	getVolume(): number {
+		return this.muted ? 0 : (this.volume / 100) * VOLUME_RATIO;
+	}
+
 	changeVolume(value: number) {
 		this.volume = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
 			if (!el) return;
-			el.volume = this.muted ? 0 : this.volume / 100;
+			el.volume = this.getVolume();
 		});
 		localStorage.setItem("default_volume", this.volume.toString());
 		this.updateVolume();
@@ -696,7 +700,7 @@ export class GameInstance {
 		this.muted = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
 			if (!el) return;
-			el.volume = this.muted ? 0 : this.volume / 100;
+			el.volume = this.getVolume();
 		});
 		localStorage.setItem("default_mute", this.muted.toString());
 		this.updateVolume();

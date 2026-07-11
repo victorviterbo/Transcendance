@@ -70,6 +70,7 @@ export const GAME_ROUND_PASSED_DISPLAYED = 8;
 export const GAME_MAX_ROUND_DISPLAYED_SMALL = 5;
 export const GAME_ROUND_PASSED_DISPLAYED_SMALL = 3;
 export const GAME_ENDED_MAX = 9999;
+export const VOLUME_RATIO = 0.3; // < 1
 
 // SETTINGS
 export const SETTINGS_NGSONGS_MIN = 5;
