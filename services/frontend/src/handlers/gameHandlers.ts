@@ -178,6 +178,10 @@ export class GameInstance {
 		}
 	}
 	onPlayerLeft(data: IWSGameSendEventPlayerManage) {
+		if (data.player.uid == data.self.uid) {
+			this.onSelfLeft();
+			return;
+		}
 		const playerIndex: number = this.players.findIndex(
 			(player: IGamePlayer) => player.player.uid == data.player.uid,
 		);
@@ -374,6 +378,15 @@ export class GameInstance {
 		this.callbacks.push({
 			severity: "info",
 			message: "GAME_ENDED",
+		});
+		this.callbacks.setRedirect("/");
+	}
+	onSelfLeft() {
+		this.stopAll();
+		this.callbacks.setSessionState("ended");
+		this.callbacks.push({
+			severity: "warning",
+			message: "SELF_LEAVE",
 		});
 		this.callbacks.setRedirect("/");
 	}

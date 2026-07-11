@@ -351,3 +351,4 @@ ROOM_NOT_FOUND,Chat room not found,Salon de discussion introuvable,チャット�
 INVALID_ROOM,Chat room is not valid,Le salon de discussion n'est pas valide,チャットルームが無効です,Der Chatraum ist ungültig,Error message shown when the chat room is invalid
 GAME_ALREADY_STARTED,Game has already started,La partie a déjà commencé,ゲームはすでに開始されています,Das Spiel hat bereits begonnen,Error message shown when trying to join or modify a game that has already started
 GAME_ENDED,The game has been closed,La partie a été fermée,ゲームは終了しました,Das Spiel wurde geschlossen,Message displayed when the game has been closed
+SELF_LEAVE,You left this game from another session,Vous avez quitté cette partie depuis une autre session,別のセッションからこのゲームを退出しました,Du hast dieses Spiel in einer anderen Sitzung verlassen,Message displayed when the user leaves the game from another session
