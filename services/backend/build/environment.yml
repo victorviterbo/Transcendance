@@ -2,6 +2,7 @@ name: backend
 channels:
   - defaults
   - conda-forge
+  - main
 dependencies:
   - _libgcc_mutex=0.1
   - _openmp_mutex=5.1
@@ -23,6 +24,7 @@ dependencies:
   - certifi=2026.6.17
   - cffi=2.0.0
   - channels=4.3.2
+  - channels_redis=4.3.0
   - charset-normalizer=3.4.4
   - click=8.4.1
   - click-didyoumean=0.3.1
@@ -48,6 +50,7 @@ dependencies:
   - idna=3.11
   - incremental=24.7.2
   - inflection=0.5.1
+  - jemalloc=5.3.1
   - jpeg=9f
   - jsonschema=4.25.1
   - jsonschema-specifications=2025.9.1
@@ -66,6 +69,7 @@ dependencies:
   - libglib=2.86.3
   - libgomp=15.2.0
   - libiconv=1.18
+  - libjemalloc=5.3.0
   - libmpdec=4.0.0
   - libopenjpeg=2.5.4
   - libpng=1.6.55
@@ -104,7 +108,8 @@ dependencies:
   - pyyaml=6.0.3
   - rapidfuzz=3.14.1
   - readline=8.3
-  - redis-py=8.0.1
+  - redis-py=5.2.0
+  - redis-server=8.8.0
   - referencing=0.37.0
   - requests=2.32.5
   - rpds-py=0.28.0

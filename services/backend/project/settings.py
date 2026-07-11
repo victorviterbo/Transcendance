@@ -132,15 +132,6 @@ SIMPLE_JWT = {
     'CHECK_REVOKE_TOKEN': True,
 }
 
-# Added for Channels: point ASGI application to channels routing(for chatroom)
-ASGI_APPLICATION = 'project.asgi.application'
-
-# Channels layer config (single-instance runtime, no Redis dependency).
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
 
 # Database definition
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -166,15 +157,33 @@ CELERY_BEAT_SCHEDULE = {
 
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
-"""
+
+# Keep your ASGI setup
+ASGI_APPLICATION = 'project.asgi.application'
+
+# KEEP THIS: Point Channels to your Redis container
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            # "redis" matches the service name in your docker-compose.yml
+            "hosts": [("redis", 6379)], 
         },
     },
-}"""
+}
+# Added for Channels: point ASGI application to channels routing(for chatroom)
+"""
+ASGI_APPLICATION = 'project.asgi.application'
+
+# Channels layer config (single-instance runtime, no Redis dependency).
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+"""
+
 
 # Define which data model is used for authentication
 # https://docs.djangoproject.com/en/6.0/topics/auth/customizing/#:~:text=AUTH_USER_MODEL%20setting%20that%20references%20a%20custom%20model%3A

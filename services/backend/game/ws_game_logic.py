@@ -323,10 +323,11 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
                                critical=True)
         return
     if not getattr(consumer, 'game_group_name', None):
-        await _send_game_error(consumer, consumer.current_game.uid,
+        """await _send_game_error(consumer, consumer.current_game.uid,
                                'NO_GAME_CONTEXT',
                                critical=True)
-        return
+        return"""
+        consumer.game_group_name = f'game_{consumer.current_game.uid}'
     was_owner, player_left_in_game = await _remove_player_from_game_stats(consumer.current_game,
                                                      consumer.profile)
     if was_owner:
@@ -341,7 +342,7 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
         if (consumer.current_game.uid in ACTIVE_GAMES and 'task' in ACTIVE_GAMES[consumer.current_game.uid]):
             task_to_cancel = ACTIVE_GAMES[consumer.current_game.uid]['task']
             task_to_cancel.cancel()
-        await _delete_aborted_game(consumer.current_game)
+        #await _delete_aborted_game(consumer.current_game)
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',
         'uid': content.get('uid'),
