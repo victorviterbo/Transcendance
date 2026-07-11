@@ -72,7 +72,7 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
         await player_join(consumer, content)
         return
     consumer.current_game = await _get_game(consumer, game_uid, True)
-    if getattr(consumer, 'current_game', None) is None:
+    if getattr(consumer, 'current_game', None) is None and _get_active_game_for_player(consumer.profile) is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'NO_GAME_CONTEXT'})
@@ -181,7 +181,13 @@ async def player_join(consumer: 'GlobalConsumer', content: dict) -> None:
         return
     
     existing_stats = await _check_game_membership(consumer.current_game, consumer.profile)
-    
+
+    if not existing_stats:
+        active_game = await _get_active_game_for_player(consumer.profile)
+        if active_game and str(active_game.uid) != str(game_uid):
+            await _send_game_error(consumer, game_uid, 'ALREADY_IN_GAME', False, active_game.uid)
+            return          
+
     if consumer.current_game.status != 'waiting' and not existing_stats:
         await _send_game_error(consumer, game_uid, 'GAME_ALREADY_STARTED', critical=True)
         return
@@ -330,7 +336,7 @@ async def _update_game_settings(consumer: 'GlobalConsumer', content: dict) -> No
 async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     """Leave a game group."""
     if not getattr(consumer, 'current_game', None):
-        await _send_game_error(consumer, consumer.current_game.uid,
+        await _send_game_error(consumer, None,
                                'NO_GAME_CONTEXT',
                                critical=True)
         return
