@@ -9,10 +9,14 @@ import {
 } from "react";
 import { type IAuthUser, type TAuthStatus } from "../../types/user";
 import type { GCompProps } from "../common/GProps";
-import api, { clearAccessToken, setAccessToken, setAuthFailureHandler } from "../../api";
+import api, {
+	clearAccessToken,
+	refreshAccessToken,
+	setAccessToken,
+	setAuthFailureHandler,
+} from "../../api";
 import {
 	API_AUTH_LOGOUT,
-	API_AUTH_REFRESH,
 	AUTH_CHANNEL,
 	AUTH_CHANNEL_LOGIN,
 	AUTH_CHANNEL_LOGOUT,
@@ -87,21 +91,13 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 	);
 
 	const refresh = useCallback(async () => {
-		try {
-			const res = await api.post(API_AUTH_REFRESH);
-
-			const access = res.data?.access;
-			const username = typeof res.data?.username === "string" ? res.data.username : "";
-
-			if (!access || !username) {
-				setAuth(null);
-				return;
-			}
-
-			login(access, { username });
-		} catch {
+		const refreshed = await refreshAccessToken();
+		if (!refreshed?.access || !refreshed.username) {
 			setAuth(null);
+			return;
 		}
+
+		login(refreshed.access, { username: refreshed.username });
 	}, [login, setAuth]);
 
 	const logout = async () => {

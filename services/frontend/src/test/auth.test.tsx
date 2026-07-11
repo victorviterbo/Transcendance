@@ -19,6 +19,15 @@ vi.mock("../api", () => ({
 	clearAccessToken: () => {
 		accessToken = null;
 	},
+	refreshAccessToken: () =>
+		postMock(API_AUTH_REFRESH).then(
+			(response: { data?: { access?: string; username?: string } }) => {
+				const access = response.data?.access;
+				return typeof access === "string" && access.length > 0
+					? { access, username: response.data?.username }
+					: null;
+			},
+		),
 	getAccessToken: () => accessToken,
 	setAuthFailureHandler: (handler: (() => void) | null) => {
 		authFailureHandler = handler;

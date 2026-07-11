@@ -2,8 +2,7 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import { API_AUTH_LOGIN, API_AUTH_LOGOUT, API_AUTH_REFRESH, API_AUTH_REGISTER } from "../constants";
 
 let accessToken: string | null = null;
-let isRefreshing = false;
-let refreshPromise: Promise<string | null> | null = null;
+let refreshPromise: Promise<{ access: string; username?: string } | null> | null = null;
 let authFailureHandler: (() => void) | null = null;
 
 export const setAccessToken = (token: string | null) => {
@@ -48,6 +47,32 @@ const isAuthRequest = (url?: string) => {
 	return authPaths.includes(normalizePath(url));
 };
 
+export const refreshAccessToken = async (): Promise<{
+	access: string;
+	username?: string;
+} | null> => {
+	if (!refreshPromise) {
+		refreshPromise = api
+			.post(API_AUTH_REFRESH)
+			.then((res) => {
+				const access = res.data?.access;
+				if (typeof access !== "string" || access.length === 0) return null;
+
+				const username = res.data?.username;
+				return {
+					access,
+					...(typeof username === "string" ? { username } : {}),
+				};
+			})
+			.catch(() => null)
+			.finally(() => {
+				refreshPromise = null;
+			});
+	}
+
+	return refreshPromise;
+};
+
 api.interceptors.request.use(
 	(config) => {
 		if (accessToken) {
@@ -73,21 +98,8 @@ api.interceptors.response.use(
 			return Promise.reject(error);
 		}
 		original._retry = true;
-		if (!isRefreshing) {
-			isRefreshing = true;
-			refreshPromise = api
-				.post(API_AUTH_REFRESH)
-				.then((res) => {
-					const token = res.data?.access;
-					return typeof token === "string" && token.length > 0 ? token : null;
-				})
-				.catch(() => null)
-				.finally(() => {
-					isRefreshing = false;
-					refreshPromise = null;
-				});
-		}
-		const newToken = await refreshPromise;
+		const refreshed = await refreshAccessToken();
+		const newToken = refreshed?.access ?? null;
 		if (!newToken) {
 			clearAccessToken();
 			notifyAuthFailure();
