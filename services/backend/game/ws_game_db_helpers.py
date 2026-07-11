@@ -29,6 +29,13 @@ from game.ws_game_shared import ACTIVE_GAMES
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
 
+
+def _clean_answer_target(value: str) -> str:
+    """Remove one or more trailing parenthesized/bracketed qualifiers."""
+    qualifier_pattern = r'(?:[\s-]+(?:\([^()]*\)|\[[^\[\]]*\]))+$'
+    return re.sub(qualifier_pattern, '', value).strip()
+
+
 @database_sync_to_async
 def _get_game(consumer: Any,
             game_uid: str | None,
@@ -169,13 +176,12 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
         artist_newly_found = False
         title_newly_found = False
         update_fields = []
-        feat_pattern = r'[\s\-]+[\(\[][^\]\)]+[\)\]]$'
         if not player_stats.artist_found:
             track_artist = track['artist'].lower().strip()
-            clean_track_artist = re.sub(feat_pattern, '', track_artist).strip()
+            clean_track_artist = _clean_answer_target(track_artist)
             if ((fuzz.ratio(player_answer, clean_track_artist) >= 80
         and consumer.current_game.fuzzy)
-                or player_answer == track_artist):
+                or player_answer in (track_artist, clean_track_artist)):
                 player_stats.artist_found = True
                 player_stats.artist_found_at = time
                 artist_correct = True
@@ -183,10 +189,10 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
                 update_fields.extend(['artist_found', 'artist_found_at'])
         if not player_stats.title_found:
             track_title = track['title'].lower().strip()
-            clean_track_title = re.sub(feat_pattern, '', track_title).strip()
+            clean_track_title = _clean_answer_target(track_title)
             if ((fuzz.ratio(player_answer, clean_track_title) >= 80
         and consumer.current_game.fuzzy)
-                or player_answer == track_title):
+                or player_answer in (track_title, clean_track_title)):
                 player_stats.title_found = True
                 player_stats.title_found_at = time
                 title_correct = True
