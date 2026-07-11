@@ -1,6 +1,7 @@
 """Handle all DB hits for the game."""
 import json
 import re
+import unicodedata
 import uuid
 from typing import TYPE_CHECKING, Any
 
@@ -35,6 +36,36 @@ def _clean_answer_target(value: str) -> str:
     """Remove one or more trailing parenthesized/bracketed qualifiers."""
     qualifier_pattern = r'(?:[\s-]+(?:\([^()]*\)|\[[^\[\]]*\]))+$'
     return re.sub(qualifier_pattern, '', value).strip()
+
+
+def _normalize_answer(value: str) -> str:
+    """Normalize case, accents, punctuation, and whitespace in an answer."""
+    folded = unicodedata.normalize('NFKD', value.casefold())
+    without_accents = ''.join(
+        character for character in folded
+        if not unicodedata.combining(character)
+    )
+    without_punctuation = re.sub(r'[^\w]+', ' ', without_accents, flags=re.UNICODE)
+    return re.sub(r'\s+', ' ', without_punctuation).strip()
+
+
+def _answer_matches_target(
+    player_answer: str,
+    target: str,
+    fuzzy_matching: bool,
+) -> bool:
+    """Match a standalone target or its phrase inside a combined answer."""
+    normalized_answer = _normalize_answer(player_answer)
+    normalized_target = _normalize_answer(_clean_answer_target(target))
+    if not normalized_answer or not normalized_target:
+        return False
+
+    bounded_answer = f' {normalized_answer} '
+    bounded_target = f' {normalized_target} '
+    if bounded_target in bounded_answer:
+        return True
+
+    return fuzzy_matching and fuzz.ratio(normalized_answer, normalized_target) >= 80
 
 
 @database_sync_to_async
@@ -172,8 +203,11 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
     """
     try:
         time = content.get('time')
-        player_answer = content.get('answer').lower().strip()
-        if track is None or time is None or player_answer is None:
+        raw_answer = content.get('answer')
+        if track is None or time is None or not isinstance(raw_answer, str):
+            return False, False, False, False
+        player_answer = raw_answer.strip()
+        if not player_answer:
             return False, False, False, False
         if (consumer.profile is None or
                 consumer.profile not in consumer.current_game.players.all()):
@@ -190,22 +224,24 @@ def _validate_answer(consumer: Any, content: dict, track: dict) -> tuple[bool, b
         title_newly_found = False
         update_fields = []
         if not player_stats.artist_found:
-            track_artist = track['artist'].lower().strip()
-            clean_track_artist = _clean_answer_target(track_artist)
-            if ((fuzz.ratio(player_answer, clean_track_artist) >= 80
-        and consumer.current_game.fuzzy)
-                or player_answer in (track_artist, clean_track_artist)):
+            track_artist = track['artist']
+            if _answer_matches_target(
+                player_answer,
+                track_artist,
+                consumer.current_game.fuzzy,
+            ):
                 player_stats.artist_found = True
                 player_stats.artist_found_at = time
                 artist_correct = True
                 artist_newly_found = True
                 update_fields.extend(['artist_found', 'artist_found_at'])
         if not player_stats.title_found:
-            track_title = track['title'].lower().strip()
-            clean_track_title = _clean_answer_target(track_title)
-            if ((fuzz.ratio(player_answer, clean_track_title) >= 80
-        and consumer.current_game.fuzzy)
-                or player_answer in (track_title, clean_track_title)):
+            track_title = track['title']
+            if _answer_matches_target(
+                player_answer,
+                track_title,
+                consumer.current_game.fuzzy,
+            ):
                 player_stats.title_found = True
                 player_stats.title_found_at = time
                 title_correct = True
