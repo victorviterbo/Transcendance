@@ -7,7 +7,7 @@ info:
     name: ft_transcendence Team
     email: support@example.com
 servers:
-  - url: https://localhost
+  - url: https://localhost:4443
 
 paths:
   /api/health/:

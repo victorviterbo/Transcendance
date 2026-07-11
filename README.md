@@ -69,7 +69,7 @@ POSTGRES_HOST=database
 POSTGRES_PORT=5432
 DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1,backend
-CSRF_TRUSTED_ORIGINS=https://localhost,https://localhost:4443
+CSRF_TRUSTED_ORIGINS=https://localhost:4443
 ```
 
 `SECRET_KEY` and `POSTGRES_PASSWORD` must not retain their example values. The local `.env` file must not be committed.
@@ -93,7 +93,7 @@ This command:
 4. Wait until the containers are healthy (`make status`), then open:
 
 ```text
-https://localhost
+https://localhost:4443
 ```
 
 The browser will show a certificate warning because the certificate is self-signed for local development. Accept it only for this local `localhost` deployment.

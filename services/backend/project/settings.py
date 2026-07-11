@@ -63,7 +63,7 @@ ALLOWED_HOSTS = get_env_list('ALLOWED_HOSTS',
 
 # Cross-Site Request Forgery (CSRF) middleware
 CSRF_TRUSTED_ORIGINS = get_env_list('CSRF_TRUSTED_ORIGINS',
-                                    default=['https://localhost'])
+                                    default=['https://localhost:4443'])
 
 # Security middleware
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
