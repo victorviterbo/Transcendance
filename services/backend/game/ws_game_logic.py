@@ -72,7 +72,8 @@ async def handle_game_action(consumer: 'GlobalConsumer', content: dict) -> None:
         await player_join(consumer, content)
         return
     consumer.current_game = await _get_game(consumer, game_uid, True)
-    if getattr(consumer, 'current_game', None) is None and _get_active_game_for_player(consumer.profile) is None:
+    active_game = await _get_active_game_for_player(consumer.profile)
+    if getattr(consumer, 'current_game', None) is None and active_game is None:
         await consumer.send_json({'target': 'game',
                                 'event': 'error',
                                 'message': 'NO_GAME_CONTEXT'})
