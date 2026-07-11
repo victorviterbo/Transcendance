@@ -29,7 +29,17 @@ class GeneralGameView(APIView):
 
 	def get(self, request: Request) -> Response:
 		"""Handles the listing of all games."""
-		all_public_games = Game.objects.filter(visibility='public', status='waiting')
+
+		# Get public games with at least one player active
+		all_public_games = (
+			Game.objects
+			.filter(
+				visibility='public',
+				status='waiting',
+				player_stats__is_active=True,
+			)
+			.distinct()
+		)
 		serialized_games = GameDetailSerializer(all_public_games, many=True)
 		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)
 	
@@ -64,10 +74,17 @@ class FriendsGameView(APIView):
 		to_ids = Friendship.objects.filter(
 			to_user=request.user, status='accepted'
 		).values_list('from_user_id', flat=True)
+
+		# Get friends games with at least one player active
 		friends_games = (
-			Game.objects.filter(owned_by__user_id__in=from_ids.union(to_ids),
-								status='waiting')
+			Game.objects
+			.filter(
+				owned_by__user_id__in=from_ids.union(to_ids),
+				status='waiting',
+				player_stats__is_active=True,
+			)
 			.exclude(visibility='private')
+			.distinct()
 		)
 		serialized_games = GameDetailSerializer(friends_games, many=True)
 		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)

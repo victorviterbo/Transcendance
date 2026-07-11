@@ -11,8 +11,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
 
@@ -191,26 +192,26 @@ class RefreshTokenView(TokenRefreshView):
             return Response({'error': {'cookie': 'MISSING_FIELD'}},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        try:
-            token = RefreshToken(refresh_token)
-            user = SiteUser.objects.get(id=token['user_id'])
-            username = user.profile.username
-        except (InvalidToken, TokenError, KeyError, SiteUser.DoesNotExist,
-                Profile.DoesNotExist):
-            return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
         serializer = self.get_serializer(data={'refresh': refresh_token})
         try:
             serializer.is_valid(raise_exception=True)
-        except (InvalidToken, TokenError, serializers.ValidationError):
+            validated_token = JWTAuthentication().get_validated_token(serializer.validated_data['access'])
+            print(validated_token)  # Debugging line
+            if validated_token is None or JWTAuthentication().get_user(validated_token) is None:
+                return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        except (InvalidToken, TokenError, Exception, serializers.ValidationError):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)
-
         response_data = serializer.validated_data.copy()
         new_refresh = response_data.pop('refresh', None)
-        response_data['username'] = username
-
+        try:
+            token = RefreshToken(new_refresh or refresh_token)
+            user = SiteUser.objects.get(id=token['user_id'])
+            response_data['username'] = user.profile.username
+        except (KeyError, SiteUser.DoesNotExist, TokenError):
+            return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
         response = Response(response_data, status=status.HTTP_200_OK)
         if new_refresh:
             set_refresh_cookie(response, new_refresh)

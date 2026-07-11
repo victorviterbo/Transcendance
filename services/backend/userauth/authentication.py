@@ -1,7 +1,9 @@
 """Override of the simple JWT authentication protocol for users."""
 
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication, Token
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from .models import SiteUser
 
@@ -31,10 +33,20 @@ class CookieJWTAuthentication(JWTAuthentication):
                         request.auth is set to None
                         permissions are set (IsAuthenticated, IsAdminUser)
         """
-        authenticated = super().authenticate(request)
-        if authenticated is None:
+        header = self.get_header(request)
+        if header is None:
             return None
-
-        user, validated_token = authenticated
-        request.profile = user.profile
-        return user, validated_token
+        raw_token = self.get_raw_token(header)
+        if raw_token is None:
+            return None
+        try:
+            validated_token = self.get_validated_token(raw_token)
+            if not validated_token:
+                raise AuthenticationFailed(detail="Token is invalid or corrupted.", code="TOKEN_INVALID")
+            user = self.get_user(validated_token)
+            if user:
+                request.profile = user.profile
+                return user, validated_token
+            raise AuthenticationFailed(detail="User not found.", code="USER_NOT_FOUND")
+        except Exception as e:
+            return None
