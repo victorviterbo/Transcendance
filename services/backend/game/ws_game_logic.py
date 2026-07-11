@@ -348,7 +348,7 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
                                'NO_GAME_CONTEXT',
                                critical=True)
         return
-    was_owner, player_left = await _remove_player_from_game_stats(consumer.current_game,
+    was_owner, player_left_in_game = await _remove_player_from_game_stats(consumer.current_game,
                                                      consumer.profile)
     if was_owner:
         player_data = await _get_specific_player_data(consumer.current_game.owned_by)
@@ -357,9 +357,13 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
             'uid': str(consumer.current_game.uid),
             'player': player_data,
             })
-    if not player_left:
+    if not player_left_in_game:
         print(f"I AM HEEEEEERE {consumer.current_game.owned_by, consumer.current_game.status}")
         await _game_cleanup(consumer.current_game)
+        await _delete_aborted_game(consumer.current_game)
+        if (consumer.current_game.uid in ACTIVE_GAMES and 'task' in ACTIVE_GAMES[consumer.current_game.uid]):
+            task_to_cancel = ACTIVE_GAMES[consumer.current_game.uid]['task']
+            task_to_cancel.cancel()
         print(f"AND NOWWWWW {consumer.current_game.owned_by, consumer.current_game.status}")
     await consumer.group_send(consumer.game_group_name, {
         'type': 'game_player_left',

@@ -318,8 +318,6 @@ def _remove_player_from_game_stats(game: Game, player: Profile) -> tuple[bool, b
     try:
         UserGameStats.objects.filter(game=game, player=player).update(is_active=False)
         if not UserGameStats.objects.filter(game=game, is_active=True).exists():
-            task_to_cancel = ACTIVE_GAMES[game.uid]['task']
-            task_to_cancel.cancel()
             return False, False
         elif game.owned_by.id == player.id:
             game.owned_by = UserGameStats.objects.filter(game=game, is_active=True).first().player
