@@ -78,7 +78,6 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 		channelRef.current?.postMessage({
 			type: AUTH_CHANNEL_LOGOUT,
 		} satisfies AuthChannelLogoutMessage);
-		void api.post(API_AUTH_LOGOUT).catch(() => undefined);
 	}, [setAuth]);
 
 	useEffect(() => {
