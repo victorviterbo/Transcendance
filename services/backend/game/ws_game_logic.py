@@ -337,8 +337,8 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
             'uid': str(consumer.current_game.uid),
             'player': player_data,
             })
-    if not player_left_in_game:
-        await _game_cleanup(consumer.current_game)
+    if not player_left_in_game and consumer.current_game.status != 'finished':
+        await _game_cleanup(consumer.current_game, True)
         if (consumer.current_game.uid in ACTIVE_GAMES and 'task' in ACTIVE_GAMES[consumer.current_game.uid]):
             task_to_cancel = ACTIVE_GAMES[consumer.current_game.uid]['task']
             task_to_cancel.cancel()
@@ -400,13 +400,16 @@ def _clone_game_for_restart(game: Game) -> Game:
     return new_game
 
 @database_sync_to_async
-def _game_cleanup(game: Game) -> None:
+def _game_cleanup(game: Game, full: bool = False) -> None:
     """Delete room and playlist but keep the game record for stats."""
     if game.room:
         game.room.delete()
+        game.room = None
     if game.playlist:
         game.playlist.delete()
-    game.room = None
-    game.playlist = None
+        game.playlist = None
+    if full:
+        game.delete()
+        return
     game.status = 'finished'
     game.save(update_fields=['room', 'playlist', 'status'])
