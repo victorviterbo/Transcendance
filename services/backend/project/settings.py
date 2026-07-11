@@ -1,10 +1,13 @@
 """Describes the settings used for the backend."""
 
+import logging
 import os
 from datetime import timedelta
 from pathlib import Path
-import logging
+
+from celery.schedules import crontab
 from dotenv import load_dotenv
+
 
 def get_env_bool(key: str, *, default: bool = False) -> bool:
     value = os.getenv(key)
@@ -152,6 +155,26 @@ DATABASES = {
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
+
+
+CELERY_BEAT_SCHEDULE = {
+    'reap-waiting-games-every-minute': {
+        'task': 'game.tasks.reap_foresaken_waiting_games',
+        'schedule': crontab(minute='*'),  # Runs every minute
+    },
+}
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+"""
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}"""
 
 # Define which data model is used for authentication
 # https://docs.djangoproject.com/en/6.0/topics/auth/customizing/#:~:text=AUTH_USER_MODEL%20setting%20that%20references%20a%20custom%20model%3A
