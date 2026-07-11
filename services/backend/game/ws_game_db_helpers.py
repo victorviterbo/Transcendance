@@ -357,6 +357,11 @@ def _get_player_data(consumer: 'GlobalConsumer') -> dict:
     """Retrieve player data."""
     return LightProfileSerializer(consumer.profile).data
 
+@database_sync_to_async
+def _get_specific_player_data(profile: Profile) -> dict:
+    """Retrieve player data."""
+    return LightProfileSerializer(profile).data
+
 def _build_base_game_payload(consumer: 'GlobalConsumer' | None = None, game: Game | None = None, current_player: Profile | None = None) -> dict:
     """Helper to build the shared payload data (leaderboard, history, self, uid)."""
     if game is None:

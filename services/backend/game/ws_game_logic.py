@@ -26,6 +26,7 @@ from .ws_game_db_helpers import (
     _check_game_membership,
     _compute_game_stats,
     _compute_round_stats,
+    _delete_aborted_game,
     _get_active_game_for_player,
     _get_game,
     _get_game_data,
@@ -34,13 +35,13 @@ from .ws_game_db_helpers import (
     _get_game_settings_data,
     _get_num_curr_players,
     _get_player_data,
+    _get_specific_player_data,
     _get_track_reveal_data,
     _init_round_stats,
     _remove_player_from_game_stats,
     _set_current_round,
     _setup_game_assets,
     _validate_answer,
-    _delete_aborted_game
 )
 from .ws_game_send_helpers import (
     _send_game_closed,
@@ -350,7 +351,7 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     was_owner, player_left = await _remove_player_from_game_stats(consumer.current_game,
                                                      consumer.profile)
     if was_owner:
-        player_data = await _get_player_data(consumer)
+        player_data = await _get_specific_player_data(consumer.current_game.owned_by)
         await consumer.group_send(consumer.game_group_name, {
             'type': 'game_new_owner',
             'uid': str(consumer.current_game.uid),
