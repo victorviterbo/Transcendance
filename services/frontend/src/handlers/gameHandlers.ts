@@ -187,6 +187,11 @@ export class GameInstance {
 		this.addMessage(player, "leaved");
 		this.updatePlayers();
 	}
+	onNewOwner(data: IWSGameSendEventPlayerManage) {
+		this.host = data.player;
+		this.isHost = data.player.uid == data.self.uid;
+		this.updateAll();
+	}
 	onSettingsChanged(data: IWSGameSendEventSettings) {
 		this.log("Settings changed");
 		this.settings = data.settings;
@@ -574,6 +579,9 @@ export class GameInstance {
 				break;
 			case "player_left":
 				this.onPlayerLeft(event as IWSGameSendEventPlayerManage);
+				break;
+			case "new_owner":
+				this.onNewOwner(event as IWSGameSendEventPlayerManage);
 				break;
 			case "game_info":
 				this.onGameJoined(event as IWSGameSendEventGameInfo);

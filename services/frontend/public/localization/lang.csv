@@ -304,7 +304,7 @@ GAME_SETTINGS_CODE,Room: ,Salle : ,ルーム: ,Raum: ,Title placed before the co
 GAME_SETTINGS_CB,Copy to clipboard,Copier dans le presse-papiers,クリップボードにコピー,In die Zwischenablage kopieren,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,Copié...,コピーしました...,Kopiert...,Button to copy to the clipboard (when pressed)
 GAME_SETTINGS_GAME,Game settings,Paramètres de la partie,ゲーム設定,Spieleinstellungen,Title for game settings
-GAME_SETTINGS_VISIBILITY,Game visibility,Visibilité de la partie,ゲームの公開範囲,Sichtbarkeit des Spiels,Title for game visibility
+GAME_SETTINGS_VISIBILITY,Game code,Code de la partie,ゲームコード,Spielcode,Title for the game code
 GAME_SETTINGS_BACK,Return to lobby,Retour au salon,ロビーに戻る,Zurück zur Lobby,Button to return into the lobby
 GAME_NO_GENRE,No genre selected,Aucun genre sélectionné,ジャンルが選択されていません,Kein Genre ausgewählt,Shown when no genre has been selected
 GAME_PLAYING_TITLE,Playing,En cours,再生中,Wiedergabe,Title of the view when the music is playing
