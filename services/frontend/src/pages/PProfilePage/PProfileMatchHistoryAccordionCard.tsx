@@ -88,7 +88,7 @@ function PProfileMatchHistoryAccordionCard({ entry }: PProfileMatchHistoryAccord
 						</CAvatar>
 						<ListItemText
 							primary={
-								<CUserProfileLink username={player.username}>
+								<CUserProfileLink guest={player.isGuest} username={player.username}>
 									<CText
 										size="sm"
 										sx={{ mb: 0 }}
