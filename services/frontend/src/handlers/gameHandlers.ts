@@ -36,6 +36,7 @@ import type {
 } from "../types/websocket";
 import { MUSIC_TAGS, PAGE_GAME, VOLUME_RATIO } from "../constants";
 import type { IAppNotif } from "../types/events";
+import { debugLog } from "../utils/debug";
 
 export interface IGameInstanceCallbacks {
 	setSessionState: React.Dispatch<React.SetStateAction<TGameSessionState>>;
@@ -774,7 +775,7 @@ export class GameInstance {
 
 	//--------------------- LOGs ---------------------
 	log(MSG: string, ...Styling: string[]) {
-		console.log(
+		debugLog(
 			"[%cGAME%c]: " + MSG,
 			"font-weight: 900; color: #2083d4",
 			"font-weight: 400; color: white",

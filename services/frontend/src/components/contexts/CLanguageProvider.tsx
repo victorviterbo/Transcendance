@@ -19,6 +19,7 @@ import type {
 } from "../../types/localizationTypes";
 import { NUMBER_FORMAT_LOCALES } from "../../constants";
 import GLoading from "../../pages/common/GLoading";
+import { debugLog } from "../../utils/debug";
 
 interface CLanguageContextProps {
 	children: ReactNode;
@@ -79,7 +80,7 @@ function CLanguageProvider({ children }: CLanguageContextProps) {
 				else if (currentLang == "ja") msg = "ローカライズファイルを読み込めませんでした";
 				else if (currentLang == "de")
 					msg = "Die Lokalisierungsdatei konnte nicht geladen werden.";
-				console.log(msg);
+				debugLog(msg);
 				setNotifSent(true);
 			}
 		};

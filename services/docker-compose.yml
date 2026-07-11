@@ -108,6 +108,8 @@ services:
     build:
       context: .
       dockerfile: nginx/Dockerfile
+      args:
+        DEBUG: ${DEBUG}
     ports:
       - "80:80"
       - "443:443"

@@ -6,6 +6,8 @@ COPY frontend/package.json frontend/package-lock.json .
 RUN npm ci
 
 COPY frontend/ .
+ARG DEBUG=False
+ENV DEBUG=$DEBUG
 RUN npm run build
 
 FROM continuumio/miniconda3 AS build-backend-static

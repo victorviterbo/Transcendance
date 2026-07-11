@@ -1,3 +1,4 @@
+import { debugLog } from "../../../utils/debug";
 import { http, HttpResponse } from "msw";
 import { API_SOCIAL_FRIENDS_MESSAGE_FEED } from "../../../constants";
 import type {
@@ -22,7 +23,7 @@ export const mockSetOpenedWith = (
 	was: IFriendInfo | undefined | null,
 ) => {
 	if (target)
-		console.log(
+		debugLog(
 			"Chat %copened%c with: %c" + target.username + "%c",
 			"color: #36a11b",
 			"color: #fff",
@@ -30,7 +31,7 @@ export const mockSetOpenedWith = (
 			"color: #fff",
 		);
 	else if (was)
-		console.log(
+		debugLog(
 			"Chat %cclosed%c with: %c" + was.username + "%c",
 			"color: #df9a1c",
 			"color: #fff",

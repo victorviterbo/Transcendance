@@ -1,6 +1,8 @@
+import { debugLog } from "../utils/debug";
+
 const mockStart = async () => {
 	if (import.meta.env.MODE !== "mock") {
-		console.log("MSW disabled");
+		debugLog("MSW disabled");
 		return;
 	}
 

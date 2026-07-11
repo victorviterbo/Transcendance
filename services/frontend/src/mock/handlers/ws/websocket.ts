@@ -1,3 +1,4 @@
+import { debugLog } from "../../../utils/debug";
 import { ws } from "msw";
 import { WS_ADDRESS_WMS } from "../../../constants";
 import type { IWSGameRCVEvent, TWSRcv, TWSSend } from "../../../types/websocket";
@@ -23,7 +24,7 @@ export const socketConnHandler = socket.addEventListener("connection", ({ client
 	let counter = 0;
 
 	//====================== EXEC ======================
-	console.log("[MOCK] Client connected: " + client.id);
+	debugLog("[MOCK] Client connected: " + client.id);
 
 	if (closeTest && closeCount < 3) {
 		client.close();

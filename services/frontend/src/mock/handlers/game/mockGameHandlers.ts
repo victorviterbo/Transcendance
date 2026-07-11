@@ -1,3 +1,4 @@
+import { debugLog } from "../../../utils/debug";
 import type {
 	IGameChatMsg,
 	IGamePlayer,
@@ -641,7 +642,7 @@ export class MockGame {
 
 	//--------------------- LOGs ---------------------
 	log(MSG: string, ...Styling: string[]) {
-		console.log(
+		debugLog(
 			"[%cMOCK-GAME%c]: " + MSG,
 			"font-weight: 900; color: #ca15e2",
 			"font-weight: 400; color: white",

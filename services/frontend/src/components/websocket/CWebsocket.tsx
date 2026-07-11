@@ -20,6 +20,7 @@ import { useAuth } from "../auth/CAuthProvider";
 import GLoading from "../../pages/common/GLoading";
 import GLost from "../../pages/common/GLost";
 import { useNotif } from "../contexts/CAppNotifContext";
+import { debugError, debugLog } from "../../utils/debug";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -68,7 +69,7 @@ function wsGetModule(
 			sendMessage: sendMessage
 				? sendMessage
 				: () => {
-						console.error("Invalid send message function");
+						debugError("Invalid send message function");
 					},
 			onUpdate: undefined,
 		});
@@ -135,7 +136,7 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 
 	useEffect(() => {
 		wsStatus = readyState;
-		console.log(
+		debugLog(
 			"WS Status changed: %c" + wsConnectionStatus[wsStatus],
 			"font-weight: 900; color: " + wsConnectionStatusColor[wsStatus],
 		);
