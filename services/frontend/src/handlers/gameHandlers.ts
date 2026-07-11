@@ -369,6 +369,8 @@ export class GameInstance {
 		this.callbacks.setRedirect("/game/" + data.newGame);
 	}
 	onGameClosed() {
+		this.stopAll();
+		this.callbacks.setSessionState("ended");
 		this.callbacks.push({
 			severity: "info",
 			message: "GAME_ENDED",
