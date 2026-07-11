@@ -69,7 +69,7 @@ function PSocial({ onTabChanged, activeTab, open }: PSocialProps) {
 								mr: { xs: "5px", tn: "10px" },
 							}}
 							src={messaging.avatar}
-							alt={messaging.username + "'s picture"}
+							alt={messaging.username}
 						></CAvatar>
 						<CUserProfileLink username={messaging.username}>
 							<CText

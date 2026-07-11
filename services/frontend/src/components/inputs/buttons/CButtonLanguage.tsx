@@ -3,13 +3,12 @@ import TranslateIcon from "@mui/icons-material/Translate";
 import CIconButton from "./CIconButton";
 import { appPositions } from "../../../styles/theme";
 
-interface CButtonLanguageProps extends Omit<IconButtonProps, "children" | "aria-label"> {}
+interface CButtonLanguageProps extends Omit<IconButtonProps, "children"> {}
 
 function CButtonLanguage({ sx, ...other }: CButtonLanguageProps) {
 	return (
 		<CIconButton
 			{...other}
-			aria-label="Language selection"
 			sx={[
 				{
 					height: appPositions.sizes.buttons.nav,

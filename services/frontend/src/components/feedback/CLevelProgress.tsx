@@ -84,10 +84,6 @@ function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProg
 
 				<Box
 					role="progressbar"
-					aria-label={`${displayTitle} level progress`}
-					aria-valuemin={0}
-					aria-valuemax={100}
-					aria-valuenow={safeProgressPercent}
 					sx={{
 						width: "100%",
 						position: "relative",

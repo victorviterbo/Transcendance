@@ -81,9 +81,6 @@ function PProfileMatchHistoryAccordionCard({ entry }: PProfileMatchHistoryAccord
 					<Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: "100%" }}>
 						<CAvatar
 							profileUsername={player.username}
-							profileAriaLabel={ttrf("HISTORY_OPEN_PROFILE", {
-								username: player.username,
-							})}
 							src={resolveProfileImage(player.avatar)}
 							sx={{ width: 36, height: 36 }}
 						>
@@ -126,7 +123,6 @@ function PProfileMatchHistoryAccordionCard({ entry }: PProfileMatchHistoryAccord
 			<AccordionSummary
 				expandIcon={<ExpandMoreIcon />}
 				sx={style.summary}
-				aria-controls={`match-history-${entry.playedAt}`}
 				id={`match-history-${entry.playedAt}-header`}
 			>
 				<Stack spacing={1.5} sx={style.summaryContent}>

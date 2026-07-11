@@ -76,7 +76,7 @@ function PFriendNode({ user, type, hidden, onStateChanged, onMessaging }: PFrien
 						profileUsername={user.username}
 						sx={style.avatar}
 						src={user.avatar}
-						alt={user.username + "'s picture"}
+						alt={user.username}
 					></CAvatar>
 					<Stack sx={style.text}>
 						{!error ? (

@@ -40,7 +40,6 @@ function CAccordion({
 					...(Array.isArray(summarySX) ? summarySX : summarySX ? [summarySX] : []),
 				]}
 				expandIcon={<ExpandMoreIcon />}
-				aria-controls="panel1-content"
 				id="panel1-header"
 			>
 				<CText size={fontSize}>{title}</CText>

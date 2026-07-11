@@ -105,11 +105,7 @@ function PProfileAvatarEditor({ username, avatar, onUploaded }: ProfileAvatarEdi
 				<Avatar src={currentAvatarSrc} sx={style.avatar}>
 					{usernameInitial}
 				</Avatar>
-				<IconButton
-					aria-label="Change profile picture"
-					onClick={() => setOpen(true)}
-					sx={style.button}
-				>
+				<IconButton onClick={() => setOpen(true)} sx={style.button}>
 					<PhotoCameraIcon fontSize="small" />
 				</IconButton>
 			</Box>

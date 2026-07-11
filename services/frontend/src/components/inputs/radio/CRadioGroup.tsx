@@ -21,7 +21,6 @@ function CRadioGroup({ label, options, defaultValue, onChange }: CRadioGroupProp
 		<FormControl>
 			{label && <FormLabel id={localID}>{label}</FormLabel>}
 			<RadioGroup
-				aria-labelledby={localID}
 				value={defaultValue ? defaultValue : null}
 				onChange={(event: React.ChangeEvent<HTMLInputElement>, value: string) => {
 					if (onChange) onChange(event, value);
