@@ -38,6 +38,7 @@ class HistoryPlayerSerializer(serializers.Serializer):
     username = serializers.CharField()
     avatar = serializers.CharField()
     ranking = serializers.IntegerField()
+    isGuest = serializers.BooleanField()
 
 
 class HistoryRoundSerializer(serializers.Serializer):
