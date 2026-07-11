@@ -300,7 +300,6 @@ GAME_SETTINGS_NOTAG,No tag,Aucun tag,タグなし,Kein Tag,Used when no tag has 
 GAME_SETTINGS_SCORE_OPTION,Score options: ,Options de score : ,スコア設定: ,Punkteoptionen: ,Scoring system option title
 GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,Vitesse,速度,Geschwindigkeit,Scoring system option (Speed: option)
 GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,Normal,ノーマル,Normal,Scoring system option (Speed: Normal)
-GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armageddon,Armageddon,アルマゲドン,Armageddon,Scoring system option (Speed: Armagedon)
 GAME_SETTINGS_CODE,Room: ,Salle : ,ルーム: ,Raum: ,Title placed before the code
 GAME_SETTINGS_CB,Copy to clipboard,Copier dans le presse-papiers,クリップボードにコピー,In die Zwischenablage kopieren,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,Copié...,コピーしました...,Kopiert...,Button to copy to the clipboard (when pressed)
