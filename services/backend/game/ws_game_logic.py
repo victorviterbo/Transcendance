@@ -13,7 +13,7 @@ from chat.ws_game_chat import (
     create_gamechat_room,
     send_join_chatroom,
 )
-from project.defaults import answer_buffer_time, countdown_time, max_players
+from project.defaults import answer_buffer_time, countdown_time, finished_timeout, max_players
 from rest_framework import serializers
 
 from game.models import Game
@@ -160,7 +160,7 @@ async def run_game_loop(consumer: 'GlobalConsumer', content: dict) -> None:
     except asyncio.CancelledError:
         pass
     finally:
-        await asyncio.sleep(30)
+        await asyncio.sleep(finished_timeout * 60)
         await _send_game_closed(consumer, game_uid, game_group_name)
         await _game_cleanup(game)
         ACTIVE_GAMES.pop(game_uid, None)

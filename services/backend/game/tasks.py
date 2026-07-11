@@ -8,7 +8,7 @@ from channels.layers import get_channel_layer
 from django.db.models import Q
 from django.utils import timezone
 from game.models import Game
-from project.defaults import lobby_timeout, finished_timeout
+from project.defaults import lobby_timeout, stale_timeout
 
 
 def _delete_game_with_runtime_data(game: Game) -> None:
@@ -25,7 +25,7 @@ def reap_foresaken_waiting_games() -> str:
     """Clean abandoned lobbies and signal stale active games."""
     now = timezone.now()
     cutoff_lobby = now - timedelta(minutes=lobby_timeout)
-    cutoff_active = now - timedelta(minutes=finished_timeout)
+    cutoff_active = now - timedelta(minutes=stale_timeout)
 
     stale_waiting = list(Game.objects.filter(
         status='waiting',

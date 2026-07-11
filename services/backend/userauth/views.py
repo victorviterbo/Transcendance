@@ -196,7 +196,6 @@ class RefreshTokenView(TokenRefreshView):
         try:
             serializer.is_valid(raise_exception=True)
             validated_token = JWTAuthentication().get_validated_token(serializer.validated_data['access'])
-            print(validated_token)  # Debugging line
             if validated_token is None or JWTAuthentication().get_user(validated_token) is None:
                 return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)
