@@ -443,6 +443,7 @@ def _get_active_game_for_player(player: Profile) -> Game | None:
     )
     return stats.game if stats else None
 
+@database_sync_to_async
 def _delete_aborted_game(game: Game) -> None:
     """Delete a game that was aborted (no players left)."""
     game.delete()

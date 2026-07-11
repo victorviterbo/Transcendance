@@ -373,7 +373,6 @@ async def _leave_game(consumer: 'GlobalConsumer', content: dict) -> None:
     consumer.game_group_name = None
     return
 
-
 async def _game_restart(consumer: 'GlobalConsumer', content: dict) -> None:
     """Accept restart requests only once the game has finished."""
     if not getattr(consumer, 'current_game', None):
