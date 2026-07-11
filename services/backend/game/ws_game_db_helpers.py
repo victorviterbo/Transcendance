@@ -49,7 +49,8 @@ def _get_game(consumer: Any,
         return None
     if req_membership:
         return (Game.objects.filter(uid=game_uid,
-                            players=consumer.profile)
+                            players=consumer.profile,
+                            player_stats__is_active=True)
                             .select_related('playlist', 'owned_by')
                             .prefetch_related('playlist__tracks', 'room')
                             .first())
