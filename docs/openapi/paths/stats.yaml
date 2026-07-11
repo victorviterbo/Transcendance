@@ -117,6 +117,7 @@ history:
                         - username: "jeanmichelblindtest"
                           avatar: "default_pic"
                           ranking: 5
+                          isGuest: false
                       rounds:
                         - trackName: "The Chain"
                           trackArtist: "Fleetwood Mac"

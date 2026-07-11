@@ -19,6 +19,7 @@ GameDetail:
         type: string
         enum: [TAG_POP, TAG_RAP, TAG_ROCK, TAG_ELECTRO, TAG_FRENCH_VARIETY, TAG_RNB]
     players:
+      description: Active players currently present in the room. Inactive or disconnected players are omitted.
       type: array
       items: { $ref: "#/GameProfile" }
 

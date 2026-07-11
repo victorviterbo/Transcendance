@@ -254,7 +254,8 @@ HistoryPlayer:
     username: { type: string }
     avatar: { type: string, description: Avatar URL or asset path. }
     ranking: { type: integer }
-  required: [username, avatar, ranking]
+    isGuest: { type: boolean, description: Whether this player was a guest profile. }
+  required: [username, avatar, ranking, isGuest]
 
 HistoryRound:
   type: object

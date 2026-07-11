@@ -6,7 +6,8 @@ info:
   description: |
     Realtime messages exchanged through the global WebSocket connection.
     This document covers the implemented friend chat, friend request,
-    notification, and game lifecycle payloads.
+    notification, and game lifecycle payloads. The client reconnects after
+    ordinary connection loss and after browser history/BFCache navigation.
 defaultContentType: application/json
 channels:
   globalSocket:
@@ -604,7 +605,7 @@ components:
     GameAnswerValidation:
       name: game.answer_validation
       title: game - Answer validation
-      summary: Direct private response to the player who submitted an answer.
+      summary: Direct private response to the player who submitted an answer. A single submission may validate the title and artist together.
       payload:
         $ref: "#/components/schemas/GameAnswerValidationPayload"
       examples:
@@ -1390,7 +1391,7 @@ components:
         owner:
           $ref: "#/components/schemas/PlayerInfo"
         status:
-          enum: [waiting, playing_round, playing_break, finished]
+          enum: [waiting, playing_round, playing_break, finished, aborted]
         round:
           type: integer
           minimum: 0
@@ -1992,10 +1993,18 @@ components:
       properties:
         target: { const: game }
         event: { const: error }
-        uid: { type: string, format: uuid }
+        uid:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+          description: Game UID when the error is associated with a game; null for context-free errors.
         self: { $ref: "#/components/schemas/PlayerInfo" }
         message: { type: string }
-        currentGameUid: { type: string, format: uuid }
+        currentGameUid:
+          oneOf:
+            - { type: string, format: uuid }
+            - { type: "null" }
+          description: Active game UID for ALREADY_IN_GAME errors; otherwise null.
         critical: { type: boolean }
         error:
           type: object
