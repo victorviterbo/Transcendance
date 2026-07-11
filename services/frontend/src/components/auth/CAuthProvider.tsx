@@ -73,10 +73,18 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 		}
 	}, []);
 
-	useEffect(() => {
-		setAuthFailureHandler(() => setAuth(null));
-		return () => setAuthFailureHandler(null);
+	const handleAuthFailure = useCallback(() => {
+		setAuth(null);
+		channelRef.current?.postMessage({
+			type: AUTH_CHANNEL_LOGOUT,
+		} satisfies AuthChannelLogoutMessage);
+		void api.post(API_AUTH_LOGOUT).catch(() => undefined);
 	}, [setAuth]);
+
+	useEffect(() => {
+		setAuthFailureHandler(handleAuthFailure);
+		return () => setAuthFailureHandler(null);
+	}, [handleAuthFailure]);
 
 	const login = useCallback(
 		(token: string, user: IAuthUser) => {
@@ -93,12 +101,12 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 	const refresh = useCallback(async () => {
 		const refreshed = await refreshAccessToken();
 		if (!refreshed?.access || !refreshed.username) {
-			setAuth(null);
+			handleAuthFailure();
 			return;
 		}
 
 		login(refreshed.access, { username: refreshed.username });
-	}, [login, setAuth]);
+	}, [handleAuthFailure, login]);
 
 	const logout = async () => {
 		try {

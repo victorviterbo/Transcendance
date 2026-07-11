@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as coreValidationError
@@ -10,14 +11,41 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from userprofile.models import Profile
 
 from .models import SiteUser
 from .serializers import LoginSerializer, RegisterSerializer
+
+
+REFRESH_COOKIE_PATH = '/api/auth/'
+REFRESH_COOKIE_MAX_AGE = int(
+    settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
+)
+
+
+def set_refresh_cookie(response: Response, token: str) -> None:
+    """Store the refresh token with the same scope and lifetime everywhere."""
+    response.set_cookie(
+        key='refresh-token',
+        value=token,
+        max_age=REFRESH_COOKIE_MAX_AGE,
+        httponly=True,
+        secure=True,
+        samesite='Lax',
+        path=REFRESH_COOKIE_PATH,
+    )
+
+
+def delete_refresh_cookie(response: Response) -> None:
+    """Delete the refresh cookie using the path used when it was created."""
+    response.delete_cookie(
+        'refresh-token',
+        samesite='Lax',
+        path=REFRESH_COOKIE_PATH,
+    )
 
 
 class RegisterView(APIView):
@@ -52,12 +80,7 @@ class RegisterView(APIView):
                 response = Response({'username':  serializer.instance.profile.username,
                                      'access': str(token.access_token)},
                                      status=status.HTTP_201_CREATED)
-                response.set_cookie(
-                    key='refresh-token',
-                    value=str(token),
-                    httponly=True, secure=True, samesite='Lax',
-                    path='/api/auth/'
-                )
+                set_refresh_cookie(response, str(token))
                 request.session.pop('guest_profile_id', None)
                 request.session.modified = True
                 return response
@@ -116,12 +139,7 @@ class LoginView(APIView):
                 response = Response({'username': user.profile.username,
                                      'access': str(token.access_token)},
                                     status=status.HTTP_200_OK)
-                response.set_cookie(
-                    key='refresh-token',
-                    value=str(token),
-                    httponly=True, secure=True, samesite='Lax',
-                    path='/api/auth/'
-                )
+                set_refresh_cookie(response, str(token))
                 guest_id = request.session.get('guest_profile_id')
                 if guest_id:
                     profile = Profile.objects.filter(id=guest_id, guest=True)
@@ -150,16 +168,11 @@ class LogoutView(APIView):
             try:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
-            except Exception:
-                return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
-                                status=status.HTTP_401_UNAUTHORIZED)
+            except (InvalidToken, TokenError, KeyError):
+                pass
         logout(request) #YiShan added check later
         response = Response(status=status.HTTP_204_NO_CONTENT)
-        response.delete_cookie(
-            'refresh-token',
-            samesite='Lax',
-            path='/api/auth/'
-        )
+        delete_refresh_cookie(response)
         response.delete_cookie(
             'sessionid',
             samesite='Lax',
@@ -178,35 +191,29 @@ class RefreshTokenView(TokenRefreshView):
             return Response({'error': {'cookie': 'MISSING_FIELD'}},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        serializer = self.get_serializer(data={'refresh': refresh_token})
         try:
-            serializer.is_valid(raise_exception=True)
-            validated_token = JWTAuthentication().get_validated_token(serializer.validated_data['access'])
-            print(validated_token)  # Debugging line
-            if validated_token is None or JWTAuthentication().get_user(validated_token) is None:
-                return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        except (InvalidToken, TokenError, Exception, serializers.ValidationError):
-            return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        response_data = serializer.validated_data.copy()
-        new_refresh = response_data.pop('refresh', None)
-        try:
-            token = RefreshToken(new_refresh or refresh_token)
+            token = RefreshToken(refresh_token)
             user = SiteUser.objects.get(id=token['user_id'])
-            response_data['username'] = user.profile.username
-        except (KeyError, SiteUser.DoesNotExist, TokenError):
+            username = user.profile.username
+        except (InvalidToken, TokenError, KeyError, SiteUser.DoesNotExist,
+                Profile.DoesNotExist):
             return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
                             status=status.HTTP_401_UNAUTHORIZED)
 
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except (InvalidToken, TokenError, serializers.ValidationError):
+            return Response({'error': {'cookie': 'TOKEN_NOT_VALID'}},
+                            status=status.HTTP_401_UNAUTHORIZED)
+
+        response_data = serializer.validated_data.copy()
+        new_refresh = response_data.pop('refresh', None)
+        response_data['username'] = username
+
         response = Response(response_data, status=status.HTTP_200_OK)
         if new_refresh:
-            response.set_cookie(
-                key='refresh-token',
-                value=new_refresh,
-                httponly=True, secure=True, samesite='Lax',
-                path='/api/auth/'
-            )
+            set_refresh_cookie(response, new_refresh)
         return response
 
 class UpdatePasswordView(APIView):
@@ -239,12 +246,7 @@ class UpdatePasswordView(APIView):
                 'access': str(token.access_token),
                 'username': self.request.user.profile.username,
             }, status=status.HTTP_200_OK)
-            response.set_cookie(
-                key='refresh-token',
-                value=str(token),
-                httponly=True, secure=True, samesite='Lax',
-                path='/api/auth/'
-            )
+            set_refresh_cookie(response, str(token))
             return response
         except coreValidationError:
             return Response({'error': {'password': 'INVALID_PASSWORD'}},

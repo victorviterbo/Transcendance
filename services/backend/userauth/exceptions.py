@@ -15,7 +15,7 @@ def custom_auth_exception_handler(exc: Exception, context: dict) -> Response | N
         if exc_code == "AUTHENTICATION_OUTDATED":
             if request:
                 logout(request)
-            response.delete_cookie('refresh-token')
+            response.delete_cookie('refresh-token', path='/api/auth/', samesite='Lax')
             response.delete_cookie('sessionid')
             print("User logged out due to outdated authentication.")  # Debugging line
     return response

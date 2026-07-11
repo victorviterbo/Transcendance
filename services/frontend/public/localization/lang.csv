@@ -10,6 +10,7 @@ WELCOME_BACK_USER,"Welcome back, {username}!","Content de te revoir, {username} 
 WELCOME_ACCOUNT_READY_USER,"Welcome, {username}! Your account is ready.","Bienvenue, {username} ! Ton compte est prêt.",ようこそ、{username} さん！アカウントの準備ができました。,"Willkommen, {username}! Dein Konto ist bereit.",Shown after successful registration
 BACK_TO_HOME,Back to home,Retour à l'accueil,ホームに戻る,Zurück zur Startseite,Button label to return to the home page
 USERNAME,Username,Nom d'utilisateur,ユーザー名,Benutzername,As it appears in form fields
+USERNAME_TAKEN,
 NEW_USERNAME,New Username,Nouveau nom d'utilisateur,新しいユーザー名,Neuer Benutzername,As it appears in form fields
 EMAIL,Email,Adresse e-mail,メールアドレス,E-Mail,As it appears in form fields
 NEW_EMAIL,New Email,Nouvelle adresse e-mail,新しいメールアドレス,Neue E-Mail-Adresse,As it appears in form fields
