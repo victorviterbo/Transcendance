@@ -58,6 +58,7 @@ function PFriendChatNode({ message }: PFriendChatNodeProps) {
 						family={appTexts.text.secondaryFamily}
 						size="2xs"
 						fontWeight={600}
+						noTr={true}
 					>
 						{currentDate}
 					</CText>

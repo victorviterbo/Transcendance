@@ -5,10 +5,10 @@ import { useLang } from "../contexts/CLanguageProvider";
 interface CLevelProgressProps {
 	level: number;
 	progressPercent: number;
-	title?: string;
+	title: string;
 }
 
-function CLevelProgress({ level, progressPercent, title = "Rookie" }: CLevelProgressProps) {
+function CLevelProgress({ level, progressPercent, title }: CLevelProgressProps) {
 	const safeLevel = Math.max(0, Math.floor(level));
 	const safeProgressPercent = Math.min(100, Math.max(0, Math.round(progressPercent)));
 	const displayTitle = title.trim();
