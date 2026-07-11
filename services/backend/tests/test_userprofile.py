@@ -47,7 +47,7 @@ class ProfileTests(TestBaseHelpers, TestImageHelpers):
         """Test success and failure of profile access operation."""
         for query in ['?q=user2', '?q=user1', '?q=an_anonymous_user', '?q=not_a_user', '?q=', '']:
             response = self.client.get(urls['profile'] + query)
-            if query in ['?q=user2', '?q=user1', '?q=an_anonymous_user']:
+            if query in ['?q=user2', '?q=user1']:
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertStartsWith(response.data['avatar'],
                                       '/static/default_avatars/default_avatar_')
@@ -59,7 +59,10 @@ class ProfileTests(TestBaseHelpers, TestImageHelpers):
                 self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 self.assertIn('error', response.data)
                 self.assertIn('query', response.data['error'])
-                if query == '':
+                if query == '?q=an_anonymous_user':
+                    self.assertEqual('USER_NOT_FOUND',
+                                     response.data['error']['query'])
+                elif query == '':
                     self.assertEqual('MISSING_FIELD',
                                      response.data['error']['query'])
                 elif query in ['?q=', '?q=not_a_user']:
@@ -194,10 +197,12 @@ class ProfileTests(TestBaseHelpers, TestImageHelpers):
         self.assertIn('sessionid', self.client.cookies)
         response = self.client.get(urls['profile_search_url'] + "?q=a_brand_new_guest")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([], response.data)
         response = self.client.post(urls['guest_create_url'], data={'username': 'updating_guest'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = self.client.get(urls['profile_search_url'] + "?q=updating_guest")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([], response.data)
 
         new_data = {
             'username': 'with_a_pic',
