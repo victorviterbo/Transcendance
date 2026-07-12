@@ -250,7 +250,7 @@ flowchart TB
         PROFILE["🎭 Profile<br/>Player identity"]:::identity
         FRIENDSHIP["🤝 Friendship<br/>Social relationships"]:::social
 
-        USER -->|"has optional profile"| PROFILE
+        PROFILE -->|"may be attached to a user"| USER
         USER -->|"sends / receives"| FRIENDSHIP
     end
 
