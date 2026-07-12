@@ -472,7 +472,7 @@ Main areas:
 
 **Challenge and resolution:** registered users and anonymous guests need the same profile-facing game interface while having different authentication and lifecycle rules. Victor separated account data from the nullable-user `Profile`, integrated profile resolution into HTTP/WebSocket handling, and used migrations and lifecycle tests to protect the model transitions.
 
-### fmixtur / Fabien Mixtur
+### fmixtur / Fabien Rose
 
 Fabien worked mainly on the music data module and the backend side of the game: game creation, game settings, answer validation, scoring, WebSocket game events, and game lifecycle behavior.
 
