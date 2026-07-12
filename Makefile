@@ -135,9 +135,5 @@ prepare-playlists:	# Migrate and sync playlist data without demo user/game seedi
 	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --entrypoint sh backend -c '$(CONDA_MANAGE_COMMAND) migrate && $(CONDA_MANAGE_COMMAND) seed_playlists && $(CONDA_MANAGE_COMMAND) sync_playlists'
 	echo "$(GREEN)✅ Playlist data prepared$(RESET)"
 
-backend-test:		# Run backend unit tests
-	echo "$(YELLOW)▶️  Running backend tests...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --entrypoint conda backend run --no-capture-output -n backend python /app/manage.py test tests.test_userprofile.ProfileTests.test_profile_create_update_delete
-
-.SILENT:	all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre delete-migrations prepare-db prepare-playlists fresh run backend-test
-.PHONY:		all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre delete-migrations prepare-db prepare-playlists fresh run backend-test
+.SILENT:	all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre delete-migrations prepare-db prepare-playlists fresh run
+.PHONY:		all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre delete-migrations prepare-db prepare-playlists fresh run
