@@ -6,14 +6,14 @@ export type TNavItem =
 	| {
 			kind: "action";
 			icon: ReactNode;
-			aria: string;
+			name: string;
 			onClick: (event?: MouseEvent<HTMLElement>) => void;
 			disabled?: boolean;
 	  }
 	| {
 			kind: "toggle";
 			icon: ReactNode;
-			aria: string;
+			name: string;
 			onClick: (event?: MouseEvent<HTMLElement>) => void;
 			disabled?: boolean;
 			active: boolean;

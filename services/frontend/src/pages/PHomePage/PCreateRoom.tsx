@@ -15,6 +15,9 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import PublicIcon from "@mui/icons-material/Public";
 import { useLang } from "../../components/contexts/CLanguageProvider";
 import { isKeyboardSubmit } from "../../utils/keyboard";
+import { useAuth } from "../../components/auth/CAuthProvider";
+
+const GAME_NAME_MAX_LENGTH = 40;
 
 function PCreateRoom() {
 	const [name, setName] = useState("");
@@ -22,6 +25,7 @@ function PCreateRoom() {
 	const [isCreating, setIsCreating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const navigate = useNavigate();
+	const { status } = useAuth();
 	const { ttr } = useLang();
 
 	const handleCreateRoom = async () => {
@@ -48,7 +52,11 @@ function PCreateRoom() {
 					sx={{ m: 0 }}
 					label={ttr("GAME_NAME")}
 					value={name}
-					onChange={(event) => setName(event.target.value)}
+					onChange={(event) => {
+						if (event.target.value.trim().length <= GAME_NAME_MAX_LENGTH) {
+							setName(event.target.value);
+						}
+					}}
 					onKeyUp={(event) => {
 						if (isKeyboardSubmit(event)) handleCreateRoom();
 					}}
@@ -89,11 +97,15 @@ function PCreateRoom() {
 								label: "PRIVATE",
 								icon: <LockIcon fontSize="small" />,
 							},
-							{
-								value: "friends",
-								label: "FRIENDS",
-								icon: <GroupsIcon fontSize="small" />,
-							},
+							...(status == "authed"
+								? [
+										{
+											value: "friends",
+											label: "FRIENDS",
+											icon: <GroupsIcon fontSize="small" />,
+										},
+									]
+								: []),
 							{
 								value: "public",
 								label: "PUBLIC",

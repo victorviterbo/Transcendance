@@ -10,7 +10,14 @@ export interface CDrawerProps extends GCompProps, DrawerProps {
 }
 
 function CDrawer(props: CDrawerProps) {
-	const { sx, over, ...other } = props;
+	const { sx, over, onClose, ...other } = props;
+
+	const handleClose: NonNullable<DrawerProps["onClose"]> = (event, reason) => {
+		if (document.activeElement instanceof HTMLElement) {
+			document.activeElement.blur();
+		}
+		onClose?.(event, reason);
+	};
 
 	return (
 		<Drawer
@@ -18,6 +25,7 @@ function CDrawer(props: CDrawerProps) {
 			variant={over ? "temporary" : "persistent"}
 			anchor="right"
 			{...other}
+			onClose={handleClose}
 			ModalProps={{ keepMounted: true }}
 		></Drawer>
 	);

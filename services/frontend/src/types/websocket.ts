@@ -121,6 +121,7 @@ export type IWSGameEventRcvList =
 export type IWSGameEventSndList =
 	| "player_joined"
 	| "player_left"
+	| "new_owner"
 	| "game_info"
 	| "settings_updated"
 	| "game_started"
@@ -171,7 +172,7 @@ export interface IWSGameSendEvent extends IWSGameEvent {
 }
 
 export interface IWSGameSendEventPlayerManage extends IWSGameSendEvent {
-	event: Extract<IWSGameEventSndList, "player_joined" | "player_left">;
+	event: Extract<IWSGameEventSndList, "player_joined" | "player_left" | "new_owner">;
 	player: IGameUser;
 }
 

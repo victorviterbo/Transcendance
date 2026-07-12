@@ -43,7 +43,7 @@ function CContactCard({ name, image, email, roles, className, sx, ...other }: CC
 					<Box
 						component="img"
 						src={image}
-						alt={`${name} portrait`}
+						alt={`${name}`}
 						sx={{
 							display: "block",
 							width: "100%",

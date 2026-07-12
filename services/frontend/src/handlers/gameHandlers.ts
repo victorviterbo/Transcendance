@@ -34,8 +34,9 @@ import type {
 	IWSGameSendEventSettings,
 	TWSRoundInfo,
 } from "../types/websocket";
-import { MUSIC_TAGS, PAGE_GAME } from "../constants";
+import { MUSIC_TAGS, PAGE_GAME, VOLUME_RATIO } from "../constants";
 import type { IAppNotif } from "../types/events";
+import { debugLog } from "../utils/debug";
 
 export interface IGameInstanceCallbacks {
 	setSessionState: React.Dispatch<React.SetStateAction<TGameSessionState>>;
@@ -74,13 +75,15 @@ export class GameInstance {
 		const mutedStorage: string | null = localStorage.getItem("default_mute");
 		if (mutedStorage) this.muted = mutedStorage == "true";
 
-		navigator.mediaSession.setActionHandler("play", function () {});
-		navigator.mediaSession.setActionHandler("pause", function () {});
-		navigator.mediaSession.setActionHandler("seekbackward", function () {});
-		navigator.mediaSession.setActionHandler("seekforward", function () {});
-		navigator.mediaSession.setActionHandler("previoustrack", function () {});
-		navigator.mediaSession.setActionHandler("nexttrack", function () {});
-		navigator.mediaSession.setActionHandler("stop", function () {});
+		if (navigator.mediaSession) {
+			navigator.mediaSession.setActionHandler("play", function () {});
+			navigator.mediaSession.setActionHandler("pause", function () {});
+			navigator.mediaSession.setActionHandler("seekbackward", function () {});
+			navigator.mediaSession.setActionHandler("seekforward", function () {});
+			navigator.mediaSession.setActionHandler("previoustrack", function () {});
+			navigator.mediaSession.setActionHandler("nexttrack", function () {});
+			navigator.mediaSession.setActionHandler("stop", function () {});
+		}
 
 		this.pingAudio();
 	}
@@ -176,6 +179,10 @@ export class GameInstance {
 		}
 	}
 	onPlayerLeft(data: IWSGameSendEventPlayerManage) {
+		if (data.player.uid == data.self.uid) {
+			this.onSelfLeft();
+			return;
+		}
 		const playerIndex: number = this.players.findIndex(
 			(player: IGamePlayer) => player.player.uid == data.player.uid,
 		);
@@ -184,6 +191,11 @@ export class GameInstance {
 		this.log("Player: '" + player.player.username + "' has left");
 		this.addMessage(player, "leaved");
 		this.updatePlayers();
+	}
+	onNewOwner(data: IWSGameSendEventPlayerManage) {
+		this.host = data.player;
+		this.isHost = data.player.uid == data.self.uid;
+		this.updateAll();
 	}
 	onSettingsChanged(data: IWSGameSendEventSettings) {
 		this.log("Settings changed");
@@ -216,14 +228,17 @@ export class GameInstance {
 		this.rounds[this.status.round].phase = "playing";
 		const song: HTMLAudioElement | undefined = this.songs[this.status.round];
 		if (song) {
-			song.volume = this.muted ? 0 : this.volume / 100;
-			song.play()
-				.then(() => {
-					this.updatePlayable(true);
-				})
-				.catch((reason) => {
-					if (reason.name == "NotAllowedError") this.updatePlayable(false);
-				});
+			song.volume = this.getVolume();
+			if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
+			else {
+				song.play()
+					.then(() => {
+						this.updatePlayable(true);
+					})
+					.catch((reason) => {
+						if (reason.name == "NotAllowedError") this.updatePlayable(false);
+					});
+			}
 			this.songPlayed = this.status.round;
 		}
 		this.roundResult = [];
@@ -231,7 +246,7 @@ export class GameInstance {
 		this.updateResults();
 		this.updateStatus();
 		setTimeout(() => {
-			this.focusInput();
+			if (navigator.userActivation.hasBeenActive) this.focusInput();
 		}, 50);
 	}
 	onAnswerValidation(data: IWSGameSendEventRoundAnswer) {
@@ -359,6 +374,21 @@ export class GameInstance {
 		this.callbacks.setRedirect("/game/" + data.newGame);
 	}
 	onGameClosed() {
+		this.stopAll();
+		this.callbacks.setSessionState("ended");
+		this.callbacks.push({
+			severity: "info",
+			message: "GAME_ENDED",
+		});
+		this.callbacks.setRedirect("/");
+	}
+	onSelfLeft() {
+		this.stopAll();
+		this.callbacks.setSessionState("ended");
+		this.callbacks.push({
+			severity: "warning",
+			message: "SELF_LEAVE",
+		});
 		this.callbacks.setRedirect("/");
 	}
 	onError(data: IWSGameSendEventError) {
@@ -372,9 +402,6 @@ export class GameInstance {
 		});
 		if (data.critical) {
 			this.stopAll();
-			this.send({
-				...this.getSendBaseData("player_leave"),
-			} as IWSGameRCVEventLeave);
 			this.callbacks.setSessionState("ended");
 			this.callbacks.setError(data.message);
 		}
@@ -569,6 +596,9 @@ export class GameInstance {
 			case "player_left":
 				this.onPlayerLeft(event as IWSGameSendEventPlayerManage);
 				break;
+			case "new_owner":
+				this.onNewOwner(event as IWSGameSendEventPlayerManage);
+				break;
 			case "game_info":
 				this.onGameJoined(event as IWSGameSendEventGameInfo);
 				break;
@@ -677,11 +707,15 @@ export class GameInstance {
 	}
 
 	//--------------------- Other ---------------------
+	getVolume(): number {
+		return this.muted ? 0 : (this.volume / 100) * VOLUME_RATIO;
+	}
+
 	changeVolume(value: number) {
 		this.volume = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
 			if (!el) return;
-			el.volume = this.muted ? 0 : this.volume / 100;
+			el.volume = this.getVolume();
 		});
 		localStorage.setItem("default_volume", this.volume.toString());
 		this.updateVolume();
@@ -690,7 +724,7 @@ export class GameInstance {
 		this.muted = value;
 		this.songs.forEach((el: HTMLAudioElement | undefined) => {
 			if (!el) return;
-			el.volume = this.muted ? 0 : this.volume / 100;
+			el.volume = this.getVolume();
 		});
 		localStorage.setItem("default_mute", this.muted.toString());
 		this.updateVolume();
@@ -710,20 +744,7 @@ export class GameInstance {
 		}
 	}
 	async pingAudio() {
-		const audioPing = new Audio();
-		const playPromise = audioPing.play();
-		const toPromise = new Promise((resolve) => {
-			setTimeout(resolve, 1000);
-		});
-		await Promise.race([playPromise, toPromise])
-			.then((_) => {
-				audioPing.src = "";
-				audioPing.load();
-				this.updatePlayable(true);
-			})
-			.catch((reason) => {
-				if (reason.name == "NotAllowedError") this.updatePlayable(false);
-			});
+		if (!navigator.userActivation.hasBeenActive) this.updatePlayable(false);
 	}
 
 	//-------------------  Messages ---------------------
@@ -754,7 +775,7 @@ export class GameInstance {
 
 	//--------------------- LOGs ---------------------
 	log(MSG: string, ...Styling: string[]) {
-		console.log(
+		debugLog(
 			"[%cGAME%c]: " + MSG,
 			"font-weight: 900; color: #2083d4",
 			"font-weight: 400; color: white",

@@ -18,7 +18,7 @@ def _default_genres() -> list:
 class Game(models.Model):
     """Define the model for a single game session."""
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=40)
     
     genres = models.JSONField(default=_default_genres, blank=True)
     
@@ -42,6 +42,7 @@ class Game(models.Model):
                                     ('playing_round', 'Game Round in progress'),
                                     ('playing_break', 'Game Break in progress'),
                                     ('finished', 'Game finished'),
+                                    ('aborted', 'Game aborted'),
                                     ],
                                     default='waiting')
     
@@ -88,6 +89,8 @@ class Game(models.Model):
     
     started_at = models.DateTimeField(null=True, blank=True)
 
+    last_activity_at = models.DateTimeField(null=True, blank=True)
+
     uid = models.UUIDField(default=uuid.uuid4,
                         editable=False,
                         unique=True,
@@ -112,3 +115,8 @@ class Game(models.Model):
     class Meta:
         """Define special behaviour of database."""
         ordering = ['-created_at']
+
+    @property
+    def active_players(self) -> list:
+        """Return only active players for this game."""
+        return [stats.player for stats in self.player_stats.filter(is_active=True)]

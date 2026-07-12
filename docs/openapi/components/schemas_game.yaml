@@ -1,96 +1,39 @@
-#GLOBAL
-GameData:
+GameProfile:
   type: object
-  description:  All data about the current game
+  required: [username, avatar, guest, uid]
   properties:
-    id: { type: string, description: "Current game / room id"}
-    uid: { type: string, description: "Current game / room uid"}
-    name: { type: string, description: "Current game / room name"}
-    maxPlayers: { type: integer, description: "Maximum allowed player in that game"}
-    players: 
-      type: array
-      items:
-        $ref: "../openapi.yaml#/components/schemas/Game - GamePlayer"
-    chat:
-      type: array
-      items:
-        $ref: "../openapi.yaml#/components/schemas/Game - GameChat"
-    isHost: {type: boolean, description: "define if current user is host"}
+    username: { type: string }
+    avatar: { type: string, format: uri-reference, nullable: true }
+    guest: { type: boolean }
+    uid: { type: string, format: uuid }
 
-GamePlayer:
+GameDetail:
   type: object
-  description:  Data about one of the player in the game
+  required: [uid, name, genres, players]
   properties:
-    user:
-      $ref: ../openapi.yaml#/components/schemas/ExtUserInfo
-    points: { type: integer, description: "Current player points"}
-    host: {type: boolean, description: "define if target user is host"}
-    colorid: {type: integer, description: "define the session color id of that user", format: "0-9"}
-
-GameChat:
-  type: object
-  description:  Data about a chat message
-  properties:
-    useruid: {type: string}
-    username: {type: string}
-    messageuid: {type: string}
-    type: { type: string, format: "message | joined | leaved | guessed | found"}
-    message: { type: string, description: "message: msg content | guessed: what the user tried to guess"}
-
-GameListEntry:
-  type: object
-  description: Brief game data displayed in the home page room lists.
-  properties:
-    uid:
-      type: string
-      format: uuid
-      description: Game UID used by the frontend route `/game/{uid}`.
-    name:
-      type: string
-      description: Display name of the game room.
+    uid: { type: string, format: uuid }
+    name: { type: string, minLength: 1, maxLength: 40 }
     genres:
       type: array
-      description: Selected music tag localization IDs. Can be empty when the host has not configured the room yet.
       items:
         type: string
         enum: [TAG_POP, TAG_RAP, TAG_ROCK, TAG_ELECTRO, TAG_FRENCH_VARIETY, TAG_RNB]
-    playerCount:
-      type: integer
-      description: Current number of players in the room.
-    playerMax:
-      type: integer
-      description: Maximum allowed number of players in the room.
-  required: [uid, name, genres, playerCount, playerMax]
+    players:
+      description: Active players currently present in the room. Inactive or disconnected players are omitted.
+      type: array
+      items: { $ref: "#/GameProfile" }
 
 GameListResponse:
   type: object
-  description: Home page game list payload.
+  required: [rooms]
   properties:
     rooms:
       type: array
-      items:
-        $ref: "../openapi.yaml#/components/schemas/Game - GameListEntry"
-  required: [rooms]
+      items: { $ref: "#/GameDetail" }
 
 GameCreationRequest:
   type: object
-  description: Payload used to create a game room.
-  properties:
-    name:
-      type: string
-      description: Display name of the new game room.
-    visibility:
-      type: string
-      enum: [public, private, friends]
-      description: Visibility of the new game room.
   required: [name, visibility]
-
-GameCreationResponse:
-  type: object
-  description: Successful game creation payload.
   properties:
-    uid:
-      type: string
-      format: uuid
-      description: Game UID used by the frontend route `/game/{uid}`.
-  required: [uid]
+    name: { type: string, minLength: 1, maxLength: 40 }
+    visibility: { type: string, enum: [public, private, friends] }

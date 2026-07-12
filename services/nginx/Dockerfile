@@ -2,9 +2,12 @@ FROM node:20-alpine AS build-frontend
 
 WORKDIR /app
 
-COPY frontend/ .
+COPY frontend/package.json frontend/package-lock.json .
+RUN npm ci
 
-RUN npm install
+COPY frontend/ .
+ARG DEBUG=False
+ENV DEBUG=$DEBUG
 RUN npm run build
 
 FROM continuumio/miniconda3 AS build-backend-static
@@ -28,6 +31,6 @@ COPY nginx/deploy/snippets/ /etc/nginx/snippets/
 COPY --from=build-frontend /app/dist /usr/share/nginx/html
 COPY --from=build-backend-static /app/static /usr/share/nginx/html/static
 
-EXPOSE 80
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

@@ -21,7 +21,6 @@ function CNavbarLink({ to, sx, label, icon, active = false }: CNavbarLinkProps) 
 		<Box
 			component={Link}
 			to={to}
-			aria-label={ttr(label)}
 			sx={{
 				textDecoration: "none",
 				color: "inherit",

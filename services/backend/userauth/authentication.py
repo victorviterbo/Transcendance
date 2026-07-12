@@ -48,12 +48,5 @@ class CookieJWTAuthentication(JWTAuthentication):
                 request.profile = user.profile
                 return user, validated_token
             raise AuthenticationFailed(detail="User not found.", code="USER_NOT_FOUND")
-        except InvalidToken as e:
-            raise AuthenticationFailed(detail=e.detail) from e
-        except TokenError as e:
-            raise AuthenticationFailed(detail="Token is invalid or corrupted.") from e
         except Exception as e:
-            raise AuthenticationFailed(
-                detail="Authentication failed due to an unexpected error.",
-                code="AUTHENTICATION_ERROR"
-                )
+            return None

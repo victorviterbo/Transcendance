@@ -121,7 +121,6 @@ function PRoomList({ isPublic }: PRoomListProps) {
 									? "public-room-refresh-button"
 									: "friend-room-refresh-button"
 							}
-							aria-label={isPublic ? "Refresh public rooms" : "Refresh friend rooms"}
 							onClick={handleRefresh}
 							disabled={status === "loading" || refreshDisabled}
 						>

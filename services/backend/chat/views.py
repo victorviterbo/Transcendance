@@ -10,43 +10,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .chat_utils import accepted_friendship, create_direct_room, resolve_recipient_user, direct_key
+from .chat_utils import accepted_friendship, resolve_recipient_user, direct_key
 from .models import Message, Room
 from .serializers import FriendChatMessageSerializer
 
 logger = logging.getLogger(__name__)
     
-class DirectMessageView(APIView):
-    """Create a direct message view that friend to friend can private chat with each other."""
-    permission_classes=[IsAuthenticated]
-
-    def post(self, request: Request) -> Response:
-        """Create or fetch a direct-message room shared by the current user and target user."""
-        current_profile = request.profile
-        if current_profile.guest:
-            return Response({'error': {'auth': 'INVALID_CREDENTIALS'}},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        if not request.data.get('user_uid'):
-            return Response({'error': {'user_uid': 'MISSING_FIELD'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        recipient_user = resolve_recipient_user(request.data['user_uid'])
-        if recipient_user is None:
-            return Response({'error': {'user_uid': 'USER_NOT_FOUND'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        recipient_profile = recipient_user.profile
-        if current_profile.uid == recipient_profile.uid:
-            return Response({'error': {'user_uid': 'CANNOT_SELF_DM'}},
-                                status=status.HTTP_400_BAD_REQUEST)
-        if not accepted_friendship(current_profile, recipient_profile):
-            return Response({'error': {'user_uid': 'USER_NOT_FRIEND'}},
-                                status=status.HTTP_403_FORBIDDEN)
-        room, created = create_direct_room(current_profile, recipient_profile)
-        return Response({
-            'room_uid': room.uid,
-            'is_new': created,
-            'is_direct': True,
-        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
-        
 class FriendMessageFeed(APIView):
     """Return direct-message history between the authenticated user and a friend."""
     permission_classes = [IsAuthenticated]

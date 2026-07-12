@@ -7,6 +7,7 @@ import mockStart from "./mock/mock.ts";
 import CLanguageProvider from "./components/contexts/CLanguageProvider.tsx";
 import CAppNotifContext from "./components/contexts/CAppNotifContext.tsx";
 import CWebsocketContext from "./components/websocket/CWebsocket.tsx";
+import { debugError } from "./utils/debug";
 //import { startWS } from "./system/websocket.ts";
 
 const router = createBrowserRouter([
@@ -34,7 +35,7 @@ const startApp = () => {
 
 void mockStart()
 	.catch((error) => {
-		console.error("MSW failed to start:", error);
+		debugError("MSW failed to start:", error);
 	})
 	.finally(() => {
 		startApp();

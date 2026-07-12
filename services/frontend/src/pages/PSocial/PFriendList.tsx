@@ -7,6 +7,7 @@ import CText from "../../components/text/CText";
 import { getErrorNode } from "../../utils/error";
 import type { GPageProps } from "../common/GPageBases";
 import { fetchFriends } from "../../api/social";
+import { SOCIAL_SEARCH_MAX_LENGTH } from "../../constants";
 
 interface PFriendListProps extends GPageProps {
 	onMessaging: (Friend: IFriendInfo) => void;
@@ -84,8 +85,11 @@ function PFriendList({ open, onMessaging }: PFriendListProps) {
 				fontSize={14}
 				borderWidth={"2px"}
 				onChange={(e) => {
-					setFriendsFilter(e.target.value);
+					if (e.target.value.trim().length <= SOCIAL_SEARCH_MAX_LENGTH) {
+						setFriendsFilter(e.target.value);
+					}
 				}}
+				value={friendsFilter}
 				data-testid="PSocialSearchList"
 				sx={{ mt: "5px" }}
 			></CTextField>

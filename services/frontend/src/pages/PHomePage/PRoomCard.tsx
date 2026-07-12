@@ -30,6 +30,10 @@ function PRoomCard({ infos, ...other }: PRoomCardProps) {
 	const navigate = useNavigate();
 	const { ttr } = useLang();
 
+	if (infos.players.length <= 0) {
+		return null;
+	}
+
 	return (
 		<CButton
 			onClick={() => navigate(`/game/${infos.uid}`)}

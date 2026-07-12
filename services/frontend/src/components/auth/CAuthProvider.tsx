@@ -9,10 +9,14 @@ import {
 } from "react";
 import { type IAuthUser, type TAuthStatus } from "../../types/user";
 import type { GCompProps } from "../common/GProps";
-import api, { clearAccessToken, setAccessToken, setAuthFailureHandler } from "../../api";
+import api, {
+	clearAccessToken,
+	refreshAccessToken,
+	setAccessToken,
+	setAuthFailureHandler,
+} from "../../api";
 import {
 	API_AUTH_LOGOUT,
-	API_AUTH_REFRESH,
 	AUTH_CHANNEL,
 	AUTH_CHANNEL_LOGIN,
 	AUTH_CHANNEL_LOGOUT,
@@ -69,10 +73,17 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 		}
 	}, []);
 
-	useEffect(() => {
-		setAuthFailureHandler(() => setAuth(null));
-		return () => setAuthFailureHandler(null);
+	const handleAuthFailure = useCallback(() => {
+		setAuth(null);
+		channelRef.current?.postMessage({
+			type: AUTH_CHANNEL_LOGOUT,
+		} satisfies AuthChannelLogoutMessage);
 	}, [setAuth]);
+
+	useEffect(() => {
+		setAuthFailureHandler(handleAuthFailure);
+		return () => setAuthFailureHandler(null);
+	}, [handleAuthFailure]);
 
 	const login = useCallback(
 		(token: string, user: IAuthUser) => {
@@ -87,22 +98,14 @@ export function CAuthProvider({ children }: CAuthProviderProps) {
 	);
 
 	const refresh = useCallback(async () => {
-		try {
-			const res = await api.post(API_AUTH_REFRESH);
-
-			const access = res.data?.access;
-			const username = typeof res.data?.username === "string" ? res.data.username : "";
-
-			if (!access || !username) {
-				setAuth(null);
-				return;
-			}
-
-			login(access, { username });
-		} catch {
-			setAuth(null);
+		const refreshed = await refreshAccessToken();
+		if (!refreshed?.access || !refreshed.username) {
+			handleAuthFailure();
+			return;
 		}
-	}, [login, setAuth]);
+
+		login(refreshed.access, { username: refreshed.username });
+	}, [handleAuthFailure, login]);
 
 	const logout = async () => {
 		try {

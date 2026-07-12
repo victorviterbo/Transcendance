@@ -82,7 +82,7 @@ profile:
                   exp_points: 420
                   badges: "Curious Cat"
                   created_at: "2025-06-01T12:00:00Z"
-                  is_guest: false
+                  guest: false
                   uid: "53a94d8d-3b4f-4dc8-a2e6-80b71f5b454f"
       "400":
         description: Field validation error.
@@ -147,8 +147,8 @@ search:
                 value:
                   - username: "marc"
                     avatar: "/DB/media/default_avatars/default_avatar_1.png"
-                    is_guest: false
-                    session_key: null
+                    guest: false
+                    uid: "53a94d8d-3b4f-4dc8-a2e6-80b71f5b454f"
               no-match:
                 value: []
       "400":
@@ -202,8 +202,8 @@ guest-create:
                 value:
                   username: "guest42"
                   avatar: "/DB/media/default_avatars/default_avatar_1.png"
-                  is_guest: true
-                  session_key: "x4y6z8example"
+                  guest: true
+                  uid: "53a94d8d-3b4f-4dc8-a2e6-80b71f5b454f"
       "200":
         description: Existing guest profile updated
         content:
@@ -215,8 +215,8 @@ guest-create:
                 value:
                   username: "guest42"
                   avatar: "/DB/media/profile_pics/user_3_profile.png"
-                  is_guest: true
-                  session_key: "x4y6z8example"
+                  guest: true
+                  uid: "53a94d8d-3b4f-4dc8-a2e6-80b71f5b454f"
       "400":
         description: Raw serializer validation errors
         content:

@@ -10,7 +10,6 @@ urlpatterns = [
     path('api/auth/', include('userauth.urls')),
     path('api/social/', include('friends.urls')),
     path('api/profile/', include('userprofile.urls')),
-    path('api/chat/', include('chat.urls')),
     path('api/stats/', include('stats.urls')),
     path('api/game/', include('game.urls')),
 ]

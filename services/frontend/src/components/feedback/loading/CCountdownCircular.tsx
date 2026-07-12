@@ -24,18 +24,14 @@ function CCountdownCircular({
 	const [displayed, setDisplayed] = useState<string>(Math.trunc(timeMS / 1000).toString());
 	const to = useRef<number>(-1);
 
-	const getColor = useCallback((): undefined | string => {
+	const getColor = (): undefined | string => {
 		if (!startColor) return undefined;
 		if (!endColor) return startColor;
 		return colorGetAtPos(startColor, endColor, 1.0 - current / timeMS);
-	}, [startColor, endColor, current, timeMS]);
+	};
 
-	useEffect(() => {
-		if (to.current >= 0) {
-			clearTimeout(to.current);
-			to.current = -1;
-		}
-		function updateCurrent() {
+	const updateCurrent = useCallback(
+		function tick() {
 			let result = timeMS - (Date.now() - startTime);
 			if (result < 0) result = 0;
 			setCurrent(result);
@@ -48,10 +44,18 @@ function CCountdownCircular({
 				).toString(),
 			);
 			if (result == 0) return;
-			to.current = setTimeout(updateCurrent, updateStep);
+			to.current = setTimeout(tick, updateStep);
+		},
+		[setCurrent, setDisplayed, startTime, timeMS, updateStep],
+	);
+
+	useEffect(() => {
+		if (to.current >= 0) {
+			clearTimeout(to.current);
+			to.current = -1;
 		}
 		to.current = setTimeout(updateCurrent, updateStep);
-	}, [to, startTime, timeMS, updateStep, setCurrent, setDisplayed]);
+	}, [to, updateStep, updateCurrent]);
 
 	return (
 		<CCounterCircular

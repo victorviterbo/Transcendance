@@ -1,13 +1,13 @@
 openapi: 3.0.3
 info:
   title: ft_transcendence API
-  version: 0.1.0
-  description: Internal API for the webapp.
+  version: 1.0.0
+  description: HTTP API implemented by the current Django backend.
   contact:
     name: ft_transcendence Team
     email: support@example.com
 servers:
-  - url: https://localhost
+  - url: https://localhost:4443
 
 paths:
   /api/health/:
@@ -24,7 +24,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  status: { type: string }
+                  status: { type: string, enum: [ok] }
+                required: [status]
   /api/auth/register/:
     $ref: ./paths/auth.yaml#/register
   /api/auth/login/:
@@ -114,24 +115,20 @@ components:
       $ref: ./components/schemas_social.yaml#/FriendInfo
     Message:
       $ref: ./components/schemas_social.yaml#/Message
-    Notif - Requests:
+    FriendTargetRequest:
+      $ref: ./components/schemas_social.yaml#/FriendTargetRequest
+    FriendActionResponse:
+      $ref: ./components/schemas_social.yaml#/FriendActionResponse
+    NotifRequests:
       $ref: ./components/schemas_social.yaml#/NotifRequests
-    Notif - Accepted:
+    NotifAccepted:
       $ref: ./components/schemas_social.yaml#/NotifAccepted
-    Game - GameData:
-      $ref: ./components/schemas_game.yaml#/GameData
-    Game - GamePlayer:
-      $ref: ./components/schemas_game.yaml#/GamePlayer
-    Game - GameChat:
-      $ref: ./components/schemas_game.yaml#/GameChat
-    Game - GameListEntry:
-      $ref: ./components/schemas_game.yaml#/GameListEntry
-    Game - GameListResponse:
+    GameDetail:
+      $ref: ./components/schemas_game.yaml#/GameDetail
+    GameListResponse:
       $ref: ./components/schemas_game.yaml#/GameListResponse
     GameCreationRequest:
       $ref: ./components/schemas_game.yaml#/GameCreationRequest
-    GameCreationResponse:
-      $ref: ./components/schemas_game.yaml#/GameCreationResponse
 
   securitySchemes:
     bearerAuth:

@@ -71,7 +71,7 @@ function CNavbar({
 		{
 			kind: "toggle",
 			icon: <NotificationsIcon />,
-			aria: "Notifications",
+			name: "Notifications",
 			onClick: onToggleNotif,
 			active: isNotifActive,
 			notifCount: notifCount,
@@ -79,14 +79,14 @@ function CNavbar({
 		{
 			kind: "toggle",
 			icon: <PeopleIcon />,
-			aria: "Friends",
+			name: "Friends",
 			onClick: onToggleFriend,
 			active: isFriendActive,
 		},
 		{
 			kind: "action",
 			icon: <AccountCircleIcon />,
-			aria: "Profile",
+			name: "Profile",
 			onClick: handleProfileOpen,
 		},
 	];
@@ -101,7 +101,6 @@ function CNavbar({
 					color="inherit"
 					component={Link}
 					to="/"
-					aria-label="Home"
 					sx={{
 						height: 54,
 						width: 54,
@@ -159,8 +158,8 @@ function CNavbar({
 						} else if (item.kind === "toggle") {
 							return (
 								<CNavbarToggle
-									key={`${item.aria}-${idx}`}
-									aria={item.aria}
+									key={`${item.name}-${idx}`}
+									name={item.name}
 									icon={item.icon}
 									onClick={item.onClick}
 									disabled={item.disabled}
@@ -172,8 +171,8 @@ function CNavbar({
 
 						return (
 							<CNavbarIcon
-								key={`${item.aria}-${idx}`}
-								aria={item.aria}
+								key={`${item.name}-${idx}`}
+								name={item.name}
 								icon={item.icon}
 								onClick={item.onClick}
 								disabled={item.disabled}

@@ -1,10 +1,13 @@
 """Describes the settings used for the backend."""
 
+import logging
 import os
 from datetime import timedelta
 from pathlib import Path
-import logging
+
+from celery.schedules import crontab
 from dotenv import load_dotenv
+
 
 def get_env_bool(key: str, *, default: bool = False) -> bool:
     value = os.getenv(key)
@@ -60,7 +63,7 @@ ALLOWED_HOSTS = get_env_list('ALLOWED_HOSTS',
 
 # Cross-Site Request Forgery (CSRF) middleware
 CSRF_TRUSTED_ORIGINS = get_env_list('CSRF_TRUSTED_ORIGINS',
-                                    default=['https://localhost'])
+                                    default=['https://localhost:4443'])
 
 # Security middleware
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -115,19 +118,62 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'EXCEPTION_HANDLER':
+        'userauth.exceptions.custom_auth_exception_handler',
 }
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'CHECK_REVOKE_TOKEN': True,
 }
 
+
+# Database definition
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'transcendence'),
+        'USER': os.getenv('POSTGRES_USER', 'transcendence'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('POSTGRES_HOST', 'database'),
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+    }
+}
+
+
+CELERY_BEAT_SCHEDULE = {
+    'reap-waiting-games-every-minute': {
+        'task': 'game.tasks.reap_foresaken_waiting_games',
+        'schedule': crontab(minute='*'),  # Runs every minute
+    },
+}
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
+# Keep your ASGI setup
+ASGI_APPLICATION = 'project.asgi.application'
+
+# KEEP THIS: Point Channels to your Redis container
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # "redis" matches the service name in your docker-compose.yml
+            "hosts": [("redis", 6379)], 
+        },
+    },
+}
 # Added for Channels: point ASGI application to channels routing(for chatroom)
+"""
 ASGI_APPLICATION = 'project.asgi.application'
 
 # Channels layer config (single-instance runtime, no Redis dependency).
@@ -136,16 +182,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
+"""
 
-# Database definition
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DATA_DIR / 'database' / 'db.sqlite3',
-    }
-}
 
 # Define which data model is used for authentication
 # https://docs.djangoproject.com/en/6.0/topics/auth/customizing/#:~:text=AUTH_USER_MODEL%20setting%20that%20references%20a%20custom%20model%3A

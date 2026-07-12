@@ -8,7 +8,7 @@ _This project has been created as part of the 42 curriculum by hcavet, vviterbo,
 
 Guess Tunes is a full-stack multiplayer web application built for the final project of the 42 Common Core. The application is centered around a real-time music quiz "blindtest" game where players join rooms, listen to track previews, guess the artist and title, compare scores, and build persistent profile progression.
 
-The project combines a React single-page frontend, a Django backend, a SQLite database, WebSocket communication, HTTPS deployment through nginx, user accounts, profiles, friends, chat, notifications, localization, statistics, and game customization settings.
+The project combines a React single-page frontend, a Django backend, a PostgreSQL database, WebSocket communication, HTTPS deployment through nginx, user accounts, profiles, friends, chat, notifications, localization, statistics, and game customization settings.
 
 ### Key Features
 
@@ -22,6 +22,7 @@ The project combines a React single-page frontend, a Django backend, a SQLite da
 - Game settings for genres, number of tracks, round duration, break duration, scoring mode, answer visibility, and fuzzy matching.
 - Six music genres: pop, rock, rap, electro, French pop, and R&B.
 - Persistent game statistics, leaderboards, XP, levels, titles, and match history.
+- Automatic cleanup of abandoned lobbies and stale active games through Celery and Redis.
 - Frontend localization in English, French, Japanese, and German.
 - Static Terms of Service, Privacy Policy, Contact, and Q&A pages.
 - Dockerized deployment with nginx serving the frontend, static files, media files, API, and WebSocket proxy.
@@ -43,31 +44,37 @@ The application containers provide their own runtime dependencies:
 
 - Frontend: Node.js 20, React 19, TypeScript, Vite, Material UI.
 - Backend: Python 3.14, Django 6, Django REST Framework, Django Channels, Daphne.
-- Database: SQLite, stored in a Docker volume.
+- Database: PostgreSQL 17, stored in the `database-data` Docker volume.
+- Background services: Redis 7, Celery worker, and Celery beat.
 - Web server: nginx.
 
 ### Environment Setup
 
-Create the backend environment file from the example:
+The build/start workflow synchronizes music metadata from external sources, so Docker must have internet access. Then follow these steps from the repository root:
+
+1. Create the services environment file from the example:
 
 ```bash
-cp services/backend/.env.example services/backend/.env
+cp services/.env.example services/.env
 ```
 
-Edit `services/backend/.env` and set a real `SECRET_KEY`:
+2. Edit `services/.env` and replace the placeholder secrets:
 
 ```env
 SECRET_KEY=<replace-with-a-secret-value>
+POSTGRES_DB=transcendence
+POSTGRES_USER=transcendence
+POSTGRES_PASSWORD=<replace-with-a-database-password>
+POSTGRES_HOST=database
+POSTGRES_PORT=5432
 DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1,backend
-CSRF_TRUSTED_ORIGINS=https://localhost,https://localhost:4443
+CSRF_TRUSTED_ORIGINS=https://localhost:4443
 ```
 
-The local `.env` file must not be committed.
+`SECRET_KEY` and `POSTGRES_PASSWORD` must not retain their example values. The local `.env` file must not be committed.
 
-### Run From a Clean State
-
-From the repository root:
+3. Build and run from a clean state:
 
 ```bash
 make fresh
@@ -81,15 +88,17 @@ This command:
 - generates a local self-signed TLS certificate;
 - runs database migrations;
 - seeds demo data and playlists;
-- starts the backend and nginx containers.
+- starts the database, Redis, backend, Celery worker, Celery beat, and nginx containers.
 
-The application is then available at:
+4. Wait until the containers are healthy (`make status`), then open:
 
 ```text
-https://localhost
+https://localhost:4443
 ```
 
-The browser will show a certificate warning because the certificate is self-signed for local development.
+The browser will show a certificate warning because the certificate is self-signed for local development. Accept it only for this local `localhost` deployment.
+
+5. Use `make logs` if startup or playlist synchronization fails. Press `Ctrl-C` to stop following logs without stopping the containers.
 
 ### Normal Restart
 
@@ -103,17 +112,22 @@ This rebuilds and starts the application without deleting the database volume.
 
 ### Useful Commands
 
-| Command             | Purpose                                                           |
-| ------------------- | ----------------------------------------------------------------- |
-| `make help`         | Show available Makefile commands.                                 |
-| `make fresh`        | Full clean rebuild with fresh database and generated certificate. |
-| `make run`          | Build and start the application while preserving volumes.         |
-| `make down`         | Stop and remove containers.                                       |
-| `make stop`         | Stop containers without removing them.                            |
-| `make start`        | Start stopped containers.                                         |
-| `make logs`         | Follow container logs.                                            |
-| `make status`       | Show container status.                                            |
-| `make backend-test` | Run backend tests inside the backend container.                   |
+| Command                  | Purpose                                                           |
+| ------------------------ | ----------------------------------------------------------------- |
+| `make help`              | Show available Makefile commands.                                 |
+| `make fresh`             | Full clean rebuild with fresh database and generated certificate. |
+| `make run`               | Build and start the application while preserving volumes.         |
+| `make down`              | Stop and remove containers.                                       |
+| `make stop`              | Stop containers without removing them.                            |
+| `make start`             | Start stopped containers.                                         |
+| `make logs`              | Follow container logs.                                            |
+| `make status`            | Show container status.                                            |
+| `make clean`             | Remove containers and networks while preserving volumes/images.   |
+| `make fclean`            | Remove containers, volumes, images, and generated TLS files.      |
+| `make prepare-db`        | Apply migrations and prepare a fresh seeded database.             |
+| `make prepare-playlists` | Migrate and synchronize playlist data without demo seeding.       |
+| `make delete-migrations` | Delete numbered Django migration files; use only when rebuilding. |
+| `make backend-test`      | Run the Makefile's selected backend profile test in a container.  |
 
 Frontend development commands are available from `services/frontend`:
 
@@ -134,8 +148,6 @@ npm test -- --run
 | fmixtur  | Fabien Mixtur       | Project Manager, Developer |
 | kgauthie | Kristopher Gauthier | Developer                  |
 | yisho    | Yishan Ho           | Developer                  |
-
-Suggested role definitions for this project:
 
 ### Responsibilities
 
@@ -191,113 +203,154 @@ Django was chosen because it provides a strong ORM, authentication foundation, m
 
 ### Database
 
-- SQLite is used as the project database.
-- The database file is stored in the `backend-database` Docker volume at `/data/database/db.sqlite3`.
-- SQLite was chosen because it is simple to deploy for the project scope, requires no external database service, and integrates directly with Django ORM migrations.
+- PostgreSQL is used as the project database.
+- PostgreSQL stores its data in the `database-data` Docker volume at `/var/lib/postgresql/data`.
+- The database is reachable only from the private Docker Compose network; no database port is published to the host.
+
+PostgreSQL was chosen for its transactional integrity, foreign-key and uniqueness constraints, mature Django support, native `uuid` and `jsonb` types, and suitability for persistent relational data such as friendships, game participation, round results, and message history.
 
 ### Deployment and Infrastructure
 
-- Docker Compose runs the backend and nginx services.
+- Docker Compose runs PostgreSQL, Redis, the Daphne backend, a Celery worker, Celery beat, and nginx.
+- The worker executes asynchronous jobs while beat schedules periodic jobs. The game reaper runs every minute.
+- Redis provides the Channels cross-process layer and the Celery broker/result backend.
 - nginx serves the built frontend, Django static files, uploaded media, REST API proxying, and WebSocket proxying.
-- HTTPS is enabled locally with a self-signed certificate generated by the Makefile.
-- Docker volumes persist the SQLite database and uploaded media.
+- HTTPS is enabled locally with a self-signed certificate generated by the Makefile. HTTP redirects to HTTPS.
+- Static assets and collected Django static files are built into the nginx image; uploaded media is stored in the `backend-media` volume.
+- Docker volumes persist PostgreSQL data and uploaded media. The database and Redis ports are not published to the host.
+
+### Runtime Cleanup
+
+Celery beat schedules `reap_foresaken_waiting_games` every minute. The task:
+
+- Deletes waiting games whose lobby has exceeded the configured timeout.
+- Deletes aborted games and their temporary room and playlist data.
+- Tracks `Game.last_activity_at` when the live game loop emits lifecycle events.
+- Marks active games with stale activity as aborted and sends an abort event through Redis so a live Daphne game loop can stop.
+
+Finished games remain available for statistics and match history. The current timeout values are defined in `services/backend/project/defaults.py`.
 
 ## Database Schema
 
-The backend uses **SQLite** with Django ORM. All models include a `uid` (UUID, unique) for API identification.
+The backend uses **PostgreSQL** with Django ORM. UUID fields are the public identifiers used by the API; Django's internal numeric primary keys remain database implementation details. `Track` is the exception: its iTunes identifier is the primary key and is stored as a PostgreSQL `bigint`.
 
 ### Relationship Diagram
 
+```mermaid
+flowchart TB
+    classDef identity fill:#e8f1ff,stroke:#3973b8,stroke-width:2px,color:#102a43
+    classDef social fill:#eaf8ef,stroke:#41915a,stroke-width:2px,color:#16351f
+    classDef music fill:#fff4df,stroke:#c58218,stroke-width:2px,color:#4a2d00
+    classDef game fill:#f3ebff,stroke:#8256b8,stroke-width:2px,color:#2c1747
+    classDef stats fill:#fbecec,stroke:#b45757,stroke-width:2px,color:#451616
 
+    subgraph IDENTITY["Identity & Social"]
+        direction TB
+        USER["👤 SiteUser<br/>Authentication"]:::identity
+        PROFILE["🎭 Profile<br/>Player identity"]:::identity
+        FRIENDSHIP["🤝 Friendship<br/>Social relationships"]:::social
+
+        USER -->|"has optional profile"| PROFILE
+        USER -->|"sends / receives"| FRIENDSHIP
+    end
+
+    subgraph CHAT["Real-time Chat"]
+        direction TB
+        ROOM["💬 Room<br/>Conversation space"]:::social
+        MESSAGE["✉️ Message<br/>Chat content"]:::social
+
+        ROOM -->|"contains many"| MESSAGE
+    end
+
+    subgraph MUSIC["Music Catalogue"]
+        direction TB
+        PLAYLIST["📻 Playlist<br/>Track collection"]:::music
+        TRACK["🎵 Track<br/>Music metadata"]:::music
+
+        PLAYLIST <-->|"many-to-many"| TRACK
+    end
+
+    subgraph RUNTIME["Game Runtime"]
+        direction TB
+        GAME["🎮 Game<br/>Quiz session"]:::game
+        ROUND["🔄 GameRoundStats<br/>Round record"]:::game
+
+        GAME -->|"contains rounds"| ROUND
+    end
+
+    subgraph RESULTS["Persistent Results"]
+        direction TB
+        GAME_STATS["🏆 UserGameStats<br/>Game result"]:::stats
+        ROUND_STATS["📊 UserRoundStats<br/>Round result"]:::stats
+
+        GAME_STATS -.->|"summarizes rounds"| ROUND_STATS
+    end
+
+    IDENTITY -->|"Profile participates in Room<br/>Profile sends Message"| CHAT
+    IDENTITY -->|"Profile owns Game<br/>Profile plays through UserGameStats"| RUNTIME
+    IDENTITY -.->|"Profile owns game and round results"| RESULTS
+    CHAT -.->|"Game has one optional Room"| RUNTIME
+    MUSIC -->|"Game selects an optional Playlist<br/>Track is used by Game and GameRoundStats"| RUNTIME
+    RUNTIME -->|"Game creates UserGameStats<br/>GameRoundStats creates UserRoundStats"| RESULTS
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         USER DOMAIN                             │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐     ┌─────────────┐       ┌─────────────┐      │
-│  │  SiteUser   │◄───►│   Profile   │       │ Friendship  │      │
-│  │   (Auth)    │1:1  │   (Stats)   │       │ (Social)    │      │
-│  └─────────────┘     └─────────────┘       └─────────────┘      │
-│         │                                         │             │
-│         └────────────────────┼────────────────────┘             │
-│                              ▼                                  │
-│                    ┌─────────────────────┐                      │
-│                    │       Room          │                      │
-│                    │      (Chat)         │                      │
-│                    └─────────────────────┘                      │
-│                               │                                 │
-│                    ┌─────────────────────┐                      │
-│                    │      Message        │                      │
-│                    └─────────────────────┘                      │
-└─────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────┐
-│                      MUSIC DOMAIN                               │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐         ┌─────────────┐                        │
-│  │  Playlist   │◄───────►│    Track    │                        │
-│  └─────────────┘ M:N     └─────────────┘                        │
-└─────────────────────────────────────────────────────────────────┘
+The category-level arrows keep the overview readable; the tables and relationship notes below document the exact model-level foreign keys and through tables. Django creates an internal `bigint` primary key named `id` for every model below except `Track`. Foreign keys store that primary key; public API references use the separate unique `uuid` fields where exposed.
 
-┌─────────────────────────────────────────────────────────────────┐
-│                      GAME DOMAIN                                │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐       ┌─────────────┐                          │
-│  │    Game     │──────►│ GameRound   │                          │
-│  │  (Session)  │1:N    │   Stats     │                          │
-│  └─────────────┘       └─────────────┘                          │
-│       │                     │                                   │
-│       ▼                     ▼                                   │
-│  ┌─────────────┐       ┌─────────────┐                          │
-│  │ UserGame    │       │ UserRound   │                          │
-│  │   Stats     │       │   Stats     │                          │
-│  └─────────────┘       └─────────────┘                          │
-└─────────────────────────────────────────────────────────────────┘
+### Tables, Key Fields, and Data Types
 
-CONNECTIONS:
-  Profile ──► Room (M:N) - users join chat rooms
-  Room ─────► Game (1:1) - each game has a chat room
-  Game ──────► Profile (M:N via UserGameStats) - players in game
-  Game ──────► Playlist (M:1) - game uses a playlist
-  Game ──────► Track (M:1) - current track
-```
+The types below are their PostgreSQL representations. `timestamptz` is PostgreSQL `timestamp with time zone`.
 
-### Models Overview
+#### Identity and Social
 
-**Users & Authentication**
-| Table | Purpose | Key fields |
-| ----- | ------- | ------------------------ |
-| `SiteUser` | Authentication account model. Uses email as the login identifier and stores the Django auth flags. | `email` is unique, `uid` is a UUID, `friends` is a self-referential M2M through `Friendship`. |
-| `Profile` | Public player profile, including guest accounts. | `user` is a nullable one-to-one link to `SiteUser`, `username` is unique except for the default `Anonymous` value, `avatar`, `exp_points`, `session_key`, `guest`, `is_online`, `last_active`, `uid`. |
+| Table                               | Purpose                                                   | Key fields and PostgreSQL types                                                                                                                                                                                                                                                                                                                                      |
+| ----------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `userauth_siteuser` (`SiteUser`)    | Authentication account; email is the login identifier.    | `id bigint PK`; `uid uuid UNIQUE`; `email varchar(254) UNIQUE NOT NULL`; `password varchar(128)` (Django password hash); `is_active`, `is_staff`, `is_superuser boolean`; `last_login timestamptz NULL`; `date_joined timestamptz`. The inherited Django auth model also stores `first_name` and `last_name` as `varchar(150)` and has group/permission join tables. |
+| `userprofile_profile` (`Profile`)   | Public identity for a registered user or anonymous guest. | `id bigint PK`; `uid uuid UNIQUE`; `user_id bigint UNIQUE NULL FK → SiteUser`; `username varchar(20)` with conditional uniqueness except `Anonymous`; `avatar varchar(100) NULL` (media path); `exp_points integer`; `session_key varchar(40) NULL INDEX`; `guest`, `is_online boolean`; `active_ws_connections integer`; `created_at`, `last_active timestamptz`.   |
+| `friends_friendship` (`Friendship`) | Directional pending request or accepted friendship.       | `id bigint PK`; `uid uuid UNIQUE`; `from_user_id bigint FK → SiteUser`; `to_user_id bigint FK → SiteUser`; `status varchar(20)` (`pending` or `accepted`); `read boolean`; `created_at timestamptz`; `UNIQUE(from_user_id, to_user_id)`.                                                                                                                             |
 
-**Social Features**
-| Table | Purpose | Key fields |
-| ----- | ------- | ------------------------ |
-| `Friendship` | Friend request / friendship relation between two users. | `from_user`, `to_user`, `status` (`pending` or `accepted`), `read`, `uid`, `created_at`, unique pair on `(from_user, to_user)`. |
-| `Room` | Chat room or direct message room. | `name` is unique, `participants` links to `Profile`, `is_direct`, `direct_key`, `uid`. |
-| `Message` | Persisted chat message. | `sender`, `room`, `body`, `delivered`, `seen`, `created`, `updated`, `uid`. |
+#### Chat
 
-**Music Data**
-| Table | Purpose | Key fields |
-| ----- | ------- | ------------------------ |
-| `Playlist` | Music playlist/genre grouping. | `name` is unique, `rss_url`, `uid`. |
-| `Track` | Imported music track metadata. | `itunes_id` is the primary key and unique, `title`, `artist`, `genre`, `preview_url`, `artwork_url`, many-to-many `playlists`. |
+| Table                      | Purpose                                            | Key fields and PostgreSQL types                                                                                                                                                                                 |
+| -------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chat_room` (`Room`)       | Game/group chat or one-to-one direct-message room. | `id bigint PK`; `uid uuid UNIQUE`; `name varchar(100) UNIQUE`; `is_direct boolean`; `direct_key varchar(64) UNIQUE NULL`. Participants are stored in the implicit room/profile join table.                      |
+| `chat_message` (`Message`) | Persisted room message and delivery state.         | `id bigint PK`; `uid uuid UNIQUE`; `sender_id bigint FK → Profile`; `room_id bigint FK → Room`; `body text` (application limit: 500 characters); `delivered`, `seen boolean`; `created`, `updated timestamptz`. |
 
-**Game & Statistics**
-| Table | Purpose | Key fields |
-| ----- | ------- | ------------------------ |
-| `Game` | Single multiplayer quiz session. | `name`, `genres` JSON, `room` one-to-one, `playlist`, `status`, `playbackDuration`, `breakDuration`, `mode`, `current_round`, `current_track`, `trackCount`, `visibility`, `fuzzy`, `reveal`, `owned_by`, `uid`. |
-| `GameRoundStats` | Per-round game record. | `round_number`, `game`, `track`, `players` through `UserRoundStats`. |
-| `UserGameStats` | Per-player summary for a game. | `game`, `player`, `is_won`, `played_at`, unique constraint on `(game, player)`. |
-| `UserRoundStats` | Per-player stats for one round. | `game_stats`, `round`, `player`, `time`, `artist_found`, `title_found`, `artist_found_at`, `title_found_at`, `xp_earned`, `ranking`, `played_at`. |
+#### Music Catalogue
+
+| Table                         | Purpose                              | Key fields and PostgreSQL types                                                                                                                                                            |
+| ----------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `music_playlist` (`Playlist`) | Imported playlist or genre grouping. | `id bigint PK`; `uid uuid UNIQUE`; `name varchar(255) UNIQUE`; `rss_url varchar(500)`.                                                                                                     |
+| `music_track` (`Track`)       | Reusable iTunes track metadata.      | `itunes_id bigint PK`; `title`, `artist varchar(255)`; `genre varchar(100) NULL`; `preview_url`, `artwork_url varchar(500) NULL`. Playlist membership is stored in an implicit join table. |
+
+#### Games and Statistics
+
+| Table                                     | Purpose                                                                           | Key fields and PostgreSQL types                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `game_game` (`Game`)                      | Multiplayer quiz settings and runtime state.                                      | `id bigint PK`; `uid uuid UNIQUE INDEX`; `name varchar(40)`; `genres jsonb`; `status varchar(20)` (`waiting`, `playing_round`, `playing_break`, `finished`, `aborted`); `visibility varchar(20)` (`public`, `friends`, `private`); `mode varchar(20)` (`normal`, `speed`); `playbackDuration`, `breakDuration double precision NULL`; `trackCount`, `current_round integer`; `fuzzy`, `reveal boolean`; `created_at`, `last_activity_at timestamptz NULL`; `started_at timestamptz NULL`; `owned_by_id bigint NULL FK → Profile`; `room_id bigint UNIQUE NULL FK → Room`; `playlist_id bigint UNIQUE NULL FK → Playlist`; `current_track_id bigint NULL FK → Track.itunes_id`. |
+| `stats_gameroundstats` (`GameRoundStats`) | One round within a game.                                                          | `id bigint PK`; `round_number integer`; `game_id bigint FK → Game`; `track_id bigint NULL FK → Track.itunes_id`. Player participation is represented by `UserRoundStats`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `stats_usergamestats` (`UserGameStats`)   | One player's aggregate participation in one game; also implements `Game.players`. | `id bigint PK`; `game_id bigint FK → Game`; `player_id bigint FK → Profile`; `is_won`, `is_active boolean`; `played_at timestamptz`; `UNIQUE(game_id, player_id)`. Total XP is computed from round rows rather than stored here.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `stats_userroundstats` (`UserRoundStats`) | One player's result for one round.                                                | `id bigint PK`; `game_stats_id bigint NULL FK → UserGameStats`; `round_id bigint FK → GameRoundStats`; `player_id bigint FK → Profile`; `time`, `artist_found_at`, `title_found_at double precision`; `artist_found`, `title_found boolean`; `xp_earned`, `ranking integer`; `played_at timestamptz`.                                                                                                                                                                                                                                                                                                                                                                          |
+
+### Join Tables
+
+Django materializes ordinary many-to-many relations as junction tables with two foreign keys and a uniqueness constraint on the pair:
+
+| Relationship                       | Storage                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Room.participants ↔ Profile`      | Implicit `chat_room_participants` table (`room_id bigint`, `profile_id bigint`).                         |
+| `Playlist.tracks ↔ Track`          | Implicit `music_track_playlists` table (`track_id bigint`, `playlist_id bigint`).                        |
+| `Game.players ↔ Profile`           | Explicit `stats_usergamestats` through table, which also stores win/active state and play time.          |
+| `GameRoundStats.players ↔ Profile` | Explicit `stats_userroundstats` through table, which stores answer timing, correctness, XP, and ranking. |
 
 ### Relationship Notes
 
-- A `SiteUser` can have one `Profile`, while guest profiles may exist without an attached user account.
-- `Friendship` stores both friend requests and accepted friendships in one table, with directionality kept through `from_user` and `to_user`.
-- `Room` and `Message` power the chat system, while direct rooms use `is_direct` and `direct_key` to identify one-to-one conversations.
-- `Game` links the social and music layers together by attaching to a `Room`, a `Playlist`, an optional current `Track`, and an owning `Profile`.
-- Player progression is normalized through `UserGameStats` and `UserRoundStats`, with `GameRoundStats` describing the round itself and each player’s result stored separately.
-- `Track` entries are shared across playlists and games, which avoids duplicating imported music metadata.
+- A `SiteUser` can have one `Profile`; guest profiles have no attached account.
+- `Friendship` belongs to `SiteUser`, while rooms, messages, games, and statistics belong to `Profile`.
+- `Room` and `Message` power chat. Direct rooms use `is_direct` and `direct_key` to identify one-to-one conversations.
+- `Game` connects the social and music domains through an optional room, one playlist, an optional current track, and an owning profile.
+- `Game.players` is represented by the `UserGameStats` join model. Round participation is represented by `UserRoundStats`, which connects a profile to a `GameRoundStats` record and optionally to its game summary.
+- `Playlist` and `Track` are many-to-many, so imported tracks can be reused across playlists without duplicating metadata.
+- Avatars are stored as file paths in `Profile.avatar`; the image files themselves live in the persistent media volume, not in PostgreSQL.
 
 ## Features List
 
@@ -350,7 +403,7 @@ CONNECTIONS:
 
 ## Modules
 
-Total claimed points: **21**.
+Total claimed points: **21**: six Major modules × 2 points = 12 points, plus nine Minor modules × 1 point = 9 points.
 
 | Module                                      | Type  | Points | Implementation                                                                                                                     | Team member(s)                    |
 | ------------------------------------------- | ----- | -----: | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
@@ -369,6 +422,17 @@ Total claimed points: **21**.
 | Game customization options                  | Minor |      1 | Host-configurable genres, visibility, track count, round duration, break duration, score mode, reveal answers, and fuzzy matching. | vviterbo, kgauthie, fmixtur       |
 | Gamification system                         | Minor |      1 | Persistent XP, levels/progress, titles, leaderboard, match history, and profile progression feedback.                              | hcavet, vviterbo                  |
 | Support for additional browsers             | Minor |      1 | Compatibility with Firefox and Brave                                                                                               | everyone                          |
+
+### Module Choice Rationale
+
+- **Frontend framework, backend framework, and ORM:** React and Django split the live interface from the authoritative server while keeping each side structured and testable. Django ORM provides migrations, constraints, and relational queries for the project's strongly connected data.
+- **WebSockets and remote multiplayer:** the quiz, chat, presence, notifications, settings, and round transitions must reach separate browser clients in real time; request/response HTTP alone would not provide the required synchronization.
+- **User interaction and standard user management:** persistent identities, profiles, friendships, and private communication turn the game into a social application rather than an isolated match screen.
+- **Complete game, more-than-two-player multiplayer, customization, statistics, and gamification:** these modules form the core product loop: configure a room, play synchronized rounds, compare results, retain history, and progress a profile over multiple sessions.
+- **Multiple languages and additional browsers:** localization and Firefox/Brave compatibility broaden access beyond the mandatory English/Chrome baseline and exercise the shared UI architecture.
+- **Custom-made design system (custom module of choice):** the application has many repeated surfaces—forms, dialogs, navigation, game panels, profile cards, feedback states, and responsive layouts. A shared Material UI-based component and theme layer was chosen to keep behavior and visual language consistent instead of styling every page independently.
+
+The implementation column above identifies how each module appears in the project, while the team column records its primary contributors. Detailed work ownership is expanded in [Individual Contributions](#individual-contributions).
 
 ## Browser Compatibility
 
@@ -391,6 +455,8 @@ Main areas:
 - Static pages including Q&A, Contact, Terms of Service, and Privacy Policy.
 - Docker, nginx, HTTPS, Makefile deployment commands, health checks, and evaluation documentation.
 
+**Challenge and resolution:** keeping authentication state consistent across protected routes, refresh-token rotation, API failures, and multiple tabs required more than page-local state. Hugo centralized this behavior in the authentication provider and API client/interceptors, then covered the flows with focused frontend tests and mocks.
+
 ### vviterbo / Victor Viterbo
 
 Victor worked mainly on backend architecture, authentication, profile/user modeling, database structure, statistics, WebSocket integration, and backend tests.
@@ -403,6 +469,8 @@ Main areas:
 - Database models and relations for users, profiles, friends, games, and statistics.
 - Statistics and leaderboard backend endpoints.
 - Game backend foundations, WebSocket event handling, database seeding, migrations, environment files, and backend test coverage.
+
+**Challenge and resolution:** registered users and anonymous guests need the same profile-facing game interface while having different authentication and lifecycle rules. Victor separated account data from the nullable-user `Profile`, integrated profile resolution into HTTP/WebSocket handling, and used migrations and lifecycle tests to protect the model transitions.
 
 ### fmixtur / Fabien Mixtur
 
@@ -417,6 +485,8 @@ Main areas:
 - WebSocket game events such as settings updates, game start, round preview, answer broadcast, round end, game end, errors, and restart behavior.
 - Backend tests around game creation, playlist generation, and game event behavior.
 
+**Challenge and resolution:** external music metadata is not guaranteed to be complete or immediately suitable for a timed quiz, while answers may contain spelling differences. Fabien implemented repeatable playlist synchronization and filtering, persisted reusable track metadata, and combined normalized title/artist comparison with fuzzy-matching libraries in the scoring flow.
+
 ### kgauthie / Kristopher Gauthier
 
 Kristopher worked mainly on the frontend design system, UI/UX, social screens, notification screens, game frontend, WebSocket UI integration, localization, and responsive layout cleanup.
@@ -429,6 +499,8 @@ Main areas:
 - Game frontend screens: lobby, settings, game chat, in-game leaderboard, round view, end view, answer feedback, point display, and game error/loading states.
 - WebSocket-driven UI behavior and mock handlers for game/social flows.
 - Mobile compatibility across home, profile, social, leaderboard, and game pages, including German text layout.
+
+**Challenge and resolution:** live game/social events, responsive layouts, and longer translated strings can cause inconsistent state and visual regressions across many screens. Kristopher concentrated event handling in shared game/WebSocket structures, built reusable responsive components, and exercised the flows with Vitest, Testing Library, and MSW handlers.
 
 ### yisho / Yishan Ho
 
@@ -443,11 +515,16 @@ Main areas:
 - Friend/social backend behavior, including remove-friend support and frontend-compatible response shapes.
 - Chat and social tests aligned with WebSocket and payload protocol changes.
 
+**Challenge and resolution:** direct-message delivery and read state must remain coherent when either user is offline, has several WebSocket connections, or opens/closes a conversation. Yishan combined persisted `delivered`/`seen` flags with active-connection counting, chat-open state, recipient-specific events, and backend chat/social tests.
+
 ## Resources
 
 ### Documentation and Technical References
 
-- 42 subject: `docs/en.subject.pdf`.
+- 42 subject: [docs/en.subject.pdf](docs/en.subject.pdf).
+- Project HTTP API contract: [docs/openapi/openapi.yaml](docs/openapi/openapi.yaml).
+- Project WebSocket contract: [docs/asyncapi/asyncapi.yaml](docs/asyncapi/asyncapi.yaml).
+- Browser compatibility report: [BROWSER_COMPATIBILITY.md](BROWSER_COMPATIBILITY.md).
 - Django documentation: https://docs.djangoproject.com/
 - Django REST Framework documentation: https://www.django-rest-framework.org/
 - Django Channels documentation: https://channels.readthedocs.io/
@@ -459,7 +536,7 @@ Main areas:
 - Material UI documentation: https://mui.com/material-ui/
 - Docker documentation: https://docs.docker.com/
 - nginx documentation: https://nginx.org/en/docs/
-- SQLite documentation: https://www.sqlite.org/docs.html
+- PostgreSQL documentation: https://www.postgresql.org/docs/
 - MDN Web Docs for browser APIs, forms, HTTP, cookies, WebSockets, and accessibility: https://developer.mozilla.org/
 
 ### AI Usage
@@ -473,9 +550,3 @@ AI tools were used during the development of this project for the following purp
 - Documentation editing.
 
 All generated suggestions were reviewed, tested, and adapted before being integrated into the project.
-
-## Known Limitations
-
-- The application is designed for local evaluation with a self-signed HTTPS certificate.
-- SQLite is used intentionally for a simple single-service local deployment, for a real application we would want a stronger database.
-- The WebSocket channel layer is in-memory, which is appropriate for a single backend container but not for horizontally scaled production deployment.

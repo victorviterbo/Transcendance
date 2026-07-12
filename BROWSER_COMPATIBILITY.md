@@ -1,235 +1,109 @@
-# Browser Compatibility
+## Browser Compatibility
 
-## Scope
+This project was developed and primarily tested on **Google Chrome**. The application is designed for current desktop browsers and uses standard web APIs for authentication, real-time communication, audio playback, and responsive layouts.
 
-The project targets the latest stable Google Chrome as the mandatory browser. The additional browser compatibility claim covers latest stable Firefox and Brave on desktop.
+Core features work in current Chrome, Firefox, and Brave desktop browsers. Safari and mobile browsers are supported on a best-effort basis because audio playback, page lifecycle, and device permissions are controlled differently by each browser and operating system.
 
-This document is based on a static review of the current frontend, backend cookie/session handling, and nginx deployment configuration. It does not replace a final manual check in each browser before evaluation.
+## Supported Browsers
 
-Browsers not claimed here:
+| Browser         | Version        | Status                                                  |
+| --------------- | -------------- | ------------------------------------------------------- |
+| Google Chrome   | Current stable | Primary development and evaluation browser              |
+| Mozilla Firefox | Current stable | Supported; minor browser-specific differences may occur |
+| Brave           | Current stable | Supported with default privacy settings                 |
+| Safari desktop  | Current stable | Best effort; Safari-specific behavior is not guaranteed |
+| Microsoft Edge  | Current stable | Expected to work; Chromium-based                        |
+| Mobile browsers | Current stable | Best effort; see mobile limitations below               |
 
-- Safari
-- Opera
-- Mobile browsers
-- Older ESR/enterprise browser versions
+The application must be opened through the HTTPS deployment. When using the local deployment, the browser must accept the self-signed certificate warning before cookies, clipboard access, and secure WebSockets can work as intended.
 
-## Summary
+## Browser-Specific Limitations
 
-| Browser | Status | Notes |
-| ------- | ------ | ----- |
-| Chrome | Expected compatible | Mandatory target. The app uses modern browser APIs that are supported in current Chrome. |
-| Brave | Expected compatible | Brave is Chromium-based, so the Chrome result should generally apply. Brave privacy shields should be left at their default level for evaluation. |
-| Firefox | Mostly compatible, with one important risk | Standard APIs used by the app are generally supported in current Firefox, but the game currently calls `navigator.mediaSession` without feature detection. If the target Firefox build does not expose that API, entering a game can fail before the game UI finishes initializing. |
+### Google Chrome
 
-## Findings From The Codebase
+Chrome is the primary development and evaluation browser. No blocking Chrome-specific limitation is currently known.
 
-### Deployment and HTTPS
+### Mozilla Firefox
 
-The nginx deployment redirects HTTP to HTTPS and serves the application from `https://localhost` using the local certificate in `services/nginx/certs`.
+Core features are supported, including authentication, room management, gameplay, WebSocket synchronization, chat, notifications, and responsive layouts.
 
-Relevant files:
+Expected differences include:
 
-- `services/nginx/deploy/nginx.conf`
-- `services/docker-compose.yml`
+- Audio autoplay decisions may differ from Chrome.
+- Minor CSS rounding or font-rendering differences may appear at some viewport sizes.
+- Privacy settings can affect cookies, local storage, clipboard access, or cross-tab authentication updates.
+- WebSocket reconnection can briefly change the visible connection state after browser history navigation or a network interruption.
 
-Compatibility impact:
+### Brave
 
-- Chrome, Firefox, and Brave should all run the app over local HTTPS once the self-signed certificate warning is accepted.
-- Clipboard and secure-cookie behavior depends on using HTTPS. Testing through plain HTTP is not representative of the intended deployment.
+Brave is expected to behave similarly to Chrome because it uses Chromium. The application is compatible with the default Brave configuration.
 
-### Authentication, Cookies, and Sessions
+Strict or customized Shields can block or alter cookies, storage, clipboard access, audio previews, WebSockets, or cross-tab communication. One should use the default Shields configuration.
 
-The backend stores refresh tokens in a secure HTTP-only cookie with `SameSite=Lax` and `path=/api/auth/`. The frontend keeps the access token in memory and sends API requests with `withCredentials: true`.
+### Safari
 
-Relevant files:
+Safari desktop may run the application, but it is not the primary compatibility target. Differences may occur in audio autoplay, media controls, WebSocket lifecycle handling, CSS rendering, and browser privacy behavior.
 
-- `services/backend/userauth/views.py`
-- `services/frontend/src/api/client.ts`
-- `services/frontend/src/components/auth/CAuthProvider.tsx`
+Safari on iOS has the most significant known limitation: it can require a fresh user interaction before audio playback. A user may see an interaction dialog at the start of a round or at later rounds, even after previously interacting with the page.
 
-Compatibility impact:
+This limitation affects local music only. The user can continue participating in the game, and other players are not affected.
 
-- This is compatible with Chrome, Firefox, and Brave for same-origin local HTTPS usage.
-- Private/incognito windows keep separate cookies and storage. A private tab should not be expected to share the same authenticated state as a normal tab.
-- If Brave shields or Firefox privacy settings are made stricter than default, cookie/session behavior should be re-tested.
+### Microsoft Edge
 
-### Cross-Tab Authentication Sync
+Current Edge is expected to work similarly to Chrome because it uses the Chromium rendering and JavaScript engines. Edge was not the primary development browser, so minor differences in audio policy, privacy settings, or rendering remain possible.
 
-The auth provider uses `BroadcastChannel` to share login/logout events across tabs, with a feature-detection guard:
+## Mobile Browsers
 
-- `services/frontend/src/components/auth/CAuthProvider.tsx`
+Mobile is not the primary target platform. The responsive interface is available, but mobile browsers impose additional restrictions that do not apply in the same way on desktop.
 
-Compatibility impact:
+Known mobile behavior:
 
-- `BroadcastChannel` is a widely available browser API in modern browsers.
-- If unavailable, the code safely skips the channel. The app can still authenticate in the current tab, but login/logout events will not automatically propagate to other tabs.
+- Audio may require an explicit interaction before every round or after the page loses focus.
+- Mobile Safari may display an interaction dialog at multiple rounds.
+- Browser address bars and virtual keyboards can change the available viewport height while the application is open.
+- Backgrounding the browser can pause or close the WebSocket. The connection is recreated when the page becomes active again.
+- Some browsers and devices expose the currently playing music through phone, lock-screen, or connected-device media widgets.
+- When available, those media controls affect music for that player only. They do not pause the game or affect other players.
+- Clipboard access depends on browser permission and the current secure context.
+- Very small screens may require scrolling to reach all controls.
 
-### WebSocket Connection
+Gameplay, chat, notifications, and synchronization are intended to remain functional, but audio playback and background behavior cannot be guaranteed identically across mobile browsers.
 
-The frontend builds the WebSocket URL from the current page origin:
+## Browser Storage and Privacy Settings
 
-- `services/frontend/src/constants.ts`
-- `services/frontend/src/components/websocket/CWebsocket.tsx`
+The application uses cookies and browser storage for authentication, language preferences, and local game preferences.
 
-nginx proxies `/ws/` with the required upgrade headers:
+- Private or incognito windows have separate cookies and storage from normal windows.
+- Closing a private browsing session may remove authentication and preferences.
+- Strict tracking protection, disabled storage, or privacy extensions can prevent expected authentication or cross-tab behavior.
+- Browser extensions can modify requests, WebSockets, cookies, storage, or page scripts and are outside the supported environment.
+- Testing the frontend and backend on different origins can introduce cookie restrictions that do not apply to the intended same-origin HTTPS deployment.
 
-- `services/nginx/deploy/nginx.conf`
+For evaluation, use a normal browser profile with default privacy settings and extensions disabled or controlled.
 
-Compatibility impact:
+## Known Audio and Media Behavior
 
-- On `https://localhost`, the frontend uses `wss://localhost/ws/global/`.
-- Chrome, Firefox, and Brave support WebSockets over HTTPS.
-- The WebSocket provider reconnects automatically. That is expected behavior and should not by itself be treated as a browser compatibility issue.
+The application uses external audio previews. Playback depends on both browser policy and the preview source:
 
-### Audio Playback
+- The browser may block playback without a user gesture.
+- A preview may fail if the external source is unavailable, uses an unsupported format, or does not allow the required cross-origin request.
+- Browsers that support Media Session may expose local pause or stop controls through device or operating-system media widgets.
+- Media Session support is optional. Its absence does not prevent the application or game from loading.
+- Local playback failures do not affect answers, scoring, game events, chat, notifications, or other players.
 
-The game creates `HTMLAudioElement` instances for track previews and calls `play()` when a round starts:
+## Testing Methodology
 
-- `services/frontend/src/handlers/gameHandlers.ts`
+Browser checks cover the following application areas:
 
-The code catches `NotAllowedError` in the main playback path and stores a `songPlayable` state. It also runs an early audio ping to detect autoplay restrictions.
-
-Compatibility impact:
-
-- Chrome, Firefox, and Brave all enforce autoplay rules. Audio may require a user interaction before playback is allowed.
-- The app already expects this and can mark audio as not playable.
-- Track preview compatibility still depends on the preview URL, format, and CORS behavior returned by the music data source. If the source returns a format a browser cannot decode, the browser will not play it even if the frontend code is correct.
-
-### Media Session API Risk
-
-The game constructor calls `navigator.mediaSession.setActionHandler(...)` directly:
-
-- `services/frontend/src/handlers/gameHandlers.ts`
-
-Compatibility impact:
-
-- The Media Session API is not a Baseline web feature and is not guaranteed across all major browsers.
-- The current code does not guard with `if ("mediaSession" in navigator)`.
-- If a claimed browser does not expose `navigator.mediaSession`, entering a game can throw before initialization completes.
-- This is the main compatibility risk found for the Firefox claim.
-
-Recommended fix before evaluation:
-
-```ts
-if ("mediaSession" in navigator) {
-	navigator.mediaSession.setActionHandler("play", function () {});
-	navigator.mediaSession.setActionHandler("pause", function () {});
-	navigator.mediaSession.setActionHandler("seekbackward", function () {});
-	navigator.mediaSession.setActionHandler("seekforward", function () {});
-	navigator.mediaSession.setActionHandler("previoustrack", function () {});
-	navigator.mediaSession.setActionHandler("nexttrack", function () {});
-	navigator.mediaSession.setActionHandler("stop", function () {});
-}
-```
-
-### Clipboard
-
-The game settings view copies the room code with `navigator.clipboard.writeText(...)`:
-
-- `services/frontend/src/pages/PGame/PGameViews/PGameSettings.tsx`
-
-Compatibility impact:
-
-- Clipboard writing is widely available in modern browsers but requires a secure context.
-- The current code does not catch rejection from `writeText()`.
-- If the browser blocks clipboard access, the game itself still works, but the copy button can incorrectly show the copied state.
-
-### Local Storage
-
-The frontend stores non-critical preferences in `localStorage`:
-
-- language preference
-- default game volume
-- default mute state
-
-Relevant files:
-
-- `services/frontend/src/localization/localization.ts`
-- `services/frontend/src/handlers/gameHandlers.ts`
-
-Compatibility impact:
-
-- Normal Chrome, Firefox, and Brave sessions support this.
-- The localization code handles storage access errors.
-- The game volume/mute code does not wrap `localStorage` access in `try/catch`, so very restrictive privacy modes or disabled storage could affect game initialization or volume changes.
-
-### Modern JavaScript APIs
-
-The frontend uses modern APIs without legacy polyfills:
-
-- `structuredClone`
-- `String.prototype.replaceAll`
-- `crypto.randomUUID`
-- `URL.createObjectURL`
-- `Intl.NumberFormat`
-- `Intl.DateTimeFormat`
-
-Relevant files:
-
-- `services/frontend/src/handlers/gameHandlers.ts`
-- `services/frontend/src/components/contexts/CAppNotifContext.tsx`
-- `services/frontend/src/components/layout/CLanguageProvider.tsx`
-- `services/frontend/src/localization/localization.ts`
-- `services/frontend/src/pages/PProfilePage/PProfileAvatarEditor.tsx`
-- `services/frontend/src/utils/image.ts`
-
-Compatibility impact:
-
-- These are acceptable for latest stable Chrome, Firefox, and Brave.
-- This project should not claim compatibility with old browser versions unless the build is changed to include a legacy target/polyfills.
-- `vite.config.ts` does not configure a legacy plugin or an older browser build target.
-
-### Styling and Layout
-
-The frontend relies mostly on React, Material UI, CSS flex/grid behavior, media queries, and standard CSS filters.
-
-Notable browser-sensitive styling:
-
-- `backdropFilter` in the footer is cosmetic.
-- `::-webkit-scrollbar` rules only affect Chromium-style scrollbar styling and do not break Firefox.
-- CSS blur/filter usage is cosmetic or visibility-related and should work in current Chrome, Firefox, and Brave.
-
-Compatibility impact:
-
-- No blocking CSS compatibility issue was found for the claimed browsers.
-- Visual differences in scrollbars and backdrop blur are acceptable as long as layout and interaction remain correct.
-
-## Evaluation Checklist
-
-Run the same production deployment in each claimed browser:
-
-- Chrome latest stable
-- Firefox latest stable
-- Brave latest stable
-
-Use `https://localhost` and accept the local certificate warning.
-
-Check these flows:
-
-- Register, login, refresh after page reload, logout.
-- Guest profile creation and guest-to-auth transition.
-- Duplicate tab login/logout propagation.
-- Profile update and avatar upload.
-- Friend request, friend accept/refuse, friend removal.
-- Notifications and marking notifications as read.
-- Direct chat.
-- Room list, room creation, room joining.
-- Public, friends-only, and private room visibility.
-- Game settings: genres, track count, round duration, break duration, answer visibility, fuzzy matching, score mode.
-- Copy room code.
-- Multiplayer game start from at least two browser tabs.
-- Audio preview playback after a user interaction.
-- Answer submission with keyboard Enter and numpad Enter.
-- Round transition, game end, and game restart.
-- In-game chat.
-- Language switching.
-- Responsive layouts at desktop and narrow widths.
-
-## External References
-
-- MDN: BroadcastChannel - https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel
-- MDN: Clipboard `writeText()` - https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/writeText
-- MDN: Media Session API - https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API
-- MDN: `structuredClone()` - https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone
-- MDN: `crypto.randomUUID()` - https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID
-- MDN: `String.prototype.replaceAll()` - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replaceAll
+- Authentication, logout, page reload, and session restoration.
+- Guest profiles and authenticated profiles.
+- Profile updates and profile pictures.
+- Friends, notifications, and direct chat.
+- Room creation, room discovery, visibility settings, and joining.
+- Multiplayer gameplay and real-time WebSocket synchronization.
+- In-game chat, answer submission, scoring, round transitions, and results.
+- Audio playback after user interaction.
+- Language selection and responsive layouts.
+- WebSocket recovery after page navigation and connection interruption.
+
+Behavior described as browser-specific above is an accepted limitation of the browser or device environment, not a difference in the game rules or server-side state.

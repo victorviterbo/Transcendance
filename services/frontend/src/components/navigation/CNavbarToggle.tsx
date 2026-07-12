@@ -2,28 +2,24 @@ import type { ReactNode } from "react";
 import { appPositions } from "../../styles/theme";
 import CButtonToggle, { type CButtonToggleProps } from "../inputs/buttons/CButtonToggle";
 
-export interface CNavbarToggleProps extends Omit<
-	CButtonToggleProps,
-	"children" | "aria-label" | "value"
-> {
+export interface CNavbarToggleProps extends Omit<CButtonToggleProps, "children" | "value"> {
 	icon: ReactNode;
-	aria: string;
+	name: string;
 	active: boolean;
 	notifCount?: number;
 }
 
-function CNavbarToggle({ icon, aria, active, notifCount, sx, ...other }: CNavbarToggleProps) {
+function CNavbarToggle({ icon, name, active, notifCount, sx, ...other }: CNavbarToggleProps) {
 	return (
 		<CButtonToggle
-			value={aria}
+			value={name}
 			selected={active}
-			aria-label={aria}
 			sx={[
 				{ height: appPositions.sizes.buttons.nav },
 				...(Array.isArray(sx) ? sx : sx ? [sx] : []),
 			]}
-			data-testid={aria + "_ToggleButton"}
-			parentid={aria + "_ToggleButtonParent"}
+			data-testid={name + "_ToggleButton"}
+			parentid={name + "_ToggleButtonParent"}
 			notifCount={notifCount}
 			{...other}
 		>

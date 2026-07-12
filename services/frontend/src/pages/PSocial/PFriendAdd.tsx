@@ -6,17 +6,20 @@ import CText from "../../components/text/CText";
 import PFriendNode from "./PFriendNode";
 import { getErrorNode } from "../../utils/error";
 import { searchFriends } from "../../api/social";
+import { SOCIAL_SEARCH_MAX_LENGTH } from "../../constants";
 
 function PFriendAdd() {
 	const [users, setUsers] = useState<IExtUserInfo[]>([]);
 	const [error, setError] = useState<ReactNode | undefined>(undefined);
 	const [search, setSearch] = useState<string>("");
+	const [searchField, setSearchField] = useState<string>("");
 	const lastTO: React.RefObject<number> = useRef<number>(-1);
 
 	//====================== EVENTS ======================
 	const onSearch = useCallback(
 		async (value: string) => {
-			if (value.length == 0) {
+			const query = value.trim();
+			if (query.length == 0) {
 				setError(undefined);
 				setUsers([]);
 				setSearch("");
@@ -24,7 +27,7 @@ function PFriendAdd() {
 			}
 
 			try {
-				const res = await searchFriends(value);
+				const res = await searchFriends(query);
 				if (typeof res != "object" || !res.users)
 					throw { error: { default: [{ message: "Invalid object", code: "INVALID" }] } };
 				setUsers(
@@ -32,7 +35,7 @@ function PFriendAdd() {
 						return user.relation != "friends";
 					}),
 				);
-				setSearch(value);
+				setSearch(query);
 				setError(undefined);
 			} catch (error) {
 				setError(getErrorNode(error, "USERS_ADD_ERROR"));
@@ -54,20 +57,24 @@ function PFriendAdd() {
 
 	const onFieldChanged = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+			const value = event.target.value;
+			if (value.trim().length > SOCIAL_SEARCH_MAX_LENGTH) return;
+			setSearchField(value);
 			if (lastTO.current >= 0) {
 				clearTimeout(lastTO.current);
 				lastTO.current = -1;
 			}
 			lastTO.current = setTimeout(() => {
-				onSearch(event.target.value);
+				onSearch(value);
 			}, 300);
 		},
-		[lastTO, onSearch],
+		[lastTO, onSearch, setSearchField],
 	);
 
 	return (
 		<Stack sx={{ overflow: "hidden", flex: 1 }} data-testid="PFriendAdd">
 			<CTextField
+				value={searchField}
 				onChange={onFieldChanged}
 				data-testid="PSocialASearchAdd"
 				verticalPadding={"8px"}

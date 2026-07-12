@@ -10,9 +10,12 @@ def custom_auth_exception_handler(exc: Exception, context: dict) -> Response | N
     response = exception_handler(exc, context)
     request = context.get('request')
     if response is not None and getattr(exc, 'detail', None):
+        print(f"Exception detail: {exc.detail}, code: {getattr(exc.detail, 'code', None)}")  # Debugging line
         exc_code = getattr(exc.detail, 'code', None)
         if exc_code == "AUTHENTICATION_OUTDATED":
             if request:
                 logout(request)
-            response.delete_cookie('refresh-token')
+            response.delete_cookie('refresh-token', path='/api/auth/', samesite='Lax')
+            response.delete_cookie('sessionid')
+            print("User logged out due to outdated authentication.")  # Debugging line
     return response

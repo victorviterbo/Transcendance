@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CLinearProgressProps } from "./CLinearProgress";
 import CLinearProgress from "./CLinearProgress";
 
@@ -19,6 +19,25 @@ function CCountdownLinear({
 }: CCountdownLinearProps) {
 	const [current, setCurrent] = useState<number>(timeMS);
 	const to = useRef<number>(-1);
+
+	const updateCurrent = useCallback(
+		function tick() {
+			let result = timeMS - (Date.now() - startTime);
+			if (result < 0) result = 0;
+			setCurrent(inverse ? timeMS - result : result);
+			if (result == 0) return;
+			to.current = setTimeout(tick, updateStep);
+		},
+		[setCurrent, startTime, timeMS, updateStep, inverse],
+	);
+
+	useEffect(() => {
+		if (to.current >= 0) {
+			clearTimeout(to.current);
+			to.current = -1;
+		}
+		to.current = setTimeout(updateCurrent, updateStep);
+	}, [to, updateStep, updateCurrent]);
 
 	useEffect(() => {
 		if (to.current >= 0) {

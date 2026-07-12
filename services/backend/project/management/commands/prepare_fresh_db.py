@@ -1,6 +1,7 @@
 """Prepare a fresh local database for development and evaluation."""
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.db import connections
 
 
 class Command(BaseCommand):
@@ -9,8 +10,12 @@ class Command(BaseCommand):
 	help = "Run migrate, seed_playlists, sync_playlists, and seed_database."
 
 	def handle(self, *args, **options):
-		call_command("migrate")
-		call_command("seed_playlists")
-		call_command("sync_playlists")
-		call_command("seed_database")
+		for command in (
+			"migrate",
+			"seed_playlists",
+			"sync_playlists",
+			"seed_database",
+		):
+			call_command(command)
+			connections.close_all()
 		self.stdout.write(self.style.SUCCESS("Fresh database is ready."))

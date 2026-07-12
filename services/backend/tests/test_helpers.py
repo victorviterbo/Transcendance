@@ -48,7 +48,6 @@ urls = {
     'friends_list': '/api/social/friends/',
     'friend_search': '/api/social/friends-search/',
     'friends_notif': '/api/social/notifs/',
-    'direct_chat': '/api/chat/direct/',
 }
 
 MEDIA_ROOT = settings.MEDIA_ROOT / 'tests_tmp/'

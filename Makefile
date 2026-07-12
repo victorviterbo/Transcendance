@@ -115,44 +115,29 @@ fclean:	# Remove containers, volumes, built images and local certs
 	rm -f $(TLS_CERT) $(TLS_KEY)
 	echo "$(GREEN)✨ System fully cleaned$(RESET)"
 
-re:		clean run # Remove containers then rebuild and start, preserving volumes
+re:		clean dirs check-certs up # Remove containers then rebuild and start, preserving volumes
 
 fre:	fclean certs run # Fully clean, rebuild and start from a fresh local state
 
 # Django targets
-makemigrations:		# Generate migration files
-	echo "$(YELLOW)🧬 Generating migration files...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) exec backend $(CONDA_MANAGE_COMMAND) makemigrations
-	echo "$(GREEN)✅ Migration files generated$(RESET)"
-
-check-migrations:	# Verify commited migrations match models
-	echo "$(YELLOW)🔎 Checking migrations...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) exec backend $(CONDA_MANAGE_COMMAND) makemigrations --check --dry-run --noinput
-	echo "$(GREEN)✅ Migrations match models$(RESET)"
-
 delete-migrations:	# Delete Django migration files, except migrations/__init__.py
 	echo "$(RED)⚠️  Deleting Django migration files...$(RESET)"
 	find ./services/backend -path "*/migrations/[0-9]*.py" -delete
 	echo "$(GREEN)✅ Migration files deleted$(RESET)"
 
-migrate:			# Applies migrations
-	echo "$(YELLOW)🗄️  Applying migrations...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) exec backend $(CONDA_MANAGE_COMMAND) migrate
-	echo "$(GREEN)✅ Migrations applied$(RESET)"
-
 prepare-db:			# Migrate and seed the database before starting the app
 	echo "$(YELLOW)🌱 Preparing fresh database...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint sh backend -c 'mkdir -p /data/database /data/media && $(CONDA_MANAGE_COMMAND) prepare_fresh_db'
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --entrypoint sh backend -c '$(CONDA_MANAGE_COMMAND) prepare_fresh_db'
 	echo "$(GREEN)✅ Fresh database prepared$(RESET)"
 
 prepare-playlists:	# Migrate and sync playlist data without demo user/game seeding
 	echo "$(YELLOW)🎵 Preparing playlist data...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint sh backend -c 'mkdir -p /data/database /data/media && $(CONDA_MANAGE_COMMAND) migrate && $(CONDA_MANAGE_COMMAND) seed_playlists && $(CONDA_MANAGE_COMMAND) sync_playlists'
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --entrypoint sh backend -c '$(CONDA_MANAGE_COMMAND) migrate && $(CONDA_MANAGE_COMMAND) seed_playlists && $(CONDA_MANAGE_COMMAND) sync_playlists'
 	echo "$(GREEN)✅ Playlist data prepared$(RESET)"
 
 backend-test:		# Run backend unit tests
 	echo "$(YELLOW)▶️  Running backend tests...$(RESET)"
-	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --no-deps --entrypoint conda backend run --no-capture-output -n backend python /app/manage.py test tests.test_userprofile.ProfileTests.test_profile_create_update_delete
+	$(ENV) $(COMPOSE_COMMAND) $(COMPOSE_FILE) run --rm --entrypoint conda backend run --no-capture-output -n backend python /app/manage.py test tests.test_userprofile.ProfileTests.test_profile_create_update_delete
 
-.SILENT:	all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre makemigrations migrate check-migrations delete-migrations prepare-db prepare-playlists fresh run backend-test
-.PHONY:		all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre makemigrations migrate check-migrations delete-migrations prepare-db prepare-playlists fresh run backend-test
+.SILENT:	all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre delete-migrations prepare-db prepare-playlists fresh run backend-test
+.PHONY:		all $(NAME) header help up dirs build certs check-certs down stop start kill status logs clean fclean re fre delete-migrations prepare-db prepare-playlists fresh run backend-test

@@ -10,6 +10,7 @@ WELCOME_BACK_USER,"Welcome back, {username}!","Content de te revoir, {username} 
 WELCOME_ACCOUNT_READY_USER,"Welcome, {username}! Your account is ready.","Bienvenue, {username} ! Ton compte est prêt.",ようこそ、{username} さん！アカウントの準備ができました。,"Willkommen, {username}! Dein Konto ist bereit.",Shown after successful registration
 BACK_TO_HOME,Back to home,Retour à l'accueil,ホームに戻る,Zurück zur Startseite,Button label to return to the home page
 USERNAME,Username,Nom d'utilisateur,ユーザー名,Benutzername,As it appears in form fields
+USERNAME_TAKEN,Username already taken,Nom d'utilisateur déjà utilisé,ユーザー名は既に使用されています,Benutzername bereits vergeben,Shown when a username is already taken
 NEW_USERNAME,New Username,Nouveau nom d'utilisateur,新しいユーザー名,Neuer Benutzername,As it appears in form fields
 EMAIL,Email,Adresse e-mail,メールアドレス,E-Mail,As it appears in form fields
 NEW_EMAIL,New Email,Nouvelle adresse e-mail,新しいメールアドレス,Neue E-Mail-Adresse,As it appears in form fields
@@ -269,6 +270,7 @@ GAME_CHAT_TITLE,Chat,Discussion,チャット,Chat,Chat title in the game infrast
 GAME_ERROR_GLOBAL,Failed to fetch game data,Impossible de récupérer les données du jeu,ゲームデータの取得に失敗しました,Spieldaten konnten nicht geladen werden,Error message whenever game couldn't be loaded.
 GAME_ERROR_TITLE,Error,Erreur,エラー,Fehler,Title for error in game
 GAME_ERROR_INVALID_ROOM,Room is not valid,La salle n’est pas valide,ルームが無効です,Raum ist ungültig,Error when room number is not valid
+INVALID_GAME_CODE,Invalid game code,Code de partie invalide,無効なゲームコードです,Ungültiger Spielcode,Error shown when the join room code is not UUID-shaped
 GAME_LOADING_TITLE,Loading,Chargement,読み込み中,Wird geladen,Title of the loading message paper
 GAME_LOADING,Game is loading...,Chargement du jeu...,ゲームを読み込んでいます...,Spiel wird geladen...,Content of the loading message paper
 GAME_JOINED_MESSAGE,{PLAYER} has joined the game.,{PLAYER} a rejoint la partie.,{PLAYER} がゲームに参加しました。,{PLAYER} ist dem Spiel beigetreten.,Chat message when a player joined
@@ -299,12 +301,11 @@ GAME_SETTINGS_NOTAG,No tag,Aucun tag,タグなし,Kein Tag,Used when no tag has 
 GAME_SETTINGS_SCORE_OPTION,Score options: ,Options de score : ,スコア設定: ,Punkteoptionen: ,Scoring system option title
 GAME_SETTINGS_SCORE_OPTION_SPEED,Speed,Vitesse,速度,Geschwindigkeit,Scoring system option (Speed: option)
 GAME_SETTINGS_SCORE_OPTION_NORMAL,Normal,Normal,ノーマル,Normal,Scoring system option (Speed: Normal)
-GAME_SETTINGS_SCORE_OPTION_ARMAGEDDON,Armageddon,Armageddon,アルマゲドン,Armageddon,Scoring system option (Speed: Armagedon)
 GAME_SETTINGS_CODE,Room: ,Salle : ,ルーム: ,Raum: ,Title placed before the code
 GAME_SETTINGS_CB,Copy to clipboard,Copier dans le presse-papiers,クリップボードにコピー,In die Zwischenablage kopieren,Button to copy to the clipboard
 GAME_SETTINGS_CB_COPIED,Copied...,Copié...,コピーしました...,Kopiert...,Button to copy to the clipboard (when pressed)
 GAME_SETTINGS_GAME,Game settings,Paramètres de la partie,ゲーム設定,Spieleinstellungen,Title for game settings
-GAME_SETTINGS_VISIBILITY,Game visibility,Visibilité de la partie,ゲームの公開範囲,Sichtbarkeit des Spiels,Title for game visibility
+GAME_SETTINGS_VISIBILITY,Game code,Code de la partie,ゲームコード,Spielcode,Title for the game code
 GAME_SETTINGS_BACK,Return to lobby,Retour au salon,ロビーに戻る,Zurück zur Lobby,Button to return into the lobby
 GAME_NO_GENRE,No genre selected,Aucun genre sélectionné,ジャンルが選択されていません,Kein Genre ausgewählt,Shown when no genre has been selected
 GAME_PLAYING_TITLE,Playing,En cours,再生中,Wiedergabe,Title of the view when the music is playing
@@ -349,3 +350,6 @@ GAME_FULL,Game is full,La partie est complète,ゲームは満員です,Das Spie
 USER_NOT_FRIEND,User is not a friend,Cet utilisateur n'est pas un ami,このユーザーはフレンドではありません,Dieser Benutzer ist kein Freund,Message displayed when trying to interact with a user who is not a friend
 ROOM_NOT_FOUND,Chat room not found,Salon de discussion introuvable,チャットルームが見つかりません,Chatraum nicht gefunden,Error message shown when the chat room cannot be found
 INVALID_ROOM,Chat room is not valid,Le salon de discussion n'est pas valide,チャットルームが無効です,Der Chatraum ist ungültig,Error message shown when the chat room is invalid
+GAME_ALREADY_STARTED,Game has already started,La partie a déjà commencé,ゲームはすでに開始されています,Das Spiel hat bereits begonnen,Error message shown when trying to join or modify a game that has already started
+GAME_ENDED,The game has been closed,La partie a été fermée,ゲームは終了しました,Das Spiel wurde geschlossen,Message displayed when the game has been closed
+SELF_LEAVE,You left this game from another session,Vous avez quitté cette partie depuis une autre session,別のセッションからこのゲームを退出しました,Du hast dieses Spiel in einer anderen Sitzung verlassen,Message displayed when the user leaves the game from another session

@@ -19,6 +19,7 @@ import type {
 } from "../../types/localizationTypes";
 import { NUMBER_FORMAT_LOCALES } from "../../constants";
 import GLoading from "../../pages/common/GLoading";
+import { debugLog } from "../../utils/debug";
 
 interface CLanguageContextProps {
 	children: ReactNode;
@@ -74,12 +75,12 @@ function CLanguageProvider({ children }: CLanguageContextProps) {
 		const checkValid = async () => {
 			if (!langData || notifSent) return;
 			if (langData.headers.length == 0 || langData.langs.length == 0) {
-				let msg = "Failed to loaded localization file.";
+				let msg = "Failed to load localization file.";
 				if (currentLang == "fr") msg = "Impossible de charger le fichier de localisation.";
 				else if (currentLang == "ja") msg = "ローカライズファイルを読み込めませんでした";
 				else if (currentLang == "de")
 					msg = "Die Lokalisierungsdatei konnte nicht geladen werden.";
-				console.log(msg);
+				debugLog(msg);
 				setNotifSent(true);
 			}
 		};

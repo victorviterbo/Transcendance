@@ -9,7 +9,11 @@ export interface CDialogProps extends GCompProps, DialogProps {}
 
 function CDialog({ sx, children, ...other }: CDialogProps) {
 	return (
-		<Dialog sx={[CDialogStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]} {...other}>
+		<Dialog
+			disableRestoreFocus={true}
+			sx={[CDialogStyle, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}
+			{...other}
+		>
 			<DialogContent sx={CDialogContentStyle}>{children}</DialogContent>
 		</Dialog>
 	);

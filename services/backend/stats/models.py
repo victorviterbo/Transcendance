@@ -71,6 +71,7 @@ class UserGameStats(models.Model):
                                related_name='round_played')
     is_won = models.BooleanField(default=False)
     played_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
 
     @property
     def total_xp_earned(self) -> int:

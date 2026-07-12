@@ -55,6 +55,8 @@ export const MUSIC_TAGS = [
 	"TAG_RNB",
 ] as const;
 export const MAX_PLAYERS = 20;
+export const CHAT_MESSAGE_MAX_LENGTH = 500;
+export const SOCIAL_SEARCH_MAX_LENGTH = 20;
 
 // TIME CONVERSIONS
 export const DAY_MS = 1000 * 60 * 60 * 24;
@@ -68,6 +70,7 @@ export const GAME_ROUND_PASSED_DISPLAYED = 8;
 export const GAME_MAX_ROUND_DISPLAYED_SMALL = 5;
 export const GAME_ROUND_PASSED_DISPLAYED_SMALL = 3;
 export const GAME_ENDED_MAX = 9999;
+export const VOLUME_RATIO = 0.3; // < 1
 
 // SETTINGS
 export const SETTINGS_NGSONGS_MIN = 5;

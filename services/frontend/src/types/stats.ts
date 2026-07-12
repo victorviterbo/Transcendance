@@ -33,6 +33,7 @@ export interface IHistoryPlayer {
 	username: string;
 	avatar: string;
 	ranking: number;
+	isGuest: boolean;
 }
 
 export interface IHistoryRound {

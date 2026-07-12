@@ -11,7 +11,6 @@ from stats.models import GameRoundStats, UserGameStats, UserRoundStats
 from userauth.models import SiteUser
 from userprofile.models import Profile
 
-
 DEMO_PASSWORD = "Password123+"
 
 
@@ -108,6 +107,7 @@ class Command(BaseCommand):
 					game=game,
 					player=player,
 					is_won=(player == winner),
+					is_active=False,
 				)
 
 			for round_number, track in enumerate(game_tracks, start=1):

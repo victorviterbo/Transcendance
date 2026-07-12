@@ -1,7 +1,9 @@
 """HTTP views for game management and testing."""
 
+import asyncio
 import uuid
 
+from asgiref.sync import async_to_sync
 from chat.ws_game_chat import create_gamechat_room
 from django.shortcuts import get_object_or_404
 from friends.models import Friendship
@@ -18,6 +20,7 @@ from .serializers import (
 	GameDetailSerializer,
 )
 from .services import format_validation_errors
+from .ws_game_shared import ACTIVE_GAMES
 
 
 class GeneralGameView(APIView):
@@ -26,7 +29,17 @@ class GeneralGameView(APIView):
 
 	def get(self, request: Request) -> Response:
 		"""Handles the listing of all games."""
-		all_public_games = Game.objects.filter(visibility='public', status='waiting')
+
+		# Get public games with at least one player active
+		all_public_games = (
+			Game.objects
+			.filter(
+				visibility='public',
+				status='waiting',
+				player_stats__is_active=True,
+			)
+			.distinct()
+		)
 		serialized_games = GameDetailSerializer(all_public_games, many=True)
 		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)
 	
@@ -39,7 +52,7 @@ class GeneralGameView(APIView):
 			new_game_serializer = GameCreationSerializer(data=request.data)
 			new_game_serializer.is_valid(raise_exception=True)
 			new_game = new_game_serializer.save(owned_by=request.profile)
-			# create the chat room after the game exists
+			ACTIVE_GAMES[new_game.uid] = {}
 			room = create_gamechat_room(new_game)
 			new_game.room = room
 			new_game.save(update_fields=['room'])
@@ -61,10 +74,17 @@ class FriendsGameView(APIView):
 		to_ids = Friendship.objects.filter(
 			to_user=request.user, status='accepted'
 		).values_list('from_user_id', flat=True)
+
+		# Get friends games with at least one player active
 		friends_games = (
-			Game.objects.filter(owned_by__user_id__in=from_ids.union(to_ids),
-								status='waiting')
+			Game.objects
+			.filter(
+				owned_by__user_id__in=from_ids.union(to_ids),
+				status='waiting',
+				player_stats__is_active=True,
+			)
 			.exclude(visibility='private')
+			.distinct()
 		)
 		serialized_games = GameDetailSerializer(friends_games, many=True)
 		return Response({"rooms": serialized_games.data}, status=status.HTTP_200_OK)

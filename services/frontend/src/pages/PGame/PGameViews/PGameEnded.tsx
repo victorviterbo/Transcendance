@@ -90,7 +90,7 @@ function PGameEnded({ game, rounds, settings, players, onEndLeave }: PGameEndedP
 		let worst = 0;
 		let value = 0;
 		rounds.forEach((round: IGameRound) => {
-			if (round.ranking == 0) return;
+			if (round.time <= 0) return;
 			value += round.time;
 			count++;
 			if (round.time < best) best = round.time;

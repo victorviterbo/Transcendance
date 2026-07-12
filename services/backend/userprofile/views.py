@@ -41,7 +41,7 @@ class ProfileView(APIView):
         if query is None:
             return (Response({'error': {'query': 'MISSING_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
-        queried_profiles = Profile.objects.filter(username=query)
+        queried_profiles = Profile.objects.filter(username=query, guest=False)
         if not queried_profiles.exists():
             return Response({'error': {'query': 'USER_NOT_FOUND'}},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -89,7 +89,7 @@ class   ProfileSearchView(APIView):
         elif query == '':
             return (Response({'error': {'query': 'EMPTY_FIELD'}},
                              status=status.HTTP_400_BAD_REQUEST))
-        profiles = Profile.objects.filter(username=query)
+        profiles = Profile.objects.filter(username=query, guest=False)
         serializer = LightProfileSerializer(profiles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

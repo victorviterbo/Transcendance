@@ -7,33 +7,23 @@ from project.defaults import countdown_time
 
 from game.models import Game
 
-from .ws_game_db_helpers import _get_game_info_data
+from .ws_game_db_helpers import _get_game_info_data, _touch_game_activity
 
 if TYPE_CHECKING:
     from project.consumers import GlobalConsumer
 
-async def _send_game_error(consumer: 'GlobalConsumer', game_uid: str , message: str, critical: bool = False) -> None:
+async def _send_game_error(consumer: 'GlobalConsumer', game_uid: str | None, message: str, critical: bool = False, active_game_uid = None) -> None:
     """Send a game error payload for the current game."""
     await consumer.send_json({
         'target': 'game',
         'event': 'error',
-        'uid': str(game_uid),
+        'uid': str(game_uid) if game_uid else None,
         'self': consumer.profile_data,
         'message': message,
         'critical': critical,
-        'currentGameUid': str(consumer.current_game.uid)
+        'currentGameUid': str(active_game_uid)
                             if (message == 'ALREADY_IN_GAME') else None
     })
-
-async def _send_existing_player_game_info(consumer: 'GlobalConsumer') -> None:
-    """Reconnect an existing game member to the websocket game session."""
-    consumer.game_group_name = f'game_{consumer.current_game.uid}'
-    if consumer.game_group_name not in consumer.active_layers:
-        await consumer.add_to_layer(consumer.game_group_name)
-    await add_gameroom_participant(consumer.current_game, consumer.profile)
-    await send_join_chatroom(consumer)
-    serialized_game_info = await _get_game_info_data(consumer)
-    await _send_game_info(consumer, serialized_game_info)
 
 async def _send_track(consumer: 'GlobalConsumer',
                       serialized_game: dict,
@@ -61,6 +51,7 @@ async def _send_track(consumer: 'GlobalConsumer',
             'round': game.current_round
         }
     await consumer.group_send(group_name, event)
+    await _touch_game_activity(game)
 
 async def _send_round_preview(consumer: 'GlobalConsumer',
                               serialized_game: dict,
@@ -82,6 +73,7 @@ async def _send_round_preview(consumer: 'GlobalConsumer',
         'playbackDuration': game.playbackDuration,
         'round': game.current_round,
     })
+    await _touch_game_activity(game)
 
 
 async def _send_round_stats(consumer: 'GlobalConsumer',
@@ -110,8 +102,12 @@ async def _send_round_stats(consumer: 'GlobalConsumer',
             'results': results,
             'is_last_round': (game.current_round >= game.trackCount)}
     await consumer.group_send(group_name, event)
+    await _touch_game_activity(game)
 
-async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict, group_name: str | None = None) -> None:
+async def _send_game_ended(consumer: 'GlobalConsumer',
+                           game_ended: dict,
+                           group_name: str | None = None,
+                           game: Game | None = None) -> None:
     """Broadcast game_ended to all players."""
     if group_name is None:
         group_name = consumer.game_group_name
@@ -120,6 +116,8 @@ async def _send_game_ended(consumer: 'GlobalConsumer', game_ended: dict, group_n
         'uid': game_ended['uid'],
         'leaderboard': game_ended['leaderboard'],
     })
+    if game is not None:
+        await _touch_game_activity(game)
 
 async def _send_new_player(consumer: 'GlobalConsumer',
                             serialized_game: dict,
@@ -133,7 +131,8 @@ async def _send_new_player(consumer: 'GlobalConsumer',
 async def _send_start_signal(consumer: 'GlobalConsumer',
                              serialized_game: dict,
                              serialized_settings: dict,
-                             group_name: str | None = None) -> None:
+                             group_name: str | None = None,
+                             game: Game | None = None) -> None:
     if group_name is None:
         group_name = consumer.game_group_name
     await consumer.group_send(group_name, {
@@ -142,6 +141,8 @@ async def _send_start_signal(consumer: 'GlobalConsumer',
         'settings': serialized_settings,
         'delay': countdown_time,
     })
+    if game is not None:
+        await _touch_game_activity(game)
 
 async def _send_game_info(consumer: 'GlobalConsumer', game_info: dict) -> None:
     """Send game_info directly to the joining player."""
@@ -177,5 +178,4 @@ async def _send_game_closed(consumer: 'GlobalConsumer', game_uid: str, group_nam
     await consumer.group_send(group_name, {
         'type': 'game_closed_event',
         'uid': str(game_uid),
-        'self': consumer.profile_data,
     })

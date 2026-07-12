@@ -1,4 +1,12 @@
-import { useContext, useEffect, type ReactNode, createContext, type Context, useRef } from "react";
+import {
+	useContext,
+	useEffect,
+	useState,
+	type ReactNode,
+	createContext,
+	type Context,
+	useRef,
+} from "react";
 import useWebSocket, { ReadyState, type SendMessage } from "react-use-websocket";
 import { WS_ADDRESS, WS_ADDRESS_WMS } from "../../constants";
 import type {
@@ -12,6 +20,7 @@ import { useAuth } from "../auth/CAuthProvider";
 import GLoading from "../../pages/common/GLoading";
 import GLost from "../../pages/common/GLost";
 import { useNotif } from "../contexts/CAppNotifContext";
+import { debugError, debugLog } from "../../utils/debug";
 
 //--------------------------------------------------
 //                      EXPORTS
@@ -60,7 +69,7 @@ function wsGetModule(
 			sendMessage: sendMessage
 				? sendMessage
 				: () => {
-						console.error("Invalid send message function");
+						debugError("Invalid send message function");
 					},
 			onUpdate: undefined,
 		});
@@ -101,13 +110,14 @@ interface AppWebsocketProps {
 }
 
 function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
-	const { sendMessage, lastMessage, readyState } = useWebSocket(
+	const pageInCache = useRef(false);
+	const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
 		import.meta.env.MODE !== "mock" && import.meta.env.MODE !== "test"
 			? WS_ADDRESS
 			: WS_ADDRESS_WMS,
 		{
 			skipAssert: true,
-			shouldReconnect: (_) => true,
+			shouldReconnect: () => !pageInCache.current,
 		},
 	);
 	const modules = useRef<IWSContextModule[]>([]);
@@ -115,8 +125,18 @@ function CWebsocket({ loading, lost, children }: AppWebsocketProps) {
 	const { push } = useNotif();
 
 	useEffect(() => {
+		const handlePageHide = () => {
+			pageInCache.current = true;
+			getWebSocket()?.close(1000, "pagehide");
+		};
+
+		window.addEventListener("pagehide", handlePageHide);
+		return () => window.removeEventListener("pagehide", handlePageHide);
+	}, [getWebSocket]);
+
+	useEffect(() => {
 		wsStatus = readyState;
-		console.log(
+		debugLog(
 			"WS Status changed: %c" + wsConnectionStatus[wsStatus],
 			"font-weight: 900; color: " + wsConnectionStatusColor[wsStatus],
 		);
@@ -167,11 +187,22 @@ interface CWebsocketContextProps {
 
 function CWebsocketContext({ children }: CWebsocketContextProps) {
 	const { status } = useAuth();
+	const [pageGeneration, setPageGeneration] = useState(0);
+
+	useEffect(() => {
+		const handlePageShow = (event: PageTransitionEvent) => {
+			if (event.persisted) setPageGeneration((generation) => generation + 1);
+		};
+
+		window.addEventListener("pageshow", handlePageShow);
+		return () => window.removeEventListener("pageshow", handlePageShow);
+	}, []);
+
 	if (status == "loading") return <GLoading />;
 
 	return (
 		<>
-			<CWebsocket key={status} loading={<GLoading />} lost={<GLost />}>
+			<CWebsocket key={`${status}-${pageGeneration}`} loading={<GLoading />} lost={<GLost />}>
 				{children}
 			</CWebsocket>
 		</>

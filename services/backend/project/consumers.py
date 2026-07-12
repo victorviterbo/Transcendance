@@ -19,6 +19,7 @@ from chat.ws_game_chat import handle_game_chat_payload
 from game.models import Game
 from game.ws_game_db_helpers import _get_game_history_data
 from game.ws_game_logic import handle_game_action
+from game.ws_game_shared import ACTIVE_GAMES
 from userauth.models import SiteUser
 from userprofile.models import Profile
 from userprofile.serializers import LightProfileSerializer
@@ -87,11 +88,12 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             if getattr(self, 'profile', None):
                 await set_chat_open(self.profile.id, recipient_profile_id, is_open=False)
         if getattr(self, "profile", None):
-            await update_online_status(self, self.profile.id, is_online=False)
-            logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
-                        self.profile.id,
-                        self.profile.username,
-                        self.group_name)
+            is_still_online = await update_online_status(self, self.profile.id, is_online=False)
+            if not is_still_online:
+                logger.info('ws.presence.offline profile_id=%s username=%s group=%s',
+                            self.profile.id,
+                            self.profile.username,
+                            self.group_name)
         return
     
     async def receive_json(self, content: dict) -> None:
@@ -344,6 +346,21 @@ class GlobalConsumer(AsyncJsonWebsocketConsumer):
             'uid': event.get('uid'),
             'self': self.profile_data,
         })
+
+    async def game_abort_event(self, event: dict) -> None:
+        """Cancel the local game loop and notify connected players."""
+        try:
+            game_uid = uuid.UUID(str(event.get('uid')))
+        except (ValueError, TypeError, AttributeError):
+            game_uid = None
+
+        if game_uid is not None:
+            active_game = ACTIVE_GAMES.get(game_uid)
+            task = active_game.get('task') if active_game else None
+            if task is not None and not task.done():
+                task.cancel()
+
+        await self.game_closed_event(event)
 
     def _sender_name(self) -> str:
         """Return the authenticated sender username or an anonymous fallback."""

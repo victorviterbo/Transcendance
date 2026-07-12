@@ -81,7 +81,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             await self.expect_event(challenger_socket, 'game_started')
             players = [owner_socket, challenger_socket]
             # ROUND 1 - No one answers
-            print("################# ROUND 1 #################")
+            #print("################# ROUND 1 #################")
             payloads = await self.play_round(players, [], owner_socket,True, False)
             self.assertTrue(payloads['end'])
             #print(json.dumps(payloads, indent=4))
@@ -93,7 +93,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
                 self.assertEqual(payloads['start'][i]['playbackDuration'], 10)
                 self.assertIsNotNone(payloads['start'][i]['preview'])
             # ROUND 2 - owner give right track
-            print("################# ROUND 2 #################")
+            #print("################# ROUND 2 #################")
             answers = [
                 {'socket': owner_socket,
                  'payload':{'target': 'game',
@@ -109,7 +109,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             payloads = await self.play_round(players, answers, owner_socket,True, False)
             #print(json.dumps(payloads, indent=4))
             # ROUND 3 - challenger gives right artist, and right title
-            print("################# ROUND 3 #################")
+            #print("################# ROUND 3 #################")
             answers = [
                 {'socket': challenger_socket,
                  'payload':{'target': 'game',
@@ -135,7 +135,7 @@ class GameWebsocketFlowTests(TestBaseHelpers, TestWebsocketHelpers):
             payloads = await self.play_round(players, answers, owner_socket,True, False)
             #print(json.dumps(payloads, indent=4))
             # ROUND 4
-            print("################# ROUND 4 #################")
+            #print("################# ROUND 4 #################")
             answers = [
                 {'socket': challenger_socket,
                  'payload':{'target': 'game',
