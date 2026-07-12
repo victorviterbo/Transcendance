@@ -145,7 +145,7 @@ npm test -- --run
 | -------- | ------------------- | -------------------------- |
 | hcavet   | Hugo Cavet          | Product Owner, Developer   |
 | vviterbo | Victor Viterbo      | Tech Lead, Developer       |
-| fmixtur  | Fabien Mixtur       | Project Manager, Developer |
+| fmixtur  | Fabien Rose         | Project Manager, Developer |
 | kgauthie | Kristopher Gauthier | Developer                  |
 | yisho    | Yishan Ho           | Developer                  |
 
